@@ -25,7 +25,7 @@ id: about                       # Stable ID for page: links
 order: 2                        # Sort position in navigation
 
 # Child Pages
-pages: [team, history, careers] # Order child pages (first is index)
+pages: [team, history, ...]     # Inclusive order (first is index, ... = rest)
 index: team                     # Or just set the index page
 
 # Navigation Visibility
@@ -138,15 +138,31 @@ This also affects index page selection: when no explicit `index` is set, the pag
 
 When a page has child pages (subfolders), control their order.
 
-### Explicit Order
+### Inclusive Order (Recommended)
 
 ```yaml
 # pages/docs/page.yml
-pages: [getting-started, guides, api-reference]
+pages: [getting-started, guides, ...]
 ```
+
+The `...` wildcard means "all remaining pages here." Listed pages are pinned in position; everything else fills the gap.
 
 - First item becomes the index (route `/docs` shows `getting-started`)
 - Others get routes like `/docs/guides`, `/docs/api-reference`
+- All unlisted pages still appear in navigation
+
+```yaml
+# getting-started first, api-reference last, rest in middle
+pages: [getting-started, ..., api-reference]
+```
+
+### Strict Order
+
+```yaml
+pages: [getting-started, guides, api-reference]
+```
+
+Without `...`, only listed pages appear in navigation. Unlisted pages are still built and accessible by URL, but hidden from navigation.
 
 ### Just Set the Index
 
@@ -156,21 +172,9 @@ index: getting-started
 
 Designate which child page is the index. Others are auto-discovered.
 
-### Non-Strict Ordering
-
-```yaml
-order: [getting-started, guides]
-```
-
-Lists children in priority order without hiding unlisted pages. Named pages appear first in that order; unlisted pages appear after, sorted by their `order` property or alphabetically.
-
-Unlike `pages:` (which hides unlisted children), `order:` is additive — every child page is included.
-
-**Note:** When `order` is an array, it controls child ordering. When `order` is a number (e.g., `order: 2`), it sets this page's position among its siblings. Both can coexist in different page.yml files.
-
 ### Auto-Discovery (Default)
 
-Omit `pages`, `index`, and `order` to auto-discover children. They're sorted by their `order` property, and the lowest becomes the index.
+Omit `pages` and `index` to auto-discover children. They're sorted by their `order` property, and the lowest becomes the index.
 
 ---
 
@@ -270,7 +274,26 @@ pages/home/
 └── 3-cta.md          # Third
 ```
 
-### Explicit Order
+### Inclusive Order
+
+```yaml
+sections:
+  - hero
+  - ...
+  - cta
+```
+
+Pin `hero` first and `cta` last. Everything else appears in between, in their natural (numeric prefix) order. Reference sections by stable name (without numeric prefix and extension) — `hero` finds both `hero.md` and `1-hero.md`.
+
+```yaml
+# hero first, rest after
+sections: [hero, ...]
+
+# rest first, cta last
+sections: [..., cta]
+```
+
+### Strict Order
 
 ```yaml
 sections:
@@ -280,7 +303,7 @@ sections:
   - cta
 ```
 
-Reference sections by filename (without prefix and extension).
+Without `...`, only listed sections are included. Reference by stable name (prefix-independent).
 
 ### Nested Sections (Subsections)
 
@@ -290,8 +313,11 @@ sections:
   - features:          # Parent section
       - logocloud      # Child sections
       - stats
+  - ...
   - pricing
 ```
+
+Subsection nesting works with both strict and inclusive modes.
 
 ### No Sections
 
@@ -447,7 +473,7 @@ title: Documentation
 label: Docs
 order: 3
 
-pages: [getting-started, guides, api]
+pages: [getting-started, guides, ..., api]
 
 layout:
   leftPanel: true

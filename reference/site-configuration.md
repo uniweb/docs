@@ -20,9 +20,9 @@ name: My Site
 description: A brief description for SEO
 
 # Page Ordering
-pages: [home, about, docs, pricing]  # Explicit order (first is homepage)
+pages: [home, about, ...]            # Inclusive order (first is homepage, ... = rest)
+pages: [home, about, docs]           # Strict order (unlisted hidden from nav)
 index: home                          # Or just name the homepage
-order: [home, docs, about]           # Non-strict order (unlisted pages appear after)
 
 # Internationalization
 i18n:
@@ -75,15 +75,38 @@ description: Build modern websites with components
 
 Control the order of top-level pages and designate your homepage.
 
-### Explicit Order
+### Inclusive Order (Recommended)
 
 ```yaml
-pages: [home, about, docs, pricing]
+pages: [home, about, ...]
 ```
+
+The `...` wildcard means "all remaining pages here." Pages before `...` appear first in that order; pages after `...` appear last. Everything else fills the middle.
 
 - First item becomes the homepage (route `/`)
 - Other items get their folder name as route (`/about`, `/docs`, `/pricing`)
-- Pages not listed are still accessible but appear after listed pages
+- `...` expands to all pages not explicitly listed, in their natural order
+
+```yaml
+# home first, contact last, everything else in between
+pages: [home, ..., contact]
+
+# home first, about second, rest after
+pages: [home, about, ...]
+
+# rest first, legal last
+pages: [..., legal]
+```
+
+### Strict Order
+
+```yaml
+pages: [home, about, docs]
+```
+
+Without `...`, only listed pages appear in navigation. Unlisted pages are still built and accessible by URL, but they're hidden from navigation (`hidden: true`).
+
+Use this when you want precise control over what appears in the nav — for example, a landing page with only a few pages in the header.
 
 ### Just Set the Homepage
 
@@ -93,19 +116,19 @@ index: home
 
 Only specify which page is the homepage. Other pages are auto-discovered and sorted by their `order` property.
 
-### Non-Strict Ordering
+### Auto-Discovery (Default)
+
+Omit `pages`, `index`, and `order` to auto-discover all pages. They're sorted by the `order` property in each page's `page.yml`, and the lowest `order` becomes the homepage.
+
+### Legacy: Non-Strict Ordering
 
 ```yaml
 order: [home, docs, about]
 ```
 
-Lists pages in priority order without hiding unlisted pages. Pages named in the array appear first in that order; all other pages appear after, sorted by their `order` property or alphabetically.
+> **Deprecated.** Prefer `pages:` with `...` wildcard instead: `pages: [home, docs, about, ...]`
 
-Unlike `pages:` (which hides unlisted pages from navigation), `order:` is additive — every page is always included.
-
-### Auto-Discovery (Default)
-
-Omit `pages`, `index`, and `order` to auto-discover all pages. They're sorted by the `order` property in each page's `page.yml`, and the lowest `order` becomes the homepage.
+Lists pages in priority order without hiding unlisted pages. Pages named in the array appear first in that order; all other pages appear after.
 
 ---
 
@@ -166,7 +189,7 @@ layout:
 |-------|------|-------------|
 | `title` | string | Container title (for navigation, breadcrumbs) |
 | `description` | string | Meta description |
-| `order` | array | Non-strict ordering of child pages |
+| `pages` | array | Child page ordering with `...` wildcard support |
 | `index` | string | Which child becomes the index page |
 | `label` | string | Short navigation label |
 | `hidden` | boolean | Hide from navigation |
@@ -178,9 +201,15 @@ layout:
 
 Child pages are ordered by:
 
-1. `order:` array in `folder.yml` (listed items first, in that order)
+1. `pages:` array in `folder.yml` with `...` wildcard support (same semantics as site-level)
 2. Numeric file prefix (`1-intro.md` before `2-setup.md`)
 3. Alphabetical by filename
+
+```yaml
+# folder.yml
+title: Documentation
+pages: [getting-started, configuration, ...]
+```
 
 ---
 
@@ -432,7 +461,7 @@ name: Acme Corp
 description: Building the future of widgets
 
 # Structure
-pages: [home, products, about, contact]
+pages: [home, products, about, ..., contact]
 
 # Internationalization
 i18n:

@@ -63,7 +63,23 @@ Without `index:`, the site picks the page with the lowest `order` value in its `
 
 ### Controlling Page Order
 
-Pages appear in navigation in the order they're discovered. To control this, set `order:` in each page's `page.yml`:
+To control navigation order, list pages with the `...` wildcard in `site.yml`:
+
+```yaml
+pages: [home, services, about, ..., contact]
+```
+
+This puts `home` first (making it the homepage), then `services`, then `about`, then any other pages, then `contact` last. The `...` means "everything else goes here."
+
+```yaml
+# home first, rest after in natural order
+pages: [home, ...]
+
+# home first, about second, rest after
+pages: [home, about, ...]
+```
+
+You can also control individual page position with `order:` in each page's `page.yml`:
 
 ```yaml
 # pages/about/page.yml
@@ -73,25 +89,26 @@ order: 2
 
 Lower numbers come first. Pages without an `order` appear after ordered pages.
 
-### Explicit Page List
+### Hiding Pages from Navigation
 
-For precise control over which pages appear and in what order:
+To show only specific pages in navigation (while keeping others accessible by URL):
 
 ```yaml
 pages: [home, services, about, contact]
 ```
 
-The first item becomes the homepage. Pages not in this list are still accessible by URL but won't appear in navigation.
+Without `...`, only the listed pages appear in navigation. Unlisted pages like `legal` are still built and accessible by URL but won't show in the nav.
 
 **When to use each approach:**
 
 | Approach | Best for |
 |----------|----------|
 | `index: home` | Most sites — auto-discovers pages, you just pick the homepage |
-| `order:` in page.yml | When you want a specific order but still want auto-discovery |
-| `pages: [...]` | When you want precise control over what appears in navigation |
+| `pages: [home, about, ...]` | When you want a specific order but still auto-discover everything |
+| `pages: [home, about]` | When you want precise control over what appears in navigation |
+| `order:` in page.yml | When each page controls its own position |
 
-**Tip:** Prefer `index:` over `pages:`. With `pages:`, adding a new folder to `pages/` doesn't automatically show it in navigation — you have to remember to add it to the list.
+**Tip:** Use `pages:` with `...` when you want ordering. Use `pages:` without `...` when you want to hide pages from the nav.
 
 ### Documentation-Style Pages
 
@@ -112,10 +129,10 @@ Each `.md` file becomes a separate page. The page title comes from the `# Headin
 ```yaml
 # folder.yml
 title: Documentation
-order: [getting-started, configuration]
+pages: [getting-started, configuration, ...]
 ```
 
-Pages listed in `order:` appear first, in that order. Any other pages appear after them alphabetically.
+Pages listed before `...` appear first, in that order. The rest appear after in their natural order. Without `...`, only listed pages appear in navigation.
 
 This works at any level — put `folder.yml` in a subfolder to create nested documentation. A subfolder with `page.yml` instead switches back to page mode (multiple sections per page).
 
@@ -343,9 +360,9 @@ You only need to include what you're using. Start simple and add settings as you
 
 A `site.yml` with just `name:` works. Add configuration as your site grows. You don't need to decide on languages, search, or collections up front.
 
-### Use `index:` instead of `pages:`
+### Use `pages:` with `...` for ordering
 
-With `index:`, new pages are automatically discovered and appear in navigation. With `pages:`, you have to manually update the list every time you add a page.
+`pages: [home, about, ...]` gives you control over order while still auto-discovering new pages. Without `...`, you'd have to manually update the list every time you add a page. For simple sites, `index: home` is enough.
 
 ### Test your base path locally
 
@@ -371,7 +388,7 @@ If adding translations, get one additional language working before adding more. 
 | `name` | Site name for titles and metadata | `name: My Site` |
 | `description` | SEO description | `description: A great site` |
 | `index` | Which folder is the homepage | `index: home` |
-| `pages` | Explicit page order (overrides auto-discovery) | `pages: [home, about]` |
+| `pages` | Page order with `...` wildcard (or strict without it) | `pages: [home, about, ...]` |
 | `base` | Base path for subdirectory deployment | `base: /docs/` |
 | `i18n.defaultLocale` | Primary language (no URL prefix) | `defaultLocale: en` |
 | `i18n.locales` | Supported languages | `locales: [en, es, fr]` |
