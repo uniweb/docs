@@ -1,0 +1,10 @@
+{
+  "name": "uniweb-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd site && pnpm dev",
+    "build": "cd site && pnpm build",
+    "preview": "cd site && pnpm preview"
+  }
+}

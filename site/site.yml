@@ -1,0 +1,21 @@
+name: Uniweb
+description: Documentation for the Uniweb Component Content Architecture
+
+# Homepage - specifies which page folder becomes the root route (/)
+index: getting-started
+
+# Theme configuration
+theme:
+  primary: '#2563eb'
+
+# Search configuration
+search:
+  enabled: true
+  include:
+    pages: true
+    sections: true
+    headings: true
+
+# Build options
+build:
+  prerender: true
