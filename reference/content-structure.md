@@ -42,6 +42,18 @@ Your component receives:
 }
 ```
 
+## Ignored Files and Folders
+
+The content collector skips certain files and folders by convention:
+
+| Pattern | Example | Purpose |
+|---------|---------|---------|
+| `README.md` | `pages/README.md` | Repository documentation (for GitHub), not site content |
+| `_*` files | `_draft-hero.md` | Draft or private content not ready for publishing |
+| `_*` folders | `_drafts/`, `_archive/` | Entire folders of draft or archived content |
+
+This lets you keep repository documentation and work-in-progress content alongside published pages without them appearing on your site.
+
 ## Content Fields
 
 All content fields are available at the top level:
