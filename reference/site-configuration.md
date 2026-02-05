@@ -120,16 +120,6 @@ Only specify which page is the homepage. Other pages are auto-discovered and sor
 
 Omit `pages`, `index`, and `order` to auto-discover all pages. They're sorted by the `order` property in each page's `page.yml`, and the lowest `order` becomes the homepage.
 
-### Legacy: Non-Strict Ordering
-
-```yaml
-order: [home, docs, about]
-```
-
-> **Deprecated.** Prefer `pages:` with `...` wildcard instead: `pages: [home, docs, about, ...]`
-
-Lists pages in priority order without hiding unlisted pages. Pages named in the array appear first in that order; all other pages appear after.
-
 ---
 
 ## Content Mode
@@ -178,7 +168,7 @@ The configuration file for container folders in folder mode. Analogous to `page.
 # folder.yml
 title: Documentation
 description: API reference and guides
-order: [getting-started, configuration]
+pages: [getting-started, configuration, ...]
 index: getting-started
 label: Docs
 layout:
