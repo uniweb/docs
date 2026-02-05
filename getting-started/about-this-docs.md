@@ -68,7 +68,7 @@ But the full capability is available when needed:
 
 **Custom section types.** The `type:` frontmatter can specify any section type the foundation provides. A complex interactive component is just a frontmatter change away from a simple prose article.
 
-**Component composition.** Foundations can define child section types that compose within parent sections. Tabs containing Tab sections, Accordions containing Accordion items — the full React composition model, driven by content structure.
+**Component composition.** Foundations can define child section types that compose within parent sections. For example, a Hero containing a specialized JS animation provided by an extension module (secondary foundation) — the full React composition model, driven by content structure.
 
 We don't use these features heavily in this documentation because prose articles don't need them. The point is that the same architecture scales from simple to complex without changing tools or mental models.
 
