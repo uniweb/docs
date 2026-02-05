@@ -459,6 +459,8 @@ title: Documentation
 index: getting-started
 ```
 
+> **Documentation-style sites:** If you want each `.md` file to be its own page (instead of sections of one page), use **folder mode** by placing a `folder.yml` instead of `page.yml`. This is ideal for docs, blogs, and article-based sites. See [Documentation-Style Pages](./site-setup.md#documentation-style-pages) for details.
+
 ---
 
 ## Section Settings (Frontmatter)
