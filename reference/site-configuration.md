@@ -111,20 +111,20 @@ Omit `pages`, `index`, and `order` to auto-discover all pages. They're sorted by
 
 ## Content Mode
 
-By default, `.md` files in a folder are sections of a single page. By placing a `folder.yml` in a directory, you switch it to **pages mode** — where each `.md` file becomes its own page with a single section.
+By default, `.md` files in a folder are sections of a single page (**page mode**). By placing a `folder.yml` in a directory, you switch it to **folder mode** — where each `.md` file becomes its own page.
 
-| Config file | Mode | `.md` files are... |
-|------------|------|-------------------|
-| `page.yml` | sections | Sections of the containing page (default) |
-| `folder.yml` | pages | Individual child pages, each with one section |
+| Config file | Mode | Folder is... | `.md` files are... |
+|------------|------|--------------|-------------------|
+| `page.yml` | page mode | A page | Sections of that page (default) |
+| `folder.yml` | folder mode | A container | Individual child pages |
 
-### Pages Mode
+### Folder Mode
 
 Ideal for documentation sites where each file is a standalone article:
 
 ```
 pages/docs/
-├── folder.yml               # Activates pages mode
+├── folder.yml               # Activates folder mode
 ├── getting-started.md       # → /docs/getting-started
 ├── configuration.md         # → /docs/configuration
 └── advanced/
@@ -135,21 +135,21 @@ pages/docs/
 
 Page titles come from the H1 heading in each markdown file. Frontmatter remains section configuration (`type:`, `background:`, etc.).
 
-To activate pages mode for the entire site, place a `folder.yml` in the `pages/` directory itself.
+To activate folder mode for the entire site, place a `folder.yml` in the `pages/` directory itself.
 
 ### Mode Cascade
 
 The mode set by `folder.yml` or `page.yml` cascades to descendant folders:
 
-1. `folder.yml` in a directory → pages mode for that folder and all descendants
-2. `page.yml` in a directory → sections mode for that folder and all descendants
-3. Neither → inherit from parent (default: sections)
+1. `folder.yml` in a directory → folder mode for that folder and all descendants
+2. `page.yml` in a directory → page mode for that folder and all descendants
+3. Neither → inherit from parent (default: page mode)
 
-A single `folder.yml` at the top of a docs tree applies pages mode to the entire tree. A subfolder can override back to sections mode with a `page.yml`.
+A single `folder.yml` at the top of a docs tree applies folder mode to the entire tree. A subfolder can override back to page mode with a `page.yml`.
 
 ### folder.yml
 
-The configuration file for container folders in pages mode. Analogous to `page.yml` but signals that `.md` files are pages, not sections:
+The configuration file for container folders in folder mode. Analogous to `page.yml` but signals that `.md` files are pages, not sections:
 
 ```yaml
 # folder.yml
@@ -174,7 +174,7 @@ layout:
 | `seo` | object | SEO overrides |
 | `id` | string | Stable ID for `page:` links |
 
-### Ordering in Pages Mode
+### Ordering in Folder Mode
 
 Child pages are ordered by:
 

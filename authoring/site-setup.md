@@ -95,13 +95,13 @@ The first item becomes the homepage. Pages not in this list are still accessible
 
 ### Documentation-Style Pages
 
-By default, each page folder can contain multiple `.md` files — they become sections of that page. This works well for marketing pages with distinct sections (hero, features, pricing).
+By default, each page folder can contain multiple `.md` files — they become sections of that page (**page mode**). This works well for marketing pages with distinct sections (hero, features, pricing).
 
-But for documentation or article-based sites, you typically want each `.md` file to be its own page. Instead of creating a folder for every single page, place a `folder.yml` in the directory:
+But for documentation or article-based sites, you typically want each `.md` file to be its own page. Instead of creating a folder for every single page, place a `folder.yml` in the directory to switch to **folder mode**:
 
 ```
 pages/docs/
-├── folder.yml               ← switches to one-page-per-file
+├── folder.yml               ← switches to folder mode
 ├── getting-started.md       → /docs/getting-started
 ├── configuration.md         → /docs/configuration
 └── api-reference.md         → /docs/api-reference
@@ -117,9 +117,9 @@ order: [getting-started, configuration]
 
 Pages listed in `order:` appear first, in that order. Any other pages appear after them alphabetically.
 
-This works at any level — put `folder.yml` in a subfolder to create nested documentation. A subfolder with `page.yml` instead switches back to the default mode (multiple sections per page).
+This works at any level — put `folder.yml` in a subfolder to create nested documentation. A subfolder with `page.yml` instead switches back to page mode (multiple sections per page).
 
-For the full reference, see [Content Mode](../../docs/site-configuration.md#content-mode).
+For the full reference, see [Content Mode](../reference/site-configuration.md#content-mode).
 
 ---
 
