@@ -22,7 +22,7 @@ reference/          Configuration files, kit API, CLI commands
 https://raw.githubusercontent.com/uniweb/docs/main/{section}/{page}.md
 ```
 
-**Contributing:** Submit issues or PRs to improve the documentation.
+**Contributing:** Contributions are welcome! Submit issues or PRs to improve the documentation. See [About This Documentation](getting-started/about-this-docs.md) to understand how the docs site is built.
 
 ## About Uniweb
 
