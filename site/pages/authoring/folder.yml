@@ -1,2 +1,10 @@
 title: Authoring
-order: 2
+order:
+  - writing-content
+  - recipes
+  - site-setup
+  - collections
+  - theming
+  - linking
+  - search
+  - translating

@@ -1,2 +1,13 @@
 title: Development
-order: 3
+order:
+  - building-with-uniweb
+  - creating-components
+  - component-patterns
+  - custom-layouts
+  - working-with-data
+  - thinking-in-contexts
+  - foundation-categories
+  - extending-your-site
+  - internationalization
+  - converting-existing
+  - template-tour

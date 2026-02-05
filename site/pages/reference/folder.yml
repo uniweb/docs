@@ -1,2 +1,17 @@
 title: Reference
-order: 4
+order:
+  - content-structure
+  - site-configuration
+  - page-configuration
+  - foundation-config
+  - component-metadata
+  - kit-reference
+  - site-theming
+  - data-fetching
+  - content-collections
+  - dynamic-routes
+  - navigation-patterns
+  - special-sections
+  - versioning
+  - cli-commands
+  - deployment

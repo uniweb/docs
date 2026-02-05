@@ -1,1 +1,6 @@
 title: Uniweb Documentation
+order:
+  - getting-started
+  - authoring
+  - development
+  - reference
