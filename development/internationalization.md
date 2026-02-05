@@ -583,7 +583,7 @@ The search client automatically uses the correct index for the active locale.
 
 ## See Also
 
-- [Translating Your Site](./guides/translating-your-site.md) — Content author guide (no coding required)
-- [Site Configuration](./site-configuration.md) — i18n settings in site.yml
-- [Content Structure](./content-structure.md) — How content flows to components
-- [Site Search](./search.md) — Locale-specific search indexes
+- [Translating Your Site](../authoring/translating.md) — Content author guide (no coding required)
+- [Site Configuration](../reference/site-configuration.md) — i18n settings in site.yml
+- [Content Structure](../reference/content-structure.md) — How content flows to components
+- [Site Search](../authoring/search.md) — Locale-specific search indexes

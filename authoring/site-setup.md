@@ -227,7 +227,7 @@ collections:
 
 Each markdown file in `collections/articles/` becomes an item in the `articles` collection, sorted by date. Pages can then display this data using their template's components.
 
-For the full guide, see [Collections](./collections.md). For technical details, see [Content Collections](../../docs/content-collections.md).
+For the full guide, see [Collections](./collections.md). For technical details, see [Content Collections](../reference/content-collections.md).
 
 ---
 
@@ -270,7 +270,7 @@ fetch:
   schema: config
 ```
 
-For details, see [Data Fetching](../data-fetching.md).
+For details, see [Data Fetching](../reference/data-fetching.md).
 
 ---
 
@@ -377,8 +377,8 @@ If adding translations, get one additional language working before adding more. 
 | `i18n.locales` | Supported languages | `locales: [en, es, fr]` |
 | `search.enabled` | Turn on full-text search | `enabled: true` |
 | `build.prerender` | Generate static HTML (default: true) | `prerender: true` |
-| `collections` | Define content collections | See [Collections](../content-collections.md) |
-| `fetch` | Global data source | See [Data Fetching](../data-fetching.md) |
+| `collections` | Define content collections | See [Collections](../reference/content-collections.md) |
+| `fetch` | Global data source | See [Data Fetching](../reference/data-fetching.md) |
 
 ---
 
@@ -389,4 +389,4 @@ If adding translations, get one additional language working before adding more. 
 - **[Translating Your Site](./translating-your-site.md)** — Full translation workflow
 - **[Collections](./collections.md)** — Blog posts, team members, products, and other repeating content
 - **[Recipes](./recipes.md)** — Copy-paste solutions for common patterns
-- **[Deployment](../deployment.md)** — Deploy to Vercel, Netlify, GitHub Pages, and more
+- **[Deployment](../reference/deployment.md)** — Deploy to Vercel, Netlify, GitHub Pages, and more

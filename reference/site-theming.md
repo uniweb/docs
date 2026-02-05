@@ -451,5 +451,5 @@ vars:
 
 - [Site Configuration](./site-configuration.md) — Full site.yml reference
 - [Page Configuration](./page-configuration.md) — Section theme parameter
-- [Thinking in Contexts](../guides/developers/thinking-in-contexts.md) — Deep dive into semantic theming for component developers
+- [Thinking in Contexts](../development/thinking-in-contexts.md) — Deep dive into semantic theming for component developers
 - [Component Metadata](./component-metadata.md) — Full meta.js schema

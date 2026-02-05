@@ -286,7 +286,7 @@ Both components use the same `data: { entity: 'products' }` declaration. The run
 
 ## See Also
 
-- [Dynamic Routes](../../docs/dynamic-routes.md) — Folder naming, route expansion, singularization rules
-- [Data Fetching](../../docs/data-fetching.md) — Full fetch config reference, post-processing options, collection references
-- [Content Collections](../../docs/content-collections.md) — Building collections from markdown
-- [Component Metadata](../../docs/component-metadata.md) — The `data` field in meta.js
+- [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, singularization rules
+- [Data Fetching](../reference/data-fetching.md) — Full fetch config reference, post-processing options, collection references
+- [Content Collections](../reference/content-collections.md) — Building collections from markdown
+- [Component Metadata](../reference/component-metadata.md) — The `data` field in meta.js

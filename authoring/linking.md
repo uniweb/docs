@@ -138,7 +138,7 @@ This works in both SPA mode (development) and with pre-rendered pages (productio
 
 ## See Also
 
-- [Page Configuration](./page-configuration.md) — Setting page IDs in page.yml
-- [Content Structure](./content-structure.md) — Section IDs from filenames
-- [Navigation Patterns](./navigation-patterns.md) — Building navigation with stable links
-- [Internationalization](./internationalization.md) — Locale-aware link resolution
+- [Page Configuration](../reference/page-configuration.md) — Setting page IDs in page.yml
+- [Content Structure](../reference/content-structure.md) — Section IDs from filenames
+- [Navigation Patterns](../reference/navigation-patterns.md) — Building navigation with stable links
+- [Internationalization](../development/internationalization.md) — Locale-aware link resolution

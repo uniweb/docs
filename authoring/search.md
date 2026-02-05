@@ -149,6 +149,6 @@ For large sites (hundreds of pages), consider:
 
 ## See Also
 
-- [Site Configuration](./site-configuration.md) — Full site.yml reference
-- [Content Structure](./content-structure.md) — How content is organized
-- [Internationalization](./internationalization.md) — Locale-specific search indexes
+- [Site Configuration](../reference/site-configuration.md) — Full site.yml reference
+- [Content Structure](../reference/content-structure.md) — How content is organized
+- [Internationalization](../development/internationalization.md) — Locale-specific search indexes

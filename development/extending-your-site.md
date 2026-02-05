@@ -259,6 +259,6 @@ The layers don't overlap much. Build-time features are Vite plugins. External sc
 
 ## See Also
 
-- [Site Configuration](../../docs/site-configuration.md) — full reference for `site.yml` and `head.html`
+- [Site Configuration](../reference/site-configuration.md) — full reference for `site.yml` and `head.html`
 - [Building with Uniweb](./building-with-uniweb.md) — project structure and the site/foundation relationship
 - [Foundation Categories](./foundation-categories.md) — how portable a foundation can be

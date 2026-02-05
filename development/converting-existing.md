@@ -474,6 +474,6 @@ In practice, this means you can generate a landing page in a chat, paste it at L
 ## See Also
 
 - **[Thinking in Contexts](./thinking-in-contexts.md)** — The full semantic theming guide (what Level 3 gives you)
-- **[Component Metadata](../../docs/component-metadata.md)** — `meta.js` reference for declaring content expectations and parameters
-- **[Content Structure](../../docs/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
-- **[Writing Content](../authors/writing-content.md)** — The content author's perspective on sections, headings, and items
+- **[Component Metadata](../reference/component-metadata.md)** — `meta.js` reference for declaring content expectations and parameters
+- **[Content Structure](../reference/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
+- **[Writing Content](../authoring/writing-content.md)** — The content author's perspective on sections, headings, and items

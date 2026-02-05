@@ -450,7 +450,7 @@ function Header({ content }) {
 }
 ```
 
-See [Kit Reference](./kit-reference.md) for all available hooks.
+See [Kit Reference](../reference/kit-reference.md) for all available hooks.
 
 ---
 
@@ -498,7 +498,7 @@ This creates documentation with each component's:
 
 ## See Also
 
-- [Component Metadata](./component-metadata.md) — Full meta.js reference
-- [Content Structure](./content-structure.md) — How content is parsed
-- [Kit Reference](./kit-reference.md) — Hooks, components, and utilities
-- [Foundation Configuration](./foundation-configuration.md) — CSS variables and Layout
+- [Component Metadata](../reference/component-metadata.md) — Full meta.js reference
+- [Content Structure](../reference/content-structure.md) — How content is parsed
+- [Kit Reference](../reference/kit-reference.md) — Hooks, components, and utilities
+- [Foundation Configuration](../reference/foundation-config.md) — CSS variables and Layout

@@ -373,6 +373,6 @@ Section components render `<div>`s. They don't add `<header>` or `<main>` wrappe
 
 ## See Also
 
-- [Foundation Configuration](../../docs/foundation-configuration.md) — CSS variables, Layout export, complete reference
-- [Layout Panels](../../docs/special-sections.md) — How `layout/header/`, `layout/footer/`, `layout/left/`, `layout/right/` folders work
+- [Foundation Configuration](../reference/foundation-config.md) — CSS variables, Layout export, complete reference
+- [Layout Panels](../reference/special-sections.md) — How `layout/header/`, `layout/footer/`, `layout/left/`, `layout/right/` folders work
 - [CCA Component Patterns](./component-patterns.md) — Section type organization and common patterns

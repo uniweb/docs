@@ -78,7 +78,7 @@ Create something great with less effort.
 | Paragraph text          | `content.paragraphs[0]` | `"Create something great..."`              |
 | `[Get Started](/about)` | `content.links[0]`      | `{ href: "/about", label: "Get Started" }` |
 
-The parser extracts semantic elements from markdown — headings become titles, paragraph text becomes `paragraphs`, links become `links`, images become `imgs`. Your component reads the structure it needs and ignores the rest. See [Content Structure](../../docs/content-structure.md) for the full mapping.
+The parser extracts semantic elements from markdown — headings become titles, paragraph text becomes `paragraphs`, links become `links`, images become `imgs`. Your component reads the structure it needs and ignores the rest. See [Content Structure](../reference/content-structure.md) for the full mapping.
 
 The component is a regular React function. It receives `content` (parsed markdown), `params` (configuration from `meta.js`, if you add one), and `block` (the runtime object for this section). For a first component, `content` is all you need.
 
@@ -265,7 +265,7 @@ function Header({ content }) {
 }
 ```
 
-Kit provides hooks (`useWebsite`, `useActiveRoute`, `useVersion`, `useAppearance`), primitive components (`Link`, `Image`, `Icon`), and utilities (`getLocaleLabel`). The data classes underneath — Website, Page, Block from `@uniweb/core` — are what hooks return. You access them through kit, not by importing core directly. See [Kit Reference](../../docs/kit-reference.md) for the full API.
+Kit provides hooks (`useWebsite`, `useActiveRoute`, `useVersion`, `useAppearance`), primitive components (`Link`, `Image`, `Icon`), and utilities (`getLocaleLabel`). The data classes underneath — Website, Page, Block from `@uniweb/core` — are what hooks return. You access them through kit, not by importing core directly. See [Kit Reference](../reference/kit-reference.md) for the full API.
 
 ### Variants and the Dispatcher
 
@@ -275,9 +275,9 @@ When one section type needs multiple layouts (a homepage hero vs. a pricing hero
 
 ## See Also
 
-- **[Quickstart](../../docs/quickstart.md)** — Step-by-step project creation (`npx uniweb create`)
-- **[Content Structure](../../docs/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
-- **[Component Metadata](../../docs/component-metadata.md)** — Full `meta.js` reference (params, content expectations, presets)
+- **[Quickstart](../getting-started/quickstart.md)** — Step-by-step project creation (`npx uniweb create`)
+- **[Content Structure](../reference/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
+- **[Component Metadata](../reference/component-metadata.md)** — Full `meta.js` reference (params, content expectations, presets)
 - **[Converting Existing Designs](./converting-existing-designs.md)** — Bringing existing React code into a foundation
 - **[Component Patterns](./component-patterns.md)** — Dispatcher, Building Blocks, and other design patterns
 - **[Thinking in Contexts](./thinking-in-contexts.md)** — Semantic theming and how components adapt to any brand

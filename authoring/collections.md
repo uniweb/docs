@@ -504,4 +504,4 @@ collections:
 - **[Site Setup](./site-setup.md)** — Site configuration, pages, locales, and more
 - **[Translating Your Site](./translating-your-site.md)** — Add multiple languages
 
-For technical details on collection processing, see [Content Collections](../../docs/content-collections.md).
+For technical details on collection processing, see [Content Collections](../reference/content-collections.md).
