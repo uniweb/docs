@@ -85,121 +85,6 @@ To use search, your foundation needs:
 
 The academic template includes both of these ready to use.
 
-## Building a Search UI
-
-### Using the Search Client
-
-```jsx
-import { useWebsite } from '@uniweb/kit'
-import { useEffect, useState } from 'react'
-
-function SearchInput() {
-  const { website } = useWebsite()
-  const [client, setClient] = useState(null)
-  const [results, setResults] = useState([])
-  const [query, setQuery] = useState('')
-
-  // Initialize search client
-  useEffect(() => {
-    if (!website.isSearchEnabled()) return
-
-    async function init() {
-      const { createSearchClient } = await import('@uniweb/kit/search')
-      setClient(createSearchClient(website))
-    }
-    init()
-  }, [website])
-
-  // Perform search
-  useEffect(() => {
-    if (!client || !query.trim()) {
-      setResults([])
-      return
-    }
-
-    client.query(query, { limit: 10 }).then(setResults)
-  }, [client, query])
-
-  if (!website.isSearchEnabled()) {
-    return null
-  }
-
-  return (
-    <div>
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search..."
-      />
-      <ul>
-        {results.map(result => (
-          <li key={result.id}>
-            <a href={result.href}>{result.title}</a>
-            {result.snippetHtml && (
-              <p dangerouslySetInnerHTML={{ __html: result.snippetHtml }} />
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-```
-
-### Search Client API
-
-```js
-const { createSearchClient } = await import('@uniweb/kit/search')
-const client = createSearchClient(website)
-
-// Check if search is enabled
-client.isEnabled()  // boolean
-
-// Perform a search
-const results = await client.query('authentication', {
-  limit: 10,           // Max results (default: 10)
-  type: 'section',     // Filter: 'page' or 'section'
-  route: '/docs'       // Filter: route prefix
-})
-
-// Preload the index (warm the cache)
-await client.preload()
-
-// Clear the cache
-client.clearCache()
-```
-
-### Search Result Shape
-
-Each result includes:
-
-```js
-{
-  // Identity
-  id: 'section:/docs/auth:intro',
-  type: 'section',              // 'page' or 'section'
-
-  // Navigation
-  route: '/docs/auth',
-  sectionId: 'intro',
-  anchor: 'SectionIntro',
-  href: '/docs/auth#SectionIntro',  // Ready-to-use link
-
-  // Display
-  title: 'Authentication',
-  pageTitle: 'Auth Guide',      // Parent page title (for sections)
-  description: '...',
-  excerpt: '...',
-  component: 'Article',         // Component type (for sections)
-
-  // Search-specific
-  snippetText: '...matching text...',
-  snippetHtml: '...with <mark>highlights</mark>...',
-  matches: [...]                // Raw Fuse.js match data
-}
-```
-
 ## What Gets Indexed
 
 ### Pages
@@ -236,23 +121,6 @@ The academic template's `SearchModal` includes keyboard support:
 | `Enter` | Go to selected result |
 | `Escape` | Close search |
 
-To add keyboard shortcuts to your own component:
-
-```jsx
-import { useSearchShortcut } from '../SearchModal'
-
-function MyComponent() {
-  const [searchOpen, setSearchOpen] = useState(false)
-
-  // Register Cmd/Ctrl+K shortcut
-  useSearchShortcut(() => setSearchOpen(true))
-
-  return (
-    // ...
-  )
-}
-```
-
 ## Multi-Locale Support
 
 For sites with multiple locales, separate search indexes are generated:
@@ -278,18 +146,6 @@ The search client automatically uses the correct index based on the active local
 For large sites (hundreds of pages), consider:
 - Excluding verbose components (like full article bodies)
 - Using route exclusions for low-value content
-
-## Example: Academic Template
-
-The academic template demonstrates search with:
-
-- `SearchModal` component with full keyboard navigation
-- `SearchButton` with keyboard shortcut hint
-- Integration in the `Navbar` component
-- Fuse.js as a foundation dependency
-- Search enabled in `site.yml`
-
-See `templates/academic/template/foundation/src/components/SearchModal/` for the complete implementation.
 
 ## See Also
 

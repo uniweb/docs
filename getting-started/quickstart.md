@@ -5,7 +5,7 @@ Create your first Uniweb site in 5 minutes.
 ## Prerequisites
 
 - **Node.js 20.19** or later
-- **pnpm 10+** (recommended) or npm 10+
+- **pnpm 9+** (recommended) or npm 10+
 
 ```bash
 # Install pnpm if you don't have it
@@ -15,7 +15,7 @@ npm install -g pnpm
 ## Create a Project
 
 ```bash
-npx uniweb@latest create my-site --template marketing
+pnpm create uniweb my-site --template marketing
 cd my-site
 pnpm install
 ```
@@ -47,7 +47,7 @@ Open `site/pages/home/hero.md`:
 ```markdown
 ---
 type: Hero
-theme: gradient
+theme: dark
 ---
 
 # Build Something Great
@@ -62,7 +62,7 @@ This content renders through the `Hero` component in `foundation/src/sections/He
 
 **The pattern:**
 - `type: Hero` — Which component renders this section
-- `theme: gradient` — Configuration passed to the component
+- `theme: dark` — Configuration passed to the component
 - The markdown body — Content the component receives
 
 ## Edit Content
@@ -77,14 +77,14 @@ Save. The page updates instantly.
 
 ## Edit a Component
 
-Open `foundation/src/sections/Hero/index.jsx`. The component receives:
+Open `foundation/src/sections/Hero.jsx` (or `Hero/Hero.jsx` if the template uses a folder). The component receives:
 
 ```jsx
 export default function Hero({ content, params }) {
   // content.title = "Your New Headline Here"
   // content.paragraphs = ["Create stunning websites..."]
   // content.links = [{ href: "/docs", label: "Get Started" }, ...]
-  // params.theme = "gradient"
+  // params.theme = "dark"
 }
 ```
 
@@ -124,18 +124,18 @@ Visit http://localhost:5173/contact. Your new page is live.
 
 ## Add a Section
 
-Add another section to the contact page. Create `site/pages/contact/2-form.md` (the numeric prefix controls ordering when a page has multiple sections):
+Add another section to the contact page. Create `site/pages/contact/2-info.md` (the numeric prefix controls ordering when a page has multiple sections):
 
 ```markdown
 ---
-type: TextSection
+type: Article
 ---
 
-## Send a Message
+## Our Office
 
-Fill out the form below and we'll get back to you within 24 hours.
+We're located in downtown San Francisco. Drop by Monday through Friday, 9am to 5pm.
 
-Our team is available Monday through Friday, 9am to 5pm.
+[Get Directions](https://maps.google.com)
 ```
 
 When a page has multiple sections, they render in order by their numeric prefix (`1-`, `2-`, etc.). Single-section pages don't need a prefix — `hero.md` works fine on its own. You can rename the first section to `1-hero.md` later if you add more.
@@ -149,7 +149,7 @@ Markdown (what you write)
 ┌───────────────────────────┐
 │  ---                      │
 │  type: Hero               │  ← Which component
-│  theme: gradient          │  ← Configuration (params)
+│  theme: dark              │  ← Configuration (params)
 │  ---                      │
 │                           │
 │  # Headline               │  ← content.title
@@ -222,13 +222,13 @@ Upload the contents of `site/dist/`.
 
 ```bash
 # Documentation site
-npx uniweb create docs-site --template docs
+pnpm create uniweb docs-site --template docs
 
 # Minimal starter
-npx uniweb create my-project --template single
+pnpm create uniweb my-project
 
 # Multi-site workspace
-npx uniweb create my-workspace --template multi
+pnpm create uniweb my-workspace --template multi
 ```
 
 See [Templates](./templates.md) for all options.

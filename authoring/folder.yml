@@ -1,10 +1,10 @@
 title: Authoring
 order:
-  - writing-content
-  - recipes
   - site-setup
+  - writing-content
   - collections
   - theming
   - linking
   - search
+  - recipes
   - translating

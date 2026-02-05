@@ -1,13 +1,13 @@
 title: Development
 order:
   - building-with-uniweb
+  - thinking-in-contexts
   - creating-components
   - component-patterns
-  - custom-layouts
   - working-with-data
-  - thinking-in-contexts
+  - custom-layouts
   - foundation-categories
-  - extending-your-site
   - internationalization
+  - extending-your-site
   - converting-existing
   - template-tour

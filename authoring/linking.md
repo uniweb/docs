@@ -90,24 +90,6 @@ For setup instructions, see the [Installation Guide](page:installation).
 Have questions? Visit our [contact form](page:about#contact).
 ```
 
-### In Components
-
-The `Link` component from `@uniweb/kit` handles resolution automatically:
-
-```jsx
-import { Link } from '@uniweb/kit'
-
-function Navigation() {
-  return (
-    <nav>
-      <Link to="page:home">Home</Link>
-      <Link to="page:docs">Documentation</Link>
-      <Link to="page:about#team">Our Team</Link>
-    </nav>
-  )
-}
-```
-
 ## Cross-Page Scrolling
 
 When navigating to a page with a hash (e.g., `page:about#contact`), the runtime:
@@ -151,27 +133,6 @@ This works in both SPA mode (development) and with pre-rendered pages (productio
 4. **Keep IDs short and descriptive**—they appear in URLs when users share links
 
 5. **Don't change IDs** once content is published—they're part of your public API
-
-## Technical Details
-
-### Resolution Order
-
-For `page:some-id`:
-1. Check for page with explicit `id: some-id` in page.yml
-2. Fall back to route-based lookup (`/some-id`)
-
-### DOM IDs
-
-Sections render with `id="section-{stableId}"`. The `section-` prefix prevents collisions with other page elements.
-
-### Runtime vs Build
-
-- **Development (SPA)**: Links resolve at runtime via the Website class
-- **Production (SSG)**: Pre-rendered HTML includes resolved routes; runtime handles client-side navigation
-
-### Locale Independence
-
-The `page:` protocol is locale-agnostic. `page:about#contact` resolves to `/about#section-contact` for English users and `/es/about#section-contact` for Spanish users automatically.
 
 ---
 
