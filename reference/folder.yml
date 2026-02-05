@@ -1,5 +1,5 @@
 title: Reference
-order:
+pages:
   - site-configuration
   - page-configuration
   - content-structure
@@ -15,3 +15,4 @@ order:
   - versioning
   - cli-commands
   - deployment
+  - ...

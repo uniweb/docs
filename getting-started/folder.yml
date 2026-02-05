@@ -1,7 +1,8 @@
 title: Getting Started
 index: what-is-uniweb
-order:
+pages:
   - what-is-uniweb
   - quickstart
   - templates
   - about-this-docs
+  - ...

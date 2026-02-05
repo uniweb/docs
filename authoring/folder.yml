@@ -1,5 +1,5 @@
 title: Authoring
-order:
+pages:
   - site-setup
   - writing-content
   - collections
@@ -8,3 +8,4 @@ order:
   - search
   - recipes
   - translating
+  - ...

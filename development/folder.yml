@@ -1,5 +1,5 @@
 title: Development
-order:
+pages:
   - building-with-uniweb
   - thinking-in-contexts
   - creating-components
@@ -11,3 +11,4 @@ order:
   - extending-your-site
   - converting-existing
   - template-tour
+  - ...
