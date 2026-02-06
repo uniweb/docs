@@ -175,6 +175,24 @@ What matters is that the boundary exists and is explicit. When content and code 
 
 ---
 
+## CCA Is a Choice, Not an Imposition
+
+Nothing in the framework forces you to adopt CCA patterns. A foundation with a single `App` section type — one JSX file containing the entire page, content hardcoded, no meta.js, no theming — is a valid Uniweb project. It's a classic React site that happens to use Uniweb for routing and static generation. Not very CCA, but fully supported.
+
+From there, CCA can be adopted gradually:
+
+1. **Decompose.** Split the monolith into named section types. Content is still in JSX, but sections are independent and reusable.
+2. **Separate content.** Move strings from JSX to markdown. Components read `content.title` instead of hardcoded text. Content authors can now edit without touching code.
+3. **Separate theme.** Replace hardcoded Tailwind classes with semantic tokens. The site controls colors via `theme.yml`. The same foundation works for any brand.
+
+Each step is independently useful. A foundation can be at step 2 for its Hero and step 0 for its Footer — on the same page, in the same build. The architecture doesn't enforce a level; it enables a spectrum.
+
+This also means CCA subsumes the classic React SPA. When every convention is stripped away — no meta.js, no content separation, no semantic theming, no layout system — what's left is a Vite + React project with file-based routing. CCA is what you get when you add structure to that baseline, one convention at a time.
+
+See [Converting Existing Designs](../development/converting-existing) for the practical migration path from a monolithic React page to a fully portable CCA foundation.
+
+---
+
 ## Where to Go from Here
 
 This page describes the architecture. The rest of the documentation shows how to use it:
