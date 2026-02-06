@@ -9,7 +9,7 @@ Foundations can expose configuration points that sites customize in their `theme
 ```
 foundation/
 ├── src/
-│   ├── foundation.js      # Variables, defaultLayout, props
+│   ├── foundation.js      # Name, description, variables, defaultLayout, props
 │   ├── sections/          # Section types
 │   ├── components/        # Internal components
 │   ├── layouts/           # Layout components (auto-discovered)
@@ -17,6 +17,22 @@ foundation/
 ├── package.json
 └── vite.config.js
 ```
+
+---
+
+## Identity
+
+By default, the foundation's `name` and `description` come from `package.json`. You can override them in `foundation.js` — useful when the npm package name differs from the display name you want in visual editors:
+
+```js
+// foundation/src/foundation.js
+export default {
+  name: 'Marketing Template',
+  description: 'A modern marketing site template with hero, features, and pricing sections.',
+}
+```
+
+If omitted, the values fall back to `package.json`. The `version` always comes from `package.json`.
 
 ---
 
