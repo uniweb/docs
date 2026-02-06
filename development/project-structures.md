@@ -229,12 +229,16 @@ The URL `/effects/foundation.js` works in both dev and production:
 }
 ```
 
-An extension builds like any foundation — same Vite plugin, same output. The difference is in role: it contributes section types but doesn't provide Layout or theme variables. Its `foundation.js` config is typically an empty export:
+An extension builds like any foundation — same Vite plugin, same output. The difference is in role: it contributes section types but doesn't provide Layout or theme variables. Its `foundation.js` declares `extension: true`:
 
 ```js
 // effects/src/foundation.js
-export default {}
+export default {
+  extension: true
+}
 ```
+
+This causes the build to write `role: "extension"` to the extension's `schema.json`, and to warn if the extension declares `vars` or layouts (which belong to the primary foundation).
 
 Content authors use section types from extensions the same way — `type: ParticleHero` in frontmatter. The runtime resolves the type from whichever foundation provides it. Primary foundation wins if both define the same name; extensions are checked in declared order.
 

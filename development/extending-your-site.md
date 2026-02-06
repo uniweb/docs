@@ -211,6 +211,17 @@ extensions:
 
 Extensions can only add section types. They don't provide layouts, theme variables, or site-level behavior. They're structurally identical to foundations — same build, same output — but loaded as supplements.
 
+An extension declares itself in its `foundation.js`:
+
+```js
+// effects/src/foundation.js
+export default {
+  extension: true
+}
+```
+
+The build writes `role: "extension"` to the extension's `schema.json` and warns if the extension declares theme variables or layouts (since those belong to the primary foundation).
+
 **Installed to:** nothing — loaded by URL
 **Configured in:** `site/site.yml`
 
