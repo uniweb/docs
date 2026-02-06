@@ -11,7 +11,7 @@ pages:
   - content-collections
   - dynamic-routes
   - navigation-patterns
-  - special-sections
+  - layout-areas
   - versioning
   - cli-commands
   - deployment

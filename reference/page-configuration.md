@@ -34,11 +34,12 @@ hideInHeader: true              # Hide from header nav only
 hideInFooter: true              # Hide from footer nav only
 
 # Layout
-layout:
-  header: true                  # Show site header
-  footer: true                  # Show site footer
-  leftPanel: true               # Show left sidebar
-  rightPanel: true              # Show right sidebar
+layout: DocsLayout              # Layout name (or use default)
+layout:                         # Or expanded form:
+  name: DocsLayout
+  hide: [right]                 # Hide specific areas
+  params:                       # Layout-specific params
+    sidebarWidth: wide
 
 # Sections
 sections: '*'                   # Auto-discover (default)
@@ -204,17 +205,35 @@ Use cases:
 
 ## Layout Options
 
-Control which site-wide elements appear on this page.
+Control which layout is used and which areas appear on this page.
+
+### Selecting a Layout
+
+```yaml
+layout: MarketingLayout
+```
+
+If the foundation provides multiple layouts, set which one to use. Pages without an explicit `layout:` use the foundation's `defaultLayout`.
+
+### Hiding Areas
 
 ```yaml
 layout:
-  header: false       # Don't show site header
-  footer: false       # Don't show site footer
-  leftPanel: false    # Don't show left sidebar
-  rightPanel: false   # Don't show right sidebar
+  hide: [left, right]
 ```
 
-All options default to `true`.
+The `hide` array suppresses specific areas on this page. Hidden areas are passed as null to the Layout component.
+
+### Layout Parameters
+
+```yaml
+layout:
+  name: DocsLayout
+  params:
+    sidebarWidth: wide
+```
+
+Set values for parameters declared in the layout's `meta.js`. Defaults from meta.js apply when not overridden.
 
 ### Use Cases
 
@@ -222,34 +241,20 @@ All options default to `true`.
 ```yaml
 title: Welcome
 layout:
-  header: false
-  footer: false
+  hide: [header, footer]
 ```
 
 **Documentation without sidebars:**
 ```yaml
 title: Quick Reference
 layout:
-  leftPanel: false
-  rightPanel: false
+  hide: [left, right]
 ```
 
-### Checking in Components
-
-Foundation components can check these settings:
-
-```jsx
-function MyLayout({ block }) {
-  const page = block.page
-
-  return (
-    <>
-      {page.hasHeader() && <Header />}
-      <main>{/* content */}</main>
-      {page.hasFooter() && <Footer />}
-    </>
-  )
-}
+**Different layout for landing pages:**
+```yaml
+title: Product
+layout: MarketingLayout
 ```
 
 ---
@@ -476,8 +481,7 @@ order: 3
 pages: [getting-started, guides, ..., api]
 
 layout:
-  leftPanel: true
-  rightPanel: false
+  hide: [right]
 ```
 
 ### Blog Listing

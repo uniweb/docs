@@ -1,10 +1,10 @@
-# Layout Panels
+# Layout Areas
 
-Layout panels (header, footer, left, right) render on every page. They provide site-wide navigation, branding, and persistent UI elements.
+Layout areas render on every page. They provide site-wide navigation, branding, and persistent UI elements like sidebars.
 
 ## Overview
 
-Layout panels live in the `layout/` directory, parallel to `pages/`:
+Layout areas live in the `layout/` directory, parallel to `pages/`:
 
 ```
 site/
@@ -13,23 +13,70 @@ site/
 │   │   └── header.md
 │   ├── footer/               # Renders at bottom of every page
 │   │   └── footer.md
-│   ├── left/                 # Left sidebar (if foundation supports)
+│   ├── left/                 # Left sidebar (if layout supports)
 │   │   └── sidebar.md
-│   └── right/                # Right sidebar (if foundation supports)
+│   └── right/                # Right sidebar (if layout supports)
 │       └── sidebar.md
 ├── pages/
 │   └── home/                 # Regular page
 │       └── hero.md
 ```
 
-Unlike regular pages, layout panels:
+Unlike regular pages, layout areas:
 - Don't create navigable routes
 - Render on all pages automatically
-- Can be suppressed per-page via layout options
+- Can be hidden per-page via `layout.hide`
+
+The conventional area names are `header`, `footer`, `left`, and `right`. These are promoted by templates and documentation, but foundations can define any area names they need — `topbar`, `sidebar`, `statusbar`, or anything else. See [Custom Layouts](../development/custom-layouts.md#general-named-areas) for details.
 
 ---
 
-## Built-in Panels
+## How They Work
+
+### Rendering Order
+
+```
+┌─────────────────────────────────────┐
+│           header                    │
+├──────────┬─────────────┬────────────┤
+│          │             │            │
+│  left    │   Page      │  right     │
+│          │   Content   │            │
+│          │             │            │
+├──────────┴─────────────┴────────────┤
+│           footer                    │
+└─────────────────────────────────────┘
+```
+
+The foundation's Layout component controls where areas appear:
+
+```jsx
+// foundation/src/layouts/DocsLayout/index.jsx
+export default function DocsLayout({ header, footer, left, right, body }) {
+  return (
+    <div className="layout">
+      {header}
+      <div className="main">
+        {left && <aside className="left">{left}</aside>}
+        <main>{body}</main>
+        {right && <aside className="right">{right}</aside>}
+      </div>
+      {footer}
+    </div>
+  )
+}
+```
+
+### Content Flow
+
+1. Site build collects layout areas from `layout/`
+2. Runtime loads them alongside the active page
+3. Foundation Layout receives them as props
+4. Each page's `layout.hide` controls which areas are suppressed
+
+---
+
+## Area Content
 
 ### header
 
@@ -87,7 +134,7 @@ type: Footer
 
 ### left / right
 
-Side panels for documentation sites, dashboards, or complex layouts:
+Side areas for documentation sites, dashboards, or complex layouts:
 
 ```markdown
 <!-- layout/left/sidebar.md -->
@@ -111,54 +158,9 @@ type: Sidebar
 
 ---
 
-## How They Work
-
-### Rendering Order
-
-```
-┌─────────────────────────────────────┐
-│           header                    │
-├──────────┬─────────────┬────────────┤
-│          │             │            │
-│  left    │   Page      │  right     │
-│          │   Content   │            │
-│          │             │            │
-├──────────┴─────────────┴────────────┤
-│           footer                    │
-└─────────────────────────────────────┘
-```
-
-The foundation's Layout component controls where panels appear:
-
-```jsx
-// foundation/src/Layout.jsx
-export default function Layout({ header, footer, left, right, body }) {
-  return (
-    <div className="layout">
-      {header}
-      <div className="main">
-        {left && <aside className="left">{left}</aside>}
-        <main>{body}</main>
-        {right && <aside className="right">{right}</aside>}
-      </div>
-      {footer}
-    </div>
-  )
-}
-```
-
-### Content Flow
-
-1. Site build collects layout panels from `layout/`
-2. Runtime loads them alongside the active page
-3. Foundation Layout receives them as props
-4. Each page's layout options control visibility
-
----
-
 ## Multiple Sections
 
-Panel folders can contain multiple `.md` files:
+Area folders can contain multiple `.md` files:
 
 ```
 layout/header/
@@ -187,14 +189,13 @@ sticky: true
 
 ## Per-Page Layout Control
 
-Pages can disable panels via `layout` in `page.yml`:
+Pages can hide areas via `layout.hide` in `page.yml`:
 
 ```yaml
 # pages/landing/page.yml
 title: Landing Page
 layout:
-  header: false    # No header on this page
-  footer: false    # No footer on this page
+  hide: [header, footer]
 ```
 
 This is useful for:
@@ -203,29 +204,43 @@ This is useful for:
 - Embedded content
 - Admin interfaces
 
-### Checking in Components
+You can also select a different layout and hide specific areas:
 
-Foundation components can check layout settings:
-
-```jsx
-function Page({ block }) {
-  const page = block.page
-
-  return (
-    <>
-      {page.hasHeader() && <Header />}
-      <main>{/* content */}</main>
-      {page.hasFooter() && <Footer />}
-    </>
-  )
-}
+```yaml
+# pages/reference/page.yml
+title: Quick Reference
+layout:
+  name: DocsLayout
+  hide: [left, right]
 ```
+
+---
+
+## Named Layout Areas
+
+When a foundation provides multiple layouts, each layout's area content lives in a subdirectory of `layout/`:
+
+```
+site/layout/
+├── header.md            ← default layout areas
+├── footer.md
+├── left.md
+├── marketing/           ← areas for MarketingLayout
+│   ├── header.md
+│   └── footer.md
+└── dashboard/           ← areas for DashboardLayout
+    ├── topbar.md
+    ├── sidebar.md
+    └── statusbar.md
+```
+
+The directory name matches the layout name (case-insensitive, `Layout` suffix stripped). See [Custom Layouts](../development/custom-layouts.md#named-layouts) for the full guide.
 
 ---
 
 ## Navigation Visibility
 
-Layout panels often build navigation from the page hierarchy. Pages can opt out:
+Layout areas often build navigation from the page hierarchy. Pages can opt out:
 
 ```yaml
 # pages/admin/page.yml
@@ -249,7 +264,7 @@ See [Page Configuration](./page-configuration.md) for all visibility options.
 ### Header with Automatic Navigation
 
 ```jsx
-// foundation/src/components/Header/index.jsx
+// foundation/src/sections/Header/index.jsx
 import { useWebsite } from '@uniweb/kit'
 
 export default function Header({ content }) {
@@ -285,7 +300,7 @@ export default function Header({ content }) {
 ### Footer with Locale Switcher
 
 ```jsx
-// foundation/src/components/Footer/index.jsx
+// foundation/src/sections/Footer/index.jsx
 import { useWebsite, getLocaleLabel } from '@uniweb/kit'
 
 export default function Footer({ content }) {
@@ -318,7 +333,7 @@ export default function Footer({ content }) {
 ### Sidebar with Version Awareness
 
 ```jsx
-// foundation/src/components/Sidebar/index.jsx
+// foundation/src/sections/Sidebar/index.jsx
 import { useVersion } from '@uniweb/kit'
 
 export default function Sidebar({ content }) {
@@ -387,23 +402,21 @@ export default {
 
 ## Best Practices
 
-1. **Keep content minimal**: Layout panels render on every page—keep them lightweight
+1. **Keep content minimal**: Layout areas render on every page — keep them lightweight
 
 2. **Support both modes**: Allow both automatic (from page hierarchy) and manual (from content) navigation
 
-3. **Respect layout flags**: Always check `page.hasHeader()` etc. in your Layout component
+3. **Handle empty states**: Layout areas might not exist in all sites — check props before rendering
 
-4. **Handle empty states**: Layout panels might not exist in all sites
+4. **Consider mobile**: Layout areas often need responsive behavior (hamburger menus, collapsible sidebars)
 
-5. **Consider mobile**: Layout panels often need responsive behavior (hamburger menus, collapsible sidebars)
-
-6. **Version awareness**: In docs sites, show version context in headers/sidebars
+5. **Version awareness**: In docs sites, show version context in headers/sidebars
 
 ---
 
 ## See Also
 
-- [Page Configuration](./page-configuration.md) — Layout options (header, footer, leftPanel, rightPanel)
+- [Page Configuration](./page-configuration.md) — Layout hide options
 - [Navigation Patterns](./navigation-patterns.md) — Building menus and navigation
-- [Foundation Configuration](./foundation-configuration.md) — Custom Layout component
+- [Custom Layouts](../development/custom-layouts.md) — Building custom Layout components
 - [Kit Reference](./kit-reference.md) — Hooks for accessing page/website data

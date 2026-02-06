@@ -427,8 +427,9 @@ function Layout({ block }) {
 |--------|---------|-------------|
 | `hasHeader()` | boolean | Should render header? |
 | `hasFooter()` | boolean | Should render footer? |
-| `hasLeftPanel()` | boolean | Should render left panel? |
-| `hasRightPanel()` | boolean | Should render right panel? |
+| `getAreaBlocks(name)` | Block[] | Get blocks for a named layout area |
+| `getLayoutAreas()` | object | Get all layout areas as `{ name: Block[] }` |
+| `getLayoutParams()` | object | Get layout params from page.yml |
 | `isVersioned()` | boolean | Is page in versioned scope? |
 | `getVersion()` | object | Current version info |
 | `getVersions()` | array | All versions in scope |

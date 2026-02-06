@@ -389,10 +389,29 @@ paths:
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
 
-**Use cases:**
+### Per-Subfolder Mounting
+
+You can mount individual page subfolders from external locations. This is useful when some pages live in a different repository (e.g., a docs submodule) while the rest are local:
+
+```yaml
+paths:
+  pages/docs: ../../../docs
+```
+
+This makes the external `docs/` directory appear as the `docs` subfolder under `pages/`. The site's own `pages/` directory provides the rest of the pages. Multiple subfolder mounts are supported:
+
+```yaml
+paths:
+  pages/docs: ../../../docs
+  pages/blog: ../../../blog-content
+```
+
+### Use Cases
+
 - **Separate content repo** — Content in a git submodule, maintained by a different team
 - **Shared content** — Multiple sites reading from the same pages or collections
-- **Existing docs** — Point `pagesDir` at an existing folder of markdown files
+- **Existing docs** — Point `pages` at an existing folder of markdown files
+- **Mixed sources** — Some pages local, others from external repos via per-subfolder mounting
 
 When `paths.collections` is set, per-collection `path` values in `collections:` are resolved relative to it instead of the site root.
 

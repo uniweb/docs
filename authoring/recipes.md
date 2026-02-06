@@ -848,7 +848,7 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 ## See Also
 
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
-- **[Special Sections](../reference/special-sections.md)** — Header, footer, and sidebar details
+- **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
 - **[Linking](../linking.md)** — Stable `page:` links
 - **[Collections](./collections.md)** — How collections work, the collections/ folder, and detail pages
 - **[Search](../search.md)** — Search configuration

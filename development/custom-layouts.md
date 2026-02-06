@@ -32,8 +32,11 @@ function DefaultLayout({ header, body, footer }) {
 | `footer` | `layout/footer/` folder | Pre-rendered React elements (or null) |
 | `left` | `layout/left/` folder | Pre-rendered React elements (or null) |
 | `right` | `layout/right/` folder | Pre-rendered React elements (or null) |
+| `params` | page.yml `layout.params` + meta.js defaults | Merged layout parameters |
 | `page` | Runtime | Current Page instance |
 | `website` | Runtime | Website instance |
+
+Area names aren't limited to `header`, `footer`, `left`, `right` — those are conventions. A layout can declare any area names it wants (see [Named Layouts](#named-layouts) below). The runtime passes each area as a prop with the matching name.
 
 The key insight: by the time your Layout receives these props, the sections are already rendered. Your Layout doesn't render content — it *arranges* content. The `header` prop isn't a list of blocks you need to loop through; it's a finished React element tree you place where you want it.
 
@@ -59,8 +62,8 @@ site/
 │       └── sidebar-nav.md      ← Sidebar navigation
 ├── pages/
 │   └── home/
-    ├── page.yml
-    └── hero.md
+│       ├── page.yml
+│       └── hero.md
 ```
 
 The runtime renders all sections in `layout/header/` into a single React element and passes that as the `header` prop. Your Layout wraps that element in a `<header>` tag — that's where the semantic HTML comes from. Section components themselves render `<div>`s. They don't know whether they'll end up in a header, sidebar, or main content area.
@@ -97,90 +100,99 @@ The general rule: if header → body → footer in a single column is enough, yo
 
 ## Building a Custom Layout
 
+### Where Layouts Live
+
+Layouts are discovered from `src/layouts/`, parallel to `src/sections/` and `src/components/`:
+
+```
+foundation/src/
+├── sections/          # Section types
+├── components/        # Internal components
+├── layouts/           # Layout components
+│   └── DocsLayout/
+│       ├── index.jsx  # Layout component
+│       └── meta.js    # Optional: declares areas, params
+└── foundation.js      # Set defaultLayout here
+```
+
+Discovery follows the same relaxed rules as `src/sections/` — root-level files and folders are addressable by default, even without `meta.js`. A bare file like `MarketingLayout.jsx` works too.
+
 ### The Minimum
 
-A custom Layout that's equivalent to the default, but gives you a starting point to customize:
+A custom Layout equivalent to the default:
 
 ```jsx
-// foundation/src/components/Layout.jsx
-export default function Layout({ header, body, footer, left, right, page }) {
+// foundation/src/layouts/SimpleLayout/index.jsx
+export default function SimpleLayout({ header, body, footer }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {page.hasHeader() && header && (
-        <header>{header}</header>
-      )}
+      {header && <header>{header}</header>}
 
       <main className="flex-1">
         {body}
       </main>
 
-      {page.hasFooter() && footer && (
-        <footer>{footer}</footer>
-      )}
+      {footer && <footer>{footer}</footer>}
     </div>
   )
 }
 ```
 
-This is already more than the default — it checks page layout flags and uses a flex column for full-height pages. From here, you add what your design needs.
+This is already more than the default — it uses a flex column for full-height pages. From here, you add what your design needs.
 
-### Exporting from foundation.js
+### Setting the Default Layout
 
-The runtime picks up your Layout from the foundation's default export:
+Tell the framework which layout to use by default:
 
 ```js
 // foundation/src/foundation.js
-import Layout from './components/Layout'
-
-export const vars = {
-  'header-height': { default: '4rem', description: 'Fixed header height' },
-  'sidebar-width': { default: '280px', description: 'Left sidebar width' },
-}
-
 export default {
-  Layout,
-  props: {},
+  defaultLayout: 'DocsLayout',
 }
 ```
 
-That's it. The runtime checks for a foundation-provided Layout and uses it instead of the default. If you remove the export, the default takes over again.
+Pages can override this in `page.yml`:
 
-### Respecting Page Layout Options
+```yaml
+layout: MarketingLayout
+# or with options:
+layout:
+  name: MarketingLayout
+  hide: [left, right]
+```
 
-Pages can opt out of layout areas via `page.yml`:
+### Hiding Areas Per Page
+
+Pages can hide specific areas:
 
 ```yaml
 # site/pages/landing/page.yml
 title: Landing Page
 layout:
-  header: false
-  footer: false
+  hide: [header, footer]
 ```
 
-Your Layout should check these flags:
+The runtime skips creating blocks for hidden areas. Your Layout simply won't receive those props (they'll be null). This replaces the old `page.hasHeader()` / `page.hasFooter()` checks — areas are either present or null.
 
 ```jsx
-export default function Layout({ header, body, footer, left, right, page }) {
-  const hasLeft = page.hasLeftPanel() && left
-  const hasRight = page.hasRightPanel() && right
-
+export default function DocsLayout({ header, body, footer, left, right }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {page.hasHeader() && header && <header>{header}</header>}
+      {header && <header>{header}</header>}
 
       <div className="flex-1 flex">
-        {hasLeft && <aside>{left}</aside>}
+        {left && <aside className="w-64">{left}</aside>}
         <main className="flex-1">{body}</main>
-        {hasRight && <aside>{right}</aside>}
+        {right && <aside className="w-64">{right}</aside>}
       </div>
 
-      {page.hasFooter() && footer && <footer>{footer}</footer>}
+      {footer && <footer>{footer}</footer>}
     </div>
   )
 }
 ```
 
-The `page.hasHeader()` / `page.hasFooter()` / `page.hasLeftPanel()` / `page.hasRightPanel()` methods return whether the page wants that area. Checking both the flag and the prop (`page.hasHeader() && header`) means you handle the case where the page wants a header but the site hasn't defined header layout panel content.
+Check the prop directly (`{left && ...}`) — if the area has content and isn't hidden, the prop is a React element. Otherwise it's null.
 
 ---
 
@@ -188,20 +200,14 @@ The `page.hasHeader()` / `page.hasFooter()` / `page.hasLeftPanel()` / `page.hasR
 
 The docs template Layout handles sticky header, responsive sidebars, a mobile drawer, and conditional content width. Here's how it's built.
 
-> Source: `packages/templates/templates/docs/template/foundation/src/components/Layout/index.jsx`
-
 ### The Structure
 
 ```jsx
-export default function Layout({
-  page, website, header, body, footer,
-  left, right, leftPanel, rightPanel,
+// foundation/src/layouts/DocsLayout/index.jsx
+export default function DocsLayout({
+  page, website, header, body, footer, left, right,
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  // Backwards compatibility: accept both prop names
-  const leftContent = left || leftPanel
-  const rightContent = right || rightPanel
 
   // Close sidebar on page navigation
   const activeRoute = page?.route
@@ -218,9 +224,9 @@ export default function Layout({
       </header>
 
       {/* Mobile Sidebar (see next section) */}
-      {leftContent && (
+      {left && (
         <MobileSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-          {leftContent}
+          {left}
         </MobileSidebar>
       )}
 
@@ -228,10 +234,10 @@ export default function Layout({
       <div className="flex-1 w-full max-w-7xl mx-auto">
         <div className="flex">
           {/* Left Sidebar - Desktop */}
-          {leftContent && (
+          {left && (
             <aside className="hidden md:block sticky top-16 w-64
               flex-shrink-0 h-[calc(100vh-4rem)] overflow-y-auto border-r">
-              {leftContent}
+              {left}
             </aside>
           )}
 
@@ -239,7 +245,7 @@ export default function Layout({
           <main className="flex-1 min-w-0">
             <div className={cn(
               'px-4 py-8 sm:px-6 lg:px-8',
-              !rightContent && 'max-w-3xl mx-auto'
+              !right && 'max-w-3xl mx-auto'
             )}>
               <div className="prose prose-slate max-w-none">
                 {body}
@@ -255,17 +261,17 @@ export default function Layout({
           </main>
 
           {/* Right Sidebar - Desktop */}
-          {rightContent && (
+          {right && (
             <aside className="hidden xl:block sticky top-16 w-64
               flex-shrink-0 h-[calc(100vh-4rem)] overflow-y-auto border-l">
-              {rightContent}
+              {right}
             </aside>
           )}
         </div>
       </div>
 
       {/* Mobile Menu Button */}
-      {leftContent && (
+      {left && (
         <MenuButton onClick={() => setSidebarOpen(true)} />
       )}
     </div>
@@ -317,7 +323,7 @@ function MobileSidebar({ isOpen, onClose, children }) {
 }
 ```
 
-The drawer is positioned at `top-16` so it sits below the header. It renders the same `leftContent` that the desktop sidebar gets — same React element, two placements. On `md:` and wider, the drawer is hidden and the static sidebar takes over.
+The drawer is positioned at `top-16` so it sits below the header. It renders the same `left` prop that the desktop sidebar gets — same React element, two placements. On `md:` and wider, the drawer is hidden and the static sidebar takes over.
 
 ### Footer Inside Main
 
@@ -332,11 +338,145 @@ When there's no right sidebar, the content area constrains itself:
 ```jsx
 <div className={cn(
   'px-4 py-8 sm:px-6 lg:px-8',
-  !rightContent && 'max-w-3xl mx-auto'
+  !right && 'max-w-3xl mx-auto'
 )}>
 ```
 
 Without this, documentation text would stretch to fill the space where the right sidebar would be. Constraining to `max-w-3xl` keeps prose readable. When the right sidebar is present, the content naturally fills the remaining space between the two sidebars.
+
+---
+
+## Named Layouts
+
+When a foundation needs multiple page structures — a docs layout with sidebars, a marketing layout without, a dashboard layout with a toolbar — each is a separate layout component:
+
+```
+foundation/src/layouts/
+├── DocsLayout/
+│   ├── index.jsx
+│   └── meta.js
+├── MarketingLayout/
+│   └── index.jsx
+└── DashboardLayout/
+    ├── index.jsx
+    └── meta.js
+```
+
+Pages select their layout by name:
+
+```yaml
+# page.yml
+layout: MarketingLayout
+```
+
+The foundation sets a default in `foundation.js`:
+
+```js
+export default {
+  defaultLayout: 'DocsLayout',
+}
+```
+
+Pages without an explicit `layout:` use the default. The layout name matches the directory name — `DocsLayout/` is referenced as `DocsLayout`.
+
+### Layout meta.js
+
+Layouts can declare metadata — which areas they render, parameters they accept, and (future) view transition participation:
+
+```js
+// src/layouts/DocsLayout/meta.js
+export default {
+  title: 'Documentation',
+  description: 'Three-column layout with sidebar navigation',
+
+  areas: ['header', 'footer', 'left', 'right'],
+
+  params: {
+    sidebarWidth: {
+      type: 'select',
+      options: ['narrow', 'wide'],
+      default: 'narrow',
+    },
+  },
+}
+```
+
+The `areas` array tells the content-collector which layout section files to expect. The `params` work like section type params — defaults are merged with values from `page.yml`.
+
+```yaml
+# page.yml — setting layout params
+layout:
+  name: DocsLayout
+  params:
+    sidebarWidth: wide
+```
+
+The Layout component receives `params` as a prop:
+
+```jsx
+function DocsLayout({ body, header, footer, left, right, params }) {
+  const sidebarClass = params.sidebarWidth === 'wide' ? 'w-80' : 'w-64'
+  // ...
+}
+```
+
+### General Named Areas
+
+Area names aren't restricted to `header`, `footer`, `left`, `right`. A layout can declare any areas:
+
+```js
+// src/layouts/DashboardLayout/meta.js
+export default {
+  title: 'Dashboard',
+  areas: ['topbar', 'sidebar', 'statusbar'],
+}
+```
+
+The site provides content with matching filenames:
+
+```
+layout/dashboard/
+├── topbar.md
+├── sidebar.md
+└── statusbar.md
+```
+
+The Layout receives each area as a prop:
+
+```jsx
+function DashboardLayout({ topbar, sidebar, body, statusbar }) {
+  return (
+    <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr_auto]">
+      <div className="col-span-2">{topbar}</div>
+      <aside className="w-64">{sidebar}</aside>
+      <main>{body}</main>
+      {statusbar && <div className="col-span-2">{statusbar}</div>}
+    </div>
+  )
+}
+```
+
+`body` is the only special name — it's the page's own sections, always passed to every layout. It doesn't appear in `areas`.
+
+### Named Layout Content
+
+When a site uses named layouts, each layout's area content lives in a subdirectory of `layout/`:
+
+```
+site/layout/
+├── header.md            ← default layout areas (bare files)
+├── footer.md
+├── left.md
+├── marketing/           ← named layout areas
+│   ├── header.md
+│   └── footer.md
+└── dashboard/           ← named layout areas
+    ├── topbar.md
+    ├── sidebar.md
+    └── statusbar.md
+```
+
+The directory name is the layout name, lowercased. If the layout name is `MarketingLayout`, the content directory is `layout/marketing/` (the framework matches case-insensitively and strips the `Layout` suffix).
 
 ---
 
@@ -365,14 +505,12 @@ Section components render `<div>`s. They don't add `<header>` or `<main>` wrappe
 
 - **Close mobile drawers on route change.** SPA navigation doesn't trigger a page reload, so drawers stay open unless you close them explicitly. The docs template watches `page.route` in a `useEffect`.
 
-- **Test with and without panels.** Some pages may not have `layout/left/` or `layout/right/` content. Your Layout should handle null gracefully — check before rendering, and consider adjusting the main content width when panels are absent.
-
-- **The `left`/`leftPanel` prop aliases.** The runtime passes both `left` and `leftPanel` (same for `right`/`rightPanel`) for backwards compatibility. Use whichever name you prefer, or accept both like the docs template does: `const leftContent = left || leftPanel`.
+- **Test with and without areas.** Some pages may not have `layout/left/` or `layout/right/` content. Your Layout should handle null gracefully — check before rendering, and consider adjusting the main content width when areas are absent.
 
 ---
 
 ## See Also
 
-- [Foundation Configuration](../reference/foundation-config.md) — CSS variables, Layout export, complete reference
-- [Layout Panels](../reference/special-sections.md) — How `layout/header/`, `layout/footer/`, `layout/left/`, `layout/right/` folders work
+- [Foundation Configuration](../reference/foundation-config.md) — CSS variables, layout defaults, complete reference
+- [Layout Areas](../reference/layout-areas.md) — How layout area folders work
 - [CCA Component Patterns](./component-patterns.md) — Section type organization and common patterns

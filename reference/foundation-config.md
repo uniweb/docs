@@ -1,6 +1,6 @@
 # Foundation Configuration
 
-The `foundation.js` file defines customizable CSS variables and optional custom layouts for your foundation.
+The `foundation.js` file defines customizable CSS variables and configuration for your foundation. Layout components live in `src/layouts/` and are auto-discovered.
 
 ## Overview
 
@@ -9,8 +9,10 @@ Foundations can expose configuration points that sites customize in their `theme
 ```
 foundation/
 ├── src/
-│   ├── foundation.js      # Variables and optional Layout
-│   ├── components/        # Your components
+│   ├── foundation.js      # Variables, defaultLayout, props
+│   ├── sections/          # Section types
+│   ├── components/        # Internal components
+│   ├── layouts/           # Layout components (auto-discovered)
 │   └── styles.css         # Global styles
 ├── package.json
 └── vite.config.js
@@ -125,7 +127,7 @@ The build merges site overrides with foundation defaults, generating CSS:
 
 ## Custom Layout
 
-Foundations can provide a custom Layout component that controls page structure.
+Foundations can provide custom Layout components that control page structure. Layouts live in `src/layouts/` and are auto-discovered.
 
 ### Default Behavior
 
@@ -138,25 +140,33 @@ function Layout({ body }) {
 }
 ```
 
-### Custom Layout
+### Creating a Layout
 
-Export a Layout component from `foundation.js`:
+Place layout components in `src/layouts/`:
+
+```
+foundation/src/layouts/
+├── DocsLayout/
+│   ├── index.jsx
+│   └── meta.js        # Optional: declares areas, params
+└── MarketingLayout.jsx # Bare file works too
+```
+
+Set the default in `foundation.js`:
 
 ```js
 // foundation/src/foundation.js
-export { default as Layout } from './Layout.jsx'
-
-export const vars = {
-  // ...
+export default {
+  defaultLayout: 'DocsLayout',
 }
 ```
 
 ```jsx
-// foundation/src/Layout.jsx
-export default function Layout({ header, footer, left, right, body }) {
+// foundation/src/layouts/DocsLayout/index.jsx
+export default function DocsLayout({ header, footer, left, right, body }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {header}
+      {header && <header>{header}</header>}
 
       <div className="flex-1 flex">
         {left && (
@@ -176,7 +186,7 @@ export default function Layout({ header, footer, left, right, body }) {
         )}
       </div>
 
-      {footer}
+      {footer && <footer>{footer}</footer>}
     </div>
   )
 }
@@ -186,85 +196,67 @@ export default function Layout({ header, footer, left, right, body }) {
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `header` | ReactNode | Rendered header layout panel (or null) |
-| `footer` | ReactNode | Rendered footer layout panel (or null) |
-| `left` | ReactNode | Rendered left layout panel (or null) |
-| `right` | ReactNode | Rendered right layout panel (or null) |
+| `header` | ReactNode | Rendered header area (or null) |
+| `footer` | ReactNode | Rendered footer area (or null) |
+| `left` | ReactNode | Rendered left area (or null) |
+| `right` | ReactNode | Rendered right area (or null) |
 | `body` | ReactNode | Page content sections |
+| `params` | object | Layout parameters (merged with meta.js defaults) |
 | `page` | Page | Current page instance |
 | `website` | Website | Website instance |
 
-### Respecting Page Layout Options
+Area names aren't fixed — foundations can declare any areas in `meta.js`. The props above are the conventional names. See [Custom Layouts](../development/custom-layouts.md#general-named-areas) for details.
 
-Check page layout flags before rendering special sections:
+### Layout meta.js
 
-```jsx
-export default function Layout({ header, footer, left, right, body, page }) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      {page.hasHeader() && header}
+Layouts can optionally declare which areas they use and what parameters they accept:
 
-      <div className="flex-1 flex">
-        {page.hasLeftPanel() && left && (
-          <aside className="w-64">{left}</aside>
-        )}
-
-        <main className="flex-1">{body}</main>
-
-        {page.hasRightPanel() && right && (
-          <aside className="w-64">{right}</aside>
-        )}
-      </div>
-
-      {page.hasFooter() && footer}
-    </div>
-  )
+```js
+// foundation/src/layouts/DocsLayout/meta.js
+export default {
+  title: 'Documentation',
+  description: 'Three-column layout with sidebar navigation',
+  areas: ['header', 'footer', 'left', 'right'],
+  params: {
+    sidebarWidth: {
+      type: 'select',
+      options: ['narrow', 'wide'],
+      default: 'narrow',
+    },
+  },
 }
 ```
 
-### Responsive Layout
+### Per-Page Layout Selection
 
-Handle mobile layouts:
+Pages select a layout and configure it in `page.yml`:
+
+```yaml
+layout: MarketingLayout
+
+# Or with options:
+layout:
+  name: MarketingLayout
+  hide: [left, right]
+  params:
+    sidebarWidth: wide
+```
+
+The `hide` array suppresses specific areas on that page. Hidden areas are passed as null to the Layout component — check props directly:
 
 ```jsx
-import { useState } from 'react'
-
-export default function Layout({ header, footer, left, body, page }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
+export default function DocsLayout({ header, footer, left, right, body }) {
   return (
-    <div className="min-h-screen">
-      {page.hasHeader() && (
-        <div className="sticky top-0 z-50">
-          {header}
-          {left && (
-            <button
-              className="md:hidden p-2"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              ☰
-            </button>
-          )}
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col">
+      {header && <header>{header}</header>}
 
-      <div className="flex">
-        {page.hasLeftPanel() && left && (
-          <aside className={`
-            fixed md:sticky top-[var(--header-height)] h-screen w-64
-            transform transition-transform
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          `}>
-            {left}
-          </aside>
-        )}
-
-        <main className="flex-1 p-4">
-          {body}
-        </main>
+      <div className="flex-1 flex">
+        {left && <aside className="w-64">{left}</aside>}
+        <main className="flex-1">{body}</main>
+        {right && <aside className="w-64">{right}</aside>}
       </div>
 
-      {page.hasFooter() && footer}
+      {footer && <footer>{footer}</footer>}
     </div>
   )
 }
@@ -366,27 +358,26 @@ export const vars = {
 }
 
 /**
- * Custom layout component
+ * Default layout — auto-discovered from src/layouts/
  */
-export { default as Layout } from './Layout.jsx'
+export default {
+  defaultLayout: 'DocsLayout',
+}
 ```
 
 ```jsx
-// foundation/src/Layout.jsx
-export default function Layout({ header, footer, left, right, body, page }) {
-  const hasLeft = page.hasLeftPanel() && left
-  const hasRight = page.hasRightPanel() && right
-
+// foundation/src/layouts/DocsLayout/index.jsx
+export default function DocsLayout({ header, footer, left, right, body }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
-      {page.hasHeader() && (
+      {header && (
         <div className="sticky top-0 z-50 h-[var(--header-height)]">
           {header}
         </div>
       )}
 
       <div className="flex-1 flex max-w-[var(--max-content-width)] mx-auto w-full">
-        {hasLeft && (
+        {left && (
           <aside className="w-[var(--sidebar-width)] shrink-0 border-r hidden lg:block">
             <div className="sticky top-[var(--header-height)] overflow-y-auto max-h-[calc(100vh-var(--header-height))]">
               {left}
@@ -398,7 +389,7 @@ export default function Layout({ header, footer, left, right, body, page }) {
           {body}
         </main>
 
-        {hasRight && (
+        {right && (
           <aside className="w-[var(--sidebar-width)] shrink-0 border-l hidden xl:block">
             <div className="sticky top-[var(--header-height)] overflow-y-auto max-h-[calc(100vh-var(--header-height))]">
               {right}
@@ -407,7 +398,7 @@ export default function Layout({ header, footer, left, right, body, page }) {
         )}
       </div>
 
-      {page.hasFooter() && footer}
+      {footer && <footer>{footer}</footer>}
     </div>
   )
 }
@@ -634,6 +625,6 @@ Once your foundation includes an icon library, content authors can use named ico
 ## See Also
 
 - [Site Theming](./site-theming.md) — Site-level theme customization
-- [Layout Panels](./special-sections.md) — Header, footer, left, right panels
+- [Layout Areas](./layout-areas.md) — Header, footer, and sidebar areas
 - [Component Metadata](./component-metadata.md) — Component meta.js schema
 - [Kit Reference](./kit-reference.md) — Accessing theme data in components
