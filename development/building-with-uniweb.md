@@ -281,3 +281,4 @@ When one section type needs multiple layouts (a homepage hero vs. a pricing hero
 - **[Converting Existing Designs](./converting-existing-designs.md)** — Bringing existing React code into a foundation
 - **[Component Patterns](./component-patterns.md)** — Dispatcher, Building Blocks, and other design patterns
 - **[Thinking in Contexts](./thinking-in-contexts.md)** — Semantic theming and how components adapt to any brand
+- **[Project Structures](./project-structures.md)** — Workspace layouts for multi-site, extension, and co-located projects
