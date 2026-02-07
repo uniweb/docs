@@ -39,7 +39,7 @@ uniweb create [name] [options]
 
 ### Default Behavior
 
-With no `--template`, the CLI creates a workspace with a foundation, a site, and starter content — a working project you can run immediately with `pnpm dev`.
+With no `--template`, the CLI prompts you to choose from all available templates. Use `--template starter` for non-interactive use (CI, scripts).
 
 ### Templates
 
@@ -47,7 +47,7 @@ With no `--template`, the CLI creates a workspace with a foundation, a site, and
 
 | Template | Description |
 |----------|-------------|
-| *(none)* | Foundation + site + starter content (default) |
+| `starter` | Foundation + site + starter content (default) |
 | `blank` | Empty workspace — grow incrementally with `uniweb add` |
 
 **Official templates:**
@@ -74,11 +74,14 @@ With no `--template`, the CLI creates a workspace with a foundation, a site, and
 ### Examples
 
 ```bash
-# Interactive (prompts for name)
+# Interactive (prompts for name and template)
 uniweb create
 
-# Quick start with defaults
+# Interactive (prompts for template)
 uniweb create my-site
+
+# Quick start with starter (non-interactive)
+uniweb create my-site --template starter
 
 # Use official marketing template
 uniweb create my-site --template marketing
@@ -101,7 +104,7 @@ uniweb create my-site --template ./my-template
 Official templates are fetched from GitHub Releases. If download fails:
 
 1. **Check network access** — Corporate networks may block GitHub API
-2. **Use the default** — Run `uniweb create my-site` (no `--template`) to use the built-in starter
+2. **Use the starter** — Run `uniweb create my-site --template starter` to use the built-in starter
 3. **Check rate limits** — GitHub API has rate limits for unauthenticated requests
 
 ---
