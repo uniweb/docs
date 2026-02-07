@@ -699,10 +699,10 @@ This lets `sticky` work naturally — the `<header>` itself becomes the sticky e
 
 ### Custom Layouts
 
-The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, the foundation provides a custom Layout via `src/exports.js`:
+The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, the foundation provides a custom Layout via `src/foundation.js`:
 
 ```jsx
-// foundation/src/exports.js
+// foundation/src/foundation.js
 import { SidebarLayout } from '@uniweb/kit'
 
 export default {
