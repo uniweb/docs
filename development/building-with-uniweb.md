@@ -96,7 +96,7 @@ Uniweb calls this pattern **Component Content Architecture** (CCA) — component
 
 Adding a component means dropping a file in `sections/`. Adding a page means creating a folder in `pages/`. No configuration files to update, no imports to add.
 
-The build also scans `src/components/` for backward compatibility (components there need a `meta.js` to be addressable), but `sections/` is the standard — the folder name matches what content authors compose.
+The build scans `src/sections/` for section types. If you need additional search paths, configure them via the `sections` option in `defineFoundationConfig()` — those extra paths require `meta.js` for addressability.
 
 ---
 

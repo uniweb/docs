@@ -10,7 +10,7 @@ A `meta.js` file declares a section type's content interface:
 - What parameters content authors can configure
 - What presets are available for quick setup
 
-**In `src/sections/`**, `meta.js` is optional at the root level. A bare file (`Hero.jsx`) or folder (`Hero/Hero.jsx`) is automatically an addressable section type with an implicit empty content interface. Add `meta.js` when you need params, content expectations, or presets. Deeper nesting within `src/sections/` and other locations (like `src/components/`) require `meta.js` for a component to be addressable.
+**In `src/sections/`**, `meta.js` is optional at the root level. A bare file (`Hero.jsx`) or folder (`Hero/Hero.jsx`) is automatically an addressable section type with an implicit empty content interface. Add `meta.js` when you need params, content expectations, or presets. Deeper nesting within `src/sections/` requires `meta.js` for a component to be addressable.
 
 Components without `meta.js` (outside of `src/sections/` root) are ordinary React components — not selectable by content authors, but the foundation's actual rendering workhorses.
 
