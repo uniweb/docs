@@ -306,54 +306,92 @@ These are starting points. The patterns compose — a co-located project can hav
 
 ## Growing a Project
 
-Projects evolve. A project that starts with the single layout doesn't need to be restructured as it grows — the wiring adjustments are small and mechanical.
+Projects evolve. The `uniweb add` command handles scaffolding, workspace globs, and root scripts — you don't wire things manually.
 
-### Adding a second site
+> **Running the CLI:** After `pnpm create uniweb`, you need to install dependencies before `pnpm uniweb` works. For a blank workspace where you want to add packages *before* installing, use `npx uniweb add` instead. Once you've run `pnpm install`, `pnpm uniweb` works for all subsequent commands.
 
-Start with a single layout and add a second site that shares the same foundation:
+### Starting from blank
+
+When you know you need a non-default layout — co-located projects, multiple foundations, or a segregated structure — start with a blank workspace and build it up:
+
+```bash
+pnpm create uniweb my-workspace --template blank
+cd my-workspace
+
+# Add packages (npx because we haven't installed yet)
+npx uniweb add foundation
+npx uniweb add site
+
+# Now install and run
+pnpm install
+pnpm dev
+```
+
+This produces the same single layout as the starter template, but you control each step. The same flow works for any layout:
+
+```bash
+# Segregated: named foundations and sites
+npx uniweb add foundation marketing
+npx uniweb add foundation blog
+npx uniweb add site main --foundation marketing
+npx uniweb add site docs --foundation blog
+
+# Co-located: grouped by project
+npx uniweb add foundation --project marketing
+npx uniweb add site --project marketing
+npx uniweb add foundation --project docs
+npx uniweb add site --project docs
+```
+
+The CLI creates the directories, writes `package.json` and config files, updates `pnpm-workspace.yaml` globs, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages.
+
+### Adding to an existing workspace
+
+After `pnpm install`, the CLI is available as `pnpm uniweb`:
+
+```bash
+# Add a second site sharing the existing foundation
+pnpm uniweb add site blog
+pnpm install
+```
+
+This creates `sites/blog/`, adds the `sites/*` glob to `pnpm-workspace.yaml`, and wires the site to the existing foundation. The original site at `site/` stays where it is.
 
 ```
 my-project/
 ├── foundation/
-├── site/                         ← original site
+├── site/                         ← original
 ├── sites/
-│   └── blog/                     ← new site
-│       ├── package.json          ← "foundation": "file:../../foundation"
-│       └── site.yml              ← foundation: foundation
+│   └── blog/                     ← new, wired to foundation
 └── pnpm-workspace.yaml
 ```
 
-No workspace config changes — the default `sites/*` glob already matches. The `file:` path is two levels up because the blog site is nested under `sites/`. The original site stays where it is.
+Adding a named foundation works the same way — it goes into `foundations/{name}/`.
 
-### Single to co-located
+### Adding a co-located project
 
-When a project needs its own foundation and site as a self-contained unit, update the workspace globs:
+If you started with a single layout and now need independent projects:
 
-```yaml
-# pnpm-workspace.yaml — before
-packages:
-  - foundation
-  - site
-
-# pnpm-workspace.yaml — after
-packages:
-  - "*/foundation"
-  - "*/site"
+```bash
+pnpm uniweb add foundation --project docs
+pnpm uniweb add site --project docs
+pnpm install
 ```
 
-Then move the packages into a project directory. The `file:` path from site to foundation stays `file:../foundation` because the relative position doesn't change — they move together.
+This creates `docs/foundation/` and `docs/site/`, adds `*/foundation` and `*/site` globs. The foundation gets the package name `docs`, the site gets `docs-site` (see [Co-located Package Naming](../reference/cli-commands#co-located-package-naming)).
 
-### Adding an extension to any layout
+Your original `foundation/` and `site/` still work — they match their existing globs. You can keep the hybrid layout or move them into a project directory when you're ready.
 
-An extension is a foundation that's loaded by URL instead of `file:` dependency. Adding one to an existing project:
+### Adding an extension
 
-1. Create the extension directory with the same structure as a foundation
-2. Add it to `pnpm-workspace.yaml`
-3. Add its URL to `extensions:` in `site.yml`
-4. Add the dev-serving Vite plugin to the site's `vite.config.js`
-5. Update root build scripts to build the extension and copy its output
+```bash
+pnpm uniweb add extension effects --site site
+pnpm install
+```
 
-The extension doesn't affect any existing wiring — it's additive.
+This creates `extensions/effects/`, adds the `extensions/*` glob, and wires the extension URL into the specified site's `site.yml`. The extension builds like a foundation — run `pnpm uniweb build` from the workspace root to build everything in order.
+
+Extensions are always runtime-loaded (via URL, not `file:` dependency). In dev, a Vite plugin serves the extension. In production, the build copies the extension's output into the site's `dist/`. See [Extending Your Site](./extending-your-site.md) for the full setup.
 
 ---
 
