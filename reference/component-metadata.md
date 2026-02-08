@@ -47,6 +47,9 @@ When `meta.js` is present:
 | `purpose` | No | — |
 | `hidden` | No | `false` |
 | `background` | No | `false` |
+| `inset` | No | `false` |
+| `visuals` | No | — |
+| `children` | No | — |
 | `data` | No | — |
 | `content` | No | — |
 | `params` | No | — |
@@ -165,6 +168,7 @@ function Hero({ content, params, block, website }) {
 | `category` | string | Grouping: `impact`, `showcase`, or `structure` |
 | `purpose` | string | Single verb: Introduce, Express, Explain, etc. |
 | `hidden` | boolean | If true, component exists but isn't selectable |
+| `inset` | boolean | If true, available for `@ComponentName` references in markdown |
 
 #### Categories
 
@@ -224,6 +228,7 @@ These names are a **fixed vocabulary**—they map to what the semantic parser ex
 | `links` | `[text](url)` | Markdown links (become buttons/links) |
 | `lists` | `- item` | Bullet or numbered lists |
 | `items` | Subsequent headings | Content groups within the markdown |
+| `insets` | `@Component` refs | Inline component references |
 | `subsections` | Child files | Nested section files (for composition) |
 
 Use these exact names. The meta.js describes which of these your component uses—you're not inventing new names, you're declaring which parsed elements you consume.
@@ -593,9 +598,77 @@ field: { type: 'array', of: { name: 'string' } }
 
 ---
 
-## Composition Components
+## Insets
 
-Some components arrange other components (like Grid). They accept child sections:
+The `inset` flag declares that a component is available for inline `@ComponentName` references in markdown. Content authors can place it within another section's content:
+
+```markdown
+![Architecture diagram](@NetworkDiagram){variant=compact}
+```
+
+```javascript
+// sections/insets/NetworkDiagram/meta.js
+export default {
+  title: 'Network Diagram',
+  category: 'visualization',
+  inset: true,
+  hidden: true,              // not in the main section palette
+  params: {
+    variant: {
+      type: 'select',
+      options: ['full', 'compact'],
+      default: 'full',
+    },
+  },
+}
+```
+
+A component can be both a standalone section and an inset:
+
+```javascript
+// sections/Testimonial/meta.js
+export default {
+  category: 'showcase',
+  inset: true,               // also available for @ references
+}
+```
+
+Inset components receive `content.title` (from the `[description]` text) and `params` (from `{key=value}` attributes). At runtime, the parent section accesses insets via `block.insets` (separate from `block.childBlocks`).
+
+---
+
+## Visual Expectations
+
+The `visuals` field declares what visual content a section type expects. This is editor metadata — it helps the visual editor present the right insertion UI. The runtime stays permissive.
+
+| Form | Meaning | Example |
+|------|---------|---------|
+| Number | Count, any type (image/video/inset) | `visuals: 1` |
+| `'many'` | Multiple, any type | `visuals: 'many'` |
+| String subtype | One of a specific type | `visuals: 'image'` |
+| Array | One of the listed types | `visuals: ['image', 'video']` |
+| Object | Full spec with count + types | `visuals: { types: ['image'], count: 'many' }` |
+
+Subtypes: `'image'`, `'video'`, `'inset'`. Without a subtype, the editor offers all types including inset components.
+
+```javascript
+// SplitContent — one visual slot, anything goes
+export default { visuals: 1 }
+
+// Gallery — many images only
+export default { visuals: { types: ['image'], count: 'many' } }
+
+// VideoPlayer — one video
+export default { visuals: 'video' }
+```
+
+Section types with unqualified `visuals` (any type) use the `<Visual>` component from kit. Those narrowed to media subtypes use `<Media>` or `<Image>` directly.
+
+---
+
+## Children (Composition)
+
+The `children` field declares that a section type accepts file-based child sections. Like `visuals`, this is editor metadata — at runtime, `block.childBlocks` is always available regardless of whether `children` is declared.
 
 ```javascript
 // sections/Grid/meta.js
@@ -604,13 +677,9 @@ export default {
   description: 'Arrange components in a responsive layout',
   category: 'structure',
   purpose: 'Arrange',
-
-  content: {
-    title: 'Section title',
-    subsections: {
-      label: 'Grid items',
-      hint: 'Each child section becomes a grid cell. Use any component type.',
-    },
+  children: {
+    label: 'Grid items',
+    hint: 'Each child section becomes a grid cell. Use any component type.',
   },
 
   params: {

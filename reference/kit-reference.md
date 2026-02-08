@@ -465,7 +465,8 @@ function Hero({ content, params, block }) {
 | `type` | string | Component name |
 | `page` | Page | Parent page |
 | `website` | Website | Parent website |
-| `childBlocks` | array | Nested blocks |
+| `childBlocks` | array | Nested blocks (file-based children) |
+| `insets` | array | Inline `@Component` references (separate from childBlocks) |
 | `data` | object | Fetched/cascaded data |
 | `dataLoading` | boolean | Runtime data fetch in progress |
 | `hasBackground` | boolean | Engine renders a background behind this section |
@@ -478,6 +479,7 @@ function Hero({ content, params, block }) {
 |--------|---------|-------------|
 | `hasChildBlocks()` | boolean | Has nested sections? |
 | `getChildBlockRenderer()` | component | Get ChildBlocks renderer |
+| `getInset(refId)` | Block\|null | Find an inset by its refId |
 
 ---
 
@@ -523,6 +525,7 @@ content = {
   imgs: [],
   icons: [],
   videos: [],
+  insets: [],        // Inline @Component references
 
   // Structure
   items: [],         // Child content groups
@@ -581,6 +584,38 @@ function EventGrid({ content, block }) {
 | `className` | string | `''` | Additional CSS classes |
 
 Uses `animate-pulse` and the `--border` CSS variable for styling. Includes `role="status"` and `aria-label="Loading"` for accessibility.
+
+### Visual
+
+Renders the first visual element from content, checking insets first, then video, then image. From `@uniweb/kit/styled`.
+
+```jsx
+import { Visual } from '@uniweb/kit/styled'
+
+function SplitContent({ content, block, params }) {
+  return (
+    <div className="flex gap-12">
+      <div className="flex-1">
+        <h2 className="text-heading">{content.title}</h2>
+      </div>
+      <Visual content={content} block={block} className="flex-1 rounded-lg" />
+    </div>
+  )
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `content` | object | — | Parsed content from prepare-props |
+| `block` | Block | — | Block instance (provides `block.insets`) |
+| `className` | string | — | CSS classes for the visual container |
+| `fallback` | ReactNode | `null` | Fallback when no visual is found |
+
+**Priority order:** inset (`block.insets[0]`) > video (`content.videos[0]`) > image (`content.imgs[0]`).
+
+Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
 
 ---
 

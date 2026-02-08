@@ -69,6 +69,7 @@ All content fields are available at the top level:
 | `imgs`       | `![alt](url)`          | Array of image objects                     |
 | `icons`      | `![](icon:url)`        | Array of icon objects                      |
 | `videos`     | `![](url){role=video}` | Array of video objects                     |
+| `insets`     | `![](@Component)`      | Inline component references                |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
 | `data`       | Tagged code blocks     | Structured data (see below)                |
@@ -339,6 +340,31 @@ function Image({ src, alt, href, target }) {
 }
 ```
 
+## Insets (Inline Component References)
+
+Use image syntax with an `@` prefix to place a foundation component inline within content:
+
+```markdown
+![description](@ComponentName){param=value}
+```
+
+The parts carry distinct information:
+- `[description]` — text passed to the component as `block.content.title`
+- `(@Name)` — foundation component to render (must have `inset: true` in meta.js)
+- `{params}` — configuration attributes passed as component params
+
+```markdown
+![Architecture diagram](@NetworkDiagram){variant=compact}
+![Cache metrics](@PerformanceChart){period=30d}
+![](@GradientBlob){position=top-right}
+```
+
+Insets appear in `content.insets[]` as `{ refId }` entries (parallel to `content.imgs[]`). They also appear in `content.sequence[]` as `{ type: "inset", refId }` entries for positional rendering.
+
+At runtime, inset Block instances are available via `block.insets` (separate from `block.childBlocks`). Kit's `Render` component handles `inset_placeholder` nodes in the content flow automatically, rendering the corresponding component at the author's chosen position.
+
+Components that need a visual slot (image, video, or inset) can use `<Visual>` from `@uniweb/kit/styled` — it checks insets first, then video, then image.
+
 ## Inline Text Styling
 
 Style inline text with semantic classes using bracketed spans—Pandoc-style syntax that works in both markdown files and the visual editor.
@@ -586,6 +612,9 @@ sequence.forEach((element) => {
       return (
         <CodeBlock language={element.attrs.language}>{element.text}</CodeBlock>
       )
+    case 'inset':
+      // Rendered automatically by kit's Render component
+      return <InsetRenderer refId={element.refId} block={block} />
     // ... other types
   }
 })
@@ -810,13 +839,14 @@ paragraphs.forEach((p) => console.log(p))
 items.map((item) => <Card {...item} />)
 ```
 
-## Nesting: Items, Subsections, and Child Pages
+## Nesting: Items, Insets, Subsections, and Child Pages
 
-There are three ways to create nested content, each for a different purpose:
+There are four ways to create nested content, each for a different purpose:
 
 | Approach        | What it is                                     | When to use                                                 |
 | --------------- | ---------------------------------------------- | ----------------------------------------------------------- |
 | **Items**       | Headings in one markdown file                  | Repeating content within a single section (cards, features) |
+| **Insets**      | `@Component` references in markdown            | Illustrations, charts, widgets placed inline in content     |
 | **Subsections** | Separate section files in the same page folder | Complex sections needing their own component type           |
 | **Child pages** | Subfolders in `pages/`                         | Separate pages with their own routes                        |
 

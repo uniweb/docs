@@ -751,6 +751,102 @@ Panel content comes from the layout folders — `layout/left/` and `layout/right
 
 ---
 
+## Inset Components
+
+Some components exist to be placed *inside* other sections — illustrations, data-driven charts, interactive widgets. These are **insets**: foundation components that content authors reference inline via `@` syntax.
+
+### Creating inset components
+
+An inset is a regular section type with `inset: true` in meta.js. For components that only make sense inline (not as standalone page sections), also add `hidden: true`:
+
+```js
+// sections/insets/NetworkDiagram/meta.js
+export default {
+  inset: true,
+  hidden: true,
+  params: {
+    variant: {
+      type: 'select',
+      options: ['full', 'compact'],
+      default: 'full',
+    },
+  },
+}
+```
+
+```jsx
+// sections/insets/NetworkDiagram/NetworkDiagram.jsx
+export default function NetworkDiagram({ content, params }) {
+  return (
+    <figure>
+      <svg className={params.variant === 'compact' ? 'h-48' : 'h-80'}>
+        {/* ... diagram rendering ... */}
+      </svg>
+      {content.title && (
+        <figcaption className="text-subtle text-sm mt-2">{content.title}</figcaption>
+      )}
+    </figure>
+  )
+}
+```
+
+The `[description]` text from the markdown becomes `content.title`. Components decide how to use it — as a caption, an accessible label, or not at all.
+
+### Using insets in section types
+
+**Slot-based** — a section with one visual position (SplitContent, Showcase):
+
+```jsx
+import { Visual } from '@uniweb/kit/styled'
+
+function SplitContent({ content, block, params }) {
+  return (
+    <div className="flex gap-12">
+      <div className="flex-1">
+        <h2 className="text-heading">{content.title}</h2>
+        {content.paragraphs.map((p, i) => <p key={i} className="text-body">{p}</p>)}
+      </div>
+      <Visual content={content} block={block} className="flex-1" />
+    </div>
+  )
+}
+```
+
+`<Visual>` renders the first available visual: inset > video > image. The content author can place any of them — the section type handles all three identically.
+
+**Sequential** — a section that renders content in document order (DocPage, Article):
+
+```jsx
+import { Render } from '@uniweb/kit/styled'
+
+function DocPage({ content, block }) {
+  return (
+    <article className="prose">
+      <h1 className="text-heading">{content.title}</h1>
+      <Render content={content.sequence} block={block} />
+    </article>
+  )
+}
+```
+
+Kit's `Render` component handles `inset_placeholder` nodes in the content flow automatically — insets render at the exact position the author placed them.
+
+### Dual-purpose components
+
+A component can serve as both a standalone section and an inset:
+
+```js
+// sections/Testimonial/meta.js
+export default {
+  category: 'showcase',
+  inset: true,        // also available for @ references
+}
+```
+
+As a page section: `type: Testimonial` in frontmatter. As an inset: `![Customer quote](@Testimonial){style=compact}` within another section's content.
+
+---
+
 ## What's Next
 
 These are the patterns we've found so far by building foundations with CCA. More will emerge — especially around:
