@@ -156,20 +156,49 @@ Three contexts are available by default:
 
 ### Semantic Tokens
 
-Each context defines CSS variables that components use instead of hardcoded colors:
+Each context defines CSS variables that components use instead of hardcoded colors. Components using these tokens adapt automatically when a content author changes the section's `theme:` in frontmatter — no conditional logic needed.
+
+**Text:**
 
 | Token | Purpose | Tailwind Class |
 |-------|---------|---------------|
 | `--heading` | Heading text | `text-heading` |
 | `--body` | Body text | `text-body` |
-| `--subtle` | Secondary text | `text-subtle` |
-| `--section` | Section background | `bg-section` |
-| `--card` | Card backgrounds | `bg-card` |
-| `--border` | Primary borders | `border-border` |
-| `--link` | Link text | `text-link` |
-| `--primary` | Primary button | `bg-primary` |
+| `--subtle` | Secondary/hint text | `text-subtle` |
 
-Components using these tokens adapt automatically when a content author changes the section's `theme:` in frontmatter. No conditional logic needed in the component — the CSS cascade handles it.
+**Surfaces:**
+
+| Token | Purpose | Tailwind Class |
+|-------|---------|---------------|
+| `--section` | Section background | `bg-section` |
+| `--card` | Card/well background | `bg-card` |
+| `--muted` | Hover/zebra background | `bg-muted` |
+
+**Borders:**
+
+| Token | Purpose | Tailwind Class |
+|-------|---------|---------------|
+| `--border` | Primary borders | `border-border` |
+| `--border` + opacity | Subtle borders | `border-border/50` |
+| `--ring` | Focus rings | `ring-ring` |
+
+**Links:**
+
+| Token | Purpose | Tailwind Class |
+|-------|---------|---------------|
+| `--link` | Link text | `text-link` |
+| `--link-hover` | Link hover | `hover:text-link-hover` |
+
+**Buttons:**
+
+| Token | Purpose | Tailwind Class |
+|-------|---------|---------------|
+| `--primary` | Primary button background | `bg-primary` |
+| `--primary-foreground` | Primary button text | `text-primary-foreground` |
+| `--primary-hover` | Primary button hover | `hover:bg-primary-hover` |
+| `--secondary` | Secondary button background | `bg-secondary` |
+| `--secondary-foreground` | Secondary button text | `text-secondary-foreground` |
+| `--secondary-hover` | Secondary button hover | `hover:bg-secondary-hover` |
 
 ### Customizing Contexts
 
@@ -186,6 +215,24 @@ contexts:
     section: var(--primary-900)    # Use primary color instead of neutral
     link: var(--accent-300)        # Use accent for links in dark sections
 ```
+
+### Context Value Mappings
+
+The following table shows how each semantic token resolves in each context. These defaults derive from the neutral and primary palettes set in `theme.yml`:
+
+| Token | `context-light` | `context-medium` | `context-dark` |
+|-------|-----------------|-------------------|----------------|
+| `--section` | neutral-50 | neutral-100 | neutral-900 |
+| `--card` | neutral-100 | neutral-200 | neutral-800 |
+| `--body` | neutral-950 | neutral-950 | neutral-50 |
+| `--subtle` | neutral-600 | neutral-700 | neutral-300 |
+| `--heading` | neutral-900 | neutral-900 | white |
+| `--link` | primary-600 | primary-600 | primary-400 |
+| `--border` | neutral-200 | neutral-300 | neutral-700 |
+| `--primary` | primary-600 | primary-600 | primary-500 |
+| `--primary-foreground` | white | white | white |
+
+Sites can override any of these mappings under the `contexts:` key (see above).
 
 ### Per-Section Token Overrides
 
@@ -437,6 +484,109 @@ vars:
   max-content-width: 76rem
 ```
 
+## Section Wrapper
+
+The runtime wraps each component in a `<section>` element with context classes. Components don't render their own `<section>` — they render the inner content:
+
+```html
+<!-- Runtime output -->
+<section class="context-dark py-16 md:py-24" id="section-cta">
+  <!-- Your component renders here -->
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="text-heading">...</h2>
+  </div>
+</section>
+```
+
+Section-level styles — vertical padding, borders — go on the wrapper via `Component.className`. The component's JSX only needs a content-constraint div:
+
+```jsx
+function CTA({ content }) {
+  return (
+    <div className="max-w-6xl mx-auto px-6 text-center">
+      <h2 className="text-heading text-3xl font-bold">{content.title}</h2>
+      <p className="text-subtle mt-4">{content.paragraphs[0]}</p>
+    </div>
+  )
+}
+
+CTA.className = 'py-16 md:py-24 border-b border-border'
+
+export default CTA
+```
+
+You can also change the wrapper element with `Component.as`:
+
+```jsx
+Header.as = 'nav'      // <nav> instead of <section>
+```
+
+If your component also renders `<section>`, you get nested sections — semantically wrong and potentially competing for background/padding control.
+
+## Advanced Patterns
+
+Most components should use semantic tokens exclusively. Two patterns legitimately need to step outside the context system.
+
+### Floating overlays
+
+A Header doesn't live *inside* a context — it floats *across* them. When it's transparent over a dark hero, the text must be white. When the user scrolls and it gets a white background, the text must be dark. When a dropdown opens, the panel is always light.
+
+These are absolute visual requirements, not contextual ones:
+
+```jsx
+// Floating header — defines its own visual context
+const getHeaderStyles = () => {
+  if (isFloating && !scrolled && isDarkBackground) {
+    return 'bg-transparent text-white'
+  }
+  return 'bg-white shadow-sm text-gray-900'
+}
+
+// Dropdown — always its own light panel
+<div className="bg-white rounded-lg shadow-lg border border-gray-100">
+```
+
+Even in the Header, normal-state nav links can use semantic tokens:
+
+```jsx
+// Non-floating nav links — these DO live in a context
+return 'text-subtle hover:text-body'
+```
+
+The principle: use semantic tokens for elements that inherit from their surroundings. Use hardcoded colors for elements that *define* their surroundings.
+
+### Self-contexting components
+
+A component that renders its own background — like a Hero with a gradient variant — creates a dark visual context that the runtime doesn't know about. The solution is to set the context directly:
+
+```jsx
+const isGradient = variant === 'gradient' && !block.hasBackground
+
+return (
+  <div className={cn(
+    'relative py-20 px-6',
+    isGradient && 'bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950 context-dark'
+  )}>
+    <h1 className="text-heading">{title}</h1>
+    <p className="text-subtle">{description}</p>
+  </div>
+)
+```
+
+Adding `context-dark` on the component's own root element overrides the wrapper's context class via CSS proximity. This is justified but exceptional — most components should never set their own context. When the content author sets a background via frontmatter, `block.hasBackground` is true and the runtime handles it normally.
+
+## Developing with Semantic Tokens
+
+Components use tokens like `text-heading` and `bg-card`, and those tokens need a site to activate the theming pipeline:
+
+```
+site/theme.yml  →  build generates palette + context CSS  →  tokens resolve  →  components have colors
+```
+
+No site, no `theme.yml`, no colors. This is why even the simplest project starts with two packages — a site and a foundation. The site might be purely a testbed — throwaway content, a quick `theme.yml` with a single primary color. Its job during development is to give the build system something to generate CSS from.
+
+To verify your components truly adapt, change the primary color in `theme.yml` and rebuild. Everything branded — buttons, links, accents, badges — should shift without touching any component code. If something doesn't change, you've found a hardcoded color that should be a token.
+
 ## Best Practices
 
 1. **Start with primary**: Define at least a `primary` color — it's the foundation of your palette
@@ -451,5 +601,5 @@ vars:
 
 - [Site Configuration](./site-configuration.md) — Full site.yml reference
 - [Page Configuration](./page-configuration.md) — Section theme parameter
-- [Thinking in Contexts](../development/thinking-in-contexts.md) — Deep dive into semantic theming for component developers
+- [Thinking in Contexts](../development/thinking-in-contexts.md) — How section contexts and site schemes work together
 - [Component Metadata](./component-metadata.md) — Full meta.js schema

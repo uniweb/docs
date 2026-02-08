@@ -1,180 +1,84 @@
 # Thinking in Contexts
 
-When you build components for a Uniweb foundation, you'll notice something is missing: color decisions. There's no `bg-white` for light sections, no `text-white` for dark ones, no theme map that tries to cover every combination. And that's the point.
+Most frameworks give you a dark mode toggle. Flip it, and the entire page switches between light and dark. It works — until your page has more than one visual mood.
 
-This guide explains how CCA's semantic theming works, what it gives you, and the rare cases where you need to step outside it.
+A typical marketing page might have a clean white hero, a slightly tinted features section, a dramatic dark call-to-action over a photograph, and a light footer. That's four different visual environments on one page. A global toggle can't express this. So developers write conditional logic: `isDark ? 'text-white' : 'text-gray-900'`, repeated across every component, for every color, in every section that deviates from the norm.
 
-> This guide describes the **portable** approach to theming — where the site controls colors via `theme.yml` and components use semantic CSS tokens. Bundled foundations can hardcode Tailwind color classes directly. Semantic theming is less code either way, but it's a choice. See [Foundation Categories](./foundation-categories.md) for the trade-offs.
+Uniweb takes a different approach. Instead of one concept (dark mode), it has two independent concepts: **section context** and **site scheme**. Understanding how they work together is the key to Uniweb's theming system.
 
----
+## Section context: what's behind the content
 
-## The Old Way
+A section's context answers one question: **what's behind the content here?**
 
-Here's a pattern you've probably written before — or inherited from a template:
-
-```jsx
-const themes = {
-  light: { section: 'bg-white', title: 'text-gray-900', text: 'text-gray-600' },
-  dark: { section: 'bg-gray-900', title: 'text-white', text: 'text-gray-300' },
-  gray: { section: 'bg-gray-50', title: 'text-gray-900', text: 'text-gray-600' },
-}
-const t = themes[params.theme] || themes.light
-```
-
-Every component duplicates this. Every component makes the same color assumptions. And when you want to ship this foundation to a different organization — one with green branding instead of blue, or a warm color palette instead of a cool one — you're editing every component.
-
-This is the problem CCA solves.
-
----
-
-## How Contexts Work
-
-In CCA, sections have a **context** — `light`, `medium`, or `dark`. The content author sets it in frontmatter:
+The background might be a light neutral, a dark photograph with an overlay, a brand-colored gradient, or a video. The content author controls this visual environment through frontmatter — they don't need to touch component code:
 
 ```yaml
 ---
 type: Features
-theme: medium
+theme: dark
+background:
+  image: /images/night-skyline.jpg
+  overlay: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6))
 ---
 ```
 
-The runtime wraps your component in a `<section class="context-medium">`. Inside that wrapper, CSS variables resolve to appropriate values:
+When the runtime encounters this section, it does two things. First, it renders the background image and overlay behind the component. Second, it applies a context class — in this case, `context-dark` — which sets every semantic color token for legibility on a dark surface. Headings become light. Body text becomes light. Borders, links, card backgrounds — everything adjusts.
 
-| Token | context-light | context-medium | context-dark |
-|-------|---------------|----------------|--------------|
-| `--heading` | near-black | near-black | white |
-| `--body` | dark gray | dark gray | light gray |
-| `--subtle` | medium gray | medium gray | lighter gray |
-| `--section` | white | light gray | dark gray |
-| `--card` | off-white | slightly darker | slightly lighter |
-| `--border` | light line | slightly darker line | dark line |
-| `--link` | color-primary-600 | color-primary-600 | color-primary-400 |
+The component rendering inside this section doesn't know it's sitting on top of a photograph. It doesn't know the overlay exists. It uses `text-heading` and gets white. It uses `bg-card` and gets a dark translucent surface. Everything is legible, automatically.
 
-Your component never checks which context it's in. It uses semantic classes and they resolve automatically:
+This works because the runtime orchestrates backgrounds and contexts together. The content author declares the visual environment. The runtime renders it and applies the right context. The component uses semantic tokens and adapts without any conditional logic.
 
-```jsx
-export default function Features({ content, params }) {
-  const { title, items } = content
+A single page commonly uses multiple contexts. A marketing page might flow through:
 
-  return (
-    <div className="py-16 px-6">
-      <h2 className="text-3xl font-bold text-heading">{title}</h2>
-      <div className="grid md:grid-cols-3 gap-8">
-        {items.map((item, i) => (
-          <div key={i} className="p-6 bg-card border border-border/50 rounded-xl">
-            <h3 className="text-xl font-semibold text-heading">{item.title}</h3>
-            <p className="text-subtle">{item.paragraphs?.[0]}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-```
+- A light hero — clean and spacious
+- A medium features section — subtle contrast from the hero
+- A dark CTA — dramatic, high-contrast, maybe over a photo
+- A light footer
 
-That's the entire component. No theme map. No conditional logic. One set of classes that works everywhere.
+Each section independently resolves its own set of semantic tokens. Components don't change between them.
 
----
+## Site scheme: the global preference
 
-## Connecting Tokens to Tailwind
+A site's scheme answers a different question: **does this site prefer a light or dark overall appearance?**
 
-The semantic tokens are CSS variables generated by the build system. To use them as Tailwind classes, your foundation maps them in `styles.css` using `@theme inline`:
-
-```css
-@theme inline {
-  --color-heading: var(--heading);
-  --color-body: var(--body);
-  --color-subtle: var(--subtle);
-
-  --color-section: var(--section);
-  --color-card: var(--card);
-  --color-muted: var(--muted);
-
-  --color-border: var(--border);
-
-  --color-link: var(--link);
-  --color-link-hover: var(--link-hover);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-hover: var(--primary-hover);
-}
-```
-
-Now `text-heading` is a real Tailwind class. So are `bg-card`, `border-border`, `text-primary-foreground`, and all the rest. You get Tailwind's ergonomics — responsive prefixes, hover states, arbitrary values — backed by tokens that adapt to any context.
-
-The naming is yours to choose. These names (`section`, `card`, `heading`, `subtle`) are conventions, not requirements. What matters is that they map to semantic CSS variables, not to specific colors.
-
----
-
-## The Brand Palette
-
-Beyond semantic tokens, the build also generates color palettes from `theme.yml`. Four color roles are supported:
+This is the traditional light/dark mode — a global preference that affects the page as a whole. It might be set in the site's configuration, or it might follow the visitor's operating system preference:
 
 ```yaml
-colors:
-  primary: "#047857"      # Main brand color (buttons, links, accents)
-  secondary: "#78716c"    # Supporting color
-  accent: "#d97706"       # Highlight color (badges, callouts, special emphasis)
-  neutral: "#57534e"      # Drives all context tokens (bg, text, borders)
+# theme.yml
+scheme: system  # Follows OS preference
 ```
 
-Each color produces eleven shades: `--primary-50` through `--primary-950`, and the same for secondary, accent, and neutral. You map them to Tailwind in `styles.css`:
+When the scheme is dark, the defaults shift. Sections that don't declare an explicit context get dark tokens instead of light ones. The page background darkens. Browser controls and scrollbars adapt.
 
-```css
-@import "@uniweb/kit/theme-tokens.css";
-```
+## Two axes, not one
 
-This single import registers all palette variables (`--primary-50` through `--primary-950`, and the same for secondary, accent, neutral) as Tailwind theme colors.
+Context and scheme are independent. They compose freely:
 
-Use palette colors for intentional brand touches — icon containers, tag badges, active indicators — where you want a specific shade regardless of context:
+|                              | Light scheme | Dark scheme |
+|------------------------------|-------------|-------------|
+| **Section with `theme: light`** | Light tokens (typical) | Light tokens — a bright section on an otherwise dark site |
+| **Section with `theme: dark`**  | Dark tokens — a dramatic section on a light site | Dark tokens (typical) |
+| **Section with no `theme:`**    | Light tokens (default) | Dark tokens (default follows scheme) |
 
-```jsx
-{/* Brand accent — always primary, in any context */}
-<div className="bg-primary-100/50 text-primary-600 rounded-xl">
-  <Icon name={icon} />
-</div>
+A dark-scheme site can still have a bright white CTA section. A light-scheme site can have a dramatic dark hero. The content author controls per-section context; the site configuration controls the global default. Neither overrides the other.
 
-{/* Tags */}
-<span className="bg-primary-50 text-primary-700 rounded px-2 py-1">
-  {tag}
-</span>
+## What this means for content authors
 
-{/* Special callout — using accent color */}
-<span className="bg-accent-100 text-accent-700 rounded px-2 py-1">
-  New
-</span>
-```
+If you're writing content, contexts give you direct control over the visual character of each section — without writing code or asking a developer for help.
 
-The palettes adapt when the site changes its colors. A conservation site with green primary and amber accent, and a fintech site with blue primary and violet accent, both get correct, harmonious shades — without touching component code.
-
-**Primary vs accent:** Primary is your workhorse brand color — buttons, links, active states. Accent is for moments that need to stand out *from* the brand — callouts, highlights, "new" badges. Not every foundation needs to use accent, but the palette is there if you map it.
-
----
-
-## What the Site Controls
-
-The foundation declares *structure*. The site declares *identity*. This separation is what makes foundations portable.
-
-The site's `theme.yml` controls:
+Want a section with a dark, cinematic feel?
 
 ```yaml
-colors:
-  primary: "#047857"      # Brand color → generates full palette
-  secondary: "#78716c"    # Supporting color
-  accent: "#d97706"       # Highlight color
-  neutral: "#57534e"      # Drives all context tokens (bg, text, borders)
-
-fonts:
-  import:
-    - url: "https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap"
-  heading: "DM Serif Display, Georgia, serif"
-  body: "Inter, system-ui, sans-serif"
+---
+type: Hero
+theme: dark
+background:
+  image: /images/city-at-night.jpg
+  overlay: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6))
+---
 ```
 
-The `neutral` color is quietly powerful. It's the base for every context token — the grays in your backgrounds, text, and borders. A cool neutral (zinc) gives a tech feel. A warm neutral (stone) gives an organic feel. The foundation doesn't know or care which one the site chose.
-
-Content authors control *which context* each section uses, in frontmatter:
+Want a branded section with your primary color?
 
 ```yaml
 ---
@@ -185,235 +89,87 @@ background:
 ---
 ```
 
-This gives the section a green background with light text. The component just renders `text-heading` and `bg-primary` — it doesn't know the background is green, or that the text is white. It knows it's in a dark context, and the tokens handle the rest.
+Want a subtle tinted section to break up a long page?
 
+```yaml
 ---
-
-## You Always Need a Site
-
-If you're coming from other frameworks, you might expect to develop a component library in isolation — render components in a storybook, pass them props, see what they look like. In CCA, there's one extra requirement: your components use semantic tokens like `text-heading` and `bg-card`, and those tokens need a site to activate the theming pipeline.
-
-The chain looks like this:
-
-```
-site/theme.yml  →  build generates palette + context CSS  →  tokens resolve  →  your components have colors
-```
-
-No site, no `theme.yml`, no colors. Your `text-heading` class targets `var(--heading)`, which is set by `.context-light { --heading: var(--neutral-900) }`, which depends on `--neutral-900` existing, which comes from the palette generated from `theme.yml`'s `neutral` color. Remove any link in that chain and you're styling against undefined variables.
-
-This is why even the simplest Uniweb project starts with two packages — a site and a foundation:
-
-```
-my-project/
-├── site/               ← activates theming, holds test content
-│   ├── site.yml
-│   ├── theme.yml       ← this is what makes your tokens work
-│   └── pages/
-│       └── home/
-│           └── hero.md
-└── foundation/
-    └── src/
-        └── sections/
-            └── Hero/
-                └── Hero.jsx    ← no meta.js needed to start
-```
-
-The site might be purely a testbed — throwaway content, a quick `theme.yml` with a single primary color. That's fine. Its job during development is to give the build system something to generate CSS from. The Hero folder doesn't even need a `meta.js` yet — a folder at the root of `sections/` is a section type by default. Add `meta.js` when you need params or content expectations. Later, a real site with real content and real branding will use your foundation, and every semantic token will resolve to *that* site's colors instead.
-
-Think of it this way: you're not building components that *have* colors. You're building components that *receive* colors from whatever site adopts them. The development site is how you see that contract in action.
-
-If you want to verify that your components truly adapt, try changing the primary color in `theme.yml` and rebuilding. Everything branded — buttons, links, accents, tag badges — should shift to the new color without touching any component code. If something doesn't change, you've found a hardcoded color that should be a token.
-
+type: Features
+theme: light
+background:
+  color: var(--secondary-50)
 ---
-
-## The Runtime Wrapper
-
-One detail that's easy to miss: the runtime wraps your component in a `<section>` element with context classes. Your component doesn't render its own `<section>` — it renders the inner content:
-
-```html
-<!-- BlockRenderer output -->
-<section class="context-dark py-16 md:py-24" id="section-cta">
-  <!-- Your component renders here -->
-  <div class="max-w-6xl mx-auto px-6">
-    <h2 class="text-heading">...</h2>
-  </div>
-</section>
 ```
 
-Section-level styles — vertical padding, borders, background color — go on the wrapper via `Component.className`. The component's JSX only needs a content-constraint div:
+In each case, the component adapts. You choose the environment; the theming system handles legibility.
+
+## What this means for developers
+
+If you're building components, contexts mean you write less code, not more. You never manage colors directly. You never write conditional logic for light and dark variants. You use semantic tokens, and the context resolves them.
+
+Here's a features component:
 
 ```jsx
-function CTA({ content }) {
+export default function Features({ content }) {
+  const { title, items } = content
+
   return (
-    <div className="max-w-6xl mx-auto px-6 text-center">
-      <h2 className="text-heading text-3xl font-bold">{content.title}</h2>
-      <p className="text-subtle mt-4">{content.paragraphs[0]}</p>
+    <div className="py-16 px-6 max-w-6xl mx-auto">
+      <h2 className="text-3xl font-bold text-heading">{title}</h2>
+      <div className="grid md:grid-cols-3 gap-8 mt-10">
+        {items.map((item, i) => (
+          <div key={i} className="p-6 bg-card border border-border rounded-xl">
+            <h3 className="text-xl font-semibold text-heading">{item.title}</h3>
+            <p className="text-subtle mt-2">{item.paragraphs?.[0]}</p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
-
-CTA.className = 'py-16 md:py-24 border-b border-border'
-
-export default CTA
 ```
 
-You can also change the wrapper element with `Component.as`:
+There's no theme map. No `isDark` check. No color constants file. The content author writes `theme: dark` in frontmatter and every color in this component inverts. Change `primary` in `theme.yml` and links and buttons update site-wide. The component doesn't know and doesn't care.
 
-```jsx
-Header.as = 'nav'      // <nav> inside <header> — semantically correct
-```
+The semantic tokens you'll use most often:
 
-If your component also renders `<section>`, you get nested sections — semantically wrong and potentially competing for background/padding control.
+| Token | What it's for |
+|-------|--------------|
+| `text-heading` | Headings and high-emphasis text |
+| `text-body` | Body text and default content |
+| `text-subtle` | De-emphasized text — captions, timestamps, metadata |
+| `text-link` | Links and interactive text |
+| `bg-section` | Section background (usually handled by the runtime) |
+| `bg-card` | Cards, panels, elevated surfaces |
+| `bg-muted` | Hover states, zebra rows, subtle emphasis |
+| `border-border` | Dividers and card edges |
 
----
+These tokens resolve differently inside each context class, but your component uses them the same way everywhere.
 
-## When to Break the Rules
+## Why other frameworks can't do this
 
-Most components should use semantic tokens exclusively. But two patterns legitimately need hardcoded colors.
+Traditional frameworks offer a global dark-mode toggle because they don't have the pieces needed for per-section adaptation:
 
-### Floating overlays: the Header
+**A runtime that wraps every section.** Uniweb's runtime renders each section inside a wrapper with the appropriate context class and background layer. This isn't something the component does — it happens at a level above individual components.
 
-The Header doesn't live *inside* a context — it floats *across* them. When it's transparent over a dark hero, the text must be white. When the user scrolls and it gets a white background, the text must be dark. When a dropdown opens, the panel is always light regardless of what's behind it.
+**Content-author control via frontmatter.** Authors set `theme:` and `background:` per section without touching code. The visual environment is a content decision, not a development decision.
 
-These are absolute visual requirements, not contextual ones:
+**Engine-rendered backgrounds.** Image, video, gradient, color, and overlay rendering is handled once by the runtime. Components don't implement background logic — they receive a visual environment and adapt to it.
 
-```jsx
-// Floating header — hardcoded, because it defines its own visual context
-const getHeaderStyles = () => {
-  if (isFloating && !scrolled && isDarkBackground) {
-    return 'bg-transparent text-white'      // absolute: white text over dark hero
-  }
-  return 'bg-white shadow-sm text-gray-900' // absolute: white bar when scrolled
-}
+The elevation-based surface model from Material Design assumes one global mode with surfaces stacking within it: base surface, raised surface, overlay surface. Uniweb's context model is more flexible. It independently adapts every token — text, borders, links, buttons, surfaces — per section. A card component doesn't need a separate "raised surface" token; it uses `bg-card`, and the context class determines whether that's a light card or a dark card.
 
-// Dropdown — always its own light panel
-<div className="bg-white rounded-lg shadow-lg border border-gray-100">
-```
+This is why surfaces are named for what the container *is* — `section`, `card`, `muted` — rather than for an elevation level. The container's identity doesn't change between contexts. Only the colors do.
 
-But even in the Header, normal-state nav links can use semantic tokens:
+## The full picture
 
-```jsx
-// Non-floating nav links — these DO live in a context
-return 'text-subtle hover:text-body'
-```
+When a page renders, the chain works like this:
 
-The principle: use semantic tokens for elements that inherit from their surroundings. Use hardcoded colors for elements that *define* their surroundings.
+1. The site's theme defines colors, fonts, and a default scheme
+2. The build system generates semantic tokens for each context — light, medium, dark
+3. For each section, the content author's frontmatter declares the visual environment
+4. The runtime renders the background and applies the matching context class
+5. Every semantic token in that section resolves for legibility in that environment
+6. Components use tokens via Tailwind classes and adapt without any awareness of which context they're in
 
-### Self-contexting components: the Hero gradient
+The result is a system where visual variety is a content decision. A page can move through light, dark, and colored sections — each with its own background treatment — and every component remains legible without a single line of conditional color logic.
 
-The Hero has a "gradient" variant that renders its own background — a gradient built from palette colors. This gradient creates a dark visual context, so the text inside needs dark-context tokens. But the runtime doesn't know the Hero is going to render a dark gradient — it might have set `context-light` on the wrapper.
-
-The solution is for the Hero to set its own context:
-
-```jsx
-const isGradient = variant === 'gradient' && !block.hasBackground
-
-return (
-  <div className={cn(
-    'relative py-20 px-6',
-    isGradient && 'bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950 context-dark'
-  )}>
-    {/* These tokens now resolve for dark context */}
-    <h1 className="text-heading">{title}</h1>
-    <p className="text-subtle">{description}</p>
-  </div>
-)
-```
-
-Adding `context-dark` on the component's own root element overrides the wrapper's context class via CSS proximity. The inner `context-dark` is closer to the text elements, so its token values win.
-
-This is justified, but it's exceptional. Most components should never set their own context — that's the content author's job via `theme:` in frontmatter. The Hero does it because the gradient *is* visual context, and it would be wrong to force content authors to remember "if you set variant to gradient, also set theme to dark."
-
-When the content author *does* set a background (via the `background:` frontmatter), the Hero skips the gradient entirely — `block.hasBackground` is true, the engine's Background component handles the visual, and the `theme:` frontmatter controls the context as usual.
-
----
-
-## The Payoff
-
-After converting a foundation to semantic theming, the typical component goes from ~50 lines to ~30. But the line count isn't the point. The real gains:
-
-**You stop making color decisions.** The hardest part of the old approach wasn't writing the theme map — it was deciding that `text-gray-600` was the right muted color, and that `text-gray-300` was its dark equivalent, and keeping those decisions consistent across twelve components. With semantic tokens, you make that decision once (in the build system), and every component inherits it.
-
-**Foundations become portable.** The same foundation works for a conservation organization (warm greens), a law firm (navy and slate), and a startup (bright violet) — the site's `theme.yml` controls the identity, and every component adapts without modification.
-
-**New contexts work immediately.** If the build system adds a `context-accent` in the future, every semantic-token-using component supports it without changes. The components don't know what contexts exist — they just use tokens that resolve.
-
-**You don't build theme-switching logic.** Content authors set `theme: dark` on any section in frontmatter, and the entire visual context inverts. `background: { color: var(--primary-600) }` brands a section. These controls work without any conditional logic in your component — the tokens handle it.
-
----
-
-## Quick Reference
-
-### Semantic tokens
-
-These adapt automatically to the current context (light, medium, dark). Use these for everything that should respond to `theme:` in frontmatter.
-
-**Text:**
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Primary heading | `text-heading` | `--heading` |
-| Body text | `text-body` | `--body` |
-| Secondary/hint text | `text-subtle` | `--subtle` |
-
-**Surfaces:**
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Section background | `bg-section` | `--section` |
-| Card/well background | `bg-card` | `--card` |
-| Hover/zebra background | `bg-muted` | `--muted` |
-
-**Borders:**
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Primary border | `border-border` | `--border` |
-| Subtle border | `border-border/50` | `--border` + opacity |
-| Focus ring | `ring-ring` | `--ring` |
-
-**Links:**
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Link text | `text-link` | `--link` |
-| Link hover | `hover:text-link-hover` | `--link-hover` |
-
-**Buttons:**
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Primary button bg | `bg-primary` | `--primary` |
-| Primary button text | `text-primary-foreground` | `--primary-foreground` |
-| Primary button hover | `hover:bg-primary-hover` | `--primary-hover` |
-| Secondary button bg | `bg-secondary` | `--secondary` |
-| Secondary button text | `text-secondary-foreground` | `--secondary-foreground` |
-| Secondary button hover | `hover:bg-secondary-hover` | `--secondary-hover` |
-
-### Brand palette tokens
-
-These are fixed colors that don't change with context. Use them for intentional brand touches — icon containers, badges, active indicators.
-
-| Intent | Tailwind class | CSS variable |
-|--------|---------------|-------------|
-| Brand accent (any shade) | `text-primary-600` | `--primary-600` |
-| Brand badge | `bg-primary-100 text-primary-700` | palette shades |
-| Accent callout | `bg-accent-100 text-accent-700` | palette shades |
-
-Four palette roles are available: `primary`, `secondary`, `accent`, `neutral`. Each generates shades `50` through `950` (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950).
-
-### How context values change
-
-| Token | `context-light` | `context-medium` | `context-dark` |
-|-------|-----------------|-------------------|----------------|
-| `--section` | color-neutral-50 | color-neutral-100 | color-neutral-900 |
-| `--card` | color-neutral-100 | color-neutral-200 | color-neutral-800 |
-| `--body` | color-neutral-950 | color-neutral-950 | color-neutral-50 |
-| `--subtle` | color-neutral-600 | color-neutral-700 | color-neutral-300 |
-| `--heading` | color-neutral-900 | color-neutral-900 | white |
-| `--link` | color-primary-600 | color-primary-600 | color-primary-400 |
-| `--border` | color-neutral-200 | color-neutral-300 | color-neutral-700 |
-| `--primary` | color-primary-600 | color-primary-600 | color-primary-500 |
-| `--primary-foreground` | white | white | white |
-
-Sites can override any of these mappings in `theme.yml` under the `contexts:` key.
+The content author controls the mood. The theme controls the palette. The context system connects them. And the component just works.
