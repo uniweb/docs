@@ -143,7 +143,7 @@ Foundations must build before sites (prerender needs the built `foundation.js`).
 
 ### Co-located projects
 
-Each project is a self-contained directory with its own foundation and site. This is the pattern used in `packages/web/` for the Uniweb site itself.
+Each project is a self-contained directory with its own foundation and site. This is the pattern we used for all of our company sites.
 
 ```
 my-workspace/
