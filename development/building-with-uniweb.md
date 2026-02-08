@@ -8,7 +8,7 @@ This guide shows what a Uniweb project looks like and why almost everything in i
 
 ## The Two Packages
 
-A Uniweb project is a workspace with two packages:
+A Uniweb project is a workspace with two packages (or more, as it grows):
 
 ```
 my-project/

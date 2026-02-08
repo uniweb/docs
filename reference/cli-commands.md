@@ -173,6 +173,18 @@ The CLI chooses a sensible directory based on what exists. `--path` overrides th
 
 Extensions always go in `extensions/{name}/` and require a name.
 
+### Co-located Package Naming
+
+When using `--project`, the CLI assigns package names that avoid collisions in the pnpm workspace:
+
+| Command | Package name | Why |
+|---------|-------------|-----|
+| `add foundation --project io` | `io` | Uses the project name |
+| `add site --project io` | `io-site` | Appends `-site` to avoid collision with foundation |
+| `add site blog --project io` | `blog` | Explicit name used as-is (no collision) |
+
+pnpm requires unique package names across the workspace. The `-site` suffix convention matches how package names typically work in co-located layouts (e.g., `io` for the foundation, `io-site` for the site).
+
 ### The `--from` Flag
 
 The `--from` flag applies content from a template after scaffolding structure. Structural files (`package.json`, `vite.config.js`, `main.js`) come from the CLI; content (section types, pages, theme) comes from the template.
@@ -585,7 +597,7 @@ The CLI auto-detects context:
 | `site.yml` or `pages/` | Site |
 | `pnpm-workspace.yaml` | Workspace (builds all) |
 
-Workspace builds discover foundations in `foundation/` and `foundations/*/`, extensions in `extensions/*/`, and sites in `site/` and `sites/*/`.
+Workspace builds discover foundations, extensions, and sites by scanning the glob patterns in `pnpm-workspace.yaml`. Standard patterns (`foundation`, `foundations/*`, `*/foundation`, etc.) are all supported — the build checks each matched directory for foundation or site markers.
 
 ---
 

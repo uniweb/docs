@@ -1,8 +1,10 @@
 # Project Structures
 
-A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uniweb.md) introduces the two-package setup — foundation and site, side by side. That's the starting point for most projects. But as a project grows — a second site sharing the same foundation, an extension adding specialized section types, multiple brands under one repo — the workspace layout matters.
+A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uniweb.md) introduces the two-package setup — foundation and site, side by side. That's the starting point for most projects. But as a workspace grows — a second site sharing the same foundation, an extension adding specialized section types, multiple brands under one repo — the layout matters.
 
 This guide covers the workspace structures we've found work well, when to use each, and the concrete wiring that connects the pieces.
+
+> **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. The CLI's `--project` flag creates this structure.
 
 ---
 
@@ -88,7 +90,7 @@ packages:
 
 ### Segregated
 
-Foundations and sites in separate directories. The `multi` template creates this layout.
+Foundations and sites in separate directories. Create a `blank` workspace and use `uniweb add` with named packages to build this layout.
 
 ```
 my-project/
@@ -376,7 +378,7 @@ The path is relative to the site directory. `defineSiteConfig()` in the site's `
 ## See Also
 
 - **[Building with Uniweb](./building-with-uniweb.md)** — The two-package model and how CCA works
-- **[Templates](../getting-started/templates.md)** — Official templates including `single`, `multi`, and `extensions`
+- **[Templates](../getting-started/templates)** — Built-in and official templates
 - **[Extending Your Site](./extending-your-site.md)** — Vite plugins, `head.html`, and the full extensibility model
 - **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable foundations and when portability matters
 - **[Site Configuration](../reference/site-configuration.md)** — Full `site.yml` reference including `paths:`, `extensions:`, and `foundation:`

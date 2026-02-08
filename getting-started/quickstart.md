@@ -211,24 +211,27 @@ Upload the contents of `site/dist/`.
 
 | Want to... | Read |
 |------------|------|
-| Understand content structure | [Content Structure](./content-structure.md) |
-| Create custom components | [Component Metadata](./component-metadata.md) |
-| Configure your site | [Site Configuration](./site-configuration.md) |
-| Add multiple languages | [Internationalization](./internationalization.md) |
-| Load external data | [Data Fetching](./data-fetching.md) |
-| Generate pages from data | [Dynamic Routes](./dynamic-routes.md) |
+| Understand content structure | [Content Structure](../reference/content-structure) |
+| Create custom components | [Component Metadata](../reference/component-metadata) |
+| Configure your site | [Site Configuration](../reference/site-configuration) |
+| Add multiple languages | [Internationalization](../development/internationalization) |
+| Load external data | [Data Fetching](../reference/data-fetching) |
+| Generate pages from data | [Dynamic Routes](../reference/dynamic-routes) |
 
 ## Common Templates
 
 ```bash
+# Starter (default) — foundation + site + sample content
+pnpm create uniweb my-project
+
 # Documentation site
 pnpm create uniweb docs-site --template docs
 
-# Minimal starter
-pnpm create uniweb my-project
+# Marketing site
+pnpm create uniweb landing --template marketing
 
-# Multi-site workspace
-pnpm create uniweb my-workspace --template multi
+# Blank workspace — grow with `uniweb add`
+pnpm create uniweb my-workspace --template blank
 ```
 
-See [Templates](./templates.md) for all options.
+See [Templates](./templates) for all options.

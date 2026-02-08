@@ -8,49 +8,39 @@ Uniweb projects are created from templates using `uniweb create`. Templates prov
 
 Built-in templates ship with the CLI and work offline.
 
-### Single (Default)
+### Starter (Default)
 
-A minimal workspace with a site and foundation as sibling packages. The recommended starting point.
+A workspace with a foundation, site, and sample content. The recommended starting point.
 
 ```
 my-project/
 ├── package.json              # Workspace root
 ├── pnpm-workspace.yaml
-├── site/
+├── foundation/
 │   ├── package.json
 │   ├── vite.config.js
-│   ├── site.yml
-│   ├── main.js
-│   └── pages/
-└── foundation/
+│   └── src/sections/
+└── site/
     ├── package.json
     ├── vite.config.js
-    └── src/sections/
+    ├── site.yml
+    ├── main.js
+    └── pages/
 ```
 
 ```bash
 pnpm create uniweb my-site
 ```
 
-### Multi
+### Blank
 
-A monorepo for foundation development or multi-site projects.
-
-```
-my-workspace/
-├── sites/
-│   ├── marketing/            # Main site or test site
-│   └── docs/                 # Additional site
-└── foundations/
-    ├── marketing/            # Primary foundation
-    └── documentation/        # Additional foundation
-```
+An empty workspace with no packages. Use `uniweb add` to grow it incrementally — add foundations, sites, and extensions one at a time.
 
 ```bash
-pnpm create uniweb my-workspace --template multi
+pnpm create uniweb my-workspace --template blank
 ```
 
-Use this when you need multiple sites sharing foundations, multiple foundations for different purposes, or test sites for foundation development.
+This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures) for the layout recipes, and [CLI Commands](../reference/cli-commands) for the `add` command.
 
 ---
 
@@ -130,5 +120,5 @@ pnpm create uniweb my-site --template https://github.com/user/repo
 
 ## See Also
 
-- [CLI Commands](./cli-commands.md) — Full `create` command reference
-- [Quickstart](./quickstart.md) — Create your first site step by step
+- [CLI Commands](../reference/cli-commands) — Full `create` command reference
+- [Quickstart](./quickstart) — Create your first site step by step

@@ -25,10 +25,10 @@ The content author controls *what* appears. The developer controls *how* it look
 
 ## Two packages, two audiences
 
-A Uniweb project is a workspace with two packages:
+A Uniweb project is a workspace — a directory that contains two packages:
 
-- **Site** — content, configuration, and pages. Written in markdown and YAML. This is where content authors work.
 - **Foundation** — React components that render the content. This is where developers work.
+- **Site** — content, configuration, and pages. Written in markdown and YAML. This is where content authors work.
 
 ```
 my-project/
