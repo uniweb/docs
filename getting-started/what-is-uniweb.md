@@ -104,3 +104,5 @@ Beyond components, developers can customize layouts, theming, data fetching, and
 **Building components?** After the Quickstart, head to [Building with Uniweb](../development/building-with-uniweb) for the developer perspective.
 
 **Looking up a specific feature?** The [Reference](../reference/site-configuration) section has configuration details, API docs, and feature specifications.
+
+**Unfamiliar term?** Check the [Glossary](../reference/glossary) for quick definitions of workspace, foundation, section type, and other Uniweb concepts.
