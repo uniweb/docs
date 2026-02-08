@@ -854,19 +854,36 @@ There are four ways to create nested content, each for a different purpose:
 
 Use items for repeating content that shares the same component—feature cards, pricing tiers, FAQ questions. Just use headings after content in your markdown file.
 
-### Subsections (same page, different sections)
+### Section nesting (child sections)
 
-Use subsections when one page needs multiple sections with different component types. Create separate markdown files in the page folder:
+Use section nesting when a parent section type needs children — a Grid arranging cards, a TabGroup holding panels. Mark child files with the `@` prefix and declare relationships with `nest:`:
 
 ```
 pages/home/
 ├── page.yml
-├── 1-hero.md        # type: Hero
-├── 2-features.md    # type: Features
-└── 3-cta.md         # type: CallToAction
+├── 1-hero.md              # Top-level section
+├── 2-features.md          # Parent section (type: Grid)
+├── 3-cta.md               # Top-level section
+├── @card-speed.md         # Child of features (@ = not top-level)
+├── @card-security.md      # Child of features
+└── @card-scale.md         # Child of features
 ```
 
-Each section file can specify its own `type:` in frontmatter. The parent component renders child sections using `block.childBlocks`.
+```yaml
+# page.yml
+nest:
+  features: [card-speed, card-security, card-scale]
+```
+
+**Rules:**
+- `@`-prefixed files are excluded from the top-level section list
+- `nest:` declares parent-child relationships (parent stable name → array of child names)
+- Child files **must** use the `@` prefix — the filename and YAML must agree
+- `@@` prefix signals deeper nesting (e.g., `@@sub-item.md` for grandchildren)
+- Children are ordered by their position in the `nest:` array
+- The parent component receives children via `block.childBlocks`
+
+Each child file can specify its own `type:` in frontmatter. Alternatively, `sections:` also supports inline nesting with the same `@` prefix convention (see [page configuration](page-configuration.md)).
 
 ### Child pages (separate routes)
 

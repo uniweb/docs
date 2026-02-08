@@ -693,23 +693,30 @@ export default {
 }
 ```
 
-In markdown, child sections are nested files:
+In markdown, child sections use the `@` prefix and `nest:` in page.yml:
 
 ```
 pages/home/
-├── 1-intro.md          # type: Grid
-├── 1.1-text.md         # type: TextBox (child of Grid)
-├── 1.2-media.md        # type: Media (child of Grid)
-└── 2-features.md       # type: Features
+├── page.yml
+├── 1-intro.md          # type: Grid (parent)
+├── 2-features.md       # type: Features
+├── @text.md            # type: TextBox (child of intro)
+└── @media.md           # type: Media (child of intro)
 ```
 
-Or using explicit hierarchy in page.yml:
+```yaml
+# page.yml
+nest:
+  intro: [text, media]
+```
+
+Or using inline nesting in `sections:`:
 
 ```yaml
 sections:
   - intro:              # Grid
-      - text            # TextBox
-      - media           # Media
+      - text            # Resolves to @text.md
+      - media           # Resolves to @media.md
   - features            # Features
 ```
 

@@ -44,6 +44,10 @@ layout:                         # Or expanded form:
 # Sections
 sections: '*'                   # Auto-discover (default)
 
+# Section Nesting
+nest:                           # Declare parent-child relationships
+  features: [card-a, card-b]   # features gets card-a and card-b as children
+
 # Data
 data: articles                  # Collection reference (recommended)
 fetch:                          # Advanced: full fetch config
@@ -310,19 +314,41 @@ sections:
 
 Without `...`, only listed sections are included. Reference by stable name (prefix-independent).
 
-### Nested Sections (Subsections)
+### Section Nesting (`nest:`)
+
+Use the `@` prefix on filenames and `nest:` in page.yml to create parent-child section relationships:
+
+```
+pages/home/
+├── page.yml
+├── 1-hero.md
+├── 2-features.md       # Parent section
+├── 3-pricing.md
+├── @logocloud.md       # Child of features (@ = not top-level)
+└── @stats.md           # Child of features
+```
+
+```yaml
+# page.yml
+nest:
+  features: [logocloud, stats]
+```
+
+Child files use the `@` prefix to signal they're not top-level. The `nest:` property declares which parent owns them. This works with all section modes (auto-discovery, inclusive, strict).
+
+**Inline nesting in `sections:`** also works for declaring children directly:
 
 ```yaml
 sections:
   - hero
   - features:          # Parent section
-      - logocloud      # Child sections
-      - stats
+      - logocloud      # Resolves to @logocloud.md
+      - stats          # Resolves to @stats.md
   - ...
   - pricing
 ```
 
-Subsection nesting works with both strict and inclusive modes.
+When both `sections:` inline nesting and `nest:` declare children for the same parent, `nest:` wins.
 
 ### No Sections
 

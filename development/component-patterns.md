@@ -258,19 +258,22 @@ You can't get there by making each panel its own top-level section — the runti
 
 ### How child blocks work
 
-The content author nests sections inside a Grid in `page.yml`:
+The content author nests sections inside a Grid using `@`-prefixed files and `nest:` in `page.yml`:
+
+```
+pages/home/
+├── page.yml
+├── 1-hero.md
+├── 2-layout.md          # type: Grid, columns: 2
+├── 3-cta.md
+├── @field-notes.md      # type: FieldNotes (child of layout)
+└── @sightings.md        # type: Sightings (child of layout)
+```
 
 ```yaml
-# pages/home/page.yml
-sections:
-  hero: Hero
-  layout:
-    type: Grid
-    params:
-      columns: 2
-    sections:
-      - type: FieldNotes
-      - type: Sightings
+# page.yml
+nest:
+  layout: [field-notes, sightings]
 ```
 
 The Grid component receives `block.childBlocks` — an array of Block instances, each with its own type, content, and params. The component controls the container; the children control themselves:
