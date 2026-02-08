@@ -39,7 +39,7 @@ colors:
   primary: "#3b82f6"      # Your main brand color
   secondary: "#64748b"    # A supporting color
   accent: "#8b5cf6"       # For highlights or calls to action
-  neutral: "#737373"      # Grays for text, borders, backgrounds
+  neutral: "#78716c"      # Grays for text, borders, backgrounds
 ```
 
 Each color you define generates its own set of shades. You just pick the base color — the site does the rest.
@@ -185,31 +185,31 @@ You can change what colors each theme uses:
 ```yaml
 contexts:
   light:
-    bg: white
+    section: white
     fg: neutral-900
-    muted: neutral-500
+    subtle: neutral-500
     border: neutral-200
 
   medium:
-    bg: neutral-100
+    section: neutral-100
     fg: neutral-900
-    muted: neutral-600
+    subtle: neutral-600
     border: neutral-300
 
   dark:
-    bg: neutral-900
+    section: neutral-900
     fg: white
-    muted: neutral-400
+    subtle: neutral-400
     border: neutral-700
 ```
 
-The tokens (`bg`, `fg`, `muted`, `border`) are semantic — they describe the *role* of the color, not a specific value. When a section uses `theme: dark`, all its colors automatically switch to the dark context values.
+The tokens (`section`, `fg`, `subtle`, `border`) are semantic — they describe the *role* of the color, not a specific value. When a section uses `theme: dark`, all its colors automatically switch to the dark context values.
 
 | Token | What it controls |
 |-------|-----------------|
-| `bg` | Section background |
+| `section` | Section background |
 | `fg` | Main text color |
-| `muted` | Secondary text (subtitles, captions) |
+| `subtle` | Secondary text (subtitles, captions) |
 | `link` | Link color |
 | `border` | Border color |
 
@@ -288,7 +288,7 @@ inline:
   accent:
     color: var(--primary-600)
   muted:
-    color: var(--text-muted)
+    color: var(--subtle)
   callout:
     color: var(--accent-600)
     font-weight: 600
@@ -360,7 +360,7 @@ colors:
   primary: "#0066cc"
   secondary: "#475569"
   accent: "#dc2626"
-  neutral: "#64748b"
+  neutral: "#78716c"
 
 # Page background
 background: var(--neutral-100)
@@ -368,11 +368,11 @@ background: var(--neutral-100)
 # Section color contexts
 contexts:
   light:
-    bg: white
+    section: white
     fg: neutral-900
     link: primary-600
   dark:
-    bg: primary-900
+    section: primary-900
     fg: white
     link: primary-300
 

@@ -21,7 +21,7 @@ That's it. Your site now has a complete color palette with 11 shades for each co
 3. **CSS is injected** into `<head>` at runtime (works with SSG — zero FOUC)
 4. **Content authors control sections** — `theme: dark` in frontmatter applies a context class, and all semantic tokens resolve accordingly
 
-The key insight: **components don't manage their own colors**. They use semantic tokens (`text-heading`, `bg-surface`, `border-edge`) that resolve differently depending on the section's context. A content author writes `theme: dark` on a hero section, and every component inside it automatically gets light text on a dark background — no conditional logic in the component.
+The key insight: **components don't manage their own colors**. They use semantic tokens (`text-heading`, `bg-section`, `border-border`) that resolve differently depending on the section's context. A content author writes `theme: dark` on a hero section, and every component inside it automatically gets light text on a dark background — no conditional logic in the component.
 
 ## Color Palettes
 
@@ -32,7 +32,7 @@ colors:
   primary: "#3b82f6"      # Main brand color
   secondary: "#64748b"    # Supporting color
   accent: "#8b5cf6"       # Highlight color
-  neutral: "#737373"      # Text, backgrounds, borders
+  neutral: "#78716c"      # Text, backgrounds, borders
 ```
 
 ### Generated Shades
@@ -161,13 +161,13 @@ Each context defines CSS variables that components use instead of hardcoded colo
 | Token | Purpose | Tailwind Class |
 |-------|---------|---------------|
 | `--heading` | Heading text | `text-heading` |
-| `--text` | Body text | `text-body` |
-| `--text-muted` | Secondary text | `text-muted` |
-| `--bg` | Section background | `bg-surface` |
-| `--bg-subtle` | Card backgrounds | `bg-surface-subtle` |
-| `--border` | Primary borders | `border-edge` |
+| `--body` | Body text | `text-body` |
+| `--subtle` | Secondary text | `text-subtle` |
+| `--section` | Section background | `bg-section` |
+| `--card` | Card backgrounds | `bg-card` |
+| `--border` | Primary borders | `border-border` |
 | `--link` | Link text | `text-link` |
-| `--btn-primary-bg` | Primary button | `bg-btn-primary` |
+| `--primary` | Primary button | `bg-primary` |
 
 Components using these tokens adapt automatically when a content author changes the section's `theme:` in frontmatter. No conditional logic needed in the component — the CSS cascade handles it.
 
@@ -178,12 +178,12 @@ Override semantic tokens per context:
 ```yaml
 contexts:
   light:
-    bg: white
+    section: white
     link: var(--primary-600)
     border: var(--neutral-200)
 
   dark:
-    bg: var(--primary-900)         # Use primary color instead of neutral
+    section: var(--primary-900)    # Use primary color instead of neutral
     link: var(--accent-300)        # Use accent for links in dark sections
 ```
 
@@ -196,14 +196,14 @@ The `theme:` frontmatter supports an extended object format that lets content au
 type: Header
 theme:
   mode: light
-  btn-primary-bg: var(--neutral-900)
-  btn-primary-hover: var(--neutral-800)
+  primary: var(--neutral-900)
+  primary-hover: var(--neutral-800)
 ---
 ```
 
 This keeps the light context for text and backgrounds, but gives the primary button a dark appearance — just for this section. Any token from the semantic token table above can be overridden this way.
 
-The overrides are applied as inline CSS custom properties on the section wrapper, so they take precedence over the context class values. Components don't need to know about the overrides — they just use `bg-btn-primary` and get the overridden value.
+The overrides are applied as inline CSS custom properties on the section wrapper, so they take precedence over the context class values. Components don't need to know about the overrides — they just use `bg-primary` and get the overridden value.
 
 For simple string usage, `theme: dark` is equivalent to `theme: { mode: dark }`.
 
@@ -375,7 +375,7 @@ Foundations using Tailwind CSS v4 import a bridge file that maps theme variables
 @import "@uniweb/kit/theme-tokens.css";
 ```
 
-This single import registers both semantic tokens and palette shades as Tailwind utilities. The build system generates short CSS variable names (`--primary-600`, `--heading`, `--bg`), and `theme-tokens.css` bridges them to Tailwind's `--color-*` namespace so that classes like `bg-primary-600`, `text-heading`, and `bg-surface` work.
+This single import registers both semantic tokens and palette shades as Tailwind utilities. The build system generates short CSS variable names (`--primary-600`, `--heading`, `--section`), and `theme-tokens.css` bridges them to Tailwind's `--color-*` namespace so that classes like `bg-primary-600`, `text-heading`, and `bg-section` work.
 
 **Why is this bridge needed?** Tailwind v4 builds at compile time, but theme values arrive at runtime (from `theme.yml`). The bridge file registers variable names with fallback defaults so Tailwind can generate the utility classes. At runtime, the real values from the theme CSS override the fallbacks.
 
@@ -406,15 +406,15 @@ colors:
   primary: "#0066cc"
   secondary: "#475569"
   accent: "#dc2626"
-  neutral: "#64748b"
+  neutral: "#78716c"
 
 # Section contexts
 contexts:
   light:
-    bg: white
+    section: white
     link: var(--primary-600)
   dark:
-    bg: var(--primary-900)
+    section: var(--primary-900)
     link: var(--primary-300)
 
 # Typography
@@ -441,7 +441,7 @@ vars:
 
 1. **Start with primary**: Define at least a `primary` color — it's the foundation of your palette
 
-2. **Use semantic tokens**: Reference context tokens (`text-heading`, `bg-surface`, `border-edge`) in components instead of hardcoded colors. They adapt automatically to section themes and site-wide appearance.
+2. **Use semantic tokens**: Reference context tokens (`text-heading`, `bg-section`, `border-border`) in components instead of hardcoded colors. They adapt automatically to section themes and site-wide appearance.
 
 3. **Leverage frontmatter**: Section appearance is controlled by content authors through `theme:` and `background:` in frontmatter, not by component params. Components render; the runtime applies context.
 

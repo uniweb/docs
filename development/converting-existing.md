@@ -359,8 +359,8 @@ Replace them with semantic tokens:
 
 ```jsx
 <h1 className="text-heading">...</h1>
-<p className="text-muted">...</p>
-<span className="bg-surface-subtle text-muted border-edge-muted">...</span>
+<p className="text-subtle">...</p>
+<span className="bg-card text-subtle border-border/50">...</span>
 ```
 
 Now the component works in any context — `theme: light`, `theme: dark`, `theme: medium` — because the tokens resolve to appropriate values based on context. And it works with any brand, because the palette comes from `theme.yml`, not from the component.
@@ -402,7 +402,7 @@ function Testimonial({ content }) {
     <div className="max-w-4xl mx-auto px-6">
       <h2 className="text-heading text-3xl font-serif">{title}</h2>
       {quotes[0] && (
-        <blockquote className="text-body text-lg font-serif italic border-l-2 border-edge pl-6">
+        <blockquote className="text-body text-lg font-serif italic border-l-2 border-border pl-6">
           {quotes[0].paragraphs[0]}
         </blockquote>
       )}

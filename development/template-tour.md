@@ -71,7 +71,7 @@ Everything except params. Colors are hardcoded, including domain-specific tokens
 
 A marketing site with hero sections, feature grids, blog with dynamic routes, pricing tables, and testimonials.
 
-**Where it sits:** Portable-leaning. Has `theme.yml`, imports `theme-tokens.css` from kit, and all 16 components use semantic CSS tokens (`text-heading`, `text-muted`, `bg-surface-subtle`, `bg-btn-primary`, etc.). Visual effects like gradients and dark backgrounds are controlled through frontmatter (`theme:` and `background:`) rather than component params.
+**Where it sits:** Portable-leaning. Has `theme.yml`, imports `theme-tokens.css` from kit, and all 16 components use semantic CSS tokens (`text-heading`, `text-subtle`, `bg-card`, `bg-primary`, etc.). Visual effects like gradients and dark backgrounds are controlled through frontmatter (`theme:` and `background:`) rather than component params.
 
 ### What to study here
 
@@ -89,11 +89,11 @@ A marketing site with hero sections, feature grids, blog with dynamic routes, pr
 
 A multilingual site (English, Spanish, French) with blog, team pages, and full i18n support.
 
-**Where it sits:** Portable-leaning. Semantic CSS tokens throughout, `theme.yml` controls colors and fonts, CCA data layer for articles, full i18n. Components use semantic classes (`text-heading`, `bg-btn-primary`) instead of hardcoded colors.
+**Where it sits:** Portable-leaning. Semantic CSS tokens throughout, `theme.yml` controls colors and fonts, CCA data layer for articles, full i18n. Components use semantic classes (`text-heading`, `bg-primary`) instead of hardcoded colors.
 
 ### What to study here
 
-**Semantic theming done right.** `styles.css` maps CSS custom properties to Tailwind utilities: `--color-heading`, `--color-body`, `--color-muted`, `--color-link`, `--color-btn-primary`. Components use these as Tailwind classes (`text-heading`, `bg-btn-primary`). The site's `theme.yml` sets the actual colors — swap the palette and every component adapts. Compare `Hero/Hero.jsx` here (semantic classes) with the marketing Hero (hardcoded classes) to see the difference in practice.
+**Semantic theming done right.** `styles.css` maps CSS custom properties to Tailwind utilities: `--color-heading`, `--color-body`, `--color-subtle`, `--color-link`, `--color-primary`. Components use these as Tailwind classes (`text-heading`, `bg-primary`). The site's `theme.yml` sets the actual colors — swap the palette and every component adapts. Compare `Hero/Hero.jsx` here (semantic classes) with the marketing Hero (hardcoded classes) to see the difference in practice.
 
 **Full i18n with three languages.** The `site/locales/` directory contains `es.json`, `fr.json`, and `manifest.json`. This is the only template that demonstrates the complete translation workflow — extraction, manifest hashes, and locale files. If you need to build a multilingual site, this is the reference.
 
@@ -115,7 +115,7 @@ A data-driven dashboard for a wildlife conservation organization, featuring live
 
 ### What to study here
 
-**Semantic CSS tokens throughout.** `styles.css` maps a comprehensive set of tokens: `--color-heading`, `--color-body`, `--color-muted`, `--color-subtle`, `--color-link`, `--color-edge-muted`, `--color-surface`. Components reference these exclusively — no hardcoded color classes anywhere. This is what a fully portable foundation's styling looks like.
+**Semantic CSS tokens throughout.** `styles.css` maps a comprehensive set of tokens: `--color-heading`, `--color-body`, `--color-subtle`, `--color-link`, `--color-border`, `--color-section`. Components reference these exclusively — no hardcoded color classes anywhere. This is what a fully portable foundation's styling looks like.
 
 **Live API data with loading states.** Seven of ten section types use `block.dataLoading`. The pattern is consistent:
 

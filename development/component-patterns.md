@@ -92,7 +92,7 @@ export default function Features({ content, params }) {
         <Card key={i}>
           <CardContent>
             <h3 style={{ color: 'var(--heading)' }}>{item.title}</h3>
-            <p style={{ color: 'var(--text)' }}>{item.paragraphs[0]}</p>
+            <p style={{ color: 'var(--body)' }}>{item.paragraphs[0]}</p>
           </CardContent>
         </Card>
       ))}
@@ -116,7 +116,7 @@ function Features({ content, params }) {
   )
 }
 
-Features.className = 'py-16 md:py-24 border-b border-edge'
+Features.className = 'py-16 md:py-24 border-b border-border'
 
 export default Features
 ```
@@ -124,7 +124,7 @@ export default Features
 The component's JSX only needs the content-constraint div (`max-w-6xl mx-auto px-4`). The runtime produces:
 
 ```html
-<section class="context-light py-16 md:py-24 border-b border-edge">
+<section class="context-light py-16 md:py-24 border-b border-border">
   <div class="max-w-6xl mx-auto px-4">
     ...
   </div>
@@ -201,7 +201,7 @@ Not every dispatcher needs separate files. When variants differ in styling but s
 // Features.jsx — variants differ in class sets, not structure
 const styles = {
   cards: {
-    container: 'p-6 rounded-xl bg-surface',
+    container: 'p-6 rounded-xl bg-section',
     icon: 'w-12 h-12 rounded-lg flex items-center justify-center mb-4',
   },
   minimal: {
