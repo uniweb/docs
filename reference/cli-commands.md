@@ -5,8 +5,8 @@ The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, gene
 ## Quick Reference
 
 ```bash
-uniweb create [name]           # Create a new project
-uniweb add <type> [name]       # Add a foundation, site, or extension
+uniweb create [name]           # Create a new project (default: starter)
+uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb build                   # Build the current project
 uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
@@ -33,13 +33,14 @@ uniweb create [name] [options]
 
 | Option | Description |
 |--------|-------------|
-| `--template <type>` | Template to use (see below) |
+| `--template <type>` | Template to use (default: starter) |
+| `--blank` | Create an empty workspace (grow with `uniweb add`) |
 | `--name <name>` | Project display name (for package.json) |
 | `--no-git` | Skip git repository initialization |
 
 ### Default Behavior
 
-With no `--template`, the CLI prompts you to choose from all available templates. Use `--template starter` for non-interactive use (CI, scripts).
+Without `--template` or `--blank`, the CLI scaffolds a working project with foundation + site + starter content. In interactive mode, you're prompted to choose a template. In non-interactive mode (CI, scripts, agents), it defaults to starter.
 
 ### Templates
 
@@ -48,7 +49,7 @@ With no `--template`, the CLI prompts you to choose from all available templates
 | Template | Description |
 |----------|-------------|
 | `starter` | Foundation + site + starter content (default) |
-| `blank` | Empty workspace — grow incrementally with `uniweb add` |
+| `none` | Foundation + site with no content |
 
 **Official templates:**
 
@@ -74,20 +75,20 @@ With no `--template`, the CLI prompts you to choose from all available templates
 ### Examples
 
 ```bash
-# Interactive (prompts for name and template)
-uniweb create
-
-# Interactive (prompts for template)
+# Foundation + site + starter content (default)
 uniweb create my-site
 
-# Quick start with starter (non-interactive)
-uniweb create my-site --template starter
+# Interactive (prompts for template)
+uniweb create
+
+# Foundation + site with no content
+uniweb create my-site --template none
+
+# Empty workspace (grow with add)
+uniweb create my-workspace --blank
 
 # Use official marketing template
 uniweb create my-site --template marketing
-
-# Blank workspace (grow with add)
-uniweb create my-site --template blank
 
 # Use npm package template
 uniweb create my-site --template @acme/corporate-template
@@ -98,6 +99,8 @@ uniweb create my-site --template github:myorg/custom-template
 # Use local template
 uniweb create my-site --template ./my-template
 ```
+
+> **Backward compatibility:** `--template blank` still works as an alias for `--blank`.
 
 ### Troubleshooting Template Downloads
 
@@ -111,15 +114,16 @@ Official templates are fetched from GitHub Releases. If download fails:
 
 ## uniweb add
 
-Add a foundation, site, or extension to an existing workspace.
+Add a project, foundation, site, or extension to an existing workspace.
 
 ```bash
+uniweb add project [name] [options]
 uniweb add foundation [name] [options]
 uniweb add site [name] [options]
 uniweb add extension <name> [options]
 ```
 
-Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If there's no workspace yet, create one with `uniweb create --template blank`.
+Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If there's no workspace yet, create one with `uniweb create --blank`.
 
 ### Common Options
 
@@ -149,41 +153,41 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 
 ### Placement
 
-The CLI chooses a sensible directory based on what exists. `--path` overrides the default.
+The name you provide becomes both the directory name and the package name. `--path` overrides the default directory.
+
+**Project placement (`add project`):**
+
+| Command | Location | Package names |
+|---------|----------|---------------|
+| `add project docs` | `docs/foundation/` + `docs/site/` | `docs-foundation`, `docs-site` |
 
 **Foundation placement:**
 
 | Scenario | Command | Location |
 |----------|---------|----------|
-| No foundations exist | `add foundation` | `foundation/` |
-| No foundations exist | `add foundation marketing` | `foundations/marketing/` |
-| One foundation exists | `add foundation blog` | `foundations/blog/` |
-| Co-located | `add foundation --project docs` | `docs/foundation/` |
+| First foundation | `add foundation` | `foundation/` |
+| First foundation, named | `add foundation ui` | `ui/` |
+| Existing co-located layout | `add foundation blog` | `blog/foundation/` |
+| Existing segregated layout | `add foundation blog` | `foundations/blog/` |
+| Explicit co-located | `add foundation --project docs` | `docs/foundation/` |
 
 **Site placement:**
 
 | Scenario | Command | Location |
 |----------|---------|----------|
-| No sites exist | `add site` | `site/` |
-| No sites exist | `add site blog` | `sites/blog/` |
-| One site exists | `add site blog` | `sites/blog/` |
-| Co-located | `add site --project docs` | `docs/site/` |
+| First site | `add site` | `site/` |
+| First site, named | `add site blog` | `blog/` |
+| Existing co-located layout | `add site blog` | `blog/site/` |
+| Existing segregated layout | `add site blog` | `sites/blog/` |
+| Explicit co-located | `add site --project docs` | `docs/site/` |
 
 **Extension placement:**
 
 Extensions always go in `extensions/{name}/` and require a name.
 
-### Co-located Package Naming
+### Package Naming
 
-When using `--project`, the CLI assigns package names that avoid collisions in the pnpm workspace:
-
-| Command | Package name | Why |
-|---------|-------------|-----|
-| `add foundation --project io` | `io` | Uses the project name |
-| `add site --project io` | `io-site` | Appends `-site` to avoid collision with foundation |
-| `add site blog --project io` | `blog` | Explicit name used as-is (no collision) |
-
-pnpm requires unique package names across the workspace. The `-site` suffix convention matches how package names typically work in co-located layouts (e.g., `io` for the foundation, `io-site` for the site).
+The package name equals the name you provide (or the default `foundation`/`site`). For `add project`, names are prefixed: `{name}-foundation` and `{name}-site`. If a package name already exists in the workspace, the CLI errors with guidance instead of auto-suffixing.
 
 ### The `--from` Flag
 
@@ -202,11 +206,13 @@ When applying site content, the CLI reports which section types the template exp
 ### Examples
 
 ```bash
-# Add a foundation (no content, just scaffolding)
-uniweb add foundation
+# Add a co-located foundation + site pair
+uniweb add project docs
+uniweb add project docs --from academic
 
-# Add a named foundation with template content
-uniweb add foundation marketing --from marketing
+# Add a foundation (first goes to root)
+uniweb add foundation
+uniweb add foundation ui
 
 # Add a site wired to a specific foundation
 uniweb add site blog --foundation marketing
@@ -214,7 +220,7 @@ uniweb add site blog --foundation marketing
 # Add an extension and wire it to a site
 uniweb add extension effects --site site
 
-# Co-located layout: foundation + site under one project
+# Co-located layout via --project flag
 uniweb add foundation --project docs
 uniweb add site --project docs
 ```
@@ -571,7 +577,7 @@ my-project/
 └── pnpm-workspace.yaml
 ```
 
-### Co-located Layout (--project)
+### Co-located Layout (add project)
 
 ```
 my-workspace/
@@ -584,6 +590,8 @@ my-workspace/
 ├── package.json
 └── pnpm-workspace.yaml
 ```
+
+Created with `uniweb add project marketing` and `uniweb add project docs`, or equivalently with `--project` flags on individual `add foundation`/`add site` commands.
 
 ---
 

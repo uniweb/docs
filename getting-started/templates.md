@@ -10,7 +10,7 @@ Built-in templates ship with the CLI and work offline.
 
 ### Starter (Default)
 
-A workspace with a foundation, site, and sample content. The recommended starting point.
+A workspace with a foundation, site, and sample content. The recommended starting point — two commands to a dev server.
 
 ```
 my-project/
@@ -32,15 +32,25 @@ my-project/
 pnpm create uniweb my-site
 ```
 
-### Blank
+### None
 
-An empty workspace with no packages. Use `uniweb add` to grow it incrementally — add foundations, sites, and extensions one at a time.
+A workspace with a foundation and site but no content. Use this when you're migrating an existing project or want to start from scratch without starter content.
 
 ```bash
-pnpm create uniweb my-workspace --template blank
+pnpm create uniweb my-site --template none
+```
+
+### Blank Workspace
+
+An empty workspace with no packages. Use `uniweb add` to grow it incrementally — add projects, foundations, sites, and extensions one at a time.
+
+```bash
+pnpm create uniweb my-workspace --blank
 ```
 
 This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures) for the layout recipes, and [CLI Commands](../reference/cli-commands) for the `add` command.
+
+> **Backward compatibility:** `--template blank` still works as an alias for `--blank`.
 
 ---
 

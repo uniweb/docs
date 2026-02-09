@@ -4,7 +4,7 @@ A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uni
 
 This guide covers the workspace structures we've found work well, when to use each, and the concrete wiring that connects the pieces.
 
-> **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. The CLI's `--project` flag creates this structure.
+> **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. Use `uniweb add project` to create this structure in one step, or the `--project` flag on individual `add foundation`/`add site` commands.
 
 ---
 
@@ -315,32 +315,29 @@ Projects evolve. The `uniweb add` command handles scaffolding, workspace globs, 
 When you know you need a non-default layout — co-located projects, multiple foundations, or a segregated structure — start with a blank workspace and build it up:
 
 ```bash
-pnpm create uniweb my-workspace --template blank
+pnpm create uniweb my-workspace --blank
 cd my-workspace
 
-# Add packages (npx because we haven't installed yet)
-npx uniweb add foundation
-npx uniweb add site
+# Add a co-located project (npx because we haven't installed yet)
+npx uniweb add project main
 
 # Now install and run
 pnpm install
 pnpm dev
 ```
 
-This produces the same single layout as the starter template, but you control each step. The same flow works for any layout:
+The `add project` command creates a co-located foundation + site pair in one step. The same flow works for any layout:
 
 ```bash
+# Co-located: grouped by project (preferred for multiple projects)
+npx uniweb add project marketing
+npx uniweb add project docs
+
 # Segregated: named foundations and sites
 npx uniweb add foundation marketing
 npx uniweb add foundation blog
 npx uniweb add site main --foundation marketing
 npx uniweb add site docs --foundation blog
-
-# Co-located: grouped by project
-npx uniweb add foundation --project marketing
-npx uniweb add site --project marketing
-npx uniweb add foundation --project docs
-npx uniweb add site --project docs
 ```
 
 The CLI creates the directories, writes `package.json` and config files, updates `pnpm-workspace.yaml` globs, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages.
@@ -373,12 +370,11 @@ Adding a named foundation works the same way — it goes into `foundations/{name
 If you started with a single layout and now need independent projects:
 
 ```bash
-pnpm uniweb add foundation --project docs
-pnpm uniweb add site --project docs
+pnpm uniweb add project docs
 pnpm install
 ```
 
-This creates `docs/foundation/` and `docs/site/`, adds `*/foundation` and `*/site` globs. The foundation gets the package name `docs`, the site gets `docs-site` (see [Co-located Package Naming](../reference/cli-commands#co-located-package-naming)).
+This creates `docs/foundation/` and `docs/site/`, adds `*/foundation` and `*/site` globs. Package names are `docs-foundation` and `docs-site`. Use `--from` to apply template content: `add project docs --from academic`.
 
 Your original `foundation/` and `site/` still work — they match their existing globs. You can keep the hybrid layout or move them into a project directory when you're ready.
 

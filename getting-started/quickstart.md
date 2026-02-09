@@ -230,8 +230,11 @@ pnpm create uniweb docs-site --template docs
 # Marketing site
 pnpm create uniweb landing --template marketing
 
+# Foundation + site with no content
+pnpm create uniweb my-project --template none
+
 # Blank workspace — grow with `uniweb add`
-pnpm create uniweb my-workspace --template blank
+pnpm create uniweb my-workspace --blank
 ```
 
 See [Templates](./templates) for all options.
