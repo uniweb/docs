@@ -226,13 +226,15 @@ Override semantic tokens per context:
 contexts:
   light:
     section: white
-    link: var(--primary-600)
-    border: var(--neutral-200)
+    link: primary-600
+    border: neutral-200
 
   dark:
-    section: var(--primary-900)    # Use primary color instead of neutral
-    link: var(--accent-300)        # Use accent for links in dark sections
+    section: primary-900           # Use primary color instead of neutral
+    link: accent-300               # Use accent for links in dark sections
 ```
+
+Palette references like `primary-600` resolve to `var(--primary-600)` automatically. Plain CSS values (`white`, `#hex`, `rgb(...)`, `var(...)`) pass through as-is.
 
 ### Context Value Mappings
 
@@ -267,8 +269,8 @@ The `theme:` frontmatter supports an extended object format that lets content au
 type: Header
 theme:
   mode: light
-  primary: var(--neutral-900)
-  primary-hover: var(--neutral-800)
+  primary: neutral-900
+  primary-hover: neutral-800
 ---
 ```
 
@@ -483,10 +485,10 @@ colors:
 contexts:
   light:
     section: white
-    link: var(--primary-600)
+    link: primary-600
   dark:
-    section: var(--primary-900)
-    link: var(--primary-300)
+    section: primary-900
+    link: primary-300
 
 # Typography
 fonts:
