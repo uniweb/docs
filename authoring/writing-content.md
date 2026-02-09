@@ -57,15 +57,17 @@ Here's how headings map to what appears on screen:
 | Next heading after the title | The subtitle |
 | Body text | Paragraphs |
 
-You can also add a **pretitle** (small text above the title, sometimes called an "eyebrow") by putting a smaller heading before your main heading:
+You can also add a **pretitle** — a small label above the title, sometimes called an "eyebrow." Just put a smaller heading before your main heading:
 
-```markdown
-### Featured                ← becomes the pretitle
-# Our Latest Product        ← becomes the title
-## Available now             ← becomes the subtitle
+```
+What you write:              What visitors see:
+
+### V1.0.0 IS OUT            V1.0.0 IS OUT          ← small label
+# Build the system.          Build the system.       ← big title
+## Not every page.            Not every page.         ← subtitle
 ```
 
-The system detects this automatically — any heading followed by a more important heading becomes a pretitle.
+If you want a small label above your title, put a `###` line before it. The system detects the pattern automatically.
 
 **Heading levels are relative, not absolute.** Whether you use `#` or `##` for your title, the result is the same — the visual size is determined by the section type, not by your heading level. Use headings to create the right *structure* (title, subtitle, items), not to control font size.
 
