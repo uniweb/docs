@@ -147,6 +147,8 @@ Mark a link as a download:
 [Download Report](/report.pdf){download}
 ```
 
+> **Quoting rule:** When an attribute value contains spaces, wrap it in quotes: `{title="My Page Title"}`. Unquoted values end at the first space, so `{title=My Page Title}` would only set title to "My".
+
 ### Stable internal links
 
 Use the `page:` protocol for links that survive reorganization:
