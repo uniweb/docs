@@ -809,13 +809,13 @@ function SplitContent({ content, block, params }) {
         <h2 className="text-heading">{content.title}</h2>
         {content.paragraphs.map((p, i) => <p key={i} className="text-body">{p}</p>)}
       </div>
-      <Visual content={content} block={block} className="flex-1" />
+      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.imgs[0]} className="flex-1" />
     </div>
   )
 }
 ```
 
-`<Visual>` renders the first available visual: inset > video > image. The content author can place any of them — the section type handles all three identically.
+`<Visual>` renders the first non-empty candidate from the props you pass. The content author can place any of them — the section type handles all three identically.
 
 **Sequential** — a section that renders content in document order (DocPage, Article):
 

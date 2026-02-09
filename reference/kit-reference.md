@@ -440,7 +440,7 @@ function Layout({ block }) {
 The block represents a rendered section.
 
 ```jsx
-import { getChildBlockRenderer } from '@uniweb/kit'
+import { ChildBlocks } from '@uniweb/kit'
 
 function Hero({ content, params, block }) {
   // Navigation to related objects
@@ -453,7 +453,6 @@ function Hero({ content, params, block }) {
 
   // Child blocks (for composition)
   if (block.hasChildBlocks()) {
-    const ChildBlocks = getChildBlockRenderer()
     return <ChildBlocks from={block} />
   }
 }
@@ -593,13 +592,13 @@ Renders the first visual element from content, checking insets first, then video
 ```jsx
 import { Visual } from '@uniweb/kit'
 
-function SplitContent({ content, block, params }) {
+function SplitContent({ content, block }) {
   return (
     <div className="flex gap-12">
       <div className="flex-1">
         <h2 className="text-heading">{content.title}</h2>
       </div>
-      <Visual content={content} block={block} className="flex-1 rounded-lg" />
+      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.imgs[0]} className="flex-1 rounded-lg" />
     </div>
   )
 }
@@ -609,12 +608,13 @@ function SplitContent({ content, block, params }) {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `content` | object | — | Parsed content from prepare-props |
-| `block` | Block | — | Block instance (provides `block.insets`) |
+| `inset` | Block | — | Inset Block instance (from `block.insets` or `block.getInset()`) |
+| `video` | object | — | Video object with `src` property |
+| `image` | object | — | Image object with `src` and `alt` properties |
 | `className` | string | — | CSS classes for the visual container |
 | `fallback` | ReactNode | `null` | Fallback when no visual is found |
 
-**Priority order:** inset (`block.insets[0]`) > video (`content.videos[0]`) > image (`content.imgs[0]`).
+**Resolution order:** inset > video > image. Only tries candidates you pass.
 
 Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
 
