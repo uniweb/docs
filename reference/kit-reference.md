@@ -440,6 +440,8 @@ function Layout({ block }) {
 The block represents a rendered section.
 
 ```jsx
+import { getChildBlockRenderer } from '@uniweb/kit'
+
 function Hero({ content, params, block }) {
   // Navigation to related objects
   const page = block.page
@@ -451,8 +453,8 @@ function Hero({ content, params, block }) {
 
   // Child blocks (for composition)
   if (block.hasChildBlocks()) {
-    const ChildBlocks = block.getChildBlockRenderer()
-    return <ChildBlocks />
+    const ChildBlocks = getChildBlockRenderer()
+    return <ChildBlocks from={block} />
   }
 }
 ```
@@ -478,7 +480,6 @@ function Hero({ content, params, block }) {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `hasChildBlocks()` | boolean | Has nested sections? |
-| `getChildBlockRenderer()` | component | Get ChildBlocks renderer |
 | `getInset(refId)` | Block\|null | Find an inset by its refId |
 
 ---
