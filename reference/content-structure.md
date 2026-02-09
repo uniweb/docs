@@ -60,9 +60,9 @@ All content fields are available at the top level:
 
 | Field        | Source                 | Description                                |
 | ------------ | ---------------------- | ------------------------------------------ |
-| `title`      | First heading          | Main headline                              |
+| `title`      | First heading          | Main headline (`string` or `string[]` for multi-line) |
 | `pretitle`   | Heading before title   | Eyebrow/kicker text                        |
-| `subtitle`   | Heading after title    | Secondary headline                         |
+| `subtitle`   | Heading after title    | Secondary headline (`string` or `string[]`) |
 | `subtitle2`  | Third heading          | Tertiary headline                          |
 | `paragraphs` | Body text              | Array of paragraph strings                 |
 | `links`      | `[text](url)`          | Array of link objects (see below)          |
@@ -694,6 +694,57 @@ This works at any level:
 - H6 → H5 = pretitle
 
 No special syntax needed—the parser detects it automatically.
+
+### Multi-Line Headings
+
+Consecutive headings at the same level merge into a title array — perfect for dramatic, multi-line hero headlines:
+
+```markdown
+# Build the future
+# with confidence
+```
+
+```js
+content.title // ["Build the future", "with confidence"]
+```
+
+Kit's text components (`<H1>`, `<H2>`, etc.) render arrays as a single HTML element with visual line breaks.
+
+**With accent styling** — the classic hero pattern:
+
+```markdown
+# Build the future
+# [with confidence]{accent}
+```
+
+```js
+content.title // ["Build the future", "<span accent=\"true\">with confidence</span>"]
+```
+
+**With pretitle and subtitle:**
+
+```markdown
+### Our Mission
+# Build the future
+# with confidence
+## The platform for modern teams
+```
+
+```js
+content.pretitle  // "Our Mission"
+content.title     // ["Build the future", "with confidence"]
+content.subtitle  // "The platform for modern teams"
+```
+
+**Important:** Same-level merging only applies within the heading group at the top of a section. Once body content begins and items start, same-level headings create separate items instead of merging. Use `---` to force a split when needed:
+
+```markdown
+# Line one
+---
+# Line two
+```
+
+Here, `---` separates the two headings into different groups rather than merging them.
 
 ## Items: Child Content Groups
 

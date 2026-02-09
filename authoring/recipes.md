@@ -38,6 +38,32 @@ We help teams ship products faster with modern tools and beautiful design.
 
 ---
 
+### Multi-Line Hero with Accented Text
+
+A bold hero with a two-line headline and the second line styled differently.
+
+```markdown
+---
+type: Hero
+theme: dark
+---
+
+### Our Mission
+# Build the future
+# [with confidence]{accent}
+
+We help teams ship products faster with modern tools and beautiful design.
+
+[Get Started](/signup)
+[Learn More](/about)
+```
+
+- Two consecutive `#` headings merge into a multi-line title — one `<h1>` with visual line breaks.
+- `[with confidence]{accent}` highlights the second line with accent styling (color + bold).
+- The `### → #` pattern creates a pretitle ("Our Mission") above the title.
+
+---
+
 ### Feature Grid with Icons
 
 A grid of feature cards, each with an icon, title, and description.
