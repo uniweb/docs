@@ -422,6 +422,25 @@ export default Testimonial
 
 Set `theme: dark` and it's a dark card. Set `theme: light` and it's a light card. Set `theme: medium` and it's a gray card. Change the primary color in `theme.yml` and the accent colors shift everywhere. The component doesn't know or care.
 
+### Don't flatten the design
+
+Semantic tokens handle the _hard_ problem — making a component work in light, dark, and medium contexts without conditional logic. But they're a floor, not a ceiling. If the original design has visual richness that goes beyond the token set, keep it.
+
+A common mistake during conversion: the original has four distinct border tones (subtle dividers, strong separators, accent highlights, focus rings), and the conversion collapses them all into `border-border`. The component "works" but it's lost its design personality.
+
+The fix is straightforward — add custom classes in your foundation's `styles.css`:
+
+```css
+/* Foundation border system — builds on the semantic --border token */
+.border-subtle { border-color: color-mix(in oklch, var(--border), transparent 50%); }
+.border-strong { border-color: color-mix(in oklch, var(--border), var(--heading) 30%); }
+.border-accent { border-color: var(--primary-300); }
+```
+
+These classes still adapt to context (they reference tokens), but they preserve the visual hierarchy the designer intended. The same approach works for shadow systems, gradient effects, and any other design detail that matters.
+
+**The priority during conversion: design quality first, portability second, configurability third.** A rich design that only works with one brand is better than a flat design that works with any brand. You can always add configurability later. You can't add back the design details you dropped.
+
 ---
 
 ## You Don't Have to Go in Order

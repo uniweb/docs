@@ -88,12 +88,14 @@ You don't have to commit upfront. Start bundled, move things to the site layer w
 
 | Moving toward portable | What you give up | What you get |
 |------------------------|------------------|-------------|
-| Semantic theming | Direct color control in components | Components that adapt to any brand. No theme maps. Less code. |
+| Semantic theming | Hardcoded palette classes (`bg-blue-600`) | Components that adapt to any brand and context. No theme maps. Less code. |
 | CCA data layer | `useEffect` + `fetch()` in components | Automatic caching, deduplication, loading states. No data-fetching code. |
 | Params via meta.js | Hardcoded config or env vars | Constrained, tested interface. Content authors can configure without code. |
 | Content from markdown | Text in JSX | Content changes without deploys. i18n support for free. |
 
 Every row is optional. You can use semantic theming without the data layer, or the data layer without params. They compose independently.
+
+**A note on "give up":** Semantic theming doesn't mean giving up visual richness. Tokens handle context adaptation — the hard problem of making one component work in light, dark, and medium contexts. But your foundation's `styles.css` can (and should) add design classes that build on those tokens: shadow hierarchies, border variants, gradient effects, accent treatments. A foundation can be fully portable _and_ visually rich. The priority is always: design quality first, portability second, configurability third.
 
 ---
 
