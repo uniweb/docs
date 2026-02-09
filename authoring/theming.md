@@ -343,7 +343,7 @@ Your template may define additional settings you can customize — like header h
 vars:
   header-height: 5rem
   max-content-width: 72rem
-  section-padding-y: 6rem
+  section-padding-y: clamp(3rem, 5vw, 5rem)
 ```
 
 What settings are available depends entirely on your template. Check your template's documentation or look at the comments in the `theme.yml` file that came with your site.

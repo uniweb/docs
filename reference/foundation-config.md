@@ -58,8 +58,8 @@ export const vars = {
     description: 'Maximum content width',
   },
   'section-padding-y': {
-    default: '5rem',
-    description: 'Vertical padding for sections',
+    default: 'clamp(4rem, 6vw, 7rem)',
+    description: 'Vertical padding for sections (fluid)',
   },
   'border-radius': {
     default: '0.5rem',
@@ -125,17 +125,17 @@ Sites override variables in `theme.yml`:
 vars:
   header-height: 5rem
   max-content-width: 72rem
-  section-padding-y: 6rem
+  section-padding-y: clamp(3rem, 5vw, 5rem)   # tighter spacing
 ```
 
 The build merges site overrides with foundation defaults, generating CSS:
 
 ```css
 :root {
-  --header-height: 5rem;        /* overridden */
-  --max-content-width: 72rem;   /* overridden */
-  --section-padding-y: 6rem;    /* overridden */
-  --border-radius: 0.5rem;      /* default */
+  --header-height: 5rem;                          /* overridden */
+  --max-content-width: 72rem;                     /* overridden */
+  --section-padding-y: clamp(3rem, 5vw, 5rem);   /* overridden */
+  --border-radius: 0.5rem;                        /* default */
 }
 ```
 
@@ -354,8 +354,8 @@ export const vars = {
 
   // Spacing
   'section-padding-y': {
-    default: '5rem',
-    description: 'Vertical padding for sections',
+    default: 'clamp(4rem, 6vw, 7rem)',
+    description: 'Vertical padding for sections (fluid)',
   },
   'container-padding-x': {
     default: '1.5rem',
