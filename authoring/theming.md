@@ -54,18 +54,38 @@ You only need to provide one hex color per palette. A good starting point:
 
 If you're not sure what hex codes to use, tools like [Coolors](https://coolors.co/) or [Realtime Colors](https://www.realtimecolors.com/) can help you explore palettes.
 
-### Exact brand color matching
+### How your color becomes a palette
 
-By default, the site generates shades using a perceptually uniform color space, which may adjust your input color slightly for consistency. If your brand guidelines require an exact color match:
+When you set `primary: "#E35D25"`, the build generates 11 shades from that color. **Shade 500 is your exact input color.** Lighter shades (50–400) go above it, darker shades (600–950) go below, distributed proportionally to maintain a smooth scale.
+
+Buttons and links use shade **600** (not 500) for accessibility — shade 600 provides better contrast with white text. If you set a medium-bright color like orange, buttons will be noticeably darker than your brand color. See below for how to control this.
+
+### Matching your brand color on buttons
+
+By default, buttons use shade 600. To use your exact brand color on buttons:
 
 ```yaml
 colors:
-  brand:
-    base: "#E31937"
-    exactMatch: true
+  primary: "#E35D25"
+
+contexts:
+  light:
+    primary: primary-500         # Your exact color on buttons
+    primary-hover: primary-600   # Darker shade on hover
 ```
 
-This guarantees your exact hex value appears in the palette.
+> **Accessibility note:** Bright brand colors (orange, yellow, light green) may not have enough contrast with white text at shade 500. Check that your buttons are readable — if they're not, use shade 600 (the default) or choose a darker base color.
+
+### Fixed lightness mode
+
+If you prefer shades generated at fixed lightness levels (the palette won't include your exact color at shade 500, but the scale is anchored to standardized lightness values):
+
+```yaml
+colors:
+  primary:
+    base: "#E35D25"
+    exactMatch: false
+```
 
 ### Shade generation modes
 

@@ -46,8 +46,8 @@ Each color generates 11 shades as CSS variables (`--primary-50` through `--prima
 | 200 | 87% | Active backgrounds |
 | 300 | 78% | Borders |
 | 400 | 68% | Placeholder text |
-| 500 | 55% | **Base color** |
-| 600 | 48% | Primary buttons |
+| 500 | (input) | **Your exact color** (shades redistribute around it) |
+| 600 | 48% | **Primary buttons, links** (light context default) |
 | 700 | 40% | Pressed states |
 | 800 | 32% | Dark accents |
 | 900 | 24% | Near-black |
@@ -80,16 +80,32 @@ See the [color modes visual comparison](./color-modes-example.html) for a side-b
 
 ### Exact Brand Color Matching
 
-Guarantee your exact brand color appears at shade 500:
+By default, shade 500 **is** your exact input color. The build redistributes surrounding shades proportionally to maintain a smooth, monotonic lightness scale.
+
+To opt out and use fixed lightness values instead (shade 500 will be adjusted to lightness 55%, which may differ from your input):
 
 ```yaml
 colors:
-  brand:
-    base: "#E31937"
-    exactMatch: true   # Shade 500 = exact input
+  primary:
+    base: "#E35D25"
+    exactMatch: false   # Use fixed lightness scale
 ```
 
-Without `exactMatch`, the algorithm calculates shade 500's lightness (55%), which may differ slightly from your input color.
+### Using Your Brand Color on Buttons
+
+Buttons and links in light contexts use shade **600** (not 500) for accessibility — shade 600 provides better contrast with white foreground text. To use your exact brand color on buttons, override the primary token:
+
+```yaml
+colors:
+  primary: "#E35D25"
+
+contexts:
+  light:
+    primary: primary-500         # Your exact color on buttons
+    primary-hover: primary-600   # Darker shade on hover
+```
+
+> **Accessibility note:** Bright brand colors (orange, yellow, light green) at shade 500 may not meet WCAG contrast requirements (4.5:1) with white text. Test your buttons for readability.
 
 ### Using Colors
 
