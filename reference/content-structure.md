@@ -367,61 +367,72 @@ Components that need a visual slot (image, video, or inset) can use `<Visual>` f
 
 ## Inline Text Styling
 
-Style inline text with semantic classes using bracketed spans—Pandoc-style syntax that works in both markdown files and the visual editor.
+Style inline text using bracketed spans with named attributes—Pandoc-style syntax that works in both markdown files and the visual editor.
 
 ### Basic Syntax
 
 ```markdown
-[text]{.class}
-[text]{#id}
-[text]{.class #id key=value}
+[text]{name}
+[text]{name key=value}
 ```
+
+The framework provides two default styles: `accent` (colored + bold) and `muted` (subtle). Sites can define additional styles in `theme.yml`'s `inline:` section.
 
 ### Common Styles
 
 ```markdown
-This has [highlighted text]{.highlight} for emphasis.
+Build [faster]{accent} with structure.
 
-Here's a [muted note]{.muted} that's less prominent.
-
-This is a [callout]{.callout} for important info.
+Here's a [side note]{muted} that's less prominent.
 ```
 
 Your component receives these as `<span>` elements in paragraph text:
 
 ```js
 paragraphs: [
-  'This has <span class="highlight">highlighted text</span> for emphasis.',
+  'Build <span accent="true">faster</span> with structure.',
 ]
 ```
 
-### Multiple Classes and Attributes
+The CSS is generated from `theme.yml` using attribute selectors (`span[accent] { ... }`), so the boolean flag syntax maps directly to styling.
+
+### Inline Style Escape Hatches
+
+For one-off styling without defining a named style:
 
 ```markdown
-[styled text]{.highlight .large}
-[anchor point]{#section-start}
-[tooltip text]{.info data-tooltip="More details here"}
+[red text]{color=red}
+[highlighted]{bg=yellow}
 ```
+
+These render as inline styles: `<span style="color: red">red text</span>`.
 
 ### Combining with Other Formatting
 
 Spans work with bold, italic, and other inline formatting:
 
 ```markdown
-This is [**bold and highlighted**]{.highlight} text.
-Check the [_italicized note_]{.muted} below.
+This is [**bold and accented**]{accent} text.
+Check the [_italicized note_]{muted} below.
 ```
 
-### Use Cases
+### Defining Custom Styles
 
-| Class        | Purpose                                             |
-| ------------ | --------------------------------------------------- |
-| `.highlight` | Draw attention to key phrases                       |
-| `.muted`     | De-emphasize secondary information                  |
-| `.callout`   | Important notes or warnings                         |
-| `.code`      | Inline code-like styling (alternative to backticks) |
+Add named styles in `theme.yml`:
 
-Your foundation defines what classes are available and how they're styled. The visual editor can provide a dropdown of predefined styles.
+```yaml
+inline:
+  accent:
+    color: var(--link)
+    font-weight: '600'
+  muted:
+    color: var(--subtle)
+  highlight:
+    background: var(--accent-100)
+    color: var(--accent-900)
+```
+
+These generate `span[name] { ... }` CSS rules. Content authors write `[text]{name}` — no CSS knowledge needed. Styles that reference semantic tokens (like `var(--link)`) adapt to context automatically.
 
 ## Links and Buttons
 
