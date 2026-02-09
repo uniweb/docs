@@ -212,9 +212,11 @@ Each context defines CSS variables that components use instead of hardcoded colo
 | `--primary` | Primary button background | `bg-primary` |
 | `--primary-foreground` | Primary button text | `text-primary-foreground` |
 | `--primary-hover` | Primary button hover | `hover:bg-primary-hover` |
+| `--primary-border` | Primary button border | `border-primary-border` |
 | `--secondary` | Secondary button background | `bg-secondary` |
 | `--secondary-foreground` | Secondary button text | `text-secondary-foreground` |
 | `--secondary-hover` | Secondary button hover | `hover:bg-secondary-hover` |
+| `--secondary-border` | Secondary button border | `border-secondary-border` |
 
 ### Customizing Contexts
 
@@ -247,6 +249,12 @@ The following table shows how each semantic token resolves in each context. Thes
 | `--border` | neutral-200 | neutral-300 | neutral-700 |
 | `--primary` | primary-600 | primary-600 | primary-500 |
 | `--primary-foreground` | white | white | white |
+| `--primary-hover` | primary-700 | primary-700 | primary-400 |
+| `--primary-border` | transparent | transparent | transparent |
+| `--secondary` | white | white | neutral-800 |
+| `--secondary-foreground` | neutral-900 | neutral-900 | neutral-100 |
+| `--secondary-hover` | neutral-100 | neutral-100 | neutral-700 |
+| `--secondary-border` | neutral-300 | neutral-300 | neutral-600 |
 
 Sites can override any of these mappings under the `contexts:` key (see above).
 
