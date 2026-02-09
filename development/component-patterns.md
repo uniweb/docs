@@ -760,13 +760,12 @@ Some components exist to be placed *inside* other sections — illustrations, da
 
 ### Creating inset components
 
-An inset is a regular section type with `inset: true` in meta.js. For components that only make sense inline (not as standalone page sections), also add `hidden: true`:
+An inset is a regular section type with `inset: true` in meta.js:
 
 ```js
 // sections/insets/NetworkDiagram/meta.js
 export default {
   inset: true,
-  hidden: true,
   params: {
     variant: {
       type: 'select',

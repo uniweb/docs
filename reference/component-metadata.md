@@ -167,7 +167,7 @@ function Hero({ content, params, block, website }) {
 | `description` | string | What the component does |
 | `category` | string | Grouping: `impact`, `showcase`, or `structure` |
 | `purpose` | string | Single verb: Introduce, Express, Explain, etc. |
-| `hidden` | boolean | If true, component exists but isn't selectable |
+| `hidden` | boolean | If true, component is excluded from export entirely (internal helpers, not-yet-ready components) |
 | `inset` | boolean | If true, available for `@ComponentName` references in markdown |
 
 #### Categories
@@ -612,7 +612,6 @@ export default {
   title: 'Network Diagram',
   category: 'visualization',
   inset: true,
-  hidden: true,              // not in the main section palette
   params: {
     variant: {
       type: 'select',
@@ -622,6 +621,8 @@ export default {
   },
 }
 ```
+
+Whether an inset appears in a section palette is a concern of the parent component (via its `children`/`insets` declarations), not a property of the inset itself. Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components).
 
 A component can be both a standalone section and an inset:
 
