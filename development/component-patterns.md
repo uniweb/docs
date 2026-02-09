@@ -800,7 +800,7 @@ The `[description]` text from the markdown becomes `content.title`. Components d
 **Slot-based** — a section with one visual position (SplitContent, Showcase):
 
 ```jsx
-import { Visual } from '@uniweb/kit/styled'
+import { Visual } from '@uniweb/kit'
 
 function SplitContent({ content, block, params }) {
   return (
@@ -820,7 +820,7 @@ function SplitContent({ content, block, params }) {
 **Sequential** — a section that renders content in document order (DocPage, Article):
 
 ```jsx
-import { Render } from '@uniweb/kit/styled'
+import { Render } from '@uniweb/kit'
 
 function DocPage({ content, block }) {
   return (

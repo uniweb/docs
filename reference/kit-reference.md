@@ -588,10 +588,10 @@ Uses `animate-pulse` and the `--border` CSS variable for styling. Includes `role
 
 ### Visual
 
-Renders the first visual element from content, checking insets first, then video, then image. From `@uniweb/kit/styled`.
+Renders the first visual element from content, checking insets first, then video, then image. From `@uniweb/kit`.
 
 ```jsx
-import { Visual } from '@uniweb/kit/styled'
+import { Visual } from '@uniweb/kit'
 
 function SplitContent({ content, block, params }) {
   return (

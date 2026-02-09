@@ -363,7 +363,7 @@ Insets appear in `content.insets[]` as `{ refId }` entries (parallel to `content
 
 At runtime, inset Block instances are available via `block.insets` (separate from `block.childBlocks`). Kit's `Render` component handles `inset_placeholder` nodes in the content flow automatically, rendering the corresponding component at the author's chosen position.
 
-Components that need a visual slot (image, video, or inset) can use `<Visual>` from `@uniweb/kit/styled` — it checks insets first, then video, then image.
+Components that need a visual slot (image, video, or inset) can use `<Visual>` from `@uniweb/kit` — it checks insets first, then video, then image.
 
 ## Inline Text Styling
 
