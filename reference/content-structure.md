@@ -72,7 +72,7 @@ All content fields are available at the top level:
 | `insets`     | `![](@Component)`      | Inline component references                |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
-| `snippets`   | Fenced code            | Code snippets — `[{ language, text }]`     |
+| `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
 | `data`       | Tagged data blocks     | Structured data (see below)                |
 | `headings`   | Overflow headings      | Headings after title/subtitle/subtitle2    |
 | `items`      | Subsequent headings    | Child content groups                       |
@@ -872,7 +872,7 @@ function Hello() {
 
 ```js
 content.snippets[0]
-// { language: 'jsx', text: 'function Hello() {\n  return <h1>Hello world</h1>\n}' }
+// { language: 'jsx', code: 'function Hello() {\n  return <h1>Hello world</h1>\n}' }
 ```
 
 The `language` attribute is a display hint for syntax highlighting renderers, not a parsing format. Filter by language when needed: `content.snippets.filter(s => s.language === 'css')`.
@@ -884,7 +884,7 @@ The `language` attribute is a display hint for syntax highlighting renderers, no
 | **Syntax** | `` ```yaml:tagname `` | `` ```javascript `` |
 | **Purpose** | Structured data for the component | Display content |
 | **Language means** | Serialization format (how to parse) | Display hint (how to highlight) |
-| **Destination** | `content.data.tagName` (JS object) | `content.snippets` (array of `{ language, text }`) |
+| **Destination** | `content.data.tagName` (JS object) | `content.snippets` (array of `{ language, code }`) |
 | **Formats** | `yaml`, `json` | Any language identifier |
 
 Both also appear in `content.sequence` for document-order rendering.
