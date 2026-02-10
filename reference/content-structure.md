@@ -72,7 +72,8 @@ All content fields are available at the top level:
 | `insets`     | `![](@Component)`      | Inline component references                |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
-| `data`       | Tagged code blocks     | Structured data (see below)                |
+| `snippets`   | Fenced code            | Code snippets — `[{ language, text }]`     |
+| `data`       | Tagged data blocks     | Structured data (see below)                |
 | `headings`   | Overflow headings      | Headings after title/subtitle/subtitle2    |
 | `items`      | Subsequent headings    | Child content groups                       |
 | `sequence`   | All elements           | Ordered array for document-order rendering |
@@ -830,9 +831,13 @@ lists: [                           // Array of lists in the content
 
 **Important:** List items are _not_ plain strings. They're objects with the same structure as content, allowing rich formatting, links, and nested lists within each item.
 
-## Structured Data
+## Fenced Code in Content
 
-Use tagged code blocks to pass structured data to components:
+Fenced code in markdown serves two distinct purposes depending on whether it has a **tag** (a name after the language, separated by `:`).
+
+### Tagged Data Blocks
+
+A tagged data block is structured data that gets parsed into a JS object. The format (`yaml` or `json`) tells the parser how to deserialize — it's a serialization format, not a display language. The tag is the key in `content.data`:
 
 ````markdown
 ```yaml:form
@@ -846,19 +851,43 @@ submitLabel: Send Message
 ```
 ````
 
-The tag (after the colon) routes parsed data to `content.data`:
-
 ```js
-const formConfig = content.data?.form || {}
+const formConfig = content.data?.form
 // { fields: [...], submitLabel: "Send Message" }
 ```
 
-**Supported formats:**
+**Supported formats:** `yaml` (or `yml`) and `json`. The tag name is yours to choose — `yaml:pricing`, `json:config`, `yaml:speakers` — whatever describes the data.
 
-- `json:tag-name` — Parsed as JSON
-- `yaml:tag-name` — Parsed as YAML
+### Code Snippets
 
-**Untagged code blocks** are not parsed—they stay as display-only code in the content sequence.
+Fenced code without a tag is a code snippet — display content with a language for syntax highlighting. Snippets are collected in `content.snippets`:
+
+````markdown
+```jsx
+function Hello() {
+  return <h1>Hello world</h1>
+}
+```
+````
+
+```js
+content.snippets[0]
+// { language: 'jsx', text: 'function Hello() {\n  return <h1>Hello world</h1>\n}' }
+```
+
+The `language` attribute is a display hint for syntax highlighting renderers, not a parsing format. Filter by language when needed: `content.snippets.filter(s => s.language === 'css')`.
+
+### The Distinction
+
+| | Tagged data blocks | Code snippets |
+|---|---|---|
+| **Syntax** | `` ```yaml:tagname `` | `` ```javascript `` |
+| **Purpose** | Structured data for the component | Display content |
+| **Language means** | Serialization format (how to parse) | Display hint (how to highlight) |
+| **Destination** | `content.data.tagName` (JS object) | `content.snippets` (array of `{ language, text }`) |
+| **Formats** | `yaml`, `json` | Any language identifier |
+
+Both also appear in `content.sequence` for document-order rendering.
 
 For structured data served as JSON collections (blog posts, team members, events), see [Content Collections](./content-collections.md). That guide covers markdown collections (`.md` for rich content, `.yml` for pure data), static JSON files, and runtime data — including how to choose the right approach for i18n.
 

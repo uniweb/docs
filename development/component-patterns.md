@@ -397,7 +397,7 @@ With one Grid component and a `columns` param, content authors can create any si
 
 ## Structured Data in Components
 
-Content authors pass structured data to components using tagged code blocks in markdown:
+Content authors pass structured data to components using tagged data blocks in markdown:
 
 ````markdown
 ```yaml:nav
@@ -445,7 +445,7 @@ Multiple tagged blocks accumulate — `` ```yaml:nav `` and `` ```yaml:config ``
 
 Use **`content.items`** (heading-separated content) when the data is presentational — cards, team members, FAQ entries — where each item has a natural title, description, image, and links.
 
-Use **`content.data`** (tagged code blocks) when the data is configuration — form field definitions, chart datasets, navigation structures, pricing tier metadata — that doesn't map to the heading/paragraph/image content model.
+Use **`content.data`** (tagged data blocks) when the data is configuration — form field definitions, chart datasets, navigation structures, pricing tier metadata — that doesn't map to the heading/paragraph/image content model.
 
 Some components use both: a Pricing section might use `content.items` for the tier cards (title, price, feature list, CTA link) and `content.data.pricing` for billing toggle configuration.
 

@@ -336,7 +336,7 @@ The `data` field groups all data-related configuration: CMS entity binding, sche
 ```javascript
 data: {
   entity: 'events:6',           // CMS entity type and limit
-  schemas: { ... },             // Structure for tagged code blocks
+  schemas: { ... },             // Structure for tagged data blocks
   inherit: ['team'],            // Accept cascaded data from page/site fetches (optional)
 }
 ```
@@ -536,7 +536,7 @@ preset: glass
 
 ### Schemas (Tagged Blocks)
 
-For structured data in markdown, use tagged code blocks:
+For structured data in markdown, use tagged data blocks:
 
 ````markdown
 ```yaml:nav-links

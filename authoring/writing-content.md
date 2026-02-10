@@ -307,7 +307,7 @@ You can also create items using horizontal rules (`---`) instead of headings:
 
 ## Structured Data Blocks
 
-Some section types need structured data that doesn't fit naturally into headings and paragraphs — like form fields, pricing configuration, or navigation menus. Use tagged code blocks:
+Some section types need structured data that doesn't fit naturally into headings and paragraphs — like form fields, pricing configuration, or navigation menus. Use tagged data blocks:
 
 ````markdown
 ```yaml:form
@@ -337,9 +337,9 @@ tiers:
 ```
 ````
 
-### Untagged code blocks
+### Code snippets
 
-Code blocks without a tag (just `` ```js `` or `` ```python ``) are display-only — they show formatted code on the page but don't get parsed as data.
+Code blocks without a tag (just `` ```js `` or `` ```python ``) are code snippets — display content that shows formatted code on the page with syntax highlighting. They don't get parsed as data.
 
 ---
 

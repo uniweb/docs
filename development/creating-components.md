@@ -348,7 +348,7 @@ function Features({ content }) {
 
 ## Using Tagged Blocks
 
-For structured data that doesn't fit markdown, use tagged code blocks:
+For structured data that doesn't fit markdown, use tagged data blocks:
 
 ````markdown
 ---
