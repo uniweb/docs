@@ -63,7 +63,6 @@ All content fields are available at the top level:
 | `title`      | First heading          | Main headline (`string` or `string[]` for multi-line) |
 | `pretitle`   | Heading before title   | Eyebrow/kicker text                        |
 | `subtitle`   | Heading after title    | Secondary headline (`string` or `string[]`) |
-| `subtitle2`  | Third heading          | Tertiary headline                          |
 | `paragraphs` | Body text              | Array of paragraph strings                 |
 | `links`      | `[text](url)`          | Array of link objects (see below)          |
 | `images`       | `![alt](url)`          | Array of image objects                     |
@@ -74,7 +73,7 @@ All content fields are available at the top level:
 | `quotes`     | `> text`               | Blockquote content                         |
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
 | `data`       | Tagged data blocks     | Structured data (see below)                |
-| `headings`   | Overflow headings      | Headings after title/subtitle/subtitle2    |
+| `headings`   | Additional headings    | Headings after subtitle, in document order |
 | `items`      | Subsequent headings    | Child content groups                       |
 | `sequence`   | All elements           | Ordered array for document-order rendering |
 

@@ -513,7 +513,7 @@ content = {
   title: '',
   pretitle: '',
   subtitle: '',
-  subtitle2: '',
+  headings: [],
 
   // Body content
   paragraphs: [],
