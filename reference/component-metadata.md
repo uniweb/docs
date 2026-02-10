@@ -54,6 +54,8 @@ When `meta.js` is present:
 | `content` | No | — |
 | `params` | No | — |
 | `presets` | No | — |
+| `context` | No | — |
+| `initialState` | No | — |
 
 When `meta.js` is absent (only at root of `src/sections/`), the section type has no params, no content expectations, and a title inferred from the file or folder name.
 
@@ -111,6 +113,17 @@ export default {
       label: 'Split Layout',
       params: { theme: 'gradient', layout: 'split-right' },
     },
+  },
+
+  // Static — neighbors read via getNextBlockInfo().context
+  context: {
+    allowTranslucentTop: true,
+  },
+
+  // Dynamic — neighbors read via getNextBlockInfo().state
+  // Component can update with useBlockState()
+  initialState: {
+    allowTranslucentTop: true,
   },
 }
 ```
@@ -720,6 +733,73 @@ sections:
       - media           # Resolves to @media.md
   - features            # Features
 ```
+
+---
+
+## Cross-Block Communication
+
+Section types sometimes need to coordinate with their neighbors. The typical case: a Header needs to know whether the section below it supports a floating translucent overlay. A Hero with a full-bleed background does; a plain text section doesn't.
+
+The section that **owns the capability declares it** in its `meta.js`. The section that **needs to adapt reads it** via `getNextBlockInfo()`, `getPrevBlockInfo()`, or `getFirstBodyBlockInfo()`.
+
+### context (static)
+
+Declares permanent facts about the component type. Never changes at runtime.
+
+```javascript
+// Hero/meta.js — "I always support a translucent header over me"
+export default {
+  context: {
+    allowTranslucentTop: true,
+  },
+}
+```
+
+```jsx
+// Header/index.jsx — adapts based on what's below
+const nextBlockInfo = block.getNextBlockInfo()
+// nextBlockInfo.context  → static (meta.js)
+const isFloating = nextBlockInfo?.context?.allowTranslucentTop || false
+```
+
+Use `context` when the capability is inherent to the component type — every instance of Hero always supports translucent headers, regardless of its content or state.
+
+### initialState (dynamic)
+
+Declares an initial value that the component can change at runtime via `useBlockState()`. Neighbors see changes immediately.
+
+```javascript
+// Hero/meta.js — starts translucent-ready, but component logic may disable it
+export default {
+  initialState: {
+    allowTranslucentTop: true,
+  },
+}
+```
+
+```jsx
+// Hero/index.jsx — updates state based on runtime conditions
+function Hero({ content, block }) {
+  const [state, setState] = block.useBlockState(useState)
+  // state.allowTranslucentTop is true initially (from meta.js)
+  // Component logic can change it: setState({ allowTranslucentTop: false })
+}
+```
+
+```jsx
+// Header/index.jsx — reads dynamic state, falls back to static context
+const nextBlockInfo = block.getNextBlockInfo()
+// nextBlockInfo.state    → dynamic (useBlockState)
+const isFloating = nextBlockInfo?.state?.allowTranslucentTop
+  ?? nextBlockInfo?.context?.allowTranslucentTop
+  ?? false
+```
+
+Use `initialState` when the capability depends on runtime conditions — a Hero might disable the translucent overlay after a user interaction or based on loaded data.
+
+### Key names are yours to design
+
+`allowTranslucentTop`, `expanded`, `playing` — these are not framework fields. Design whatever protocol your foundation's sections need to coordinate.
 
 ---
 
