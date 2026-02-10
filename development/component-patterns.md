@@ -139,17 +139,19 @@ Header.as = 'nav'       // wraps in <nav> instead of <section>
 
 ---
 
-## The Dispatcher
+## The Front Desk Pattern
 
-You have a Gallery component that needs to render images three different ways: a CSS grid, a masonry layout, and a horizontal carousel. Or a Hero that looks completely different on the homepage versus the pricing page. The content is the same — images with alt text, or a heading with a paragraph and links — but the rendering is structurally different. Different DOM, different CSS strategies, different interaction models.
+Section types naturally use params to adjust their own rendering — `variant: flipped` reverses a flex direction, `columns: 3` sets a grid. That's not a pattern, that's the baseline.
 
-The Dispatcher pattern handles this. The section type is a thin entry file that reads a param and delegates to separate renderer components. Each renderer is plain React — it doesn't know about CCA. The dispatcher is the only file that touches params and content structure.
+The Front Desk pattern is when a section type does virtually no rendering itself. It reads a param, picks the right helper component, and translates author-friendly vocabulary into developer-oriented props. The section type is a front desk — it greets the request and routes it to the right specialist. Each helper is plain React — it doesn't know about CCA.
+
+Sometimes the workers all render the same content differently — a Gallery that shows images as a grid, masonry layout, or carousel. Sometimes they expect entirely different content — a Hero where one variant has a background image carousel and another has a quote request form. Either way, the front desk declares the **union** of all content its workers might need, and each worker uses what's relevant.
 
 ```
 src/sections/
 └── Gallery/
     ├── meta.js           # Content interface — declares layout param
-    ├── Gallery.jsx       # Dispatcher — reads param, delegates
+    ├── Gallery.jsx       # Front desk — reads param, delegates
     ├── Grid.jsx          # Renderer: CSS grid
     ├── Masonry.jsx       # Renderer: CSS columns
     └── Carousel.jsx      # Renderer: horizontal scroll-snap
@@ -171,7 +173,7 @@ export default {
 }
 ```
 
-And the entry file dispatches:
+And the front desk delegates:
 
 ```jsx
 // Gallery.jsx
@@ -187,15 +189,64 @@ export default function Gallery({ content, params }) {
 }
 ```
 
-That's the entire dispatcher — six lines of logic. Each renderer receives normalized props and renders one way. `Grid.jsx` knows about CSS grid. `Masonry.jsx` knows about CSS columns. `Carousel.jsx` knows about scroll-snap. None of them know about CCA params or content structure. Adding a fourth layout means adding a file and a key to the map, without touching the existing renderers.
+That's the entire front desk — six lines of logic. Each renderer receives normalized props and renders one way. `Grid.jsx` knows about CSS grid. `Masonry.jsx` knows about CSS columns. `Carousel.jsx` knows about scroll-snap. None of them know about CCA params or content structure. Adding a fourth layout means adding a file and a key to the map, without touching the existing renderers.
 
 The renderer files are invisible to the build — they're nested inside a section type folder without their own `meta.js`. They're ordinary React modules.
 
-The content author writes the same markdown in every case — just images with alt text. The `layout` param changes everything about how those images appear. One component name, one content structure, three completely different visual results.
+In Gallery's case, the content is the same for every variant — just images with alt text. The `layout` param changes everything about how those images appear. One component name, one content structure, three completely different visual results.
+
+### When the workers need different content
+
+Workers don't always share the same interface. A `Hero` might delegate to a `SliderHero` that renders an image carousel and a `ContactHero` that renders a quote request form — for a plumber's site, say, where some pages have a dramatic rotating hero and others have a "Get a Quote" form. They expect different content and different props.
+
+The front desk declares the **union** of all content its workers might need. Some content won't be used for a given variant, and that's perfectly normal in CCA — params change behavior, and that includes not rendering some content:
+
+```js
+// Hero/meta.js — the union of all variants' needs
+export default {
+  params: {
+    variant: { type: 'select', options: ['slider', 'contact'], default: 'slider' },
+    slideInterval: { type: 'number', default: 5 },
+    density: { type: 'select', options: ['default', 'compact'], default: 'default' },
+    style: { type: 'select', options: ['default', 'dramatic'], default: 'default' },
+  }
+}
+```
+
+```jsx
+// Hero/Hero.jsx — the front desk
+import { SliderHero } from '../../components/SliderHero'
+import { ContactHero } from '../../components/ContactHero'
+
+const variants = { slider: SliderHero, contact: ContactHero }
+
+export default function Hero({ content, block, params }) {
+  const Variant = variants[params.variant] || SliderHero
+
+  return (
+    <Variant
+      // Shared — every variant gets these
+      title={content.title}
+      subtitle={content.paragraphs[0]}
+      links={content.links}
+      block={block}
+      // Content that only some variants use
+      images={content.imgs}
+      formData={content.data?.quote}
+      // Translated params — author vocabulary → developer props
+      interval={params.slideInterval}
+      compact={params.density === 'compact'}
+      transition={params.style === 'dramatic' ? 'zoom' : 'fade'}
+    />
+  )
+}
+```
+
+`SliderHero` uses `images`, `interval`, and `transition`; it ignores `formData` and `compact`. `ContactHero` uses `formData` and `compact`; it ignores `images` and `interval`. Each worker takes what it needs. Some params only matter for certain variants (`slideInterval` for slider, `density` for contact). Some are high-level names that the front desk translates into developer-oriented values (`style: dramatic` → `transition="zoom"`). The content author writes `variant: contact` — they don't know or care about `ContactHero`.
 
 ### When the variants are lighter
 
-Not every dispatcher needs separate files. When variants differ in styling but share the same DOM structure, a class map inside the entry file is enough:
+Not every front desk needs separate files. When variants differ in styling but share the same DOM structure, a class map inside the entry file is enough:
 
 ```jsx
 // Features.jsx — variants differ in class sets, not structure
@@ -226,7 +277,7 @@ This is a lighter form of the same pattern — the entry file reads a param and 
 
 The instinct when consolidating similar components is to find clever, abstract names for each variant. "What *is* the homepage hero, really? A split-media? A content-with-aside?"
 
-Don't do that. The dispatcher pattern doesn't require elegant abstraction. It requires consolidation.
+Don't do that. The Front Desk pattern doesn't require elegant abstraction. It requires consolidation.
 
 ```js
 // meta.js — and this is fine
@@ -246,7 +297,7 @@ Those names came from where the variants were found. That's fine — "I want the
 
 The win is consolidation: one component name, one meta.js, one place to add future variants. Not five components with five names in the content author's palette. The variant vocabulary can evolve later — start with names that are meaningful now.
 
-(If you're consolidating variants from an existing site or AI-generated pages, see [Converting Existing Designs](./converting-existing-designs.md) for the staged migration approach — including how to keep legacy implementations untouched in `components/` while the section type dispatches to them.)
+(If you're consolidating variants from an existing site or AI-generated pages, see [Converting Existing Designs](./converting-existing-designs.md) for the staged migration approach — including how to keep legacy implementations untouched in `components/` while the section type delegates to them.)
 
 ---
 
@@ -620,7 +671,7 @@ Params describe purpose, not CSS. A `spacing: comfortable` param isn't a CSS sho
 
 The constraint is generative — like writing testable code. When you can't expose `className` or `style` directly, you're forced to ask: what are the *meaningful* variations of this component? The answers become the param options, and those options are all tested, all responsive, all compatible with the foundation's design system. You end up with a tighter interface than "pass whatever CSS you want" — fewer invalid states, less surface area to maintain.
 
-But — as discussed in the [Dispatcher](#the-dispatcher) section — "purpose-based" doesn't mean "abstractly named." A Gallery's `layout: masonry` is purpose-based: the author wants a masonry look. A Hero's `variant: homepage` is also purpose-based: the author wants the homepage look. Both are meaningful to the person choosing them. The line is between intent ("I want this layout") and implementation ("give me `grid-cols-3` and `py-8`"). Variant names that came from real pages in a real site are intent — the author recognizes them. CSS fragments are implementation — the author shouldn't see them.
+But — as discussed in the [Front Desk Pattern](#the-front-desk-pattern) section — "purpose-based" doesn't mean "abstractly named." A Gallery's `layout: masonry` is purpose-based: the author wants a masonry look. A Hero's `variant: homepage` is also purpose-based: the author wants the homepage look. Both are meaningful to the person choosing them. The line is between intent ("I want this layout") and implementation ("give me `grid-cols-3` and `py-8`"). Variant names that came from real pages in a real site are intent — the author recognizes them. CSS fragments are implementation — the author shouldn't see them.
 
 ---
 

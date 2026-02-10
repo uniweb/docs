@@ -77,7 +77,7 @@ A marketing site with hero sections, feature grids, blog with dynamic routes, pr
 
 **Extensive presets.** `Hero/meta.js` has presets for Centered Hero, Split Layout, and Minimal. Each preset sets layout and pattern params — visual effects like gradients come from frontmatter `background:` configuration, not component params. This shows the CCA separation: components control layout, content authors control appearance.
 
-**Conditional layout rendering.** `Hero/index.jsx` uses the `layout` param (center/left/split) to conditionally render different arrangements of content and images within a single component. While not a full Dispatcher pattern (it doesn't delegate to separate files), it demonstrates how a single section type handles multiple visual layouts through params.
+**Conditional layout rendering.** `Hero/index.jsx` uses the `layout` param (center/left/split) to conditionally render different arrangements of content and images within a single component. While not a full Front Desk pattern (it doesn't delegate to separate files), it demonstrates how a single section type handles multiple visual layouts through params — the baseline approach.
 
 **Dynamic routes for blog.** The `site/pages/blog/[slug]/` folder creates dynamic routes for individual blog posts. `BlogList` fetches the article collection via `content.data` and renders the list page. This is the clearest example of the list-page + dynamic-route pattern described in the site configuration docs.
 

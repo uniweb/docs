@@ -267,9 +267,9 @@ function Header({ content }) {
 
 Kit provides hooks (`useWebsite`, `useActiveRoute`, `useVersion`, `useAppearance`), primitive components (`Link`, `Image`, `Icon`), and utilities (`getLocaleLabel`). The data classes underneath — Website, Page, Block from `@uniweb/core` — are what hooks return. You access them through kit, not by importing core directly. See [Kit Reference](../reference/kit-reference.md) for the full API.
 
-### Variants and the Dispatcher
+### Variants and the Front Desk
 
-When one section type needs multiple layouts (a homepage hero vs. a pricing hero), the Dispatcher pattern keeps a single section type with a `variant` param that delegates to different renderers. One component in the author's palette, multiple implementations underneath. See [Component Patterns](./component-patterns.md) for the full pattern.
+When one section type needs multiple layouts (a homepage hero vs. a pricing hero), the Front Desk pattern keeps a single section type with a `variant` param that delegates to different renderers. One component in the author's palette, multiple implementations underneath. See [Component Patterns](./component-patterns.md) for the full pattern.
 
 ---
 
@@ -279,6 +279,6 @@ When one section type needs multiple layouts (a homepage hero vs. a pricing hero
 - **[Content Structure](../reference/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
 - **[Component Metadata](../reference/component-metadata.md)** — Full `meta.js` reference (params, content expectations, presets)
 - **[Converting Existing Designs](./converting-existing-designs.md)** — Bringing existing React code into a foundation
-- **[Component Patterns](./component-patterns.md)** — Dispatcher, Building Blocks, and other design patterns
+- **[Component Patterns](./component-patterns.md)** — Front Desk, Building Blocks, and other design patterns
 - **[Thinking in Contexts](./thinking-in-contexts.md)** — Semantic theming and how components adapt to any brand
 - **[Project Structures](./project-structures.md)** — Workspace layouts for multi-site, extension, and co-located projects

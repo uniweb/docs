@@ -160,7 +160,7 @@ foundation/src/
 ├── sections/
 │   └── Hero/
 │       ├── meta.js          # Declares variant param
-│       └── Hero.jsx          # Dispatcher — reads variant, delegates
+│       └── Hero.jsx          # Front desk — reads variant, delegates
 └── components/
     ├── HeroHomepage.jsx      # Legacy implementation, moved here as-is
     └── HeroPricing.jsx       # Another legacy implementation
@@ -198,11 +198,11 @@ export default function Hero({ content, params, block }) {
 }
 ```
 
-The variant implementations in `components/` can stay exactly as they were — hardcoded content, original Tailwind classes, untouched. They're just React components now. The section type is a thin dispatcher in front of them.
+The variant implementations in `components/` can stay exactly as they were — hardcoded content, original Tailwind classes, untouched. They're just React components now. The section type is a thin front desk in front of them.
 
-This is a migration staging point. You've consolidated the content author's interface (one Hero, not three) without rewriting any rendering code. Later, when you move to Level 2, you can extract content from the variants one at a time. Or you can notice that two variants are similar enough to merge. Or you can leave them as-is — the dispatcher lets you evolve at whatever pace makes sense.
+This is a migration staging point. You've consolidated the content author's interface (one Hero, not three) without rewriting any rendering code. Later, when you move to Level 2, you can extract content from the variants one at a time. Or you can notice that two variants are similar enough to merge. Or you can leave them as-is — the front desk lets you evolve at whatever pace makes sense.
 
-The variant names don't need to be clever. `homepage` and `pricing` came from the pages these layouts were found on, and that's fine — a content author building this site knows what "the homepage hero" looks like. See [CCA Component Patterns](./component-patterns.md) for more on the Dispatcher pattern and why variant naming doesn't need to be abstract.
+The variant names don't need to be clever. `homepage` and `pricing` came from the pages these layouts were found on, and that's fine — a content author building this site knows what "the homepage hero" looks like. See [CCA Component Patterns](./component-patterns.md) for more on the Front Desk pattern and why variant naming doesn't need to be abstract.
 
 ---
 
