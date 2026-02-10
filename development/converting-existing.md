@@ -234,7 +234,7 @@ const Hero = () => (
 ```jsx
 // AFTER: content from markdown
 function Hero({ content }) {
-  const { pretitle, title, paragraphs, links, imgs } = content
+  const { pretitle, title, paragraphs, links, images } = content
 
   return (
     <div className="max-w-7xl mx-auto px-6">
@@ -301,7 +301,7 @@ Notice `Hero.className = 'pt-32 md:pt-48'` at the bottom. The runtime wraps ever
 | `"You choose a collection..."`   | Paragraph text                        | `content.paragraphs[0]` |
 | `"Start from a Template"` + URL  | `[Start from a Template](/templates)` | `content.links[0]`      |
 | `<Download size={16} />`         | `![](lu-download)` next to link       | `content.links[1].icon` |
-| Hero image                       | `![Hero illustration](./hero.jpg)`    | `content.imgs[0]`       |
+| Hero image                       | `![Hero illustration](./hero.jpg)`    | `content.images[0]`       |
 
 **What stayed in JSX:** Layout (`pt-32 md:pt-48`), the badge styling, the button variants, the grid structure, the font choices. These are design decisions — they belong in the component.
 

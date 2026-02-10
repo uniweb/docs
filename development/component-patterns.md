@@ -185,7 +185,7 @@ const layouts = { grid: Grid, masonry: Masonry, carousel: Carousel }
 
 export default function Gallery({ content, params }) {
   const Layout = layouts[params.layout] || Grid
-  return <Layout imgs={content.imgs} columns={params.columns} />
+  return <Layout images={content.images} columns={params.columns} />
 }
 ```
 
@@ -231,7 +231,7 @@ export default function Hero({ content, block, params }) {
       links={content.links}
       block={block}
       // Content that only some variants use
-      images={content.imgs}
+      images={content.images}
       formData={content.data?.quote}
       // Translated params — author vocabulary → developer props
       interval={params.slideInterval}
@@ -476,12 +476,12 @@ export default function Team({ content, params }) {
           .map(([platform, url]) => ({ href: url, text: platform })),
       }
     }
-    // Markdown items format: { title, paragraphs, imgs, links }
+    // Markdown items format: { title, paragraphs, images, links }
     return {
       name: member.title,
       role: member.paragraphs?.[0],
       bio: member.paragraphs?.[1],
-      photo: member.imgs?.[0],
+      photo: member.images?.[0],
       socialLinks: member.links || [],
     }
   })
@@ -859,7 +859,7 @@ function SplitContent({ content, block, params }) {
         <h2 className="text-heading">{content.title}</h2>
         {content.paragraphs.map((p, i) => <p key={i} className="text-body">{p}</p>)}
       </div>
-      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.imgs[0]} className="flex-1" />
+      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.images[0]} className="flex-1" />
     </div>
   )
 }

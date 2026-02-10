@@ -138,7 +138,7 @@ The meta.js describes the contract. Here's what your component actually receives
 function Hero({ content, params, block, website }) {
   // ─── From markdown (content) ────────────────────────
   // Runtime guarantees all fields exist - no defensive checks needed
-  const { title, pretitle, subtitle, paragraphs, links, imgs, items } = content
+  const { title, pretitle, subtitle, paragraphs, links, images, items } = content
 
   // ─── From frontmatter (params) ──────────────────────
   const { theme, layout } = params
@@ -248,7 +248,7 @@ Use these exact names. The meta.js describes which of these your component uses�
 
 #### Image Roles
 
-Instead of generic `imgs`, use role-specific element names:
+Instead of generic `images`, use role-specific element names:
 
 | Element | Role | Description |
 |---------|------|-------------|

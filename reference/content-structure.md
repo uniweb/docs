@@ -66,7 +66,7 @@ All content fields are available at the top level:
 | `subtitle2`  | Third heading          | Tertiary headline                          |
 | `paragraphs` | Body text              | Array of paragraph strings                 |
 | `links`      | `[text](url)`          | Array of link objects (see below)          |
-| `imgs`       | `![alt](url)`          | Array of image objects                     |
+| `images`       | `![alt](url)`          | Array of image objects                     |
 | `icons`      | `![](icon:url)`        | Array of icon objects                      |
 | `videos`     | `![](url){role=video}` | Array of video objects                     |
 | `insets`     | `![](@Component)`      | Inline component references                |
@@ -190,10 +190,10 @@ Media uses the standard image syntax `![alt](url)` but the `role` attribute dete
 
 | Role              | Output Array | Use Case                 |
 | ----------------- | ------------ | ------------------------ |
-| `image` (default) | `imgs`       | Content images           |
-| `banner`          | `imgs`       | Hero/banner images       |
-| `gallery`         | `imgs`       | Gallery images           |
-| `background`      | `imgs`       | Background images        |
+| `image` (default) | `images`       | Content images           |
+| `banner`          | `images`       | Hero/banner images       |
+| `gallery`         | `images`       | Gallery images           |
+| `background`      | `images`       | Background images        |
 | `icon`            | `icons`      | Icons and small graphics |
 | `video`           | `videos`     | Video content            |
 
@@ -316,7 +316,7 @@ Images and videos can be links—clicking them navigates to the specified URL:
 ```
 
 ```js
-imgs: [
+images: [
   {
     url: './screenshot.jpg',
     alt: 'Product Screenshot',
@@ -360,7 +360,7 @@ The parts carry distinct information:
 ![](@GradientBlob){position=top-right}
 ```
 
-Insets appear in `content.insets[]` as `{ refId }` entries (parallel to `content.imgs[]`). They also appear in `content.sequence[]` as `{ type: "inset", refId }` entries for positional rendering.
+Insets appear in `content.insets[]` as `{ refId }` entries (parallel to `content.images[]`). They also appear in `content.sequence[]` as `{ type: "inset", refId }` entries for positional rendering.
 
 At runtime, inset Block instances are available via `block.insets` (separate from `block.childBlocks`). Kit's `Render` component handles `inset_placeholder` nodes in the content flow automatically, rendering the corresponding component at the author's chosen position.
 
@@ -923,7 +923,7 @@ The runtime guarantees all fields exist—you don't need defensive null checks:
 
 ```js
 // These are always defined (empty string/array if not in content)
-const { title, paragraphs, links, imgs, items, data } = content
+const { title, paragraphs, links, images, items, data } = content
 
 // Safe to use directly
 paragraphs.forEach((p) => console.log(p))
@@ -1012,7 +1012,7 @@ Attributes written in markdown flow through the entire pipeline without filterin
 
 Attributes reach components through two distinct channels depending on the content type:
 
-**1. Object properties** — on `imgs[]`, `links[]`, `icons[]`
+**1. Object properties** — on `images[]`, `links[]`, `icons[]`
 
 When a content author writes `![Logo](./logo.svg){role=icon color=red}`, the parser extracts attributes into an object. Your component receives:
 
@@ -1048,7 +1048,7 @@ Nothing is filtered. Every attribute the content author writes reaches the compo
 |-------|-------------|
 | **Markdown** | `{key=value .class #id}` parsed into object |
 | **Content reader** | Stored in ProseMirror node attrs |
-| **Semantic parser** | Spread onto content objects (imgs, links) or serialized as HTML (text) |
+| **Semantic parser** | Spread onto content objects (images, links) or serialized as HTML (text) |
 | **prepare-props** | Passed through — only guarantees structure, doesn't filter |
 | **Component** | Receives everything — decides what to use |
 

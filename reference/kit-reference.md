@@ -490,7 +490,7 @@ Every foundation component receives these props:
 ```jsx
 function MyComponent({ content, params, block }) {
   // content - Parsed markdown content
-  const { title, paragraphs, links, imgs, items, data } = content
+  const { title, paragraphs, links, images, items, data } = content
 
   // params - Frontmatter parameters (with defaults from meta.js)
   const { theme, layout } = params
@@ -522,7 +522,7 @@ content = {
   quotes: [],
 
   // Media
-  imgs: [],
+  images: [],
   icons: [],
   videos: [],
   insets: [],        // Inline @Component references
@@ -598,7 +598,7 @@ function SplitContent({ content, block }) {
       <div className="flex-1">
         <h2 className="text-heading">{content.title}</h2>
       </div>
-      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.imgs[0]} className="flex-1 rounded-lg" />
+      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.images[0]} className="flex-1 rounded-lg" />
     </div>
   )
 }

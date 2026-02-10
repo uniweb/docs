@@ -32,11 +32,11 @@ export default {
 
 ```jsx
 export default function FeatureCard({ content, params }) {
-  const { title, paragraphs, imgs } = content
+  const { title, paragraphs, images } = content
 
   return (
     <div className="p-6 border rounded-lg">
-      {imgs[0] && <img src={imgs[0].src} alt={imgs[0].alt} className="w-16 h-16" />}
+      {images[0] && <img src={images[0].src} alt={images[0].alt} className="w-16 h-16" />}
       <h3 className="text-xl font-bold mt-4">{title}</h3>
       {paragraphs[0] && <p className="text-gray-600 mt-2">{paragraphs[0]}</p>}
     </div>
@@ -89,7 +89,7 @@ content = {
   lists: [],           // List items
 
   // Media
-  imgs: [],            // [{ src, alt, title }]
+  images: [],            // [{ src, alt, title }]
   icons: [],           // Small images marked as icons
 
   // Structure

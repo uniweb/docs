@@ -14,7 +14,7 @@ The pattern at the core of Uniweb: content (markdown) and code (React components
 A set of markdown, YAML, or JSON files in `library/` that compile into structured data. Used for blogs, team members, products — any growing catalog of items. See [Collections](../authoring/collections).
 
 **Content shape**
-The guaranteed structure that the semantic parser extracts from markdown: `title`, `subtitle`, `paragraphs`, `links`, `imgs`, `icons`, `items`, `sequence`, etc. Arrays are always arrays, strings are always strings — no null checks needed. See [Content Structure](./content-structure).
+The guaranteed structure that the semantic parser extracts from markdown: `title`, `subtitle`, `paragraphs`, `links`, `images`, `icons`, `items`, `sequence`, etc. Arrays are always arrays, strings are always strings — no null checks needed. See [Content Structure](./content-structure).
 
 **Context**
 A theming environment applied per-section. The runtime wraps each section in a context class (`context-light`, `context-medium`, `context-dark`) based on the `theme:` frontmatter. Semantic tokens resolve differently in each context. See [Thinking in Contexts](../development/thinking-in-contexts).

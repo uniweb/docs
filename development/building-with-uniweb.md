@@ -78,7 +78,7 @@ Create something great with less effort.
 | Paragraph text          | `content.paragraphs[0]` | `"Create something great..."`              |
 | `[Get Started](/about)` | `content.links[0]`      | `{ href: "/about", label: "Get Started" }` |
 
-The parser extracts semantic elements from markdown — headings become titles, paragraph text becomes `paragraphs`, links become `links`, images become `imgs`. Your component reads the structure it needs and ignores the rest. See [Content Structure](../reference/content-structure.md) for the full mapping.
+The parser extracts semantic elements from markdown — headings become titles, paragraph text becomes `paragraphs`, links become `links`, images become `images`. Your component reads the structure it needs and ignores the rest. See [Content Structure](../reference/content-structure.md) for the full mapping.
 
 The component is a regular React function. It receives `content` (parsed markdown), `params` (configuration from `meta.js`, if you add one), and `block` (the runtime object for this section). For a first component, `content` is all you need.
 
@@ -176,10 +176,10 @@ export default function Hero({ content, params }) {
           <h1 className="text-4xl font-bold">{content.title}</h1>
           <p className="text-xl mt-4">{content.paragraphs[0]}</p>
         </div>
-        {content.imgs[0] && (
+        {content.images[0] && (
           <img
-            src={content.imgs[0].src}
-            alt={content.imgs[0].alt}
+            src={content.images[0].src}
+            alt={content.images[0].alt}
             className="rounded-lg"
           />
         )}
