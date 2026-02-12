@@ -1,29 +1,28 @@
 # Internationalization (i18n)
 
-Build multi-language sites with locale-aware routing and localized content.
+Build multi-language sites with language-aware routing and localized content.
 
 ## Overview
 
-Uniweb uses a **Component Content Architecture (CCA)** where content arrives to components already localized. There is no runtime translation lookup—each locale is a complete static build.
+Uniweb uses a **Component Content Architecture (CCA)** where content arrives to components already localized. There is no runtime translation lookup—each language is a complete static build.
 
 Key characteristics:
 
-- **Locale-prefixed URLs**: `/`, `/es/`, `/fr/` for different languages
+- **Language-prefixed URLs**: `/`, `/es/`, `/fr/` for different languages
 - **Build-time translation**: Translations are merged during build, not runtime
 - **Full page reload for switching**: Navigating to `/es/about` loads Spanish content
-- **SEO-friendly**: Each locale generates separate static HTML with proper `hreflang` tags
+- **SEO-friendly**: Each language generates separate static HTML with proper `hreflang` tags
 
 ---
 
 ## Quick Start
 
-### 1. Configure Locales
+### 1. Configure Languages
 
 ```yaml
 # site.yml
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]
+defaultLanguage: en
+languages: [en, es, fr]
 ```
 
 ### 2. Build Your Site
@@ -40,7 +39,7 @@ uniweb i18n extract
 
 This scans your built content and generates `locales/manifest.json` with all translatable strings keyed by content hash.
 
-### 4. Initialize Locale Files
+### 4. Initialize Language Files
 
 ```bash
 uniweb i18n init es fr
@@ -50,7 +49,7 @@ Creates `locales/es.json` and `locales/fr.json` pre-populated with all manifest 
 
 ### 5. Translate
 
-Edit the generated locale files, replacing source text with translations:
+Edit the generated language files, replacing source text with translations:
 
 ```json
 {
@@ -65,7 +64,7 @@ Edit the generated locale files, replacing source text with translations:
 uniweb build
 ```
 
-The build merges translations and generates locale-specific output.
+The build merges translations and generates language-specific output.
 
 ---
 
@@ -75,25 +74,23 @@ The build merges translations and generates locale-specific output.
 
 ```yaml
 # site.yml
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]
+defaultLanguage: en
+languages: [en, es, fr]
 ```
 
-The default locale has no URL prefix (`/about`), while other locales get prefixed (`/es/about`, `/fr/about`).
+The default language has no URL prefix (`/about`), while other languages get prefixed (`/es/about`, `/fr/about`).
 
 ### With Custom Labels
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales:
-    - code: en
-      label: English
-    - code: es
-      label: Español
-    - code: fr
-      label: Français
+defaultLanguage: en
+languages:
+  - code: en
+    label: English
+  - code: es
+    label: Español
+  - code: fr
+    label: Français
 ```
 
 Labels appear in language switchers. Without explicit labels, `@uniweb/kit` provides common display names.
@@ -101,12 +98,11 @@ Labels appear in language switchers. Without explicit labels, `@uniweb/kit` prov
 ### Auto-Discovery
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales: '*'
+defaultLanguage: en
+languages: '*'
 ```
 
-Automatically discovers locales from the `locales/` folder. Any `.json` file in the locales directory (other than `manifest.json` and `_memory.json`) is treated as a locale.
+Automatically discovers languages from the `locales/` folder. Any `.json` file in the locales directory (other than `manifest.json` and `_memory.json`) is treated as a language.
 
 ### Custom Locales Directory
 
@@ -148,7 +144,7 @@ For a site with pages `home` and `about`:
 | Home | `/` | `/es/` | `/fr/` |
 | About | `/about` | `/es/about` | `/fr/about` |
 
-The default locale never has a prefix. Other locales always have their code as a prefix.
+The default language never has a prefix. Other languages always have their code as a prefix.
 
 ---
 
@@ -162,7 +158,7 @@ import { useWebsite, getLocaleLabel } from '@uniweb/kit'
 function LanguageSwitcher() {
   const { website } = useWebsite()
 
-  // Only show if site has multiple locales
+  // Only show if site has multiple languages
   if (!website.hasMultipleLocales()) {
     return null
   }
@@ -174,7 +170,7 @@ function LanguageSwitcher() {
     <select
       value={active}
       onChange={(e) => {
-        // Navigate triggers full page reload with new locale content
+        // Navigate triggers full page reload with new language content
         window.location.href = website.getLocaleUrl(e.target.value)
       }}
     >
@@ -199,21 +195,21 @@ function MyComponent() {
   // Check if site is multilingual
   website.hasMultipleLocales()  // boolean
 
-  // Get all locales
+  // Get all languages
   website.getLocales()
   // [{ code: 'en', label: 'English', isDefault: true }, ...]
 
-  // Get current locale
+  // Get current language
   website.getActiveLocale()  // 'en'
 
-  // Get URL for switching locales (from current page)
+  // Get URL for switching languages (from current page)
   website.getLocaleUrl('es')  // '/es/about' (if currently on /about)
 }
 ```
 
 ### Display Names Utility
 
-When locales don't have explicit labels:
+When languages don't have explicit labels:
 
 ```jsx
 import { getLocaleLabel, LOCALE_DISPLAY_NAMES } from '@uniweb/kit'
@@ -245,7 +241,7 @@ Generates `locales/manifest.json` with all translatable content:
 ```json
 {
   "version": "1.0",
-  "defaultLocale": "en",
+  "defaultLanguage": "en",
   "extracted": "2025-01-29T...",
   "units": {
     "a1b2c3d4": {
@@ -264,13 +260,13 @@ Each unit is keyed by a hash of the source string. The `contexts` array shows wh
 - `--collections-only` — Extract only collection content (skip pages)
 - `--no-collections` — Skip collections (pages only)
 
-### Initialize Locale Files
+### Initialize Language Files
 
 ```bash
 uniweb i18n init es fr
 ```
 
-Creates starter locale files pre-populated with all manifest keys. By default, values are set to the source text so translators can see what needs translating.
+Creates starter language files pre-populated with all manifest keys. By default, values are set to the source text so translators can see what needs translating.
 
 **Behavior:**
 - **File doesn't exist**: Creates it with all manifest keys
@@ -281,7 +277,7 @@ Creates starter locale files pre-populated with all manifest keys. By default, v
 - `--empty` — Use empty strings instead of source text as placeholder values
 - `--force` — Overwrite existing files entirely
 
-If no locale codes are specified, initializes all locales configured in `site.yml`.
+If no locale codes are specified, initializes all languages configured in `site.yml`.
 
 ```bash
 # Create files with source text as placeholders
@@ -296,7 +292,7 @@ uniweb i18n init es --force
 
 ### Translate
 
-Edit locale files, replacing source text (or empty strings) with translations:
+Edit language files, replacing source text (or empty strings) with translations:
 
 ```json
 {
@@ -331,7 +327,7 @@ Override keys use the format `{page}:{section}`.
 uniweb build
 ```
 
-The build merges translations and generates one `site-content.json` per locale:
+The build merges translations and generates one `site-content.json` per language:
 
 ```
 dist/
@@ -361,10 +357,10 @@ Reports what changed (new strings, removed strings, modified strings). Use `--dr
 
 ### Status
 
-Check translation coverage for all locales or a specific one:
+Check translation coverage for all languages or a specific one:
 
 ```bash
-uniweb i18n status            # All locales
+uniweb i18n status            # All languages
 uniweb i18n status es         # Spanish only
 uniweb i18n status --json     # Machine-readable output
 ```
@@ -382,7 +378,7 @@ Find stale translations (hashes no longer in manifest) and missing ones:
 ```bash
 uniweb i18n audit             # Show stale and missing entries
 uniweb i18n audit es          # Audit Spanish only
-uniweb i18n audit --clean     # Remove stale entries from locale files
+uniweb i18n audit --clean     # Remove stale entries from language files
 uniweb i18n audit --verbose   # Show detailed output
 ```
 
@@ -390,13 +386,13 @@ uniweb i18n audit --verbose   # Show detailed output
 
 ## Free-Form Translations
 
-For sections that need complete content replacement (different structure, images, or layout per locale) rather than string-by-string translation, use free-form translations.
+For sections that need complete content replacement (different structure, images, or layout per language) rather than string-by-string translation, use free-form translations.
 
 ### Overview
 
-Free-form translations replace an entire section's content with a locale-specific markdown file. This is useful for:
-- Content that needs different structure per locale
-- Sections with locale-specific images or media
+Free-form translations replace an entire section's content with a language-specific markdown file. This is useful for:
+- Content that needs different structure per language
+- Sections with language-specific images or media
 - Marketing copy that should be rewritten, not translated
 
 ### File Structure
@@ -447,7 +443,7 @@ uniweb i18n move pages/docs/setup pages/getting-started
 uniweb i18n rename pages/about hero welcome
 ```
 
-These commands update all locales and their manifests.
+These commands update all languages and their manifests.
 
 ### Prune Orphaned Translations
 
@@ -511,7 +507,7 @@ The build generates proper `hreflang` tags for each page:
 
 ### HTML lang Attribute
 
-Each locale's HTML includes the correct `lang` attribute:
+Each language's HTML includes the correct `lang` attribute:
 
 ```html
 <html lang="es">
@@ -521,7 +517,7 @@ Each locale's HTML includes the correct `lang` attribute:
 
 ## Search Index
 
-With i18n enabled, separate search indexes are generated per locale:
+With i18n enabled, separate search indexes are generated per language:
 
 ```
 dist/
@@ -532,7 +528,7 @@ dist/
     └── search-index.json  # French
 ```
 
-The search client automatically uses the correct index for the active locale.
+The search client automatically uses the correct index for the active language.
 
 ---
 
@@ -541,7 +537,7 @@ The search client automatically uses the correct index for the active locale.
 | Command | Description |
 |---------|-------------|
 | `uniweb i18n extract` | Extract translatable strings to `manifest.json` |
-| `uniweb i18n init [locales]` | Generate starter locale files from manifest |
+| `uniweb i18n init [locales]` | Generate starter language files from manifest |
 | `uniweb i18n sync` | Update manifest with content changes |
 | `uniweb i18n status [locale]` | Show translation coverage |
 | `uniweb i18n audit [locale]` | Find stale and missing translations |
@@ -571,10 +567,10 @@ The search client automatically uses the correct index for the active locale.
 
 ## Best Practices
 
-1. **Write in default locale first**: Complete content in your default language, then extract and translate
-2. **Use `init` for new locales**: Run `uniweb i18n init` after extracting to get pre-populated files
+1. **Write in default language first**: Complete content in your default language, then extract and translate
+2. **Use `init` for new languages**: Run `uniweb i18n init` after extracting to get pre-populated files
 3. **Use descriptive contexts**: The manifest shows where each string appears—use this to provide accurate translations
-4. **Test all locales**: Check that layouts work with longer/shorter text in different languages
+4. **Test all languages**: Check that layouts work with longer/shorter text in different languages
 5. **Keep translations in sync**: Run `uniweb i18n sync` after content changes to update the manifest
 6. **Use `--missing --json` for AI translation**: Export untranslated strings for batch translation with AI tools
 7. **Consider RTL**: For Arabic, Hebrew, etc., you may need additional CSS for right-to-left layout
@@ -586,4 +582,4 @@ The search client automatically uses the correct index for the active locale.
 - [Translating Your Site](../authoring/translating.md) — Content author guide (no coding required)
 - [Site Configuration](../reference/site-configuration.md) — i18n settings in site.yml
 - [Content Structure](../reference/content-structure.md) — How content flows to components
-- [Site Search](../authoring/search.md) — Locale-specific search indexes
+- [Site Search](../authoring/search.md) — Language-specific search indexes

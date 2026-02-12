@@ -20,27 +20,25 @@ Tell your site which languages you support in `site.yml`:
 
 ```yaml
 # site.yml
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]
+defaultLanguage: en
+languages: [en, es, fr]
 ```
 
-That's it. The `defaultLocale` is whatever language your content is written in.
+That's it. The `defaultLanguage` is whatever language your content is written in.
 
 ### Adding display names
 
 If you want language names to appear nicely in a language switcher:
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales:
-    - code: en
-      label: English
-    - code: es
-      label: Español
-    - code: fr
-      label: Français
+defaultLanguage: en
+languages:
+  - code: en
+    label: English
+  - code: es
+    label: Español
+  - code: fr
+    label: Français
 ```
 
 Without labels, the site uses built-in display names for common languages.
@@ -90,7 +88,7 @@ uniweb i18n init --empty
 
 ### 4. Translate
 
-Open each locale file and replace the values with translations:
+Open each language file and replace the values with translations:
 
 ```json
 {
@@ -141,9 +139,9 @@ Use `--dry-run` to see the report without changing anything:
 uniweb i18n sync --dry-run
 ```
 
-### Add new strings to locale files
+### Add new strings to language files
 
-After syncing, run init again to add any new strings to your locale files:
+After syncing, run init again to add any new strings to your language files:
 
 ```bash
 uniweb i18n init es fr
@@ -201,7 +199,7 @@ site/
 
 This context information is helpful for translators — it tells them that "Welcome to Our Company" is a title on the about page, in the intro section.
 
-### Locale files
+### Language files
 
 These are what you actually translate. Each entry maps a hash to a translated string:
 
@@ -347,7 +345,7 @@ German and Finnish text is often much longer than English. French and Spanish ar
 | What you want to do | Command |
 |---------------------|---------|
 | Extract strings from your site | `uniweb i18n extract` |
-| Create or update locale files | `uniweb i18n init es fr` |
+| Create or update language files | `uniweb i18n init es fr` |
 | Check translation progress | `uniweb i18n status` |
 | See untranslated strings | `uniweb i18n status --missing` |
 | Update manifest after content changes | `uniweb i18n sync` |

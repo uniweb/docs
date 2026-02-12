@@ -145,27 +145,25 @@ For the full reference, see [Content Mode](../reference/site-configuration.md#co
 If your site needs multiple languages, tell it which ones you support:
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]
+defaultLanguage: en
+languages: [en, es, fr]
 ```
 
-The `defaultLocale` is whatever language your content is written in. It gets no URL prefix — visitors see `/about`. Other languages get a prefix — `/es/about`, `/fr/about`.
+The `defaultLanguage` is whatever language your content is written in. It gets no URL prefix — visitors see `/about`. Other languages get a prefix — `/es/about`, `/fr/about`.
 
 ### Adding Display Names
 
 By default, the site uses built-in labels for common languages. To customize what appears in a language switcher:
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales:
-    - code: en
-      label: English
-    - code: es
-      label: Español
-    - code: fr
-      label: Français
+defaultLanguage: en
+languages:
+  - code: en
+    label: English
+  - code: es
+    label: Español
+  - code: fr
+    label: Français
 ```
 
 ### Auto-Discovering Languages
@@ -173,9 +171,8 @@ i18n:
 If you'd rather let the site detect languages from your translation files:
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales: '*'
+defaultLanguage: en
+languages: '*'
 ```
 
 The site looks at your `locales/` folder and adds every language it finds a translation file for.
@@ -185,9 +182,9 @@ The site looks at your `locales/` folder and adds every language it finds a tran
 By default, URLs keep the same path across languages — `/about` becomes `/es/about`. If you want URLs to be translated too (e.g., `/es/acerca-de`), add route translations:
 
 ```yaml
+defaultLanguage: en
+languages: [en, es]
 i18n:
-  defaultLocale: en
-  locales: [en, es]
   routeTranslations:
     es:
       /about: /acerca-de
@@ -324,13 +321,12 @@ description: Building the future of widgets
 index: home
 
 # Languages
-i18n:
-  defaultLocale: en
-  locales:
-    - code: en
-      label: English
-    - code: es
-      label: Español
+defaultLanguage: en
+languages:
+  - code: en
+    label: English
+  - code: es
+    label: Español
 
 # Features
 search:
@@ -390,8 +386,8 @@ If adding translations, get one additional language working before adding more. 
 | `index` | Which folder is the homepage | `index: home` |
 | `pages` | Page order with `...` wildcard (or strict without it) | `pages: [home, about, ...]` |
 | `base` | Base path for subdirectory deployment | `base: /docs/` |
-| `i18n.defaultLocale` | Primary language (no URL prefix) | `defaultLocale: en` |
-| `i18n.locales` | Supported languages | `locales: [en, es, fr]` |
+| `defaultLanguage` | Primary language (no URL prefix) | `defaultLanguage: en` |
+| `languages` | Supported languages | `languages: [en, es, fr]` |
 | `search.enabled` | Turn on full-text search | `enabled: true` |
 | `build.prerender` | Generate static HTML (default: true) | `prerender: true` |
 | `collections` | Define content collections | See [Collections](../reference/content-collections.md) |

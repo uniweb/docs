@@ -1,6 +1,6 @@
 # Site Configuration
 
-The `site.yml` file in your site root defines global settings, page ordering, internationalization, and feature toggles.
+The `site.yml` file in your site root defines global settings, page ordering, language support, and feature toggles.
 
 ## Quick Start
 
@@ -24,10 +24,9 @@ pages: [home, about, ...]            # Inclusive order (first is homepage, ... =
 pages: [home, about, docs]           # Strict order (unlisted hidden from nav)
 index: home                          # Or just name the homepage
 
-# Internationalization
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]              # Or '*' to auto-discover from locales/
+# Languages
+defaultLanguage: en
+languages: [en, es, fr]              # Or '*' to auto-discover from locales/
 
 # Features
 search:
@@ -203,31 +202,30 @@ pages: [getting-started, configuration, ...]
 
 ---
 
-## Internationalization (i18n)
+## Languages
 
 Enable multi-language support.
 
 ```yaml
-i18n:
-  defaultLocale: en
-  locales: [en, es, fr]
+defaultLanguage: en
+languages: [en, es, fr]
 ```
 
 ### Options
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `defaultLocale` | string | Primary locale (no URL prefix) |
-| `locales` | array | Supported locales |
+| `defaultLanguage` | string | Primary language (no URL prefix) |
+| `languages` | array | Supported languages |
 
-### Locale Formats
+### Language Formats
 
 ```yaml
 # Just codes (display names from @uniweb/kit)
-locales: [en, es, fr]
+languages: [en, es, fr]
 
 # With custom labels
-locales:
+languages:
   - code: en
     label: English
   - code: es
@@ -236,7 +234,7 @@ locales:
     label: Français
 
 # Auto-discover from locales/ folder
-locales: '*'
+languages: '*'
 ```
 
 ### Translation Workflow
@@ -259,6 +257,16 @@ This generates `locales/manifest.json` with all translatable content, and you pr
 | About | `/about` | `/es/about`, `/fr/about` |
 
 See [Internationalization](./internationalization.md) for the full guide.
+
+### Advanced i18n Options
+
+Power-user settings remain under the `i18n:` key:
+
+```yaml
+i18n:
+  routeTranslations: ...
+  localesDir: translations         # Default: locales
+```
 
 ---
 
@@ -472,14 +480,13 @@ description: Building the future of widgets
 # Structure
 pages: [home, products, about, ..., contact]
 
-# Internationalization
-i18n:
-  defaultLocale: en
-  locales:
-    - code: en
-      label: English
-    - code: es
-      label: Español
+# Languages
+defaultLanguage: en
+languages:
+  - code: en
+    label: English
+  - code: es
+    label: Español
 
 # Features
 search:
@@ -513,4 +520,4 @@ collections:
 - [Content Collections](./content-collections.md) — Markdown-based data
 - [Data Fetching](./data-fetching.md) — Loading external data
 - [Site Search](./search.md) — Full-text search setup
-- [Internationalization](./internationalization.md) — Multi-language sites
+- [Internationalization](./internationalization.md) — Multi-language support
