@@ -344,6 +344,35 @@ Configure your server to serve `.gz` or `.br` files when available.
 
 ---
 
+## Uniweb Hosting
+
+Deploy directly to Uniweb hosting with a single command:
+
+```bash
+uniweb deploy
+```
+
+This uploads your built `dist/` directory. The CLI auto-builds if `dist/` is missing.
+
+### Options
+
+```bash
+# Deploy to local server (no auth)
+uniweb deploy --local
+
+# Preview what would be deployed
+uniweb deploy --dry-run
+
+# Deploy to a specific server
+uniweb deploy --registry http://localhost:4001
+```
+
+Remote deployment requires authentication — run `uniweb login` first.
+
+For the full developer-to-client workflow (publishing foundations, creating invites, handing off sites), see [Publishing and Clients](../development/publishing-and-clients.md).
+
+---
+
 ## Publishing a Foundation
 
 Foundations are portable — you can publish them for other sites to consume.
@@ -378,6 +407,7 @@ Sites control their own update strategy — automatic, minor-only, patch-only, o
 
 ## See Also
 
-- [CLI Commands](./cli-commands.md) — Build command options
+- [CLI Commands](./cli-commands.md) — Build and deploy command options
 - [Site Configuration](./site-configuration.md) — Pre-render settings
 - [Templates](./templates.md) — Project templates
+- [Publishing and Clients](../development/publishing-and-clients.md) — Full developer-to-client workflow
