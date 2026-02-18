@@ -49,16 +49,6 @@ By default, only clients you explicitly invite can create sites with your founda
 uniweb publish --edit-access open
 ```
 
-### Local Registry
-
-For development and testing, publish to a local registry instead:
-
-```bash
-uniweb publish --local
-```
-
-This stores the foundation in `.unicloud/registry/` within your workspace. No authentication required.
-
 ## Invite Path
 
 Use invites when the client will create and manage their own site.
@@ -180,45 +170,6 @@ This uploads your built `dist/` to Uniweb hosting. The `dist/` folder is a stand
 | **Client gets** | Blank site with your foundation | Populated site with content | A live website |
 | **Editing capability** | Yes (web or Studio) | Yes (web or Studio) | No |
 | **When to use** | Client wants to build their own content | Developer builds it for the client | Client just needs a website |
-
-## Local Testing
-
-Test the full workflow locally without a remote server:
-
-### Start the Local Server
-
-```bash
-node packages/unicloud/src/local-server.js --port 4001
-```
-
-### Test the Flow
-
-```bash
-# Publish to local registry
-uniweb publish --local
-
-# Upload to local server
-uniweb publish --registry http://localhost:4001
-
-# Create an invite
-uniweb invite client@test.com --registry http://localhost:4001
-
-# Visit the invite page
-open http://localhost:4001/invite/<inviteId>
-
-# Deploy a site
-uniweb deploy --local --registry http://localhost:4001
-```
-
-### Automated Testing
-
-The workflow test script exercises the full lifecycle:
-
-```bash
-node scripts/test-workflow.js
-```
-
-This creates a sandbox project, builds, publishes, tests invites and handoff, deploys, and verifies everything is served correctly.
 
 ## See Also
 
