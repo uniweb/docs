@@ -121,7 +121,7 @@ packages:
 
 The `file:` path goes up two levels from `sites/main/` to the workspace root, then down into `foundations/default/`.
 
-**When to use it:** Multiple sites sharing a foundation, or multiple foundations with clear separation. The foundation is often the primary deliverable — published to npm, used by external sites. The site package becomes a development harness and documentation site in one.
+**When to use it:** Multiple sites sharing a foundation, or multiple foundations with clear separation. The foundation is often the primary deliverable — published to the Uniweb registry and delivered via CDN to sites. The site packages serve as development harnesses for testing the foundation.
 
 **Trade-off:** Deeper nesting means longer `file:` paths. A single-foundation project doesn't benefit from the extra directories.
 
