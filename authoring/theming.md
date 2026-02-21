@@ -206,29 +206,29 @@ You can change what colors each theme uses:
 contexts:
   light:
     section: white
-    fg: neutral-900
+    body: neutral-900
     subtle: neutral-500
     border: neutral-200
 
   medium:
     section: neutral-100
-    fg: neutral-900
+    body: neutral-900
     subtle: neutral-600
     border: neutral-300
 
   dark:
     section: neutral-900
-    fg: white
+    body: white
     subtle: neutral-400
     border: neutral-700
 ```
 
-The tokens (`section`, `fg`, `subtle`, `border`) are semantic — they describe the *role* of the color, not a specific value. When a section uses `theme: dark`, all its colors automatically switch to the dark context values.
+The tokens (`section`, `body`, `subtle`, `border`) are semantic — they describe the *role* of the color, not a specific value. When a section uses `theme: dark`, all its colors automatically switch to the dark context values.
 
 | Token | What it controls |
 |-------|-----------------|
 | `section` | Section background |
-| `fg` | Main text color |
+| `body` | Main text color |
 | `subtle` | Secondary text (subtitles, captions) |
 | `link` | Link color |
 | `accent` | Accent color (callouts, highlights) |
