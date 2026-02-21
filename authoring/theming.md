@@ -231,6 +231,7 @@ The tokens (`section`, `fg`, `subtle`, `border`) are semantic — they describe 
 | `fg` | Main text color |
 | `subtle` | Secondary text (subtitles, captions) |
 | `link` | Link color |
+| `accent` | Accent color (callouts, highlights) |
 | `border` | Border color |
 
 The values reference your color palettes. For example, `neutral-900` means shade 900 of your neutral color. You can also use `white`, `black`, or any palette shade you've defined.
@@ -306,12 +307,13 @@ You can define named styles for inline text — accent colors, highlights, callo
 ```yaml
 inline:
   accent:
-    color: var(--primary-600)
+    color: var(--link)
+    font-weight: 600
+  callout:
+    color: var(--accent)
+    font-weight: 600
   muted:
     color: var(--subtle)
-  callout:
-    color: var(--accent-600)
-    font-weight: 600
   highlight:
     background: var(--primary-100)
     color: var(--primary-900)
@@ -327,7 +329,9 @@ This is [important]{callout} — please read carefully.
 The [key finding]{highlight} was confirmed by three studies.
 ```
 
-Each name you define becomes available as an inline style. Because the values can reference theme variables (like `var(--primary-600)`), the styles adapt automatically when you change your brand colors or when text appears inside a dark section.
+Each name you define becomes available as an inline style. Because the values can reference theme variables (like `var(--accent)`, `var(--link)`), the styles adapt automatically when you change your brand colors or when text appears inside a dark section.
+
+Three inline styles are provided by default: `accent` (link-colored emphasis), `callout` (accent-colored emphasis), and `muted` (de-emphasized text). You can override them or add your own.
 
 ---
 
@@ -406,7 +410,11 @@ fonts:
 # Inline text styles
 inline:
   accent:
-    color: var(--primary-600)
+    color: var(--link)
+    font-weight: 600
+  callout:
+    color: var(--accent)
+    font-weight: 600
   highlight:
     background: var(--primary-100)
     color: var(--primary-900)
