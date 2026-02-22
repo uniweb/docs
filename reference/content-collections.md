@@ -580,7 +580,7 @@ Learn how to build your first site with Uniweb.
 First, create a new project:
 
 \`\`\`bash
-npx uniweb create my-site
+uniweb create my-site
 \`\`\`
 
 ## Configuration

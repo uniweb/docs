@@ -275,7 +275,7 @@ When one section type needs multiple layouts (a homepage hero vs. a pricing hero
 
 ## See Also
 
-- **[Quickstart](../getting-started/quickstart.md)** — Step-by-step project creation (`npx uniweb create`)
+- **[Quickstart](../getting-started/quickstart.md)** — Step-by-step project creation (`uniweb create`)
 - **[Content Structure](../reference/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
 - **[Component Metadata](../reference/component-metadata.md)** — Full `meta.js` reference (params, content expectations, presets)
 - **[Converting Existing Designs](./converting-existing-designs.md)** — Bringing existing React code into a foundation

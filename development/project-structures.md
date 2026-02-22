@@ -308,7 +308,7 @@ These are starting points. The patterns compose — a co-located project can hav
 
 Projects evolve. The `uniweb add` command handles scaffolding, workspace globs, and root scripts — you don't wire things manually.
 
-> **Running the CLI:** After `pnpm create uniweb`, you need to install dependencies before `pnpm uniweb` works. For a blank workspace where you want to add packages *before* installing, use `npx uniweb add` instead. Once you've run `pnpm install`, `pnpm uniweb` works for all subsequent commands.
+> **Running the CLI:** Install globally with `npm i -g uniweb` for the best experience — then `uniweb` works everywhere. Alternatively, use `npx uniweb` (no install needed) or `pnpm uniweb` (after `pnpm install`).
 
 ### Starting from blank
 
@@ -318,8 +318,8 @@ When you know you need a non-default layout — co-located projects, multiple fo
 pnpm create uniweb my-workspace --blank
 cd my-workspace
 
-# Add a co-located project (npx because we haven't installed yet)
-npx uniweb add project main
+# Add a co-located project
+uniweb add project main
 
 # Now install and run
 pnpm install
@@ -330,25 +330,25 @@ The `add project` command creates a co-located foundation + site pair in one ste
 
 ```bash
 # Co-located: grouped by project (preferred for multiple projects)
-npx uniweb add project marketing
-npx uniweb add project docs
+uniweb add project marketing
+uniweb add project docs
 
 # Segregated: named foundations and sites
-npx uniweb add foundation marketing
-npx uniweb add foundation blog
-npx uniweb add site main --foundation marketing
-npx uniweb add site docs --foundation blog
+uniweb add foundation marketing
+uniweb add foundation blog
+uniweb add site main --foundation marketing
+uniweb add site docs --foundation blog
 ```
 
 The CLI creates the directories, writes `package.json` and config files, updates `pnpm-workspace.yaml` globs, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages.
 
 ### Adding to an existing workspace
 
-After `pnpm install`, the CLI is available as `pnpm uniweb`:
+After `pnpm install`, the CLI is available as a project dependency too:
 
 ```bash
 # Add a second site sharing the existing foundation
-pnpm uniweb add site blog
+uniweb add site blog
 pnpm install
 ```
 
@@ -370,7 +370,7 @@ Adding a named foundation works the same way — it goes into `foundations/{name
 If you started with a single layout and now need independent projects:
 
 ```bash
-pnpm uniweb add project docs
+uniweb add project docs
 pnpm install
 ```
 
@@ -381,11 +381,11 @@ Your original `foundation/` and `site/` still work — they match their existing
 ### Adding an extension
 
 ```bash
-pnpm uniweb add extension effects --site site
+uniweb add extension effects --site site
 pnpm install
 ```
 
-This creates `extensions/effects/`, adds the `extensions/*` glob, and wires the extension URL into the specified site's `site.yml`. The extension builds like a foundation — run `pnpm uniweb build` from the workspace root to build everything in order.
+This creates `extensions/effects/`, adds the `extensions/*` glob, and wires the extension URL into the specified site's `site.yml`. The extension builds like a foundation — run `uniweb build` from the workspace root to build everything in order.
 
 Extensions are always runtime-loaded (via URL, not `file:` dependency). In dev, a Vite plugin serves the extension. In production, the build copies the extension's output into the site's `dist/`. See [Extending Your Site](./extending-your-site.md) for the full setup.
 
