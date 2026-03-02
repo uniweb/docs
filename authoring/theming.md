@@ -374,6 +374,27 @@ What settings are available depends entirely on your template. Check your templa
 
 ---
 
+## Component-Specific Settings
+
+Some section types define their own customizable settings — like card spacing or border radius. These work similarly to template settings but apply only to that section.
+
+Override them in the section's frontmatter with `vars:`:
+
+```yaml
+---
+type: PricingTable
+vars:
+  card-gap: 2rem
+  card-radius: 0.75rem
+---
+```
+
+These become CSS variables scoped to that section. The component's styles reference them — you just provide the values.
+
+What settings are available depends on the component. Check the component's documentation or look at its `meta.js` file for the `vars` field.
+
+---
+
 ## Complete Example
 
 Here's a full `theme.yml` showing all the options together:

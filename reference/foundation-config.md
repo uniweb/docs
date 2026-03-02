@@ -72,10 +72,29 @@ export const vars = {
 
 Each variable is an object with:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `default` | string | Default CSS value |
-| `description` | string | What the variable controls |
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `default` | string | Yes | Default CSS value |
+| `description` | string | No | What the variable controls |
+| `label` | string | No | Display name in editor (falls back to humanized var name) |
+| `type` | string | No | `'select'`, `'color'`, or default text input |
+| `options` | array | When `type: 'select'` | Dropdown options |
+| `group` | string | No | Visual grouping in editor (e.g. `'Layout'`, `'Visual'`) |
+| `globalOnly` | boolean | No | If true, hidden from section-level panel |
+
+When `label` is omitted, the editor generates one from the var name: `header-height` → "Header Height".
+
+#### Type mapping
+
+| Var type | Editor control | Context-aware? |
+| -------- | -------------- | -------------- |
+| (default) | Text input with default as placeholder | No |
+| `select` | Dropdown with options | No |
+| `color` | Color picker | Yes — stored per light/dark context |
+
+Color-type vars are stored separately from non-color vars. The processor routes them to `colorVars` (per-context) rather than `foundationVars` (flat). This means color vars can have different values for light and dark schemes.
+
+> **Foundation vars vs component vars:** Foundation vars are global — they emit on `:root` and apply site-wide. Component vars (declared in `meta.js`) are scoped to `#section-{id}`. See [Component Metadata](./component-metadata.md#vars) for component-level vars.
 
 ### Using Variables in Components
 

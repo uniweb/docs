@@ -496,6 +496,56 @@ These files are **not modified** in this project. The modern runtime replaces th
 
 ---
 
+## Component-Level CSS Variables
+
+Components can declare scoped CSS custom properties in `meta.js`. These are distinct from foundation vars (which are global on `:root`) — component vars are scoped to `#section-{id}`.
+
+### Declaration
+
+```js
+// sections/PricingTable/meta.js
+export default {
+  title: 'Pricing Table',
+  vars: {
+    'card-gap': { default: '1.5rem', type: 'select', options: ['1rem', '1.5rem', '2rem'] },
+    'card-radius': { default: 'var(--radius-md)' },
+  },
+}
+```
+
+### Frontmatter override
+
+```yaml
+---
+type: PricingTable
+vars:
+  card-gap: 2rem
+---
+```
+
+### CSS emission
+
+Component vars are **context-independent** — they emit in the shared rule alongside palette and foundation vars, not inside context-scoped rules.
+
+```css
+#section-42 {
+  --card-gap: 2rem;
+  --card-radius: var(--radius-md);
+}
+```
+
+### Data flow
+
+1. **Build time**: `meta.js` `vars` field is included in `schema.json` (auto-spread)
+2. **Runtime**: `Block.initComponent()` merges meta.js defaults with frontmatter `vars:` overrides via `Block.mergeComponentVars()`, storing the result as `block.componentVars`
+3. **CSS generation**: `buildSectionOverrides()` reads `block.componentVars` and emits them in the shared (context-independent) CSS rule for the section
+
+### Specificity
+
+Component vars emit on `#section-{id}`, which has higher specificity than foundation vars on `:root`. This means a component can reference a foundation var as its default (`var(--radius-md)`) and the value resolves correctly.
+
+---
+
 ## Token Reference
 
 ### Semantic tokens (24 total)
@@ -637,7 +687,7 @@ const themes = {...}                   →  DELETE (context system replaces)
 | `theming/src/index.js` | Exports for the theming package |
 | `runtime/src/components/BlockRenderer.jsx` | Context class logic (no inline override styles) |
 | `runtime/src/components/WebsiteRenderer.jsx` | Renders `<SectionOverrideStyles>` component |
-| `core/src/block.js` | Block class — `themeName` defaults to `''` (Auto) |
+| `core/src/block.js` | Block class — `themeName` defaults to `''` (Auto), `componentVars` merging |
 | `core/src/theme.js` | Theme class — `hasSchemeToggle()`, `getAppearance()` |
 | `theming/src/css-generator.js` | Global theme CSS generation |
 | `theming/src/processor.js` | Theme validation, `DEFAULT_APPEARANCE` |

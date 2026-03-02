@@ -54,6 +54,7 @@ When `meta.js` is present:
 | `content` | No | — |
 | `params` | No | — |
 | `presets` | No | — |
+| `vars` | No | — |
 | `context` | No | — |
 | `initialState` | No | — |
 
@@ -101,6 +102,16 @@ export default {
         { value: 'split-left', label: 'Split (image left)' },
       ],
       default: 'center',
+    },
+  },
+
+  vars: {
+    'content-gap': {
+      default: '2rem',
+      label: 'Content Gap',
+      type: 'select',
+      options: ['1rem', '1.5rem', '2rem', '3rem'],
+      group: 'Layout',
     },
   },
 
@@ -499,6 +510,80 @@ options: [
   { value: 'glass', label: 'Glassmorphism' },
 ]
 ```
+
+---
+
+### Vars
+
+Component-level CSS custom properties, scoped to `#section-{id}`. These are distinct from params — vars become CSS variables that your component's styles can reference, while params are JS values passed as props.
+
+```javascript
+vars: {
+  'card-gap': {
+    default: '1.5rem',
+    label: 'Card Gap',
+    type: 'select',
+    options: ['1rem', '1.5rem', '2rem'],
+    group: 'Layout',
+  },
+  'card-radius': {
+    default: 'var(--radius-md)',
+    description: 'Inherits from foundation var by default',
+  },
+}
+```
+
+The var schema is the same as [foundation vars](./foundation-config.md#variable-schema) — `default`, `label`, `type`, `options`, `group`, `description` all work the same way.
+
+#### CSS output
+
+Component vars emit on the section's CSS selector:
+
+```css
+#section-42 {
+  --card-gap: 1.5rem;
+  --card-radius: var(--radius-md);
+}
+```
+
+Use them in your component's CSS or Tailwind classes:
+
+```jsx
+function PricingTable({ content }) {
+  return (
+    <div className="grid gap-[var(--card-gap)]">
+      {content.items.map((item, i) => (
+        <div key={i} className="rounded-[var(--card-radius)]">
+          {/* ... */}
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+#### Frontmatter overrides
+
+Content authors override component vars in section frontmatter:
+
+```yaml
+---
+type: PricingTable
+vars:
+  card-gap: 2rem
+---
+```
+
+Only vars declared in `meta.js` are emitted — unknown var names in frontmatter are ignored.
+
+#### Foundation vars vs component vars
+
+| | Foundation vars | Component vars |
+| - | --------------- | -------------- |
+| Declared in | `foundation.js` | `meta.js` |
+| CSS scope | `:root` (global) | `#section-{id}` (scoped) |
+| Overridden by | `theme.yml` (`vars:`) | Section frontmatter (`vars:`) |
+| Context-aware types | Yes (`color`, `gradient`) | No (always context-independent) |
 
 ---
 
