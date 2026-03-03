@@ -160,6 +160,21 @@ The build merges site overrides with foundation defaults, generating CSS:
 
 ---
 
+## Default Section Type
+
+When a content section doesn't specify a `type:` in its frontmatter, the runtime needs to know which section type to use. By default it looks for a component called `Section`, but you can change this with `defaultSection`:
+
+```js
+// foundation/src/foundation.js
+export default {
+  defaultSection: 'FeatureGrid',
+}
+```
+
+This is useful when your foundation has a general-purpose component that should handle untyped content. If not set, the fallback is `'Section'`.
+
+---
+
 ## Custom Layout
 
 Foundations can provide custom Layout components that control page structure. Layouts live in `src/layouts/` and are auto-discovered.
@@ -393,10 +408,11 @@ export const vars = {
 }
 
 /**
- * Default layout — auto-discovered from src/layouts/
+ * Default layout and section type
  */
 export default {
   defaultLayout: 'DocsLayout',
+  defaultSection: 'FeatureGrid',
 }
 ```
 
