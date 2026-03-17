@@ -4,24 +4,27 @@ Generate multiple pages from a single template using data. Perfect for blogs, pr
 
 ## Overview
 
-Dynamic routes use a special `[param]` folder naming convention. At build time, the folder expands into multiple pages—one for each item in the parent's data.
+Dynamic routes use a special `[param]` folder naming convention. At build time, the folder expands into multiple pages — one for each item in the parent's data.
 
-```
+```text
 pages/
-└── blog/
-    ├── page.yml              # Fetches articles data
-    ├── list.md               # Blog listing page
-    └── [slug]/               # Dynamic route → expands to /blog/post-1, /blog/post-2, etc.
-        ├── page.yml
-        └── article.md        # Article template
+└── articles/
+    ├── page.yml              # Fetch defined here (folder level — no sections)
+    ├── index/                # Listing page — auto-promoted to /articles
+    │   ├── page.yml
+    │   └── 1-articles.md
+    └── [id]/                 # Dynamic route → expands to /articles/post-1, etc.
+        ├── 1-article.md
+        └── 2-related.md
 ```
 
 **Result after build:**
-```
-/blog                         # List of all articles
-/blog/getting-started         # Individual article (slug: "getting-started")
-/blog/advanced-features       # Individual article (slug: "advanced-features")
-/blog/best-practices          # Individual article (slug: "best-practices")
+
+```text
+/articles                     # Listing of all articles
+/articles/getting-started     # Individual article (id: "getting-started")
+/articles/advanced-features   # Individual article (id: "advanced-features")
+/articles/best-practices      # Individual article (id: "best-practices")
 ```
 
 ---
@@ -56,52 +59,95 @@ date: 2025-01-20
 Your article content here...
 ```
 
-The filename becomes the `slug` (e.g., `getting-started`).
+The filename becomes the `id` (e.g., `getting-started`).
 
-### 2. Set up the parent page with data
+### 2. Set up the folder-level page.yml
 
 ```yaml
-# pages/blog/page.yml
-title: Blog
-description: Latest articles and tutorials
+# pages/articles/page.yml
+# No sections directly here — this is a pure data config layer
 data: articles
 ```
 
-This references the `articles` collection. The build generates JSON automatically from your markdown files.
+This references the `articles` collection. The build generates JSON automatically from your markdown files. Both `articles/index/` and `articles/[id]/` inherit this fetch config.
 
-### 3. Create the dynamic route folder
+### 3. Create the index and dynamic route folders
 
 ```yaml
-# pages/blog/[slug]/page.yml
-title: Article
-description: Blog article
+# pages/articles/index/page.yml
+title: Articles
+description: Latest articles and tutorials
 ```
 
 ```markdown
-<!-- pages/blog/[slug]/article.md -->
+<!-- pages/articles/index/1-articles.md -->
+---
+type: ArticleList
+---
+```
+
+```markdown
+<!-- pages/articles/[id]/1-article.md -->
 ---
 type: Article
 ---
 ```
 
-### 4. Create your component with inheritData
+### 4. Create your components
+
+```js
+// foundation/src/sections/ArticleList/meta.js
+export default {
+  title: 'Article List',
+  data: { inherit: true },
+}
+```
+
+```jsx
+// foundation/src/sections/ArticleList/index.jsx
+export default function ArticleList({ content, block }) {
+  if (block.dataLoading) {
+    return <div className="animate-pulse">Loading...</div>
+  }
+
+  const articles = content.data.articles || []
+
+  return (
+    <ul>
+      {articles.map(a => (
+        <li key={a.id}>
+          <a href={`/articles/${a.id}`}>{a.title}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
 
 ```js
 // foundation/src/sections/Article/meta.js
 export default {
   title: 'Article',
-  inheritData: ['article', 'articles'],  // Receives current + all items
+  data: { inherit: true },
 }
 ```
 
 ```jsx
 // foundation/src/sections/Article/index.jsx
-export default function Article({ content }) {
+export default function Article({ content, block }) {
+  if (block.dataLoading) {
+    return <div className="animate-pulse">Loading...</div>
+  }
+
   const article = content.data.article
-  const allArticles = content.data.articles || []
 
   if (!article) {
-    return <div>Article not found</div>
+    return (
+      <div style={{ textAlign: 'center', padding: '4rem' }}>
+        <h1>Not found</h1>
+        <p>This article does not exist.</p>
+      </div>
+    )
   }
 
   return (
@@ -109,17 +155,6 @@ export default function Article({ content }) {
       <h1>{article.title}</h1>
       <p>By {article.author} on {article.date}</p>
       <p>{article.excerpt}</p>
-
-      <h2>More Articles</h2>
-      <ul>
-        {allArticles
-          .filter(a => a.slug !== article.slug)
-          .map(a => (
-            <li key={a.slug}>
-              <a href={`/blog/${a.slug}`}>{a.title}</a>
-            </li>
-          ))}
-      </ul>
     </article>
   )
 }
@@ -129,41 +164,62 @@ export default function Article({ content }) {
 
 ## How It Works
 
-### 1. Parent fetches data
+### 1. Folder-level page.yml declares the fetch
 
-The parent page (`/blog`) references collection data:
+The `articles/page.yml` has no `.md` section files — it acts as a container that owns the data config for the whole route family:
 
 ```yaml
-# pages/blog/page.yml
+# pages/articles/page.yml
 data: articles
 ```
 
-This is equivalent to `fetch: { collection: articles }`. The schema is inferred from the collection name.
+### 2. `index/` is auto-promoted to the parent route
 
-### 2. Dynamic folder detected
+The `index/` sub-directory is automatically promoted to the parent route (`/articles`). It inherits the fetch from `articles/page.yml` without needing to redeclare it.
 
-The `[slug]` folder name tells the build system this is a dynamic route. The param name (`slug`) determines which field to use for URLs.
+### 3. Dynamic folder detected
 
-### 3. Routes expanded at build time
+The `[id]` folder name tells the build system this is a dynamic route. The param name (`id`) determines which field to use for URLs.
+
+### 4. Routes expanded at build time
 
 During prerender, the dynamic route expands:
 
-| Template Route | Concrete Routes |
-|----------------|-----------------|
-| `/blog/:slug` | `/blog/getting-started` |
-| | `/blog/advanced-features` |
-| | `/blog/best-practices` |
+| Template Route  | Concrete Routes                  |
+|-----------------|----------------------------------|
+| `/articles/:id` | `/articles/getting-started`      |
+|                 | `/articles/advanced-features`    |
+|                 | `/articles/best-practices`       |
 
-### 4. Data cascaded to each page
+### 5. Data cascaded to each page
 
 Each generated page receives:
 
-| Key | Value | Description |
-|-----|-------|-------------|
-| `content.data.article` | `{ slug, title, ... }` | Current item (singularized schema) |
-| `content.data.articles` | `[...]` | All items from parent |
+| Key                       | Value                | Description                        |
+|---------------------------|----------------------|------------------------------------|
+| `content.data.article`    | `{ id, title, ... }` | Current item (singularized schema) |
+| `content.data.articles`   | `[...]`              | All items from parent              |
 
 The schema name is automatically singularized: `articles` → `article`.
+
+---
+
+## Folder-Level Fetch
+
+The folder level is the recommended pattern for dynamic routes. A `page.yml` with no sections directly inside it — only `index/` and `[id]/` sub-directories — acts as a pure data configuration layer.
+
+```text
+pages/articles/
+├── page.yml          # fetch defined here (folder level)
+├── index/            # listing — auto-promoted to /articles
+│   ├── page.yml
+│   └── 1-articles.md
+└── [id]/             # detail — inherits fetch from articles/page.yml
+    ├── 1-article.md
+    └── 2-related.md
+```
+
+Both sub-pages inherit from `articles/page.yml` without needing their own `data:` or `fetch:` declarations. This cleanly separates data configuration from page layout.
 
 ---
 
@@ -171,11 +227,11 @@ The schema name is automatically singularized: `articles` → `article`.
 
 The param name comes from the folder name:
 
-| Folder | Param | URL Pattern | Uses Field |
-|--------|-------|-------------|------------|
-| `[slug]` | `slug` | `/blog/:slug` | `item.slug` |
-| `[id]` | `id` | `/products/:id` | `item.id` |
-| `[username]` | `username` | `/users/:username` | `item.username` |
+| Folder       | Param      | URL Pattern         | Uses Field        |
+|--------------|------------|---------------------|-------------------|
+| `[slug]`     | `slug`     | `/blog/:slug`       | `item.slug`       |
+| `[id]`       | `id`       | `/products/:id`     | `item.id`         |
+| `[username]` | `username` | `/users/:username`  | `item.username`   |
 
 **Important:** Each item in your data array must have a field matching the param name.
 
@@ -187,19 +243,20 @@ The param name comes from the folder name:
 
 ```json
 [
-  { "slug": "post-1", "title": "First Post", ... },
-  { "slug": "post-2", "title": "Second Post", ... }
+  { "id": "post-1", "title": "First Post" },
+  { "id": "post-2", "title": "Second Post" }
 ]
 ```
 
 ### Each item needs the param field
 
-If your folder is `[slug]`, every item must have a `slug` field:
+If your folder is `[id]`, every item must have an `id` field:
 
 ```json
-{ "slug": "my-post", "title": "My Post" }  // ✓ Good
-{ "id": "123", "title": "My Post" }        // ✗ Missing slug
+{ "id": "my-post", "title": "My Post" }
 ```
+
+Missing the param field (e.g., only having `slug` when the folder is `[id]`) causes the item to be skipped.
 
 ### Automatic singularization
 
@@ -207,10 +264,10 @@ The schema name is singularized for the current item:
 
 | Parent Schema | Current Item Key | All Items Key |
 |---------------|------------------|---------------|
-| `articles` | `article` | `articles` |
-| `products` | `product` | `products` |
-| `people` | `person` | `people` |
-| `posts` | `post` | `posts` |
+| `articles`    | `article`        | `articles`    |
+| `products`    | `product`        | `products`    |
+| `people`      | `person`         | `people`      |
+| `posts`       | `post`           | `posts`       |
 
 Common irregular plurals are handled: `people` → `person`, `children` → `child`, etc.
 
@@ -220,31 +277,42 @@ Common irregular plurals are handled: `people` → `person`, `children` → `chi
 
 ### Opting into cascaded data
 
-Components must declare `inheritData` to receive the data:
+Components must declare `data: { inherit: true }` to receive the data:
 
 ```js
 // meta.js
 export default {
   title: 'Article',
-
-  // Receive both singular (current) and plural (all)
-  inheritData: ['article', 'articles'],
+  data: { inherit: true },
 }
+```
+
+You can be selective:
+
+```js
+data: { inherit: ['article', 'articles'] }
 ```
 
 ### Accessing the data
 
 ```jsx
-export default function Article({ content }) {
+export default function Article({ content, block }) {
+  // Show skeleton while loading
+  if (block.dataLoading) {
+    return <div className="animate-pulse">Loading...</div>
+  }
+
   // Current item for this page
   const article = content.data.article
 
-  // All items (for "related" sections, navigation, etc.)
-  const allArticles = content.data.articles || []
-
-  // Always handle the case where data might be missing
+  // Always handle not found
   if (!article) {
-    return <div>Article not found</div>
+    return (
+      <div style={{ textAlign: 'center', padding: '4rem' }}>
+        <h1>Not found</h1>
+        <p>This article does not exist.</p>
+      </div>
+    )
   }
 
   return (
@@ -258,20 +326,115 @@ export default function Article({ content }) {
 
 ---
 
+## Loading States
+
+Use `block.dataLoading` to show skeleton UI while data is being fetched:
+
+```jsx
+export default function ArticleList({ content, block }) {
+  if (block.dataLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-gray-200 rounded" />
+        ))}
+      </div>
+    )
+  }
+
+  const articles = content.data.articles || []
+  // ...
+}
+```
+
+---
+
+## Not Found Handling
+
+EntityStore always fetches the collection first to validate that the requested ID exists in it. If the ID is not found in the collection, `content.data.article` is `null`. Your component should handle this gracefully:
+
+```jsx
+if (!article) {
+  return (
+    <div style={{ textAlign: 'center', padding: '4rem' }}>
+      <h1>Not found</h1>
+      <p>This article does not exist.</p>
+    </div>
+  )
+}
+```
+
+The page title is automatically set to `"Not found"` when the ID is invalid — no `useEffect` or `document.title` manipulation needed. For valid IDs, the title is automatically set from `item.title`.
+
+---
+
+## Related Items Pattern
+
+A section on a dynamic page can receive the full collection **minus the current item** using `detail: false` in the block's frontmatter fetch. This is the related items pattern:
+
+```markdown
+<!-- pages/articles/[id]/2-related.md -->
+---
+type: RelatedArticles
+fetch:
+  inherit: true   # merge with parent fetch, not a new data source
+  detail: false   # give me the collection minus the current item
+  limit: 3        # slice to 3 items
+---
+
+# More articles
+```
+
+```js
+// RelatedArticles/meta.js
+export default {
+  title: 'Related Articles',
+  data: { inherit: true },
+  // detail: false and limit are set per-instance in the .md frontmatter
+}
+```
+
+```jsx
+export default function RelatedArticles({ content, block }) {
+  if (block.dataLoading) return <div className="animate-pulse">Loading...</div>
+
+  const related = content.data.articles || []
+
+  if (related.length === 0) return null
+
+  return (
+    <section>
+      <h2>More Articles</h2>
+      <ul>
+        {related.map(a => (
+          <li key={a.id}>
+            <a href={`/articles/${a.id}`}>{a.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+```
+
+---
+
 ## Page Metadata
 
-Dynamic pages automatically inherit metadata from the current item:
+Dynamic pages automatically set metadata from the current item:
 
-| Item Field | Page Property |
-|------------|---------------|
-| `title` | Page title (shown in browser tab) |
-| `description` or `excerpt` | Meta description |
+| Item Field              | Page Property                                                                 |
+|-------------------------|-------------------------------------------------------------------------------|
+| `title`                 | Page title (shown in browser tab) — set automatically, no `useEffect` needed |
+| `description`/`excerpt` | Meta description                                                              |
+
+For invalid IDs, the page title is automatically set to `"Not found"`.
 
 ```json
 {
-  "slug": "getting-started",
-  "title": "Getting Started",           // → <title>Getting Started</title>
-  "description": "Learn the basics..."  // → <meta name="description" ...>
+  "id": "getting-started",
+  "title": "Getting Started",
+  "description": "Learn the basics..."
 }
 ```
 
@@ -279,48 +442,52 @@ Dynamic pages automatically inherit metadata from the current item:
 
 ## Examples
 
-### Blog with articles
+### Articles (modern folder structure — recommended)
 
+```text
+pages/articles/
+├── page.yml          # data: articles (folder level)
+├── index/            # listing — auto-promoted to /articles
+│   ├── page.yml
+│   └── 1-articles.md
+└── [id]/
+    ├── 1-article.md
+    └── 2-related.md  # fetch: { inherit: true, detail: false, limit: 3 }
 ```
+
+### Blog (flat structure — alternative)
+
+```text
 pages/blog/
-├── page.yml          # data: articles
-├── list.md           # type: BlogList
+├── page.yml          # data: articles (page level, sections here)
+├── 1-list.md         # type: BlogList
 └── [slug]/
     ├── page.yml
-    └── article.md    # type: Article
+    └── 1-article.md  # type: Article
 ```
+
+In the flat structure the fetch is at page level alongside the listing section. Both structures work; the folder structure gives cleaner separation.
 
 ### Product catalog
 
-```
+```text
 pages/products/
 ├── page.yml          # data: products
-├── grid.md           # type: ProductGrid
+├── index/
+│   └── 1-grid.md     # type: ProductGrid
 └── [id]/
-    ├── page.yml
-    └── detail.md     # type: ProductDetail
+    └── 1-detail.md   # type: ProductDetail
 ```
 
 ### Team directory
 
-```
+```text
 pages/team/
-├── page.yml          # data: team (or data: people with schema override)
-├── overview.md       # type: TeamGrid
+├── page.yml          # data: team
+├── index/
+│   └── 1-overview.md # type: TeamGrid
 └── [username]/
-    ├── page.yml
-    └── profile.md    # type: PersonProfile
-```
-
-### Documentation with sections
-
-```
-pages/docs/
-├── page.yml          # data: docs (or fetch: { collection: docs, schema: sections })
-├── overview.md
-└── [slug]/
-    ├── page.yml
-    └── content.md    # type: DocPage
+    └── 1-profile.md  # type: PersonProfile
 ```
 
 ---
@@ -329,15 +496,14 @@ pages/docs/
 
 Dynamic pages can have multiple sections, each receiving the cascaded data:
 
-```
-pages/blog/[slug]/
-├── page.yml
-├── 1-article.md      # type: Article (inheritData: ['article'])
-├── 2-author.md       # type: AuthorBio (inheritData: ['article'])
-└── 3-related.md      # type: RelatedPosts (inheritData: ['articles'])
+```text
+pages/articles/[id]/
+├── 1-article.md      # type: Article (data: { inherit: true })
+├── 2-author.md       # type: AuthorBio (data: { inherit: true })
+└── 3-related.md      # type: RelatedArticles (fetch: { inherit: true, detail: false, limit: 3 })
 ```
 
-Each component opts into the data it needs via `inheritData`.
+Each component opts into the data it needs. The `3-related.md` block uses the block-level inherit-merge fetch to get the collection minus the current item.
 
 ---
 
@@ -345,7 +511,7 @@ Each component opts into the data it needs via `inheritData`.
 
 ### With tagged data blocks
 
-Local data takes precedence over cascaded data:
+Local data takes precedence over cascaded data. A tagged YAML block in the `.md` file overrides the cascaded value for that schema key:
 
 ```markdown
 ---
@@ -353,12 +519,9 @@ type: Article
 ---
 
 # Custom Override
+```
 
-```yaml:article
-title: This overrides the cascaded article
-custom: true
-```
-```
+The component receives both `content.data.article` (cascaded) and any tagged blocks that override it.
 
 ### With additional fetches
 
@@ -383,44 +546,43 @@ Dynamic routes are fully compatible with static site generation:
 2. **Output**: Each route becomes a static `.html` file
 3. **No server needed**: Host anywhere (Netlify, Vercel, GitHub Pages, etc.)
 
-```
+```text
 dist/
-├── blog/
-│   ├── index.html              # /blog (listing)
+├── articles/
+│   ├── index.html              # /articles (listing)
 │   ├── getting-started/
-│   │   └── index.html          # /blog/getting-started
+│   │   └── index.html          # /articles/getting-started
 │   ├── advanced-features/
-│   │   └── index.html          # /blog/advanced-features
+│   │   └── index.html          # /articles/advanced-features
 │   └── best-practices/
-│       └── index.html          # /blog/best-practices
+│       └── index.html          # /articles/best-practices
 ```
 
 ---
 
 ## Detail Queries
 
-When a user navigates from a list page to a detail page (e.g., `/blog` → `/blog/my-post`), the collection data is already cached from the list page. The runtime extracts the matching item — no extra fetch needed.
+When a user navigates from a list page to a detail page (e.g., `/articles` → `/articles/my-post`), the collection data is already cached from the list page. The runtime extracts the matching item — no extra fetch needed.
 
-But when a user **lands directly** on a detail page (e.g., bookmarked `/blog/my-post`), the collection isn't cached. By default, the runtime fetches the full collection just to extract one item. For large collections or expensive API calls, this is wasteful.
+But when a user **lands directly** on a detail page (e.g., bookmarked `/articles/my-post`), the collection isn't cached. By default, the runtime fetches the full collection just to extract one item. For large collections or expensive API calls, this is wasteful.
 
 The `detail` field on a fetch config tells the runtime how to fetch just the single entity:
 
 ```yaml
-# pages/blog/page.yml
-title: Blog
+# pages/articles/page.yml
 fetch:
   url: https://api.example.com/articles
   schema: articles
   detail: rest
 ```
 
-### Conventions
+### URL Conventions
 
-| Value | URL derived | Example for slug=`my-post` |
-|-------|------------|---------------------------|
-| `rest` | `{url}/{value}` | `https://api.example.com/articles/my-post` |
-| `query` | `{url}?{param}={value}` | `https://api.example.com/articles?slug=my-post` |
-| Custom pattern | Replace `{param}` placeholder | `https://api.example.com/article/{slug}` → `.../article/my-post` |
+| Value          | URL derived              | Example for id=`my-post`                                         |
+|----------------|--------------------------|------------------------------------------------------------------|
+| `rest`         | `{url}/{value}`          | `https://api.example.com/articles/my-post`                       |
+| `query`        | `{url}?{param}={value}`  | `https://api.example.com/articles?id=my-post`                    |
+| Custom pattern | Replace `{param}` in URL | `https://api.example.com/article/{id}` → `.../article/my-post`   |
 
 ### Resolution order
 
@@ -433,29 +595,29 @@ fetch:
 From a detail query, the component receives only the singular key:
 
 ```js
-content.data.article   // { slug: 'my-post', title: '...' }
+content.data.article   // { id: 'my-post', title: '...' }
 content.data.articles  // undefined (no collection fetched)
 ```
 
 From a cached collection (the normal SPA navigation case), both are available:
 
 ```js
-content.data.article   // { slug: 'my-post', title: '...' }
+content.data.article   // { id: 'my-post', title: '...' }
 content.data.articles  // [...all items...]
 ```
 
 Components that already handle `if (!article) return ...` work in both cases.
 
-### Examples
+### Detail query examples
 
 ```yaml
-# REST convention — GET /api/articles/{slug}
+# REST convention — GET /api/articles/{id}
 fetch:
   url: https://api.example.com/articles
   schema: articles
   detail: rest
 
-# Query param — GET /api/articles?slug={slug}
+# Query param — GET /api/articles?id={id}
 fetch:
   url: https://api.example.com/articles
   schema: articles
@@ -465,7 +627,7 @@ fetch:
 fetch:
   url: https://api.example.com/articles
   schema: articles
-  detail: https://api.example.com/article/{slug}
+  detail: https://api.example.com/article/{id}
 ```
 
 ---
@@ -474,9 +636,9 @@ fetch:
 
 ### "No data found for dynamic page"
 
-**Cause:** Parent page doesn't have a `fetch` config or the fetch returned empty data.
+**Cause:** Parent `page.yml` doesn't have a `fetch` config or the fetch returned empty data.
 
-**Fix:** Ensure the parent `page.yml` references the collection data:
+**Fix:** Ensure the folder-level or parent `page.yml` references the collection data:
 
 ```yaml
 data: articles
@@ -489,26 +651,27 @@ data: articles
 **Fix:** Ensure every item has the field matching your folder name:
 
 ```json
-// For [slug] folder, every item needs "slug"
-{ "slug": "my-post", "title": "..." }
+{ "id": "my-post", "title": "..." }
 ```
 
 ### Component shows "not found" message
 
-**Cause:** Component not receiving cascaded data.
+**Cause:** Component not receiving cascaded data, or the ID was not found in the collection.
 
-**Fix:** Add `inheritData` to your component's `meta.js`:
+**Fix:** Add `data: { inherit: true }` to your component's `meta.js`:
 
 ```js
 export default {
   title: 'Article',
-  inheritData: ['article', 'articles'],
+  data: { inherit: true },
 }
 ```
 
+If the data is wired correctly but the item is still null, the ID doesn't exist in the collection — EntityStore validates every ID against the collection before resolving. Show a proper not-found UI.
+
 ### Wrong data in component
 
-**Cause:** Schema name mismatch between fetch and inheritData.
+**Cause:** Schema name mismatch between fetch and component declaration.
 
 **Fix:** Ensure names match (accounting for singularization):
 
@@ -519,8 +682,8 @@ fetch:
 ```
 
 ```js
-// meta.js
-inheritData: ['article', 'articles']  // singular + plural
+// meta.js — inherit: true accepts both singular and plural automatically
+data: { inherit: true }
 ```
 
 ---

@@ -8,24 +8,30 @@ The `fetch` property lets you load structured data into `content.data`. It works
 
 | Level | File | Scope |
 |-------|------|-------|
-| **Section** | Frontmatter | Available to that section's component |
-| **Page** | `page.yml` | Cascaded to all sections on that page |
-| **Site** | `site.yml` | Cascaded to all pages and sections |
+| **Block** | `.md` frontmatter | Available to that section's component only |
+| **Page** | `page.yml` with sections on the page | Shared across all sections on that page |
+| **Folder** | `page.yml` with no sections (only sub-pages) | Shared across a whole route family (`index/` and `[id]/`) |
 
-Data cascades down: site → page → section. Components opt into receiving cascaded data via `data.inherit` in their `meta.js`.
+Data cascades down: folder → page → block. Components opt into receiving cascaded data via `data.inherit` in their `meta.js`.
+
+The **folder level** is the key pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data configuration layer for the entire route family. EntityStore walks: block → page → page.parent (folder) → site config.
+
+Site-level fetch (`site.yml fetch:`) is also supported but is rarely needed in practice — it makes data available globally to every page and section.
 
 ---
 
 ## Basic Usage
 
-### Section-level fetch
+### Block-level fetch
 
-The simplest form—load collection data for a specific section:
+The simplest form — load data for a specific section:
 
 ```markdown
 ---
 type: TeamGrid
-data: team
+fetch:
+  path: /data/team.json
+  schema: team
 ---
 
 # Our Team
@@ -33,11 +39,11 @@ data: team
 Meet the people behind the project.
 ```
 
-The component receives the data in `content.data.team` (key inferred from collection name).
+The component receives the data in `content.data.team`.
 
 ### Page-level fetch
 
-Load data once, share with all sections on a page:
+Load data once, share with all sections on a page. Use this when the page has `.md` section files directly inside it:
 
 ```yaml
 # pages/about/page.yml
@@ -45,19 +51,19 @@ title: About Us
 data: team
 ```
 
-All sections on `/about` can access `content.data.people` if they opt in.
+All sections on `/about` can access `content.data.team` if they opt in via `data: { inherit: true }` in their `meta.js`.
 
-### Site-level fetch
+### Folder-level fetch
 
-Load global data available everywhere:
+Load data shared across an entire route family. Use this when `page.yml` has no sections directly — only `index/` and `[id]/` sub-directories:
 
 ```yaml
-# site.yml
-name: My Site
-fetch:
-  path: /data/config.json
-  schema: siteConfig
+# pages/articles/page.yml
+# (no .md sections here — this is a pure data config layer)
+data: articles
 ```
+
+Both `articles/index/` (the listing page) and `articles/[id]/` (the detail page) inherit this fetch config. This is the recommended structure for dynamic routes.
 
 ---
 
@@ -74,6 +80,9 @@ fetch:
   merge: false               # Replace existing data (default: false)
   transform: data.items      # Extract nested path from response
   detail: rest               # Single-entity fetch for dynamic routes (optional)
+  limit: 6                   # Post-processing: take first N items
+  sort: date desc            # Post-processing: sort by field
+  filter: tags contains featured  # Post-processing: filter items
 ```
 
 ### Options
@@ -87,6 +96,9 @@ fetch:
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern |
+| `limit` | — | Take first N items after filtering and sorting |
+| `sort` | — | Sort by field, e.g. `date desc` |
+| `filter` | — | Filter expression, e.g. `tags contains featured` |
 
 ### Schema inference
 
@@ -101,36 +113,106 @@ fetch: /api/events.yaml         # → schema: events
 
 ## Data Cascading
 
-Data flows from site → page → section. Components must opt in to receive cascaded data.
+Data flows from folder → page → block. Components must opt in to receive cascaded data.
 
-### Component opt-in (meta.js)
+### Component opt-in (`meta.js` — consumption declaration)
+
+The `data:` field in `meta.js` is a **consumption declaration**, not a fetch config. It tells the runtime which cascaded data this component wants to receive. It does not define where data comes from — that's the job of the `fetch:` config in `page.yml` or the block's `.md` frontmatter.
 
 ```js
-// foundation/src/sections/TeamGrid/meta.js
+// foundation/src/sections/ArticleList/meta.js
 export default {
-  title: 'Team Grid',
+  title: 'Article List',
 
   data: {
-    // Accept all cascaded data
+    // Walk the hierarchy to find a fetch config — accept everything found
     inherit: true,
-
-    // Or be selective
-    inherit: ['person', 'config'],
   },
 }
 ```
 
+You can be selective about which schemas to accept:
+
+```js
+data: {
+  inherit: ['articles', 'config'],  // Only accept these schemas
+}
+```
+
+On a dynamic `[id]/` page, you can also control whether you receive the single matched item (`detail: true`, the default) or the full collection minus the current item:
+
+```js
+data: {
+  inherit: true,
+  detail: false,   // Give me the collection minus the current item
+  limit: 3,        // Slice to 3 items
+}
+```
+
+This `detail: false` + `limit` combination is the **related items pattern** — see [Related Items](#related-items-pattern) below.
+
+> **Deprecated:** `inheritData: ['article', 'articles']` and `data: { entity: 'articles' }` are the old syntax. Use `data: { inherit: true }` instead.
+
 ### Precedence
 
-Local data (from tagged blocks or section fetch) takes precedence over cascaded data:
+Block data (from the `.md` frontmatter fetch or tagged blocks) takes precedence over cascaded data:
 
 ```
-Section fetch/tagged blocks  →  highest priority
+Block fetch / tagged blocks  →  highest priority
 Page fetch                   →  medium priority
+Folder fetch                 →  lower priority
 Site fetch                   →  lowest priority
 ```
 
-If a section has `yaml:team` and the page also fetches `team`, the tagged block wins.
+---
+
+## Block-Level Inherit-Merge Fetch
+
+A block's `.md` frontmatter can use `fetch: { inherit: true, ... }` to **merge** with the parent fetch config instead of replacing it. This lets you override specific fields per-instance without pointing to a new data source:
+
+```yaml
+# pages/articles/[id]/2-related.md
+---
+type: RelatedArticles
+fetch:
+  inherit: true   # don't treat this as a new URL source — merge with parent fetch
+  detail: false   # override: give me collection minus current item
+  limit: 3        # override: slice to 3 items
+---
+
+# More articles
+```
+
+This is per-instance control. The component's `meta.js data:` sets defaults; the `.md` `fetch:` overrides for specific instances. Block-level inherit-merge takes priority over `meta.js data:` declarations.
+
+---
+
+## Related Items Pattern
+
+A section on a dynamic page can receive the full collection **minus the current item** using `detail: false`. Combined with `limit`, this is the "related items" pattern:
+
+```yaml
+# pages/articles/[id]/2-related.md
+---
+type: RelatedArticles
+fetch:
+  inherit: true
+  detail: false
+  limit: 3
+---
+
+# More articles
+```
+
+```js
+// RelatedArticles/meta.js
+export default {
+  data: { inherit: true },
+  // detail: false and limit are set per-instance in the .md, not here
+}
+```
+
+The component receives the related items directly in `content.data.articles` — filtered and sliced, ready to render.
 
 ---
 
@@ -375,8 +457,13 @@ The runtime applies defaults from the schema and ensures data structure.
 ## Component Usage
 
 ```jsx
-export default function TeamGrid({ content, params }) {
-  // Data from fetch, tagged blocks, or cascaded from page/site
+export default function TeamGrid({ content, block }) {
+  // Show skeleton while data is loading
+  if (block.dataLoading) {
+    return <div className="animate-pulse">Loading...</div>
+  }
+
+  // Data from fetch, tagged blocks, or cascaded from page/folder
   const team = content.data.team || []
 
   return (
