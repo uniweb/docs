@@ -546,22 +546,37 @@ uniweb i18n sync
 Authenticate with the Uniweb platform. Stores credentials at `~/.uniweb/auth.json`.
 
 ```bash
-uniweb login
+uniweb login [options]
 ```
 
-The command prompts for your email and an API token (from uniweb.app/cli-login). Tokens are valid for 30 days.
+### Options
 
-If you're already logged in, the command shows your current email and lets you switch accounts.
+| Option | Description |
+|--------|-------------|
+| `--token-paste` | Skip browser, paste token manually |
+
+### How It Works
+
+The CLI uses a browser-based login flow:
+
+1. Starts a temporary HTTP server on a random localhost port
+2. Opens your browser to the Uniweb login page
+3. You log in using any method (email/password, Google, or Microsoft)
+4. After login, the browser redirects to the CLI's localhost callback with a JWT
+5. The CLI stores the token at `~/.uniweb/auth.json`
+
+If the browser can't open, falls back to manual token paste. Tokens are valid for 30 days.
+
+See [CLI Authentication Architecture](../architecture/cli-auth.md) for the full technical flow.
 
 ### Examples
 
 ```bash
-# Log in (interactive)
+# Log in via browser (default)
 uniweb login
 
-# Check who you're logged in as
-uniweb login
-# → Already logged in as developer@example.com
+# Fall back to manual token paste
+uniweb login --token-paste
 ```
 
 ### When It's Needed
