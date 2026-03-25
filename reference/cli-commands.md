@@ -599,32 +599,44 @@ Run from a foundation directory or workspace root. If the workspace has multiple
 
 | Option | Description |
 |--------|-------------|
+| `--namespace <handle>` | Organization namespace to publish under (overrides package.json) |
 | `--local` | Publish to local registry (`.unicloud/`) instead of remote |
 | `--registry <url>` | Publish to a specific registry URL |
 | `--edit-access <policy>` | Set edit access: `open` (anyone) or `restricted` (invite-only, default) |
 | `--dry-run` | Show what would be published without publishing |
 
+### Namespace
+
+A namespace (organization handle) is required for publishing. The CLI resolves it in priority order:
+
+1. `--namespace` flag
+2. `package.json` → `"uniweb": { "namespace": "myorg" }`
+3. Scoped package name → `"name": "@myorg/foundation"` extracts `myorg`
+
+You must have EDITOR or higher access to the organization. Available namespaces are listed in your JWT after `uniweb login`.
+
 ### What Happens
 
 1. Reads `dist/meta/schema.json` for the foundation name and version (auto-builds if `dist/` is missing)
-2. Checks for duplicate versions
-3. Uploads the foundation bundle to the registry
-4. The foundation is now available for sites to consume
+2. Resolves namespace and constructs scoped name (`@namespace/name`)
+3. Checks namespace authorization against JWT
+4. Checks for duplicate versions
+5. Uploads the foundation bundle to R2 at `foundations/{namespace}/{name}/{version}/`
 
 ### Examples
 
 ```bash
-# Publish to Uniweb registry (requires login)
+# Publish with namespace from package.json (requires login)
 uniweb publish
+
+# Explicit namespace override
+uniweb publish --namespace myorg
 
 # Publish to local registry (no auth needed)
 uniweb publish --local
 
 # Preview what would be published
 uniweb publish --dry-run
-
-# Allow anyone to edit sites using this foundation
-uniweb publish --edit-access open
 
 # Publish to a custom registry
 uniweb publish --registry http://localhost:4001
@@ -635,7 +647,7 @@ uniweb publish --registry http://localhost:4001
 The CLI shows next steps for working with clients:
 
 ```
-✓ Published my-foundation@1.0.0
+✓ Published @myorg/foundation@1.0.0
 
   Working with clients:
     uniweb invite <email>    Client creates their own site with your foundation

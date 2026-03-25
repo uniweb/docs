@@ -77,6 +77,7 @@ The JWT is signed with HS256 using a shared secret between PHP and the Worker.
   "sub": "42",
   "email": "developer@example.com",
   "loginName": "developer",
+  "namespaces": ["uniweb", "acme"],
   "type": "cli",
   "iat": 1711300000,
   "exp": 1713892000
@@ -86,15 +87,18 @@ The JWT is signed with HS256 using a shared secret between PHP and the Worker.
 - `sub` — member ID from the `Members` table
 - `email` — from `signup_email` in the PHP session
 - `loginName` — from `login_name` in the PHP session
+- `namespaces` — organization handles the user can publish to (EDITOR+ access, lowercased)
 - `type` — always `"cli"` (distinguishes from other token types)
 - Token lifetime: 30 days
+
+The `namespaces` array is built by querying `ProfileMemberAccess` joined with `OrganizationProfileInfo` for organizations where the user has `access_level >= 20` (EDITOR). The Worker uses this to authorize foundation publishing under specific namespaces without database access.
 
 ### Shared Secret
 
 | Environment | PHP | Worker |
 |-------------|-----|--------|
-| Development | Falls back to `uniweb-dev-secret-do-not-use-in-production` | `.dev.vars` file: `JWT_SECRET=uniweb-dev-secret-do-not-use-in-production` |
-| Production | `UNIWEB_JWT_SECRET` env var | `JWT_SECRET` wrangler secret (`npx wrangler secret put JWT_SECRET`) |
+| Development | Falls back to `uniweb-dev-secret-do-not-use-in-production` | `.dev.vars` file |
+| Production | `startup.ini` `[security]` → `jwtSecret` | `JWT_SECRET` wrangler secret (`npx wrangler secret put JWT_SECRET`) |
 
 The same secret value must be used on both sides.
 

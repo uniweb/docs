@@ -91,6 +91,16 @@ Credentials are stored at `~/.uniweb/auth.json`:
 }
 ```
 
+### Namespace Resolution
+
+Foundation publishing requires a namespace (organization handle). The CLI resolves it in priority order:
+
+1. `--namespace` flag: `uniweb publish --namespace myorg`
+2. `package.json` field: `{ "uniweb": { "namespace": "myorg" } }`
+3. Scoped package name: `"name": "@myorg/foundation"` → extracts `myorg`
+
+If no namespace is found, publishing fails with instructions.
+
 ### Publish Flow
 
 ```
@@ -100,39 +110,31 @@ uniweb publish
   │    (current dir, or prompt if workspace has multiple)
   │
   ├─ 2. Auto-build if dist/ is missing
-  │    (runs `npx uniweb build --target foundation`)
   │
   ├─ 3. Read name + version from dist/meta/schema.json
+  │
+  ├─ 3b. Resolve namespace → construct scoped name @namespace/name
+  │
+  ├─ 3c. Advisory namespace check against JWT (early feedback)
   │
   ├─ 4. Authenticate
   │    (reads ~/.uniweb/auth.json, prompts login if expired)
   │
   ├─ 5. Check for duplicate versions on the registry
   │
-  ├─ 6. Collect all files from dist/
-  │    ├─ foundation.js
-  │    ├─ foundation.ssr.js
-  │    ├─ meta/schema.json
-  │    ├─ assets/foundation.css
-  │    └─ (any other files in dist/)
+  ├─ 6. Collect all files from dist/, base64-encode
   │
-  ├─ 7. Base64-encode each file
-  │
-  └─ 8. POST to {registryUrl}/foundations
-       Headers:
-         Authorization: Bearer {jwt}
-         Content-Type: application/json
+  └─ 7. POST to {registryUrl}/foundations
        Body:
          {
-           "name": "foundation",
-           "version": "0.1.18",
+           "name": "@myorg/foundation",
+           "version": "1.0.0",
            "files": {
              "foundation.js": "base64...",
              "foundation.ssr.js": "base64...",
              "meta/schema.json": "base64...",
              "assets/foundation.css": "base64..."
-           },
-           "metadata": { "publishedBy": "developer@example.com" }
+           }
          }
 ```
 
@@ -163,7 +165,7 @@ Authorization: Bearer {jwt}
 Content-Type: application/json
 
 {
-  "name": "my-foundation",
+  "name": "@myorg/foundation",
   "version": "1.0.0",
   "files": {
     "foundation.js": "{base64}",
@@ -178,21 +180,21 @@ Content-Type: application/json
 ### Processing Steps
 
 1. **Authenticate** — extract Bearer token, verify HS256 JWT signature against `JWT_SECRET`, check expiry
-2. **Validate** — name (alphanumeric/hyphens/underscores), version, `foundation.js` required
-3. **Read registry** — fetch `registry/foundations/index.json` from R2
-4. **Check ownership** — if foundation name exists, caller's email must be in `owners[]`; if new, caller becomes first owner
+2. **Validate scoped name** — must match `@namespace/name` format (lowercase, hyphens, underscores)
+3. **Authorize namespace** — extract namespace from name, check it exists in JWT `namespaces` claim
+4. **Read registry** — fetch `registry/foundations/index.json` from R2
 5. **Check duplicate** — reject if this exact version already exists (409)
-6. **Upload files** — base64-decode each file, write to R2 at `foundations/{name}@{version}/{path}` with appropriate content types
-7. **Update registry** — add version entry, update `latest`, write `registry/foundations/index.json` back to R2
+6. **Upload files** — base64-decode each file, write to R2 at `foundations/{namespace}/{name}/{version}/{path}`
+7. **Update registry** — add version entry under scoped name key, update `latest`
 
 ### Response
 
 ```json
 {
-  "name": "my-foundation",
+  "name": "@myorg/foundation",
   "version": "1.0.0",
   "filesCount": 4,
-  "message": "Published my-foundation@1.0.0"
+  "message": "Published @myorg/foundation@1.0.0"
 }
 ```
 
@@ -200,9 +202,9 @@ Content-Type: application/json
 
 | Status | Meaning |
 |--------|---------|
-| 400 | Missing or invalid name/version/files |
+| 400 | Missing/invalid name, not scoped format, missing version/files |
 | 401 | Missing or invalid JWT |
-| 403 | Foundation owned by another user |
+| 403 | Not authorized for the target namespace |
 | 409 | Version already exists |
 
 ## R2 Storage Layout
@@ -210,22 +212,22 @@ Content-Type: application/json
 ```
 R2 bucket: uniweb
 ├── foundations/
-│   ├── my-foundation@1.0.0/
-│   │   ├── foundation.js
-│   │   ├── foundation.ssr.js
-│   │   ├── meta/
-│   │   │   └── schema.json
-│   │   └── assets/
-│   │       └── foundation.css
-│   └── my-foundation@1.0.1/
-│       └── ...
+│   └── {namespace}/                 # Organization handle (e.g., "uniweb")
+│       └── {name}/                  # Foundation name (e.g., "starter")
+│           └── {version}/           # Semver version
+│               ├── foundation.js
+│               ├── foundation.ssr.js
+│               ├── meta/
+│               │   └── schema.json
+│               └── assets/
+│                   └── foundation.css
 ├── registry/
 │   └── foundations/
-│       └── index.json              # Ownership and version index
+│       └── index.json               # Version index (keyed by scoped name)
 ├── runtime/
-│   └── {version}/                  # Shared runtime assets
+│   └── {version}/                   # Shared runtime assets
 └── sites/
-    └── {siteId}/                   # Published site content
+    └── {siteId}/                    # Published site content
 ```
 
 ### Registry Index Format
@@ -234,42 +236,38 @@ R2 bucket: uniweb
 
 ```json
 {
-  "my-foundation": {
-    "owners": ["developer@example.com"],
+  "@uniweb/starter": {
+    "namespace": "uniweb",
     "latest": "1.0.1",
     "versions": [
       {
         "version": "1.0.0",
-        "publishedAt": "2026-03-24T17:00:00.000Z",
+        "publishedAt": "2026-03-25T17:00:00.000Z",
         "publishedBy": "developer@example.com",
-        "filesCount": 4
-      },
-      {
-        "version": "1.0.1",
-        "publishedAt": "2026-03-24T18:00:00.000Z",
-        "publishedBy": "developer@example.com",
-        "filesCount": 4
+        "filesCount": 6
       }
     ]
   }
 }
 ```
 
+Authorization is handled by the JWT `namespaces` claim — no `owners` array needed in the registry.
+
 ## Serving Foundations
 
 The Worker serves published foundation files at:
 
 ```
-GET /foundations/{name}@{version}/{path}
+GET /foundations/{namespace}/{name}/{version}/{path}
 ```
 
 Examples:
 
 ```
-/foundations/my-foundation@1.0.0/foundation.js
-/foundations/my-foundation@1.0.0/foundation.ssr.js
-/foundations/my-foundation@1.0.0/meta/schema.json
-/foundations/my-foundation@1.0.0/assets/foundation.css
+/foundations/uniweb/starter/1.0.0/foundation.js
+/foundations/uniweb/starter/1.0.0/foundation.ssr.js
+/foundations/uniweb/starter/1.0.0/meta/schema.json
+/foundations/uniweb/starter/1.0.0/assets/foundation.css
 ```
 
 All foundation assets are served with `Cache-Control: public, max-age=31536000, immutable` since they're versioned and never change.
@@ -281,8 +279,8 @@ All foundation assets are served with `Cache-Control: public, max-age=31536000, 
 For local development, `unicloud` (port 4001) acts as the registry. The handler at `unicloud/src/handlers/foundations.js`:
 
 1. Accepts the same upload payload as the Worker
-2. Prefers the pre-built `foundation.ssr.js` from the upload
-3. Falls back to building a CJS bundle with esbuild if not present (for older CLIs)
+2. Validates scoped name format (`@namespace/name`)
+3. Uses pre-built `foundation.ssr.js` from the upload
 4. Writes files to `.unicloud/registry/packages/{name}/{version}/`
 
 ### Local URL Override
