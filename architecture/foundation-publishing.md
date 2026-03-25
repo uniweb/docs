@@ -37,7 +37,7 @@ The `@uniweb/build` Vite plugin (`build/src/vite-foundation-plugin.js`) runs the
 
 1. **Primary Vite build** — produces `dist/foundation.js` (ES module) with React, `@uniweb/core`, and other shared deps as externals
 2. **Schema generation** — scans `src/` for component meta files, builds `dist/meta/schema.json` with component definitions and preview images
-3. **Worker bundle generation** — runs a secondary Vite build that takes the ESM `foundation.js` as input and produces `dist/foundation.worker.cjs` (CommonJS)
+3. **SSR bundle generation** — runs esbuild to produce `dist/foundation.ssr.js`, a self-contained ESM bundle with React, ReactDOM/server, @uniweb/core, @uniweb/runtime/ssr, and all foundation components inlined
 
 ### Build Output
 
@@ -45,7 +45,7 @@ The `@uniweb/build` Vite plugin (`build/src/vite-foundation-plugin.js`) runs the
 dist/
 ├── foundation.js              # ESM bundle (browser) — ~128 KB
 ├── foundation.js.map          # Source map
-├── foundation.worker.cjs      # CJS bundle (edge SSR) — ~130 KB
+├── foundation.ssr.js          # Self-contained ESM (edge SSR) — ~1.3 MB
 ├── meta/
 │   └── schema.json            # Component definitions, version, name
 └── assets/
@@ -58,23 +58,13 @@ dist/
 | Bundle | Format | Used by | How it's loaded |
 |--------|--------|---------|-----------------|
 | `foundation.js` | ES module | Browser runtime | `<script type="module">` / dynamic `import()` |
-| `foundation.worker.cjs` | CommonJS | Cloudflare Worker SSR | `new Function()` with custom `require()` |
+| `foundation.ssr.js` | ES module (self-contained) | Dynamic Worker SSR | `env.LOADER.get()` — loaded into isolated worker |
 
-Cloudflare Workers can't use ES module `import()` for dynamic code. The Worker evaluates foundation code using `new Function()` and provides a custom `require()` that maps externals (React, `@uniweb/core`) to its bundled copies. This requires CJS format.
+Cloudflare Workers block `eval` / `new Function` in production. The SSR bundle is loaded into a **Dynamic Worker isolate** via `env.LOADER.get()`, which can execute arbitrary code in a sandboxed environment. The bundle is self-contained (no external imports) so React is guaranteed to be a single instance.
 
-### Worker Bundle Externals
+### React Deduplication
 
-These packages are provided by the Worker runtime and excluded from the CJS bundle:
-
-```
-react, react-dom, react-dom/server,
-react/jsx-runtime, react/jsx-dev-runtime,
-@uniweb/core
-```
-
-### Re-entrancy Guard
-
-The secondary Vite build can trigger the foundation plugin's `writeBundle()` hook recursively. A module-level flag (`_buildingWorkerBundle`) prevents infinite recursion.
+The SSR bundle uses esbuild's `alias` feature to resolve all React imports to a single package directory, preventing duplicate React instances that would break hooks.
 
 ## Publish Step
 
@@ -121,7 +111,7 @@ uniweb publish
   │
   ├─ 6. Collect all files from dist/
   │    ├─ foundation.js
-  │    ├─ foundation.worker.cjs
+  │    ├─ foundation.ssr.js
   │    ├─ meta/schema.json
   │    ├─ assets/foundation.css
   │    └─ (any other files in dist/)
@@ -138,7 +128,7 @@ uniweb publish
            "version": "0.1.18",
            "files": {
              "foundation.js": "base64...",
-             "foundation.worker.cjs": "base64...",
+             "foundation.ssr.js": "base64...",
              "meta/schema.json": "base64...",
              "assets/foundation.css": "base64..."
            },
@@ -177,7 +167,7 @@ Content-Type: application/json
   "version": "1.0.0",
   "files": {
     "foundation.js": "{base64}",
-    "foundation.worker.cjs": "{base64}",
+    "foundation.ssr.js": "{base64}",
     "meta/schema.json": "{base64}",
     "assets/foundation.css": "{base64}"
   },
@@ -222,7 +212,7 @@ R2 bucket: uniweb
 ├── foundations/
 │   ├── my-foundation@1.0.0/
 │   │   ├── foundation.js
-│   │   ├── foundation.worker.cjs
+│   │   ├── foundation.ssr.js
 │   │   ├── meta/
 │   │   │   └── schema.json
 │   │   └── assets/
@@ -277,7 +267,7 @@ Examples:
 
 ```
 /foundations/my-foundation@1.0.0/foundation.js
-/foundations/my-foundation@1.0.0/foundation.worker.cjs
+/foundations/my-foundation@1.0.0/foundation.ssr.js
 /foundations/my-foundation@1.0.0/meta/schema.json
 /foundations/my-foundation@1.0.0/assets/foundation.css
 ```
@@ -291,7 +281,7 @@ All foundation assets are served with `Cache-Control: public, max-age=31536000, 
 For local development, `unicloud` (port 4001) acts as the registry. The handler at `unicloud/src/handlers/foundations.js`:
 
 1. Accepts the same upload payload as the Worker
-2. Prefers the pre-built `foundation.worker.cjs` from the upload
+2. Prefers the pre-built `foundation.ssr.js` from the upload
 3. Falls back to building a CJS bundle with esbuild if not present (for older CLIs)
 4. Writes files to `.unicloud/registry/packages/{name}/{version}/`
 
