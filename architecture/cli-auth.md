@@ -143,7 +143,7 @@ After login, `uniweb publish` uses the stored JWT to upload foundations:
 uniweb publish
   │
   ├─ Reads ~/.uniweb/auth.json → Bearer token
-  ├─ Collects all files from dist/ (foundation.js, foundation.worker.cjs, meta/schema.json, assets/...)
+  ├─ Collects all files from dist/ (foundation.js, foundation.ssr.js, meta/schema.json, assets/...)
   ├─ Base64-encodes each file
   │
   ├─ POSTs to {registryUrl}/foundations
