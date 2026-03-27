@@ -129,8 +129,10 @@ Note: `siteId` is NOT in the payload — it comes from the JWT.
 The Worker serves the published site via the three-tier rendering strategy:
 
 - **Tier 1**: Cached HTML from R2 (fastest, ~5ms)
-- **Tier 2**: On-demand SSR via Dynamic Workers (~50-200ms first hit, cached after)
+- **Tier 2**: On-demand SSR via Dynamic Workers (~50-200ms first hit, cached to R2)
 - **Tier 3**: Shell-mode fallback with `__DATA__` injection (if SSR fails)
+
+**Important**: Cloudflare's CDN does NOT cache Worker-generated responses automatically. Every request invokes the Worker. The `s-maxage` headers are for browser/downstream proxy caching only. Our R2-based cache (Tier 1) is the only server-side cache layer.
 
 ## R2 Storage Layout
 
@@ -171,19 +173,54 @@ Maps hostnames to site UUIDs.
 
 | Key | Value | Source |
 |-----|-------|--------|
-| `my-site.uniweb.website` | `FJLAQMTq...` | Subdomain (from handle) |
-| `mysite.com` | `FJLAQMTq...` | Custom domain |
+| `my-site.uniweb.website` | `UUID` | Subdomain (plain string) |
+| `mysite.com` | `UUID` or `{"siteId":"UUID","locale":"fr"}` | Custom domain (plain or JSON with locale) |
+| `_domains:UUID` | `{"subdomain":"my-site.uniweb.website","custom":{"mysite.com":"en","monsite.fr":"fr"}}` | Reverse mapping for SEO tags |
 
-When a user changes their handle and republishes:
-1. Worker lists KV entries that map to this UUID
-2. Deletes any old subdomain entries that don't match the current handle
-3. Creates the new subdomain entry
+**KV value formats**:
+- Plain string `UUID` — most sites, no locale override
+- JSON `{"siteId":"UUID","locale":"fr"}` — per-domain locale (advanced)
+- Worker detects format by checking if value starts with `{`
+
+**On handle change + republish**: Worker cleans old subdomain entries, creates new one. Custom domain entries are managed by PHP (not touched during publish).
 
 R2 data is untouched — UUID never changes.
 
 ## KV Namespace: SITE_META
 
-Short-lived cache (60s TTL) for `meta.json`. Avoids R2 reads on every request. Auto-populated on first request, invalidated on republish.
+Short-lived cache (60s TTL) for `meta.json`. Avoids R2 reads on every request. Auto-populated on first request, invalidated on republish and domain changes.
+
+## Custom Domains
+
+Sites can have custom domains via **Cloudflare for SaaS**:
+
+1. User adds domain in website settings UI
+2. PHP creates a Cloudflare custom hostname via API
+3. User adds CNAME: `mysite.com → proxy.uniweb.website`
+4. Cloudflare validates ownership and provisions SSL
+5. PHP registers domain in KV SITE_MAP
+6. Traffic to `mysite.com` → Worker → same site from R2
+
+Custom domains are managed by PHP (`connectDomain`, `disconnectDomain`, `updateDomainLocale`). Both subdomain and custom domains coexist — a site is always accessible at `{handle}.{pool}` AND at any connected custom domains.
+
+### Per-Domain Locale
+
+Custom domains can be assigned a language. When set, visitors to that domain see content in that language by default:
+
+- `mysite.com` → English (locale: "en")
+- `monsite.fr` → French (locale: "fr")
+
+The Worker reads the locale from the KV JSON value and overrides `parseLocale`'s default language.
+
+## SEO Tags (Canonical + Hreflang)
+
+The Worker generates and bakes SEO tags into cached HTML at Tier 2 SSR time:
+
+- `<link rel="canonical">` — points to the primary domain (first custom domain, or subdomain)
+- `<link rel="alternate" hreflang="xx">` — one per language (path-based or per-domain)
+- `<link rel="alternate" hreflang="x-default">` — points to primary language version
+
+Tags are baked into cached HTML — zero runtime overhead on Tier 1 cache hits. The `_domains:UUID` KV entry provides the domain-locale mapping.
 
 ## Security
 
@@ -200,6 +237,7 @@ Handles are sanitized for subdomain compatibility:
 - Only `a-z`, `0-9`, `-` allowed
 - Multiple hyphens collapsed
 - Leading/trailing hyphens trimmed
+- Reserved names blocked: `proxy`, `www`, `api`, `mail`, `admin`, `cdn`, `connect`, etc.
 
 New handles are created clean via `normalizeProfileHandle()`. Old handles are sanitized at publish time in `authorizePublish`.
 
@@ -208,9 +246,13 @@ New handles are created clean via `normalizeProfileHandle()`. Old handles are sa
 | File | Description |
 |------|-------------|
 | `uniweb-edge/src/publish.js` | Worker publish handler — process payload, write to R2, update KV |
-| `uniweb-edge/src/index.js` | Site resolution — subdomain + custom domain via KV |
+| `uniweb-edge/src/index.js` | Site resolution, SEO tag injection, cache purge endpoint |
 | `uniweb-edge/src/ssr.js` | SSR via Dynamic Workers, cache invalidation |
+| `uniweb-edge/src/locale.js` | Locale parsing, route translation, `buildSeoTags()` |
+| `uniweb-edge/src/router.js` | `resolveSiteId()` — parses plain and JSON KV values |
 | `uniweb-edge/wrangler.toml` | `SITE_DOMAINS`, Worker routes, KV bindings |
-| `php/.../WebsiteController.php` | `authorizePublish` — JWT issuance |
+| `php/.../WebsiteController.php` | `authorizePublish`, domain management, KV sync |
+| `php/.../CloudflareClient.php` | Cloudflare API — custom hostnames, KV CRUD, CDN purge |
+| `uniweb-js/.../DomainPanel.jsx` | Unified domain settings UI |
 | `uniweb-js/.../SiteMenu.jsx` | Editor publish flow |
 | `uniweb-js/.../editor.js` | `authorizePublish` adapter method |
