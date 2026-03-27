@@ -128,11 +128,14 @@ Note: `siteId` is NOT in the payload — it comes from the JWT.
 
 The Worker serves the published site via the three-tier rendering strategy:
 
-- **Tier 1**: Cached HTML from R2 (fastest, ~5ms)
-- **Tier 2**: On-demand SSR via Dynamic Workers (~50-200ms first hit, cached to R2)
+- **Tier 0**: Edge cache via Cache API (`caches.default`) — per-PoP, sub-ms on repeat visits
+- **Tier 1**: Cached HTML from R2 — durable, cross-PoP, ~5ms
+- **Tier 2**: On-demand SSR via Dynamic Workers (~50-200ms first hit, cached to R2 + edge)
 - **Tier 3**: Shell-mode fallback with `__DATA__` injection (if SSR fails)
 
-**Important**: Cloudflare's CDN does NOT cache Worker-generated responses automatically. Every request invokes the Worker. The `s-maxage` headers are for browser/downstream proxy caching only. Our R2-based cache (Tier 1) is the only server-side cache layer.
+**Caching note**: Cloudflare's CDN does NOT automatically cache Worker-generated responses via `Cache-Control` headers. However, the **Cache API** (`caches.default`) can be used explicitly inside the Worker to cache responses at the edge PoP. Our architecture uses both: the Cache API for fast per-PoP caching (Tier 0) and R2 for durable cross-PoP caching (Tier 1). The `s-maxage` headers control edge cache TTL — static pages cache for 30 days, dynamic pages for 60s.
+
+**Cache invalidation**: On publish, the Worker purges R2 cached pages (prefix delete) and calls the Cloudflare Purge API (prefix purge) to clear edge cache globally across all PoPs. PHP handles edge cache purge for domain connect/disconnect events.
 
 ## R2 Storage Layout
 
