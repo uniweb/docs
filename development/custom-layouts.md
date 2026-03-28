@@ -403,6 +403,48 @@ export default {
 
 The `areas` array tells the content-collector which layout section files to expect. The `params` work like section type params — defaults are merged with values from `page.yml`.
 
+#### Scroll management
+
+By default, the runtime manages scroll restoration on `window` — saving position per history entry and restoring on back/forward navigation. Layouts can override this with the `scroll` property in meta.js:
+
+```js
+// src/layouts/DashboardLayout/meta.js
+export default {
+  areas: ['header', 'sidebar'],
+
+  // Layout manages its own scrolling (runtime disables scroll management)
+  scroll: 'self',
+}
+```
+
+```js
+// src/layouts/DocsLayout/meta.js
+export default {
+  areas: ['header', 'footer', 'left'],
+
+  // Runtime manages scroll on the <main> element instead of window
+  scroll: 'main',
+}
+```
+
+| Value | Behavior |
+|-------|----------|
+| Not set | Runtime manages scroll on `window` (default) |
+| `'self'` | Layout handles its own scrolling; runtime disables |
+| CSS selector (e.g. `'main'`) | Runtime manages scroll on that element |
+
+This follows the same pattern as `background: 'self'` in section types — the layout tells the runtime "I handle this myself."
+
+A foundation-level default can be set in `foundation.js` for all layouts that don't declare their own:
+
+```js
+// foundation.js
+export default {
+  defaultLayout: 'DocsLayout',
+  scroll: 'self',
+}
+```
+
 ```yaml
 # page.yml — setting layout params
 layout:
