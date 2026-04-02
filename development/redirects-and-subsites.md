@@ -45,7 +45,7 @@ Redirects operate at three levels for maximum compatibility:
 
 2. **Static HTML.** The build generates a minimal HTML file at the redirect route with `<meta http-equiv="refresh">`. If someone lands on the URL directly (bookmark, external link, search engine), the browser redirects immediately. Works on any static host.
 
-3. **Server-side redirect.** The build generates a `_redirects` file in the output directory with proper HTTP 302 entries. Hosts that support this file (Cloudflare Pages, Netlify) handle the redirect at the server level — faster than HTML, better for SEO.
+3. **Server-side redirect.** The build generates a `_redirects` file in the output directory with proper HTTP 302 entries. Cloudflare Pages and Netlify process this file natively — the redirect happens at the server level, faster than HTML and better for SEO.
 
 ```
 # Generated _redirects
@@ -90,7 +90,7 @@ rewrite: https://docs.university.edu
 This tells Uniweb:
 - The `/docs` route (and everything under it) is served by `docs.university.edu`
 - Don't collect content or generate HTML for this route
-- Generate hosting configuration for deploy scripts
+- Add a rewrite entry to the generated `_redirects` file for the hosting platform
 
 The page directory needs no `.md` files — only the `page.yml` with the rewrite declaration.
 
@@ -152,23 +152,34 @@ docs-site/
 dist/
 ├── index.html               # Main site
 ├── about/index.html         # Main site
-├── _redirects               # Any redirect: entries
-└── _rewrites                # Subsite proxy rules
+└── _redirects               # Redirects + rewrite proxy rules
 ```
 
-The `_rewrites` file contains proxy rules:
+The `_redirects` file contains both redirects (302) and rewrite proxy rules (200):
 
 ```
-# Auto-generated from page.yml rewrite: declarations
+# Auto-generated from page.yml redirect: and rewrite: declarations
 /docs/* https://docs.university.edu/:splat 200
 /research/* https://research.university.edu/:splat 200
 ```
+
+The `200` status code tells the host to proxy the request transparently (the browser URL stays the same). This format is natively supported by Cloudflare Pages and Netlify.
 
 ### Deploying subsites
 
 Each site is built and deployed independently. The hosting layer stitches them together:
 
-**Cloudflare Pages / Netlify:** The `_rewrites` file provides the proxy rules. Deploy scripts read it and configure the platform accordingly. Some platforms support the `_rewrites` file directly; others need their configuration format (Workers routes, `vercel.json`).
+**Cloudflare Pages / Netlify:** The generated `_redirects` file includes rewrite rules (status 200) that these platforms process natively. No additional configuration needed — deploy the main site's `dist/` and the host proxies subsite paths automatically.
+
+**Vercel:** Translate the rewrite entries to `vercel.json` format:
+
+```json
+{
+  "rewrites": [
+    { "source": "/docs/:path*", "destination": "https://docs.university.edu/:path*" }
+  ]
+}
+```
 
 **Custom hosting:** Configure your reverse proxy (Nginx, Caddy, etc.) to route path prefixes to the subsite origins:
 
@@ -179,6 +190,20 @@ location /docs/ {
 ```
 
 **Same-origin deployment:** If all sites are deployed to the same static host (e.g., different directories on one Cloudflare Pages project), no proxy is needed — the host serves files directly from each site's `dist/` at the appropriate path prefix.
+
+### Development workflow
+
+During local development (`pnpm dev`), the host-level proxy isn't available. Each subsite runs its own dev server on a different port. You work on one site at a time:
+
+```bash
+# Main site
+cd main-site && pnpm dev          # http://localhost:5173
+
+# Docs subsite (separate terminal)
+cd docs-site && pnpm dev          # http://localhost:5174
+```
+
+Cross-site navigation during dev requires opening the other site's dev server URL directly. The stitching only works in production (or with a local reverse proxy like Caddy or nginx).
 
 ### Navigation between sites
 
