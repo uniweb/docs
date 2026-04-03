@@ -54,7 +54,7 @@ Here's how headings map to what appears on screen:
 | What you write | What it becomes |
 |---------------|-----------------|
 | First heading | The main title |
-| Next heading after the title | The subtitle |
+| Next heading one level deeper | The subtitle |
 | Body text | Paragraphs |
 
 You can also add a **pretitle** — a small label above the title, sometimes called an "eyebrow." Just put a smaller heading before your main heading:
@@ -70,6 +70,8 @@ What you write:              What visitors see:
 If you want a small label above your title, put a `###` line before it. The system detects the pattern automatically.
 
 **Heading levels are relative, not absolute.** Whether you use `#` or `##` for your title, the result is the same — the visual size is determined by the section type, not by your heading level. Use headings to create the right *structure* (title, subtitle, items), not to control font size.
+
+**Subtitle requires adjacent levels.** A `##` after a `#` becomes the subtitle (one level deeper). But a `###` after a `#` skips a level — it won't become a subtitle; it starts items instead. Use the next level down for subtitles.
 
 ---
 

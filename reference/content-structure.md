@@ -674,6 +674,24 @@ or:
 
 Both produce the same `content.title` and `content.subtitle`. The component decides what HTML elements to use. A hero component might render `title` as `<h1>`, while a card component might render it as `<h3>`.
 
+### Adjacent Levels Only
+
+A heading groups with the previous heading only when it is **exactly one level deeper**. Skipping levels breaks the group:
+
+```markdown
+# Features        ← title
+## Our key areas  ← subtitle (one level deeper — groups with title)
+```
+
+```markdown
+# Features        ← title (alone — H3 is two levels deeper, not grouped)
+
+### Speed         ← starts a new group → item
+### Security      ← starts a new group → item
+```
+
+The level gap signals a structural tier change: `### Speed` is an item under `# Features`, not a subtitle of it. If you want a subtitle, use the adjacent level (`##`).
+
 ### Pretitle Detection
 
 Any heading followed by a _more important_ heading automatically becomes a pretitle:
