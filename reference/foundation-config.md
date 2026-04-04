@@ -419,7 +419,9 @@ export default {
 ```jsx
 // foundation/src/layouts/docs/index.jsx
 export default function DocsLayout({ header, footer, left, right, body, params }) {
-  const { headerHeight = '4rem', sidebarWidth = '16rem', maxContentWidth = '80rem' } = params
+  // No need for fallback values — meta.js defaults are merged into params
+  // before the layout component receives them.
+  const { headerHeight, sidebarWidth, maxContentWidth } = params
 
   return (
     <div className="min-h-screen flex flex-col bg-section">
