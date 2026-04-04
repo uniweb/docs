@@ -38,7 +38,9 @@ If omitted, the values fall back to `package.json`. The `version` always comes f
 
 ## CSS Variables (vars)
 
-Define CSS custom properties that sites can override.
+Most customization is handled by component params. Both section components and layout components declare their own params in `meta.js` — layouts are full components with params, not just structural wrappers. A header height, for example, is typically a layout param, not a foundation var.
+
+Foundation-level CSS variables are for values that must stay consistent **across** multiple components — shared radii, spacing scales, or additional font roles beyond the three the theming system already provides (body, heading, mono). Don't reach for foundation vars when a component or layout param would do.
 
 ### Defining Variables
 
@@ -49,21 +51,21 @@ Define CSS custom properties that sites can override.
  * CSS custom properties that sites can override in theme.yml
  */
 export const vars = {
-  'header-height': {
-    default: '4rem',
-    description: 'Fixed header height',
+  'radius': {
+    default: '0.5rem',
+    description: 'Default border radius for cards and buttons',
   },
-  'max-content-width': {
-    default: '80rem',
-    description: 'Maximum content width',
+  'radius-lg': {
+    default: '1rem',
+    description: 'Large border radius for panels and modals',
   },
   'section-padding-y': {
     default: 'clamp(4rem, 6vw, 7rem)',
     description: 'Vertical padding for sections (fluid)',
   },
-  'border-radius': {
-    default: '0.5rem',
-    description: 'Default border radius for cards and buttons',
+  'shadow': {
+    default: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    description: 'Default shadow for cards and elevated elements',
   },
 }
 ```
@@ -82,7 +84,7 @@ Each variable is an object with:
 | `group` | string | No | Visual grouping in editor (e.g. `'Layout'`, `'Visual'`) |
 | `globalOnly` | boolean | No | If true, hidden from section-level panel |
 
-When `label` is omitted, the editor generates one from the var name: `header-height` → "Header Height".
+When `label` is omitted, the editor generates one from the var name: `radius-lg` → "Radius Lg".
 
 #### Type mapping
 
@@ -96,44 +98,51 @@ Color-type vars are stored separately from non-color vars. The processor routes 
 
 > **Foundation vars vs component vars:** Foundation vars are global — they emit on `:root` and apply site-wide. Component vars (declared in `meta.js`) are scoped to `#section-{id}`. See [Component Metadata](./component-metadata.md#vars) for component-level vars.
 
-### Using Variables in Components
+### Registering Defaults in `styles.css`
 
-Reference variables in your CSS:
+The `foundation.js` declaration is metadata — descriptions, types, and editor UI hints that end up in `schema.json`. To ensure the default values are present in the foundation's actual CSS output, register them in `styles.css` via `@theme inline`:
 
 ```css
 /* foundation/src/styles.css */
-.header {
-  height: var(--header-height);
-  position: sticky;
-  top: 0;
-}
-
-.container {
-  max-width: var(--max-content-width);
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-section {
-  padding: var(--section-padding-y) 0;
-}
-
-.card {
-  border-radius: var(--border-radius);
+@theme inline {
+  --radius: 0.5rem;
+  --radius-lg: 1rem;
+  --section-padding-y: clamp(4rem, 6vw, 7rem);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 ```
 
-Or in component JSX with Tailwind arbitrary values:
+This is best practice for two reasons:
+
+1. **Guarantees defaults are available.** The `@theme inline` block compiles into the foundation's CSS, which ships with `foundation.js`. The defaults are present regardless of whether the site's `theme.yml` sets them — important for runtime-loaded foundations where the site build doesn't have access to `schema.json`.
+
+2. **Enables Tailwind shorthand.** With registration, you can use `py-(--section-padding-y)` instead of `py-[var(--section-padding-y)]`.
+
+When a site overrides a variable in `theme.yml`, the site's theme CSS takes priority over the foundation defaults.
+
+### Using Variables in Components
+
+Components reference foundation vars via CSS or Tailwind:
 
 ```jsx
-function Header() {
+function Card({ children }) {
   return (
-    <header className="h-[var(--header-height)] sticky top-0">
-      {/* content */}
-    </header>
+    <div className="rounded-(--radius) shadow-(--shadow) p-6">
+      {children}
+    </div>
   )
 }
 ```
+
+Or in CSS:
+
+```css
+section {
+  padding: var(--section-padding-y) 0;
+}
+```
+
+The same vars apply consistently across all components that use them. Changing `radius` in `theme.yml` updates every card, button, and panel at once.
 
 ### Site Overrides
 
@@ -142,20 +151,21 @@ Sites override variables in `theme.yml`:
 ```yaml
 # site/theme.yml
 vars:
-  header-height: 5rem
-  max-content-width: 72rem
+  radius: 0.75rem
+  radius-lg: 1.25rem
   section-padding-y: clamp(3rem, 5vw, 5rem)   # tighter spacing
 ```
 
-The build merges site overrides with foundation defaults, generating CSS:
+The build generates theme CSS with the site's values. These override the foundation defaults (from `@theme inline` in `styles.css`) because the site's theme CSS loads with higher priority:
 
 ```css
+/* Site theme CSS — overrides foundation @theme inline defaults */
 :root {
-  --header-height: 5rem;                          /* overridden */
-  --max-content-width: 72rem;                     /* overridden */
-  --section-padding-y: clamp(3rem, 5vw, 5rem);   /* overridden */
-  --border-radius: 0.5rem;                        /* default */
+  --radius: 0.75rem;
+  --radius-lg: 1.25rem;
+  --section-padding-y: clamp(3rem, 5vw, 5rem);
 }
+/* --shadow keeps its foundation default since the site didn't override it */
 ```
 
 ---
@@ -328,17 +338,6 @@ export const vars = {
 }
 ```
 
-### Layout Dimensions
-
-```js
-export const vars = {
-  'header-height': { default: '4rem', description: 'Header height' },
-  'sidebar-width': { default: '16rem', description: 'Sidebar width' },
-  'max-content-width': { default: '80rem', description: 'Max content width' },
-  'max-prose-width': { default: '65ch', description: 'Max width for text' },
-}
-```
-
 ### Visual Style
 
 ```js
@@ -369,23 +368,11 @@ export const vars = {
 // foundation/src/foundation.js
 
 /**
- * CSS custom properties that sites can override in theme.yml
+ * Cross-cutting design tokens that sites can override in theme.yml.
+ * Values that belong to a specific component (header height, sidebar width)
+ * should be params in that component's meta.js instead.
  */
 export const vars = {
-  // Layout
-  'header-height': {
-    default: '4rem',
-    description: 'Fixed header height',
-  },
-  'sidebar-width': {
-    default: '16rem',
-    description: 'Sidebar width for documentation layouts',
-  },
-  'max-content-width': {
-    default: '80rem',
-    description: 'Maximum width for page content',
-  },
-
   // Spacing
   'section-padding-y': {
     default: 'clamp(4rem, 6vw, 7rem)',
@@ -397,40 +384,55 @@ export const vars = {
   },
 
   // Visual
-  'border-radius': {
+  'radius': {
     default: '0.5rem',
-    description: 'Default border radius',
+    description: 'Default border radius for cards and buttons',
   },
-  'card-shadow': {
+  'radius-lg': {
+    default: '1rem',
+    description: 'Large border radius for panels and modals',
+  },
+  'shadow': {
     default: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    description: 'Card shadow',
+    description: 'Default shadow for elevated elements',
   },
 }
 
-/**
- * Default layout and section type
- */
 export default {
-  defaultLayout: 'DocsLayout',
-  defaultSection: 'FeatureGrid',
+  defaultLayout: 'docs',
+}
+```
+
+Layout dimensions like header height and sidebar width are layout params, not foundation vars — the layout component owns them:
+
+```js
+// foundation/src/layouts/docs/meta.js
+export default {
+  params: {
+    headerHeight: { type: 'text', default: '4rem' },
+    sidebarWidth: { type: 'text', default: '16rem' },
+    maxContentWidth: { type: 'text', default: '80rem' },
+  },
 }
 ```
 
 ```jsx
-// foundation/src/layouts/DocsLayout/index.jsx
-export default function DocsLayout({ header, footer, left, right, body }) {
+// foundation/src/layouts/docs/index.jsx
+export default function DocsLayout({ header, footer, left, right, body, params }) {
+  const { headerHeight = '4rem', sidebarWidth = '16rem', maxContentWidth = '80rem' } = params
+
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg)]">
+    <div className="min-h-screen flex flex-col bg-section">
       {header && (
-        <div className="sticky top-0 z-50 h-[var(--header-height)]">
+        <div className="sticky top-0 z-50" style={{ height: headerHeight }}>
           {header}
         </div>
       )}
 
-      <div className="flex-1 flex max-w-[var(--max-content-width)] mx-auto w-full">
+      <div className="flex-1 flex mx-auto w-full" style={{ maxWidth: maxContentWidth }}>
         {left && (
-          <aside className="w-[var(--sidebar-width)] shrink-0 border-r hidden lg:block">
-            <div className="sticky top-[var(--header-height)] overflow-y-auto max-h-[calc(100vh-var(--header-height))]">
+          <aside className="shrink-0 border-r hidden lg:block" style={{ width: sidebarWidth }}>
+            <div className="sticky overflow-y-auto" style={{ top: headerHeight, maxHeight: `calc(100vh - ${headerHeight})` }}>
               {left}
             </div>
           </aside>
@@ -441,8 +443,8 @@ export default function DocsLayout({ header, footer, left, right, body }) {
         </main>
 
         {right && (
-          <aside className="w-[var(--sidebar-width)] shrink-0 border-l hidden xl:block">
-            <div className="sticky top-[var(--header-height)] overflow-y-auto max-h-[calc(100vh-var(--header-height))]">
+          <aside className="shrink-0 border-l hidden xl:block" style={{ width: sidebarWidth }}>
+            <div className="sticky overflow-y-auto" style={{ top: headerHeight, maxHeight: `calc(100vh - ${headerHeight})` }}>
               {right}
             </div>
           </aside>
@@ -468,9 +470,9 @@ function Component() {
   const theme = useThemeData()
 
   // Get a foundation variable value
-  const headerHeight = theme?.getFoundationVar('header-height')
+  const radius = theme?.getFoundationVar('radius')
 
-  return <div style={{ marginTop: headerHeight }}>...</div>
+  return <div style={{ borderRadius: radius }}>...</div>
 }
 ```
 
@@ -478,19 +480,19 @@ function Component() {
 
 ## Best Practices
 
-1. **Use semantic names**: `header-height` not `h1` or `size-16`
+1. **Use semantic names**: `radius` not `r1` or `size-8`
 
-2. **Provide good defaults**: Defaults should work out of the box
+2. **Only use vars for cross-cutting values**: A header height belongs to the layout component as a param. A border radius used by cards, buttons, and modals belongs as a foundation var. The test: would changing this value need to affect multiple unrelated components simultaneously?
 
-3. **Document everything**: The `description` field helps site authors
+3. **Provide good defaults**: Defaults should work out of the box
 
-4. **Group related vars**: Keep spacing, layout, and visual vars organized
+4. **Document with descriptions**: The `description` field helps site authors in the visual editor
 
-5. **Consider dark mode**: Vars referencing colors should use theme tokens
+5. **Register in `styles.css`**: Declare vars in both `foundation.js` (metadata) and `styles.css` via `@theme inline` (actual CSS)
 
-6. **Keep Layout simple**: Complex logic belongs in components, not Layout
+6. **Consider dark mode**: Vars referencing colors should use theme tokens
 
-7. **Test overrides**: Verify vars work when sites customize them
+7. **Test overrides**: Verify vars work when sites customize them in `theme.yml`
 
 ---
 
