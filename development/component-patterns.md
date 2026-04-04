@@ -330,7 +330,7 @@ nest:
 The Grid component receives `block.childBlocks` — an array of Block instances, each with its own type, content, and params. The component controls the container; the children control themselves:
 
 ```jsx
-import { ChildBlocks } from '@uniweb/runtime'
+import { ChildBlocks } from '@uniweb/kit'
 
 export default function Grid({ block, params }) {
   const { columns } = params
@@ -343,37 +343,25 @@ export default function Grid({ block, params }) {
 
   return (
     <div className={cn('grid gap-6', gridCols[columns])}>
-      <ChildBlocks from={block} pure />
+      <ChildBlocks from={block} />
     </div>
   )
 }
 ```
 
-`ChildBlocks` renders each child block through the same BlockRenderer pipeline that renders top-level sections. The `pure` prop is important here — see below.
+By default, `ChildBlocks` renders each child as a bare component — no wrapper element, no context classes, no background layer. The Grid controls the container; the children render their content directly into the grid cells. This is the right behavior for grid cells, tab panels, carousel slides, and inline children.
 
-### The `pure` prop
+### Section treatment with `wrapAs`
 
-By default, `ChildBlocks` wraps each child in its own element with context classes, background rendering, and section ID — the same treatment top-level sections get. For grid cells, this is usually wrong: each child gets its own background layer, padding context, and wrapper element inside your grid cell, fighting with the grid's layout.
-
-Pass `pure` to strip all of that:
+In the rare case where child blocks should be independent sections with their own theming context and backgrounds, use `wrapAs` to opt into full section treatment:
 
 ```jsx
-<ChildBlocks from={block} pure />
+{/* Each child gets a wrapper element, context classes, background, section ID */}
+<ChildBlocks from={block} wrapAs="div" />
+<ChildBlocks from={block} wrapAs="article" />
 ```
 
-With `pure`, each child renders as just the component — no wrapper element, no context class, no background layer. The Grid controls the container entirely; the children render their content directly into the grid cells.
-
-Use `pure` when children are **visual parts of the parent** — grid cells, tab panels, carousel slides. Omit it when children are **independent sections** that should carry their own theming and backgrounds (rare for grid layouts, but possible for more advanced composition).
-
-You can also control the wrapper element type with `as`:
-
-```jsx
-{/* Each child wrapped in <article> instead of the default <div> */}
-<ChildBlocks from={block} as="article" />
-
-{/* No wrapper at all */}
-<ChildBlocks from={block} as={false} />
-```
+Use `wrapAs` when children are **independent sections** that should carry their own theming and backgrounds. Omit it (the default) when children are **visual parts of the parent** — grid cells, tab panels, carousel slides.
 
 ### Container queries
 
