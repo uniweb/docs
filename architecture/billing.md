@@ -32,6 +32,9 @@ billing_website_subscriptions — One per site
   ├── stripe_subscription_id
   ├── stripe_payment_method_id — Per-subscription PM
   ├── features (JSON)          — Current feature set
+  ├── interval                 — 'month' or 'year'
+  ├── pending_interval         — Deferred switch target (yearly→monthly)
+  ├── pending_schedule_id      — Stripe SubscriptionSchedule handle
   └── current_period_start/end — For proration calculation
 ```
 
@@ -70,10 +73,7 @@ prorated_cents = round(price_cents × remaining_seconds / total_period_seconds)
 
 Credits arise from downgrades (removing features mid-cycle). Stripe stores them as negative customer balance and auto-applies on the next invoice.
 
-Our DB mirrors Stripe's balance in `billing_customers.credit_balance_cents` (positive = credit available). Synced after:
-- `updateFeatures()` — any feature change
-- `switchInterval()` — billing cycle switch
-- `handleInvoicePaid()` — webhook on monthly renewal
+Our DB mirrors Stripe's balance in `billing_customers.credit_balance_cents` (positive = credit available). Synced via the `invoice.paid` webhook after any Stripe invoice settles (including feature updates and cycle switches). We do NOT push credits to `customer.balance` manually — Stripe's `always_invoice` proration applies the credit directly on the immediate invoice. Attempting a manual push on top of that causes a double-credit regression.
 
 The checkout UI shows credits in the proration breakdown:
 ```
@@ -81,6 +81,73 @@ Prorated charge          $9.99
 Credit applied          -$4.99
 ─────────────────────────────
 Amount due               $5.00
+```
+
+## Switch Billing Cycle
+
+Users can switch between monthly and yearly billing from the settings page. The two directions have very different semantics.
+
+### Monthly → Yearly (immediate)
+
+Happens on the spot through a confirmation modal that previews the exact charge.
+
+```
+reviewSwitchInterval (PHP)
+  ├── calculateCycleSwitch (our calculator, vendor-portable)
+  │     ├── currentInvoicePaidCents — fetched from gateway (what the
+  │     │    user actually paid for the current period, not list price;
+  │     │    accounts for once-coupons and partial refunds)
+  │     ├── forever/repeating coupons discount the new yearly subtotal
+  │     └── credit = paidAmount × (remaining/total)  (second precision)
+  ├── cross-check vs Stripe Invoice::upcoming preview (logs drift > $1)
+  └── returns breakdown: subtotal, proration credit, balance credit, amount due
+
+switchInterval (on confirm)
+  ├── gateway->updateSubscription(items=yearly, proration_behavior=always_invoice)
+  │     Stripe charges (new yearly − prorated credit for unused month)
+  ├── resync current_period_start/end from Stripe (Stripe re-anchors to 1y out)
+  └── drift detector logs if actual Stripe invoice total != our prediction
+```
+
+**No manual `customer.balance` push.** Stripe's `always_invoice` proration credits the unused month directly on the immediate invoice. Pushing an additional credit onto the customer balance is a double-credit bug.
+
+### Yearly → Monthly (deferred, via Stripe Subscription Schedules)
+
+Clicking "Switch to monthly" while on yearly does NOT swap items. Instead it creates a 2-phase **Stripe Subscription Schedule** wrapping the existing subscription:
+
+```
+Phase 1: current yearly items, until current_period_end (already paid)
+Phase 2: monthly items, starts at period_end, no end
+end_behavior: release
+```
+
+Stripe enforces the phase transition atomically at `period_end` — no webhook race, no cron, no double charge. The subscription ID is preserved throughout. We store the schedule ID in `billing_website_subscriptions.pending_schedule_id` and mirror the target interval in `pending_interval` for the frontend badge.
+
+**Why this over `invoice.paid` webhook + item swap?** Our first attempt used a webhook hook to swap items after the renewal invoice was paid — which meant the user paid for another full yearly period and then we switched them to monthly. Stripe Schedules are the correct primitive for this.
+
+**Cancel scheduled switch** calls `SubscriptionSchedule::retrieve($id)->release()`, which unwraps the schedule and leaves the subscription in its current phase-1 state (still yearly, no change). Both DB flags are cleared. No confirmation modal — low-stakes reversible action.
+
+**Back-and-forth toggling** works — each new "Switch to monthly" first releases any existing schedule, then creates a fresh one, so there are never orphan schedules.
+
+### Frontend
+
+- `SwitchCycleSummary.jsx` — confirmation modal. Side-by-side current/new plan, proration breakdown, "Charged today" (immediate) or amber "Takes effect on [date]" banner (deferred).
+- `PublishedWebsites.jsx` — shows an amber "Switching to monthly on [date]" badge when a pending switch exists; dropdown menu item becomes "Cancel scheduled switch".
+
+### Testing
+
+| CLI Command | What it verifies |
+| --- | --- |
+| `billing testCycleSwitch` | 70 cases (10 coupons × 7 offsets) — calculator matches `Invoice::upcoming` to within 1 cent |
+| `billing testSwitchCycleE2E` | 5 scenarios exercising the real service methods: monthly→yearly with/without coupons, deferred yearly→monthly (asserts new period is ~30d not ~365d, latest invoice is ~$15 not ~$150), and back-and-forth toggle (asserts no orphan schedules) |
+| `billing inspectStripe -siteId=N` | Print DB + Stripe state for a site for manual debugging |
+
+### Gotcha — DBConnect null-drop
+
+`DBConnect::update()` silently drops `null` values because `escapeData()` uses `isset($data[$key])`. To clear a nullable column, use raw SQL:
+
+```php
+$this->db->applyQuery("UPDATE `tbl` SET `col` = NULL WHERE `id` = $id");
 ```
 
 ## Entitlements
@@ -146,7 +213,8 @@ billing.php?action=seedProducts&reset=1  (admin only)
 - `reviewWebsite` — pre-publish billing check (features, proration, credits)
 - `createWebsite` — new subscription
 - `updateWebsiteFeatures` — change features mid-cycle
-- `switchWebsiteInterval` — monthly ↔ yearly
+- `reviewWebsiteSwitchInterval` — preview a billing cycle switch (powers the confirmation modal)
+- `switchWebsiteInterval` — monthly ↔ yearly (immediate monthly→yearly, deferred yearly→monthly via Stripe Schedule)
 - `cancelWebsite` — cancel subscription
 - `getWebsiteSubscription` — current subscription details
 
