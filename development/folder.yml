@@ -6,6 +6,7 @@ pages:
   - component-patterns
   - working-with-data
   - custom-layouts
+  - view-transitions
   - foundation-categories
   - internationalization
   - extending-your-site

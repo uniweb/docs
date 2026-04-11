@@ -305,6 +305,7 @@ Configure the production build.
 ```yaml
 build:
   prerender: true
+  splitContent: auto
 ```
 
 ### Options
@@ -312,6 +313,7 @@ build:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `prerender` | `true` | Generate static HTML for all pages (SSG) |
+| `splitContent` | `auto` | Split page content into separate files for lazy loading |
 
 When `prerender: true`:
 - All pages are rendered to HTML at build time
@@ -323,6 +325,24 @@ When `prerender: false`:
 - Single `index.html` with client-side rendering
 - Pages render in the browser
 - Smaller initial bundle
+
+### Split Content
+
+By default, all page content is embedded in every HTML file. For small sites this is fine — JSON compresses well. For content-heavy sites (large documentation, university websites), the payload grows to several megabytes, duplicated across every prerendered page.
+
+`splitContent` separates page content into individual files (`_pages/*.json`) that are fetched on demand as the user navigates. Only the current page's content is embedded in each HTML file — other pages load lazily.
+
+| Value | Behavior |
+|-------|----------|
+| `auto` | Split when total content exceeds 100KB (default) |
+| `true` | Always split |
+| `false` | Never split — all content inline, identical to previous behavior |
+
+With `auto`, a 5-page marketing site stays bundled (fast, no extra requests), while a 50-page docs site splits automatically.
+
+Once a page's content is loaded, it stays cached for the rest of the session — returning to a visited page is instant with no additional fetch.
+
+When [view transitions](../development/view-transitions.md#interaction-with-split-content) are active, the content fetch is hidden behind the transition animation — the user never sees a loading state.
 
 ---
 
