@@ -1,16 +1,14 @@
 # View Transitions
 
-When you navigate between pages in a Uniweb site, the old page disappears and the new page appears — a hard cut. View transitions replace that cut with a smooth crossfade, using the browser's native View Transitions API.
+Uniweb animates page navigation with smooth crossfades using the browser's native View Transitions API. Every SPA navigation is wrapped in `document.startViewTransition()`, which captures a screenshot of the current page, updates the DOM, and crossfades from old to new. No dependencies, no animation libraries — the browser handles it.
 
-This is enabled by default. Every SPA navigation is wrapped in `document.startViewTransition()`, which captures a screenshot of the current page, updates the DOM, and crossfades from old to new. No dependencies, no animation libraries — the browser handles it.
-
-If the browser doesn't support the API, navigation works exactly as before. If the user has `prefers-reduced-motion` enabled, transitions are skipped entirely.
+This is enabled by default. In browsers that don't support the API, pages swap instantly without animation. When the user has `prefers-reduced-motion` enabled, transitions are skipped entirely.
 
 ---
 
 ## What You Get for Free
 
-Without any configuration, every Uniweb site gets a whole-page crossfade on navigation. The browser captures the entire viewport as one unit and crossfades it. This is already a meaningful improvement over a hard cut — it gives the user visual continuity between pages.
+Without any configuration, every Uniweb site gets a whole-page crossfade on navigation. The browser captures the entire viewport as one unit and crossfades it, giving the user visual continuity between pages.
 
 To go further, you tell the browser which parts of the page are the *same* across navigations. A header that appears on every page shouldn't crossfade — it should stay put. A sidebar that persists across pages should stay put too. Only the main content area should transition.
 
@@ -103,7 +101,7 @@ With view transitions, the content fetch happens *inside* the transition callbac
 3. React renders the new page with content already loaded
 4. Browser crossfades from screenshot to new content
 
-The user never sees a loading state. If the fetch takes longer than 1 second (slow connection), navigation proceeds anyway and the page renders normally — the same fallback as browsers without view transition support.
+The user never sees a loading state. If the fetch takes longer than 1 second (slow connection), navigation proceeds without the transition and the page renders normally.
 
 ---
 

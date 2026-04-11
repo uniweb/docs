@@ -336,7 +336,7 @@ By default, all page content is embedded in every HTML file. For small sites thi
 |-------|----------|
 | `auto` | Split when total content exceeds 100KB (default) |
 | `true` | Always split |
-| `false` | Never split — all content inline, identical to previous behavior |
+| `false` | Never split — all content inline in every HTML file |
 
 With `auto`, a 5-page marketing site stays bundled (fast, no extra requests), while a 50-page docs site splits automatically.
 
