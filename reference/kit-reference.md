@@ -645,6 +645,30 @@ getLocaleLabel({ code: 'xx' })  // 'XX'
 console.log(LOCALE_DISPLAY_NAMES.fr)  // 'Français'
 ```
 
+### splitContent
+
+Split parsed content at `---` dividers into separate regions. Each region has its own `sequence` slice; grouped fields (title, paragraphs, items) are preserved from the original. Use this when the component needs to route different content regions to different UI.
+
+```jsx
+import { splitContent } from '@uniweb/kit'
+
+function Lesson({ content, block }) {
+  const [lesson, challenge] = splitContent(content)
+  return (
+    <div>
+      <Prose content={lesson} block={block} />
+      <aside className="bg-card p-6 rounded-lg">
+        <Prose content={challenge} block={block} />
+      </aside>
+    </div>
+  )
+}
+```
+
+Returns a single-element array (`[content]`) if no divider exists, so destructuring always works.
+
+**Note:** This is different from Loom's `splitAtDividers`, which splits raw ProseMirror nodes *before* parsing for data-driven iteration. `splitContent` splits *after* parsing for UI layout purposes. See "Dividers — Content Boundaries" in the authoring guide.
+
 ### Icon Component
 
 Renders icons from multiple sources: library icons, URLs, direct SVG, or built-in icons.
