@@ -5,6 +5,8 @@ pages:
   - creating-components
   - component-patterns
   - working-with-data
+  - content-handlers
+  - data-driven-sections
   - custom-layouts
   - view-transitions
   - foundation-categories
