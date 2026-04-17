@@ -372,7 +372,7 @@ Load external data for components on this page.
 data: articles
 ```
 
-Fetches from `/data/articles.json` (generated from a collection). Components with `inheritData: true` receive it.
+Fetches from `/data/articles.json` (generated from a collection). All sections on the page receive it in `content.data.articles` automatically.
 
 ### Full Fetch Configuration
 

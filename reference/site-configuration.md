@@ -356,7 +356,7 @@ fetch:
   schema: config
 ```
 
-Components with `inheritData: ['config']` in their meta.js receive this data.
+Every section on every page receives this data automatically in `content.data.config`.
 
 ### Options
 

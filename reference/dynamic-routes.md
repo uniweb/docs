@@ -97,9 +97,11 @@ type: Article
 
 ```js
 // foundation/src/sections/ArticleList/meta.js
+// `data:` is optional — delivery is default-on. Declaring `entity` lets
+// prepare-props guarantee shape and lets the editor show schema hints.
 export default {
   title: 'Article List',
-  data: { inherit: true },
+  data: { entity: 'articles' },
 }
 ```
 
@@ -128,7 +130,7 @@ export default function ArticleList({ content, block }) {
 // foundation/src/sections/Article/meta.js
 export default {
   title: 'Article',
-  data: { inherit: true },
+  data: { entity: 'articles' },
 }
 ```
 
@@ -275,22 +277,24 @@ Common irregular plurals are handled: `people` → `person`, `children` → `chi
 
 ## Component Setup
 
-### Opting into cascaded data
+### Receiving the data
 
-Components must declare `data: { inherit: true }` to receive the data:
+Data delivery is **default-on** on template pages — the matched item and the collection arrive in `content.data` without any component-side opt-in. A minimal component has no `data:` field in its `meta.js`:
 
 ```js
-// meta.js
+// meta.js — no data declaration needed
 export default {
   title: 'Article',
-  data: { inherit: true },
 }
 ```
 
-You can be selective:
+Optionally declare the expected entity type. This is a hint for the editor and triggers `prepare-props` shape guarantees (e.g. `content.data.article` is guaranteed to exist as an object or `null`):
 
 ```js
-data: { inherit: ['article', 'articles'] }
+export default {
+  title: 'Article',
+  data: { entity: 'articles' },
+}
 ```
 
 ### Accessing the data
@@ -389,7 +393,7 @@ fetch:
 // RelatedArticles/meta.js
 export default {
   title: 'Related Articles',
-  data: { inherit: true },
+  data: { entity: 'articles' },
   // detail: false and limit are set per-instance in the .md frontmatter
 }
 ```
@@ -498,12 +502,12 @@ Dynamic pages can have multiple sections, each receiving the cascaded data:
 
 ```text
 pages/articles/[id]/
-├── 1-article.md      # type: Article (data: { inherit: true })
-├── 2-author.md       # type: AuthorBio (data: { inherit: true })
-└── 3-related.md      # type: RelatedArticles (fetch: { inherit: true, detail: false, limit: 3 })
+├── 1-article.md      # type: Article       — receives content.data.article automatically
+├── 2-author.md       # type: AuthorBio     — receives content.data.article automatically
+└── 3-related.md      # type: RelatedArticles — fetch: { inherit: true, detail: false, limit: 3 }
 ```
 
-Each component opts into the data it needs. The `3-related.md` block uses the block-level inherit-merge fetch to get the collection minus the current item.
+Each component reads only the data it cares about from `content.data`. The `3-related.md` block uses the block-level inherit-merge fetch to get the collection minus the current item.
 
 ---
 
@@ -656,18 +660,11 @@ data: articles
 
 ### Component shows "not found" message
 
-**Cause:** Component not receiving cascaded data, or the ID was not found in the collection.
+**Cause:** The ID was not found in the collection (EntityStore validates every ID against the collection before resolving).
 
-**Fix:** Add `data: { inherit: true }` to your component's `meta.js`:
+**Fix:** This is usually the right signal — show a proper not-found UI. Verify the folder-level `page.yml` declares the right collection, and that every item in the collection has the param field (e.g., `slug` for `[slug]/`).
 
-```js
-export default {
-  title: 'Article',
-  data: { inherit: true },
-}
-```
-
-If the data is wired correctly but the item is still null, the ID doesn't exist in the collection — EntityStore validates every ID against the collection before resolving. Show a proper not-found UI.
+Delivery itself is automatic; no `data: { inherit: true }` or `meta.js` opt-in is required.
 
 ### Wrong data in component
 
@@ -682,8 +679,8 @@ fetch:
 ```
 
 ```js
-// meta.js — inherit: true accepts both singular and plural automatically
-data: { inherit: true }
+// meta.js — declaration is optional; singular/plural are derived automatically
+data: { entity: 'articles' }
 ```
 
 ---

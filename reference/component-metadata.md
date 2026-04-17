@@ -342,29 +342,26 @@ background:
 
 ### Data
 
-The `data` field groups all data-related configuration: CMS entity binding, schemas for tagged blocks, and cascading control.
+Data delivery is **default-on**. A block on a page with a `data:` or `fetch:` declaration automatically receives `content.data.{schema}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it provides declarative hints that drive the editor, `schema.json`, and `prepare-props` shape guarantees.
 
 ```javascript
 data: {
-  entity: 'events:6',           // CMS entity type and limit
-  schemas: { ... },             // Structure for tagged data blocks
-  inherit: ['team'],            // Accept cascaded data from page/site fetches (optional)
+  entity: 'events:6',           // entity-type declaration (hint, not gate)
+  schemas: { ... },             // structure / defaults for tagged blocks and entity data
 }
 ```
 
 All subfields are optional — include only what your component needs.
 
-**Auto-derived inheritance:** When you declare `entity`, the build automatically derives `inherit` from the entity type. You don't need both:
+**Opt-out:** a component that should not receive any ambient data declares `data: false`. Rare — used only for pure layout primitives or debug components.
 
 ```javascript
-// ✅ Just declare entity — inherit is auto-derived as ['articles']
-data: { entity: 'articles:6' }
-
-// ❌ Redundant — inherit is already implied by entity
-data: { entity: 'articles:6', inherit: ['articles'] }
+export default {
+  data: false,
+}
 ```
 
-Use explicit `inherit` only when you need to override the default — for example, `inherit: false` to opt out, `inherit: true` to inherit all data, or `inherit: ['articles', 'featured']` when you need additional schemas beyond the entity type.
+> Component-side `inherit` (`data: { inherit: true }` / `inherit: [...]`) has been removed as a delivery gate — delivery is default-on. The block-frontmatter form `fetch: { inherit: true, detail: false, limit: 3 }` in a `.md` file is a different mechanism (per-instance override of the parent's query) and is retained. See [Data Fetching](./data-fetching.md) for details.
 
 #### Entity binding
 

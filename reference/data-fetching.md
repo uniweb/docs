@@ -4,19 +4,20 @@ Load external data from local files or remote URLs and make it available to your
 
 ## Overview
 
-The `fetch` property lets you load structured data into `content.data`. It works at three levels:
+The `fetch` property lets you load structured data into `content.data`. It works at four levels:
 
-| Level | File | Scope |
-|-------|------|-------|
-| **Block** | `.md` frontmatter | Available to that section's component only |
-| **Page** | `page.yml` with sections on the page | Shared across all sections on that page |
-| **Folder** | `page.yml` with no sections (only sub-pages) | Shared across a whole route family (`index/` and `[id]/`) |
+| Level | File | Who sees the data |
+|-------|------|-------------------|
+| **Site** | `site.yml fetch:` | Every page and section (rarely used) |
+| **Folder** | `page.yml` with no sections (only sub-pages) | All pages in the route family (`index/` and `[id]/`) |
+| **Page** | `page.yml` with sections on the page | All sections on that page |
+| **Block** | `.md` frontmatter | That section only |
 
-Data cascades down: folder → page → block. Components opt into receiving cascaded data via `data.inherit` in their `meta.js`.
+**Delivery is default-on.** A block on a page receives the data from all enclosing levels automatically as `content.data.{schema}` — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
 
-The **folder level** is the key pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data configuration layer for the entire route family. EntityStore walks: block → page → page.parent (folder) → site config.
+Data cascades down: site → folder → page → block. The block-local level wins when keys collide.
 
-Site-level fetch (`site.yml fetch:`) is also supported but is rarely needed in practice — it makes data available globally to every page and section.
+The **folder level** is the canonical pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data-configuration layer for the entire route family. EntityStore walks: block → page → page.parent (folder) → site config.
 
 ---
 
@@ -51,7 +52,7 @@ title: About Us
 data: team
 ```
 
-All sections on `/about` can access `content.data.team` if they opt in via `data: { inherit: true }` in their `meta.js`.
+All sections on `/about` receive `content.data.team` automatically.
 
 ### Folder-level fetch
 
@@ -63,7 +64,7 @@ Load data shared across an entire route family. Use this when `page.yml` has no 
 data: articles
 ```
 
-Both `articles/index/` (the listing page) and `articles/[id]/` (the detail page) inherit this fetch config. This is the recommended structure for dynamic routes.
+Both `articles/index/` (the listing page) and `articles/[id]/` (the detail page) pick up this fetch automatically. This is the recommended structure for dynamic routes.
 
 ---
 
@@ -111,79 +112,107 @@ fetch: /api/events.yaml         # → schema: events
 
 ---
 
-## Data Cascading
+## Cascade
 
-Data flows from folder → page → block. Components must opt in to receive cascaded data.
+Data flows from site → folder → page → block. **Every block on a page receives every piece of data declared at any enclosing level**, with block-local data winning when keys collide.
 
-### Component opt-in (`meta.js` — consumption declaration)
+```
+Site fetch                      →  available everywhere
+Folder fetch (parent page.yml)  →  available to all pages in the route family
+Page fetch                      →  available to all sections on that page
+Block fetch / tagged blocks     →  block-local, wins on key collision
+```
 
-The `data:` field in `meta.js` is a **consumption declaration**, not a fetch config. It tells the runtime which cascaded data this component wants to receive. It does not define where data comes from — that's the job of the `fetch:` config in `page.yml` or the block's `.md` frontmatter.
+No component-side opt-in is required. A component at `/blog/[slug]` automatically sees `content.data.articles` (from the folder-level fetch) and `content.data.article` (the matched item on the template page).
+
+### Declaring what your component works with (optional)
+
+Components can declare their expected entity shape in `meta.js`. This is a **hint**, not a delivery gate — it drives the visual editor, `schema.json`, and shape guarantees from `prepare-props`:
 
 ```js
 // foundation/src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
-
   data: {
-    // Walk the hierarchy to find a fetch config — accept everything found
-    inherit: true,
+    entity: 'articles',        // "designed for articles-shaped data"
+    schemas: {                  // optional: field-level defaults and validation
+      articles: {
+        slug: { type: 'string', default: '' },
+        title: { type: 'string', default: '' },
+        excerpt: { type: 'string', default: '' },
+      },
+    },
   },
 }
 ```
 
-You can be selective about which schemas to accept:
+When `entity` is declared and the cascade delivered a match, `prepare-props` guarantees shape:
+
+- `content.data.articles` is coerced to an array (single item wraps to `[item]`).
+- On template pages, `content.data.article` exists as either the matched item or `null`.
+
+When no cascade match exists, keys stay absent — `content.data.articles === undefined` distinguishes "no source" from `[]` (empty source).
+
+### Opting out (rare)
+
+A component that genuinely cannot tolerate ambient data declares `data: false`:
 
 ```js
-data: {
-  inherit: ['articles', 'config'],  // Only accept these schemas
+export default {
+  data: false,
 }
 ```
 
-On a dynamic `[id]/` page, you can also control whether you receive the single matched item (`detail: true`, the default) or the full collection minus the current item:
+It then receives `content.data = {}` regardless of what the cascade produced. Used for pure layout primitives or debug components — almost never in practice.
 
-```js
-data: {
-  inherit: true,
-  detail: false,   // Give me the collection minus the current item
-  limit: 3,        // Slice to 3 items
-}
-```
+### Block-level override: `fetch: { inherit: true, ... }`
 
-This `detail: false` + `limit` combination is the **related items pattern** — see [Related Items](#related-items-pattern) below.
-
-> **Deprecated:** `inheritData: ['article', 'articles']` and `data: { entity: 'articles' }` are the old syntax. Use `data: { inherit: true }` instead.
-
-### Precedence
-
-Block data (from the `.md` frontmatter fetch or tagged blocks) takes precedence over cascaded data:
-
-```
-Block fetch / tagged blocks  →  highest priority
-Page fetch                   →  medium priority
-Folder fetch                 →  lower priority
-Site fetch                   →  lowest priority
-```
-
----
-
-## Block-Level Inherit-Merge Fetch
-
-A block's `.md` frontmatter can use `fetch: { inherit: true, ... }` to **merge** with the parent fetch config instead of replacing it. This lets you override specific fields per-instance without pointing to a new data source:
+A block's `.md` frontmatter can borrow the parent's query and customize how the result arrives. The word `inherit` here is the CSS-cascade kind — the block inherits the ancestor's query and overrides specific fields. This is **different from the removed component-side opt-in**; it's a per-instance data-shaping knob on the block itself.
 
 ```yaml
 # pages/articles/[id]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  inherit: true   # don't treat this as a new URL source — merge with parent fetch
-  detail: false   # override: give me collection minus current item
+  inherit: true   # borrow the parent's query (don't define a new URL)
+  detail: false   # give me the collection minus the current item
+  limit: 3        # slice to 3
+---
+```
+
+See [Related Items](#related-items-pattern) for the common use.
+
+### Precedence
+
+When a block tagged block (`yaml:pricing`) produces the same key as a cascaded fetch (`data: pricing`), the block's tagged block wins. Same for explicit block-level `fetch:` configs:
+
+```
+Block tagged blocks / block fetch  →  highest priority
+Page fetch                          →  medium priority
+Folder fetch                        →  lower priority
+Site fetch                          →  lowest priority
+```
+
+---
+
+## Block-Level Inherit-Merge Fetch
+
+A block's `.md` frontmatter can use `fetch: { inherit: true, ... }` to **merge** with the parent's fetch config instead of replacing it. This lets you override specific fields per-instance without pointing to a new data source:
+
+```yaml
+# pages/articles/[id]/2-related.md
+---
+type: RelatedArticles
+fetch:
+  inherit: true   # borrow the parent's query — don't treat this as a new URL
+  detail: false   # override: give me the collection minus the current item
   limit: 3        # override: slice to 3 items
 ---
 
 # More articles
 ```
 
-This is per-instance control. The component's `meta.js data:` sets defaults; the `.md` `fetch:` overrides for specific instances. Block-level inherit-merge takes priority over `meta.js data:` declarations.
+This is per-instance control over how the result arrives. The `inherit: true` here is a block-frontmatter override, not a component-side opt-in — the component side has no gate.
 
 ---
 
@@ -207,8 +236,8 @@ fetch:
 ```js
 // RelatedArticles/meta.js
 export default {
-  data: { inherit: true },
-  // detail: false and limit are set per-instance in the .md, not here
+  data: { entity: 'articles' },
+  // detail: false and limit are set per-instance in the .md frontmatter
 }
 ```
 
@@ -442,10 +471,10 @@ import { person } from '@uniweb/schemas'
 export default {
   title: 'Team Grid',
   data: {
+    entity: 'team',
     schemas: {
       team: person,  // Validate fetched data against person schema
     },
-    inherit: ['team'],
   },
 }
 ```
@@ -501,12 +530,10 @@ type: TeamGrid
 ```
 
 ```js
-// meta.js
+// meta.js — `data:` is optional; delivery is default-on
 export default {
   title: 'Team Grid',
-  data: {
-    inherit: true,
-  },
+  data: { entity: 'team' },
 }
 ```
 
@@ -532,8 +559,8 @@ fetch:
   schema: config
 ```
 
-```js
-// Any component with data: { inherit: ['config'] }
+```jsx
+// Any component on any page — site-level fetches are delivered everywhere.
 export default function Footer({ content }) {
   const config = content.data.config || {}
   return <footer>{config.copyright}</footer>

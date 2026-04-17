@@ -97,7 +97,7 @@ A multilingual site (English, Spanish, French) with blog, team pages, and full i
 
 **Full i18n with three languages.** The `site/locales/` directory contains `es.json`, `fr.json`, and `manifest.json`. This is the only template that demonstrates the complete translation workflow — extraction, manifest hashes, and locale files. If you need to build a multilingual site, this is the reference.
 
-**Data inheritance.** `ArticleList/meta.js` uses `data: { inherit: ['articles'] }` — the section type inherits article data declared at the page level in `page.yml`. The page fetches the collection once; the section type consumes it without knowing where it came from. This is the CCA data layer pattern: page declares, component reads.
+**Data cascade.** The page's `page.yml` declares `data: articles`. `ArticleList` receives that data automatically in `content.data.articles` — no component-side opt-in required. `meta.js` can optionally declare `data: { entity: 'articles' }` as a hint for the editor and shape guarantees. The page fetches the collection once; every section type on the page consumes it. This is the CCA data layer pattern: page declares, component reads.
 
 **Dynamic routes with i18n.** The `site/pages/blog/[slug]/` folder creates dynamic routes for blog posts, and translations apply to the dynamic content. This shows how CCA's routing and i18n systems compose.
 
