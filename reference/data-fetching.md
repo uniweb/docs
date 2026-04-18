@@ -165,22 +165,24 @@ export default {
 
 It then receives `content.data = {}` regardless of what the cascade produced. Used for pure layout primitives or debug components — almost never in practice.
 
-### Block-level override: `fetch: { inherit: true, ... }`
+### Block-level override: `fetch: { refine: true, ... }`
 
-A block's `.md` frontmatter can borrow the parent's query and customize how the result arrives. The word `inherit` here is the CSS-cascade kind — the block inherits the ancestor's query and overrides specific fields. This is **different from the removed component-side opt-in**; it's a per-instance data-shaping knob on the block itself.
+A block's `.md` frontmatter can borrow the parent's query and customize how the result arrives. `refine: true` tells the runtime "this isn't a new data source — it's a per-instance refinement of the ancestor's query."
 
 ```yaml
 # pages/articles/[id]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  inherit: true   # borrow the parent's query (don't define a new URL)
+  refine: true    # borrow the parent's query (don't define a new URL)
   detail: false   # give me the collection minus the current item
   limit: 3        # slice to 3
 ---
 ```
 
 See [Related Items](#related-items-pattern) for the common use.
+
+> **Deprecated:** `inherit: true` is accepted as an alias for one release with a dev-mode warning, then removed. Rename to `refine: true`.
 
 ### Precedence
 
@@ -195,16 +197,16 @@ Site fetch                          →  lowest priority
 
 ---
 
-## Block-Level Inherit-Merge Fetch
+## Block-Level Refine Fetch
 
-A block's `.md` frontmatter can use `fetch: { inherit: true, ... }` to **merge** with the parent's fetch config instead of replacing it. This lets you override specific fields per-instance without pointing to a new data source:
+A block's `.md` frontmatter can use `fetch: { refine: true, ... }` to **borrow the parent's fetch config** instead of introducing a new source. This lets you override specific fields per-instance:
 
 ```yaml
 # pages/articles/[id]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  inherit: true   # borrow the parent's query — don't treat this as a new URL
+  refine: true    # borrow the parent's query — don't treat this as a new URL
   detail: false   # override: give me the collection minus the current item
   limit: 3        # override: slice to 3 items
 ---
@@ -212,7 +214,9 @@ fetch:
 # More articles
 ```
 
-This is per-instance control over how the result arrives. The `inherit: true` here is a block-frontmatter override, not a component-side opt-in — the component side has no gate.
+This is per-instance control over how the result arrives. It's a block-frontmatter override — the component side has no gate.
+
+> **Deprecated:** `inherit: true` still works as an alias for one release with a dev-mode warning; rename to `refine: true`.
 
 ---
 
@@ -225,7 +229,7 @@ A section on a dynamic page can receive the full collection **minus the current 
 ---
 type: RelatedArticles
 fetch:
-  inherit: true
+  refine: true
   detail: false
   limit: 3
 ---
