@@ -324,9 +324,11 @@ export default function DocsLayout({ header, footer, left, right, body }) {
 
 ---
 
-## Data Fetcher
+## Data Transports
 
-A foundation can declare a data fetcher that owns transport (HTTP, auth, response shape) for the sites that use it. The sites continue to author `fetch:` / `data:` declarations the usual way — they never know whether the bytes came from a local JSON file handled by the framework's default fetcher or from a backend your foundation talks to.
+A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which schema. A foundation never silently intercepts a site's data request.
+
+When a site declares no transport for a schema, the framework's default fetcher handles it (plain GET + JSON parse + optional `transform:`, plus the site-level `baseUrl` / `headers` / `envelope` vocabulary — see [Connecting a Backend](../development/connecting-a-backend.md)). Most foundations need no transports at all.
 
 Declared on the default export of `foundation.js` alongside identity, theme, and layout fields:
 
@@ -335,41 +337,55 @@ Declared on the default export of `foundation.js` alongside identity, theme, and
 export default {
   defaultLayout: 'MarketingLayout',
 
-  fetcher: {
-    routes: [
-      { match: (req) => req.schema === 'members', resolve: membersFetcher.resolve },
-      { match: (req) => req.url?.startsWith('https://api.example.com/'), resolve: apiFetcher.resolve },
-    ],
-    fallback: { resolve: customDefault.resolve },
+  transports: {
+    uniweb: {
+      resolve: async (request, ctx) => {
+        const siteFolder = ctx.website.config?.fetcher?.uniweb?.siteFolder
+        const res = await fetch(`https://uniweb.app/sites/${siteFolder}/${request.schema}`, {
+          signal: ctx.signal,
+        })
+        if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
+        return { data: await res.json() }
+      },
+      cacheKey: (request) => `uniweb:${request.schema}`,
+    },
   },
 }
 ```
 
-When the foundation's `fetcher` field is omitted, every request is handled by the runtime's built-in URL fetcher (plain GET + JSON parse + optional `transform:` dot-path). Declaring a fetcher is purely opt-in — most foundations don't need one.
+The site then opts in:
 
-### Shape
-
-```js
-fetcher: {
-  routes?: [
-    { match: (request, ctx) => boolean, resolve: (request, ctx) => Promise<Return> }
-  ],
-  fallback?: { resolve: (request, ctx) => Promise<Return> },
-}
+```yaml
+# site.yml
+fetcher:
+  transports:
+    articles: uniweb     # schema → transport name
+    events: default      # reserved name — framework default fetcher
+  uniweb:                 # transport-specific binding config
+    siteFolder: abc-123-def
 ```
 
-When a request comes in, the dispatcher walks the routes array in declared order, then each extension's routes, and finally the fallback. The first `match(request, ctx)` that returns truthy wins. If no route matches and no fallback is declared, the framework's default URL fetcher handles it.
+### How the site selects
 
-### The fetcher contract
+Selection is a name lookup, nothing more:
 
-A fetcher is any object with a `resolve` method:
+1. If `fetcher.transports[request.schema]` is set, use that named transport from the primary foundation (or any extension that registers a transport by that name).
+2. Otherwise, if `fetcher.transports.default` is set, use that for every schema.
+3. Otherwise, the framework default fetcher handles the request.
+
+There is no `match()` predicate, no route-walking, no fallback chain. The site always makes the selection, visible in `site.yml`, auditable.
+
+### The transport contract
+
+A transport is any object with a `resolve` method (and optionally `cacheKey`):
 
 ```js
 {
   async resolve(request, ctx) {
     // ...
     return { data, error?, meta? }
-  }
+  },
+  cacheKey?: (request) => string,  // optional; see Per-transport knobs below
 }
 ```
 
@@ -407,81 +423,81 @@ A fetcher is any object with a `resolve` method:
 
 Throwing is tolerated but not idiomatic — the runtime catches and surfaces `{ data: [], error: String(err) }`. Prefer returning an explicit `error` field.
 
-### Per-fetcher knobs
+### Per-transport knobs
 
-Optional fields on a fetcher object that the dispatcher recognizes:
+Optional fields on a transport object that the dispatcher recognizes:
 
 | Field | Default | Description |
 | --- | --- | --- |
-| `cacheKey(request)` | `{schema, path, url, transform, method?, body?}` stringified | Override when the fetcher derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
-| `prerenderable` | `true` | Set `false` to opt out of build-time (`uniweb build`) execution. The config is skipped at build and fetched at runtime in the browser. Use for fetchers that need browser-only APIs. |
+| `cacheKey(request)` | `{schema, path, url, transform, method?, body?}` stringified | Override when the transport derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
+| `prerenderable` | `true` | Set `false` to opt out of build-time (`uniweb build`) execution. The config is skipped at build and fetched at runtime in the browser. Use for transports that need browser-only APIs. |
 
-### Minimal example
+### Binding config
 
-```js
-// foundation/src/foundation.js
-const myFetcher = {
-  async resolve(request, ctx) {
-    const base = ctx.website.config?.fetcher?.baseUrl ?? 'https://api.example.com'
-
-    const res = await fetch(`${base}/${request.schema}`, {
-      signal: ctx.signal,
-    })
-    if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
-    return { data: await res.json(), meta: { fetchedAt: Date.now() } }
-  },
-}
-
-export default {
-  defaultLayout: 'MarketingLayout',
-  fetcher: {
-    fallback: { resolve: myFetcher.resolve },
-  },
-}
-```
-
-### Per-site transport config
-
-Sites can set shared transport options under `fetcher:` in `site.yml`. The framework's default fetcher reads a recognized vocabulary (`baseUrl`, `headers`, `envelope`). Foundations are free to read additional keys from the same block:
+Under the `fetcher:` block in `site.yml`, a foundation's transport can read its own named sub-block. By convention, use a key matching the transport name:
 
 ```yaml
 # site.yml
-foundation: my-foundation
-
 fetcher:
-  baseUrl: https://api.example.com      # recognized by the default fetcher
-  headers:                               # recognized by the default fetcher
-    X-Tenant: acme
-  envelope:                              # recognized by the default fetcher
-    collection: data.items
-  someCustomKey: value                   # foundation-specific; your fetcher reads ctx.website.config.fetcher.someCustomKey
+  transports:
+    articles: uniweb
+  uniweb:                      # binding for the 'uniweb' transport
+    siteFolder: abc-123-def
+    sources: { blog: 'posts' }
 ```
 
-Document the keys your fetcher reads in the foundation's README; the framework does no validation of unknown keys. Values ending up in `website.config.fetcher` are client-visible — the framework does not offer a "secret" configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches a URL its deployment environment proxies to an authenticated backend); see the [Secrets section of the backend guide](../development/connecting-a-backend.md#secrets).
+The transport reads its config via `ctx.website.config.fetcher.{transportName}`. The framework does no validation — document the keys your transport reads in the foundation's README.
+
+Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See the [Secrets section of the backend guide](../development/connecting-a-backend.md#secrets).
+
+### Per-site default-fetcher vocabulary
+
+Even without a named transport, sites can tune the framework's default fetcher via `site.yml`:
+
+```yaml
+fetcher:
+  baseUrl: https://api.example.com       # recognized by the default fetcher
+  headers:                                # recognized by the default fetcher
+    X-Tenant: acme
+  envelope:                               # recognized by the default fetcher
+    collection: data.items
+```
+
+This works because the framework default fetcher reads from `website.config.fetcher` (same block, root keys). Named transports and the default-fetcher vocabulary coexist under one `fetcher:` block.
 
 ### Composing middleware
 
-`@uniweb/fetchers` ships small middleware primitives that wrap a fetcher with cross-cutting behavior. The package is middleware-only — for a complete fetcher, write your own `resolve()` against `fetch()` and compose middleware around it:
+`@uniweb/fetchers` ships small middleware primitives that wrap a transport with cross-cutting behavior. The package is middleware-only — for a complete transport, write your own `resolve()` against `fetch()` and compose middleware around it:
 
 ```js
 import { withAuth } from '@uniweb/fetchers'
 
-const authed = withAuth(myFetcher, () => someTokenProvider())
+const authed = withAuth(myTransport, () => someTokenProvider())
 ```
 
-### Extensions contributing fetchers
+### Extensions contributing transports
 
-An extension's `foundation.js` can declare a `fetcher:` field too. The dispatcher appends its routes after the primary foundation's routes (and before the primary's fallback), in the order extensions appear in `site.yml`. This keeps a stats-widget extension's transport packaged with its components, without the primary foundation knowing.
+An extension's `foundation.js` can export `transports: { … }` too. The dispatcher merges extension transports into a single registry, keyed by name. On a name collision with the primary foundation, the **primary wins** with a dev-mode warning. A malformed or throwing extension transport is logged and skipped — it never blocks the rest of the registry (parallels the `Promise.allSettled` pattern used to load extensions).
 
-### When to skip the fetcher declaration
+This lets a stats-widget extension package its own transport, and sites opt into it by name in `site.yml`:
 
-Most foundations don't need one. Omit `fetcher:` when:
+```yaml
+# site.yml
+fetcher:
+  transports:
+    stats: extension-stats        # extension-contributed transport name
+```
 
-- The site serves JSON from `public/data/` (the default path works).
+### When to skip the transports declaration
+
+Most foundations don't need one. Omit `transports:` when:
+
+- The site serves JSON from `public/data/` (the default fetcher works).
+- The site hits a remote API that the default fetcher's `baseUrl` / `headers` / `envelope` / `method: POST` vocabulary can express — see [Connecting a Backend](../development/connecting-a-backend.md).
 - Each component calls `fetch()` directly inside `useEffect` (bundled-style foundations).
 - A third-party SDK manages transport inside the component.
 
-See [Working with Data](../development/working-with-data.md) for the narrative view — including when a custom fetcher pays off, how reactivity flows when foundations combine fetchers with `page.state`, and worked examples. For the dispatcher mechanics, cache keys, and security posture see [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md). For the set of site-level `fetcher:` keys the framework's default recognizes (so sites don't need a custom fetcher for common backends) see [Connecting a Backend](../development/connecting-a-backend.md).
+See [Data Fetching](./data-fetching.md) for the author surface (`fetch:` / `data:` cascade) and [Connecting a Backend](../development/connecting-a-backend.md) for the recipes that don't need a custom transport.
 
 ---
 

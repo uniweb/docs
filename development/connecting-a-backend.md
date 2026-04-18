@@ -211,6 +211,8 @@ For self-hosted deployments, the same pattern applies: put whatever you already 
 
 **Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable) are a different category entirely. They're designed to be sent from browsers; no need for a proxy. Put them in `headers:` or directly in URLs. They're only called "tokens" — for architectural purposes they're public data.
 
+> **Planned:** a `${secrets.NAME}` interpolation syntax — where `site.yml` references a secret by name and the deployment proxy substitutes the real value at request time — is under design. The goal is to keep the simple posture (browser never sees secrets) while letting `site.yml` express which secret each request needs. Not available today; same-origin proxying remains the pattern.
+
 ---
 
 ## When a custom fetcher pays off

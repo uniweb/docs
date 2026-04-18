@@ -325,17 +325,16 @@ Positions 1 and 2 are the common ones. A portable foundation that needs auth, a 
 
 **The author-visible surface does not change.** Pages still write `data:` / `fetch:` in `page.yml`, components still read `content.data.{schema}`. A site can't tell whether its data came from the default URL fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
 
-### Declaring a fetcher
+### Declaring a transport
 
-Full reference — object shape, route matching, cache-key knobs — lives in [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher). The minimum:
+Full reference — object shape, cache-key knobs, extension merging — lives in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports). The minimum:
 
 ```js
 // foundation.js
-const myFetcher = {
+const myTransport = {
   async resolve(request, ctx) {
-    const res = await fetch(`${ctx.website.config.fetcher.baseUrl}/${request.schema}`, {
-      signal: ctx.signal,
-    })
+    const base = ctx.website.config?.fetcher?.myFoundation?.baseUrl
+    const res = await fetch(`${base}/${request.schema}`, { signal: ctx.signal })
     if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
     return { data: await res.json() }
   },
@@ -343,11 +342,23 @@ const myFetcher = {
 
 export default {
   defaultLayout: 'MarketingLayout',
-  fetcher: { fallback: { resolve: myFetcher.resolve } },
+  transports: { myFoundation: myTransport },
 }
 ```
 
-A foundation with multiple backends uses `routes:` — an ordered list of `{ match, resolve }` pairs. First match wins; anything unmatched falls through to `fallback:` (or to the framework default if no fallback is declared).
+The site opts in per schema:
+
+```yaml
+# site.yml
+fetcher:
+  transports:
+    members: myFoundation        # schema → transport name
+    events: default              # reserved — framework default fetcher
+  myFoundation:                   # binding the transport reads
+    baseUrl: https://api.example.com
+```
+
+A foundation with multiple backends exports multiple named transports (`{ members: …, catalog: …, analytics: … }`); the site picks per schema. No `match()` predicates — selection is a name lookup the site controls.
 
 ### Middleware: `@uniweb/fetchers`
 

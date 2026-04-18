@@ -8,7 +8,7 @@ How Uniweb's data-fetching layer works end to end — dispatcher, default fetche
 
 ## The dispatcher in one diagram
 
-Every data fetch goes through the **FetcherDispatcher** — a small object on `website.fetcher` that decides which fetcher handles a given request. Resolution walks a four-tier chain:
+Every data fetch goes through the **FetcherDispatcher** — a small object on `website.fetcher` that decides which fetcher handles a given request. Selection is a name lookup, not a route walk:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -18,22 +18,25 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
                                │
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Primary foundation routes                                            │
-│   foundation.fetcher.routes[] — first match(request, ctx) wins       │
+│ Runtime transport override (if set)                                  │
+│   Passed via initUniweb({ transport }). Editor preview only;         │
+│   handles every Layer-1 request unconditionally.                     │
 └──────────────────────────────────────────────────────────────────────┘
-                               │ no match
+                               │ not set
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Extension routes (in site.yml declaration order)                     │
-│   Extension N → extension N+1 → ...                                  │
+│ Site-selected named transport                                        │
+│   site.yml fetcher.transports[request.schema]                        │
+│     → registry = primary foundation.transports ∪ extension transports│
+│   (primary wins on collision; bad extensions skipped with warning)   │
 └──────────────────────────────────────────────────────────────────────┘
-                               │ no match
+                               │ no match (or site didn't pick)
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Primary foundation fallback                                          │
-│   foundation.fetcher.fallback (if declared)                          │
+│ site.yml fetcher.transports.default (if set)                         │
+│   Same registry lookup for every unclaimed schema.                   │
 └──────────────────────────────────────────────────────────────────────┘
-                               │ no fallback
+                               │ not set (or name unregistered)
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Framework default fetcher (terminal — always present)                │
@@ -41,9 +44,9 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-The default fetcher is the terminal fallback. It always exists. Sites that declare no foundation fetcher (the common case — docs, marketing, starter templates) run every request through this path.
+The default fetcher is the terminal resolver. It always exists. Sites that declare no `fetcher.transports` (the common case — docs, marketing, starter templates) run every request through this path.
 
-`match(request, ctx)` is a synchronous predicate: truthy to claim the request, falsy to defer. First match wins.
+There is **no `match()` predicate, no route-walking, no silent foundation-owned routing**. The site always picks — and the pick is visible in `site.yml`, auditable. Foundations contribute named transports; extensions contribute by name too; the site selects per schema.
 
 ---
 
@@ -128,12 +131,12 @@ Throwing works but isn't idiomatic. The runtime catches and surfaces `{ data: []
 
 When `website.fetcher.dispatch(request, ctx)` is called:
 
-1. **Select fetcher.** Walk routes + extensions + fallback. Record: a specific fetcher instance.
+1. **Select fetcher.** Runtime `transport` override wins if set; otherwise look up `ctx.website.config.fetcher.transports[schema]` → `.transports.default` in the named-transport registry; otherwise the framework default fetcher. Record: a specific fetcher instance.
 2. **Derive cache key.** Call `fetcher.cacheKey(request)` if defined, else the framework default.
 3. **Cache hit?** `dataStore.get(key)` — return cached `{ data, meta }` synchronously-wrapped.
 4. **In-flight?** Attach this request's signal to the existing promise's abort set; await the same promise.
 5. **Execute.** Call `fetcher.resolve(request, ctx)`. Store the promise in in-flight under `key`.
-6. **On success.** Write `{ data, meta }` to the cache, fire listeners, return.
+6. **On success.** Write `{ data, meta }` to the cache, fire listeners (global + keyed), return.
 7. **On failure.** Surface `{ data, error }`; do not cache error states.
 
 **Signals and dedup.** When two blocks request the same key concurrently, they share one fetcher call. The in-flight entry carries a Set of signals; the underlying fetch is aborted only when every attached signal has aborted. Cancelling one block doesn't abort the other.
@@ -281,14 +284,14 @@ From the contract's angle:
 - A non-JSON wire protocol.
 - Interactive re-fetching on user action. (This is a component-owned concern — domain-aware components fetch their own data with standard React; see [Component Data Patterns](../development/component-data-patterns.md).)
 
-Write the custom fetcher. Compose `@uniweb/fetchers` middleware around it. See [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher).
+Write a custom transport. Compose `@uniweb/fetchers` middleware around it. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
 
 ---
 
 ## See also
 
 - [Connecting a Backend](../development/connecting-a-backend.md) — User guide with recipes.
-- [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) — Writing a custom fetcher.
+- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing and registering a named transport.
 - [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
 - [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `data:` config.
-- [Extensions Architecture](./extensions-architecture.md) — How extensions contribute fetcher routes.
+- [Extensions Architecture](./extensions-architecture.md) — How extensions contribute named transports.

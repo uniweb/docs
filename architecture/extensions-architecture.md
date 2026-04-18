@@ -74,13 +74,25 @@ For projects that *do* have a local foundation, extensions are unnecessary for l
 
 ## Transport alongside components
 
-A specialized section type often needs specialized data transport — a stats widget talks to a metrics API, a product viewer fetches from a catalog service. CCA's fetcher contract lets an extension declare a `fetcher:` field in its `foundation.js` exactly the way a primary foundation does. The dispatcher walks the primary foundation's routes first, then each extension's routes in the order they appear in `site.yml`, before falling through to the primary's fallback or the framework's default.
+A specialized section type often needs specialized data transport — a stats widget talks to a metrics API, a product viewer fetches from a catalog service. An extension can export a **named transport** in its `foundation.js` exactly the way a primary foundation does, and the site opts in per schema:
 
-This keeps an extension's transport packaged with its components. The stats widget ships with the code that knows how to fetch stats — the primary foundation doesn't need to anticipate it, and the site author doesn't need to wire anything beyond adding the extension URL to `site.yml`. If two extensions claim the same request (through overlapping `match` predicates), the one declared first in `site.yml` wins; this is ordering, not conflict resolution, and keeps the resolution rule predictable.
+```yaml
+# site.yml
+extensions:
+  - https://cdn.example.com/stats/foundation.js
 
-Additivity still holds. An extension can *add* a route that handles requests no one else handles; it can't preempt the primary foundation's routes (those walk first), and it can't change how primary-foundation data flows to primary-foundation sections. It only gives the dispatcher more places to try before the fallback.
+fetcher:
+  transports:
+    views: stats         # extension's 'stats' transport handles `data: views`
+```
 
-See [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) for the full `fetcher:` declaration shape.
+The dispatcher merges primary-foundation transports and extension transports into a single name-keyed registry. On a name collision the primary foundation wins (dev-mode warning); a bad or throwing extension transport is skipped with a warning rather than torn down (parallels the `Promise.allSettled` pattern for loading extensions).
+
+This keeps an extension's transport packaged with its components: the stats widget ships with the code that knows how to fetch stats, and the site author picks it up by adding the extension URL and writing one `fetcher.transports:` line.
+
+Additivity still holds. An extension can *add* a transport under a new name; it can't preempt a transport the primary foundation already registered under the same name. And crucially, an extension cannot silently intercept a site's data request — the site's `fetcher.transports:` declaration is the only way an extension transport gets used.
+
+See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) for the full `transports:` declaration shape.
 
 ## Composition across foundations
 

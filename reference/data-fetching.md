@@ -575,11 +575,12 @@ export default function Footer({ content }) {
 
 ## Per-site transport config
 
-Sites can declare a `fetcher:` block in `site.yml` to configure shared transport behavior:
+Sites declare a `fetcher:` block in `site.yml`. It does two things: tune the framework default fetcher (`baseUrl` / `headers` / `envelope`) and opt into foundation-provided **named transports** per schema.
 
 ```yaml
 # site.yml
 fetcher:
+  # Default-fetcher vocabulary — applies when no named transport handles the schema.
   baseUrl: https://api.example.com
   headers:
     X-Tenant: acme
@@ -588,15 +589,32 @@ fetcher:
     collection: data.items
     item: data.article
     error: errors.0.message
+
+  # Named-transport selection — foundation-contributed transports, picked per schema.
+  transports:
+    articles: uniweb          # foundation's 'uniweb' transport handles `data: articles`
+    events: default           # reserved — explicitly routes back to the default fetcher
+  uniweb:                       # binding config the 'uniweb' transport reads
+    siteFolder: abc-123-def
 ```
 
-The framework's default fetcher recognizes `baseUrl`, `headers`, `envelope`, and supports per-fetch `method: POST` + `body`. See [Connecting a Backend](../development/connecting-a-backend.md) for recipes (relative URLs, static headers, response envelopes, `POST /search`, GraphQL).
+### How selection works
 
-Secrets do not belong in this block — it's public to the browser. Sites that need private credentials use a same-origin proxy at the deployment layer; the site then just fetches `/api/...`. See [Secrets](../development/connecting-a-backend.md#secrets).
+For each request:
 
-If a foundation declares its own custom fetcher, it can read additional keys from the same block — the foundation's README documents what it accepts. Unknown keys are ignored by the framework.
+1. If `fetcher.transports[request.schema]` is set, the dispatcher looks that name up in the registry of transports the foundation and its extensions registered. A match handles the request.
+2. Otherwise, if `fetcher.transports.default` is set, that name handles every unclaimed schema.
+3. Otherwise, the framework default fetcher handles it — applying `baseUrl` / `headers` / `envelope` from the same block and per-fetch `method: POST` / `body`.
 
-See [Foundation Configuration → Data Fetcher](./foundation-config.md#data-fetcher) for writing a custom fetcher.
+No route-walking, no `match()` predicates, no silent foundation-owned routing — the site picks.
+
+See [Connecting a Backend](../development/connecting-a-backend.md) for recipes that stay on the default fetcher (relative URLs, static headers, response envelopes, `POST /search`, GraphQL) and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing and registering a custom transport.
+
+### Secrets
+
+Secrets do not belong in `site.yml` — values here are public to the browser. Sites that need private credentials use a same-origin proxy at the deployment layer; the site then just fetches `/api/…` and the proxy attaches the credential server-side. See [Secrets](../development/connecting-a-backend.md#secrets).
+
+> **Planned:** a `${secrets.NAME}` interpolation syntax (resolved at request time by the deployment proxy) is under design. Not available today — same-origin proxying remains the pattern.
 
 ---
 
