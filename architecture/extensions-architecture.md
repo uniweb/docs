@@ -72,6 +72,16 @@ Extensions are also URLs, not package references. At runtime in the browser, eve
 
 For projects that *do* have a local foundation, extensions are unnecessary for local components. If you're already building a foundation, you add specialized section types to it directly. Extensions matter when the foundation comes from somewhere else — an npm package, a CDN, another team's repository. The separation exists at the boundary where the site author's control ends and someone else's component code begins.
 
+## Transport alongside components
+
+A specialized section type often needs specialized data transport — a stats widget talks to a metrics API, a product viewer fetches from a catalog service. CCA's fetcher contract lets an extension declare a `fetcher:` field in its `foundation.js` exactly the way a primary foundation does. The dispatcher walks the primary foundation's routes first, then each extension's routes in the order they appear in `site.yml`, before falling through to the primary's fallback or the framework's default.
+
+This keeps an extension's transport packaged with its components. The stats widget ships with the code that knows how to fetch stats — the primary foundation doesn't need to anticipate it, and the site author doesn't need to wire anything beyond adding the extension URL to `site.yml`. If two extensions claim the same request (through overlapping `match` predicates), the one declared first in `site.yml` wins; this is ordering, not conflict resolution, and keeps the resolution rule predictable.
+
+Additivity still holds. An extension can *add* a route that handles requests no one else handles; it can't preempt the primary foundation's routes (those walk first), and it can't change how primary-foundation data flows to primary-foundation sections. It only gives the dispatcher more places to try before the fallback.
+
+See [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) for the full `fetcher:` declaration shape.
+
 ## Composition across foundations
 
 Extensions become powerful when they compose with the primary foundation's types. The content author can use extension types as standalone sections — writing `type: FancyHero` exactly as they'd write `type: Hero` — or nest them as child blocks inside primary foundation sections.

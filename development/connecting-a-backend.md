@@ -1,0 +1,239 @@
+# Connecting a Backend
+
+Most Uniweb sites start with data in `public/data/*.json` — collections of markdown that the build turns into static JSON. That's great for blogs, docs, and marketing sites. Sometimes you need more: a base URL that varies by deploy target, a response envelope to unwrap, or a backend that takes queries in a POST body (GraphQL, `POST /search`).
+
+You don't always need a custom foundation for this. The framework's **default fetcher** understands a small vocabulary in `site.yml fetcher:` and a couple of per-fetch extensions that cover most straightforward backends with zero code.
+
+This guide walks through what's supported, with recipes. For the internals (dispatcher, cache keys, delivery paths) see [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md).
+
+> **Audience:** site developers wiring a real backend, or foundation authors deciding whether they need to write a custom fetcher.
+
+> **This guide is about Role 1 — author-driven fetching.** The content author writes `fetch:` in `page.yml` and the runtime fetches for the component. If your component has its own domain knowledge (a search box, a pagination widget, a drill-down selector), it's a Role 2 component and should use standard React `useEffect + fetch` — see [Component Data Patterns](./component-data-patterns.md) for which pattern applies when.
+
+---
+
+## The default fetcher, today
+
+Without any configuration, the default fetcher runs every request the dispatcher hands it. It:
+
+- `GET`s any URL — local path under `public/`, or remote.
+- Parses the JSON response.
+- Applies the per-fetch `transform:` dot-path to unwrap nested data.
+- Caches by query identity so SPA navigation doesn't re-fetch.
+
+Every capability this guide describes is optional. Empty config → today's behavior, unchanged.
+
+---
+
+## The default fetcher vocabulary
+
+| Setting | Where | What it does |
+| --- | --- | --- |
+| `baseUrl` | `site.yml fetcher:` | Prepended to relative `url:` values |
+| `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
+| `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: collection / item / error |
+| `method: POST` | per-fetch (`page.yml` / block frontmatter) | Send request as POST |
+| `body` | per-fetch | Arbitrary object serialized as JSON; supports `{slug}` substitution in strings |
+
+General-purpose HTTP fetching for public backends and local files. Secrets are handled at the deployment layer (see [Secrets](#secrets)), not via the framework's config.
+
+---
+
+## Recipes
+
+### Relative URLs with a site base
+
+Your backend lives at one origin; author relative URLs per-fetch:
+
+```yaml
+# site.yml
+foundation: '@starter/docs'
+
+fetcher:
+  baseUrl: https://api.example.com
+```
+
+```yaml
+# pages/articles/page.yml
+data: articles
+
+fetch:
+  url: /articles           # resolves to https://api.example.com/articles
+  schema: articles
+```
+
+Absolute URLs (`https://…`) and protocol-relative URLs (`//cdn/…`) pass through unchanged, so one fetch config can mix backend calls and CDN reads freely.
+
+### Static headers (tenant routing, accept types)
+
+Some backends route by header or need specific content negotiation:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com
+  headers:
+    X-Tenant: acme
+    Accept: application/vnd.example+json
+```
+
+Every remote request from this site includes these headers. Local `public/data/*.json` requests aren't decorated — they're just file reads.
+
+Headers set here are visible to browsers (they ride on every outgoing request). Use them for non-secret values: tenant identifiers, API versioning, content negotiation. For anything that has to stay private, see [Secrets](#secrets).
+
+### Response envelopes: `{ data: { items: [...] } }`
+
+Many APIs wrap collections. A per-fetch `transform:` handles one case; a site-level `envelope:` handles every case:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com
+  envelope:
+    collection: data.items
+    item: data.article
+    error: errors.0.message
+```
+
+- `envelope.collection` — applied to collection responses. A per-fetch `transform:` still wins when both are set.
+- `envelope.item` — applied to detail responses (single-entity fetches via `detail:`).
+- `envelope.error` — on non-2xx, extract a human error from the response body. Falls back to `HTTP <status>: <statusText>` if the path isn't in the body.
+
+### `POST /search` with a filter body
+
+Some REST APIs take complex queries in a POST body:
+
+```yaml
+# pages/products/page.yml
+fetch:
+  url: /search/products
+  method: POST
+  body:
+    filter:
+      status: published
+      tags: featured
+    sort: { created: desc }
+    limit: 10
+  envelope: { collection: data.results }
+```
+
+The framework JSON-serializes `body:` and sets `Content-Type: application/json`. Your component reads `content.data.products` — no component-side change from the GET case.
+
+### GraphQL — collection and detail queries
+
+GraphQL always uses POST with a query body. Point `baseUrl` at the endpoint and write queries per-fetch:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com/graphql
+```
+
+```yaml
+# pages/articles/page.yml
+data: articles
+
+fetch:
+  url: ""                  # empty — the baseUrl IS the endpoint
+  method: POST
+  body:
+    query: |
+      query Articles {
+        articles { id slug title excerpt }
+      }
+  envelope: { collection: data.articles }
+
+  # Detail fetch for /articles/[slug] — object form of detail: carries its
+  # own body with {slug} substitution from the route param.
+  detail:
+    body:
+      query: |
+        query Article($slug: String!) {
+          article(slug: $slug) { id title body }
+        }
+      variables: { slug: "{slug}" }
+    envelope: { item: data.article }
+```
+
+The `{slug}` in `variables.slug` is substituted from the dynamic-route context. GraphQL selection sets like `{ id slug title }` are *not* substituted — the placeholder matcher is strict about `{name}` with no whitespace, so `{ id }` stays literal.
+
+### Hybrid: local collections + one remote API
+
+A site can mix static JSON and a remote backend freely:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com
+
+collections:
+  articles:
+    path: collections/articles   # markdown → public/data/articles.json
+```
+
+```yaml
+# pages/blog/page.yml        → reads the local markdown collection
+data: articles
+
+# pages/live-stats/page.yml  → hits the remote API
+fetch:
+  url: /stats/live             # resolves via baseUrl
+  schema: stats
+```
+
+No special flag. `path:` (local) and `url:` (remote) are already mutually exclusive per fetch, and the default fetcher handles both.
+
+---
+
+## Filter state without re-fetching
+
+A very common pattern: the site fetches a collection once, then the user picks a filter. The filtered view appears without a new network request. This is **entirely client-side** — the fetch runs once, `page.state` drives React re-renders of subscribing components, and those components narrow the already-loaded data with whatever filtering logic the foundation provides (e.g., `@uniweb/query`'s `resolveQuery`).
+
+See [Working with Data → Filter state](./working-with-data.md#filter-state-and-re-rendering-not-re-fetching) for the pattern. Nothing in `fetcher:` config is needed.
+
+Components that genuinely need to re-fetch on user action (search boxes, pagination, drill-down selectors) are domain-aware components — they know the endpoint and the query shape. Those use standard React `useEffect + fetch` inside the component. See [Component Data Patterns](./component-data-patterns.md).
+
+---
+
+## Secrets
+
+Nothing in `site.yml` is private. The framework either embeds its config into built HTML (static builds) or has it injected into `__DATA__` at serve time (dynamic) — either way, the browser sees it. A site that puts a real API key in `site.yml fetcher.headers:` is publishing that key.
+
+So the default fetcher doesn't have a secrets channel. Instead, the pattern is **same-origin proxying**:
+
+- The site fetches `/api/articles` — a URL on its own origin.
+- Something between the browser and the upstream backend (an edge worker, a backend service, the Uniweb platform's own proxy) intercepts that request, attaches the real credential server-side, and forwards it upstream.
+- The site config only ever contains `url: /api/articles`. The secret never leaves the server.
+
+On the Uniweb platform, this is how private-backend sites work. The platform's deployment pipeline stores credentials keyed to the site (e.g. in a platform-level `secrets.yml` that the edge worker reads); the edge worker proxies matching paths through with credentials attached. The framework is uninvolved — it just sees a plain URL.
+
+For self-hosted deployments, the same pattern applies: put whatever you already use (a Cloudflare Worker, a reverse proxy, a small Node backend) in front of the site, and let the site fetch same-origin.
+
+**Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable) are a different category entirely. They're designed to be sent from browsers; no need for a proxy. Put them in `headers:` or directly in URLs. They're only called "tokens" — for architectural purposes they're public data.
+
+---
+
+## When a custom fetcher pays off
+
+Write a foundation-level custom fetcher when:
+
+- **Response shape isn't a dot-path transform.** Merging two fields, computing derived values, normalizing snake_case → camelCase.
+- **Multi-endpoint composition.** Fetch an article, then fetch its author from a different endpoint and merge.
+- **Non-standard response handling.** Retry logic tied to specific statuses, rate-limit handling, idempotency keys.
+- **Complex pagination.** Cursor or offset conventions beyond what the default understands.
+- **A non-JSON wire protocol.** Protobuf, MessagePack, or anything not in the `fetch() + JSON.parse` flow.
+
+Most sites don't hit any of these. For those that do, [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) walks through writing the custom fetcher and composing `@uniweb/fetchers` middleware around it.
+
+---
+
+## Current caveat: runtime-only
+
+The `baseUrl`, `headers`, and `envelope` vocabulary described above is applied by the **runtime** default fetcher — i.e., for fetches that happen in the browser. The separate build-time code path (what `uniweb build` runs for `prerender: true` configs) does not yet consume these settings. In practice this rarely matters: local-file fetches (`path:`) don't need baseUrl, and remote fetches (`url:`) default to `prerender: false` and run in the browser. A site that explicitly sets `prerender: true` on a remote fetch that relies on `baseUrl`/`headers`/`envelope` won't see them applied during build. Build-time parity is a planned follow-up.
+
+## See also
+
+- [Data Fetching](../reference/data-fetching.md) — Reference for `fetch:` / `data:` config and the cascade.
+- [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) — Writing a custom fetcher.
+- [Working with Data](./working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
+- [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, placeholder substitution, delivery paths.

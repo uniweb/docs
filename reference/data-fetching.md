@@ -569,6 +569,33 @@ export default function Footer({ content }) {
 
 ---
 
+## Per-site transport config
+
+Sites can declare a `fetcher:` block in `site.yml` to configure shared transport behavior:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com
+  headers:
+    X-Tenant: acme
+    Accept: application/json
+  envelope:
+    collection: data.items
+    item: data.article
+    error: errors.0.message
+```
+
+The framework's default fetcher recognizes `baseUrl`, `headers`, `envelope`, and supports per-fetch `method: POST` + `body`. See [Connecting a Backend](../development/connecting-a-backend.md) for recipes (relative URLs, static headers, response envelopes, `POST /search`, GraphQL).
+
+Secrets do not belong in this block — it's public to the browser. Sites that need private credentials use a same-origin proxy at the deployment layer; the site then just fetches `/api/...`. See [Secrets](../development/connecting-a-backend.md#secrets).
+
+If a foundation declares its own custom fetcher, it can read additional keys from the same block — the foundation's README documents what it accepts. Unknown keys are ignored by the framework.
+
+See [Foundation Configuration → Data Fetcher](./foundation-config.md#data-fetcher) for writing a custom fetcher.
+
+---
+
 ## Error Handling
 
 If a fetch fails:

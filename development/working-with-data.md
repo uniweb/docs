@@ -4,7 +4,7 @@ Your components need data — articles from a CMS, team members from JSON, produ
 
 This guide covers how data flows from a fetch config to your components, how template pages pick up their parent's data automatically, and how detail queries avoid fetching a full collection when you only need one item.
 
-> This guide describes the **portable** approach to data — where the site declares data sources and the foundation reads from `content.data`. If your foundation is bundled or partially bundled, standard React data fetching (`useEffect` + `fetch()`) still works. See [Foundation Categories](./foundation-categories.md) for when each approach makes sense.
+> **First, know which pattern you're in.** Uniweb supports two ways a component ends up with data: the author writes a `fetch:` config and the runtime fetches (this guide), or a domain-aware component fetches its own data with standard React. If your component has to know about backend-specific things (query parameters, pagination cursors, filter shapes), you're in the second pattern — see [Component Data Patterns](./component-data-patterns.md) for which is which and when each applies.
 
 ---
 
@@ -308,9 +308,96 @@ It then receives `content.data = {}` regardless of what the page declared. This 
 
 ---
 
+## Custom fetchers: when the foundation owns transport
+
+Everything above works with the framework's built-in URL fetcher — the site says `fetch: /data/articles.json` or `fetch: { url: 'https://...' }`, the runtime does a plain GET, JSON-parses the response, and hands the result to your component.
+
+That's one point on a spectrum. The spectrum exists because foundations can sit in very different relationships to the data they render:
+
+| Position | The foundation knows | The site declares | Typical fit |
+| --- | --- | --- | --- |
+| 1 — No transport | Nothing about data | URLs the default fetcher handles, or static collections | Demos, docs templates, file-backed sites |
+| 2 — Transport only | Auth, base URL, envelope shape. Forwards `where:` verbatim | Whatever the backend understands | Real-world foundations that target a specific backend |
+| 3 — Transport + query compiler | Parses a query language and compiles it for the backend | That language | A foundation translating between a site's DSL and a backend's native query format |
+| 4 — Bundled data | Exactly what to ask and render | Minimal | Site-specific foundation; may just call `fetch()` in components |
+
+Positions 1 and 2 are the common ones. A portable foundation that needs auth, a custom base URL, or a specific response envelope writes a fetcher — declared on `foundation.js` — and keeps the author-visible surface unchanged.
+
+**The author-visible surface does not change.** Pages still write `data:` / `fetch:` in `page.yml`, components still read `content.data.{schema}`. A site can't tell whether its data came from the default URL fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
+
+### Declaring a fetcher
+
+Full reference — object shape, route matching, cache-key knobs — lives in [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher). The minimum:
+
+```js
+// foundation.js
+const myFetcher = {
+  async resolve(request, ctx) {
+    const res = await fetch(`${ctx.website.config.fetcher.baseUrl}/${request.schema}`, {
+      signal: ctx.signal,
+    })
+    if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
+    return { data: await res.json() }
+  },
+}
+
+export default {
+  defaultLayout: 'MarketingLayout',
+  fetcher: { fallback: { resolve: myFetcher.resolve } },
+}
+```
+
+A foundation with multiple backends uses `routes:` — an ordered list of `{ match, resolve }` pairs. First match wins; anything unmatched falls through to `fallback:` (or to the framework default if no fallback is declared).
+
+### Middleware: `@uniweb/fetchers`
+
+Most foundations that own transport end up writing the same cross-cutting code — injecting auth headers, retrying on 401, unwrapping envelopes, adding a timeout. The `@uniweb/fetchers` package ships these as middleware primitives (`withAuth` today; more as real foundations need them). It's middleware-only — wrap your own `resolve()` to compose behavior:
+
+```js
+import { withAuth } from '@uniweb/fetchers'
+
+const authed = withAuth(myFetcher, () => website.config?.fetcher?.apiKey)
+```
+
+### Filter state and re-rendering (not re-fetching)
+
+Foundations often need UI state that lives outside React — a filter selector, a date range, a toggle — so it survives SPA navigation and can be read by sibling components. Uniweb provides `page.state` (scoped to the current page) and `website.state` (site-wide), with `usePageState` / `useWebsiteState` as kit bridges.
+
+```jsx
+import { usePageState } from '@uniweb/kit'
+
+function QuerySelector() {
+  const [slug, setSlug] = usePageState('selectedQuery', 'all-members')
+  return (
+    <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+      {/* ... */}
+    </select>
+  )
+}
+```
+
+When the user picks a new filter, `page.state.set()` fires → subscribing React components re-render → they recompute from the data that's already in `content.data`. Typical pattern: the page fetches a collection once at load time, a kit-side hook or utility (e.g. `@uniweb/query`'s `resolveQuery`) narrows it in memory, and the filtered view appears.
+
+**Changing `page.state` does not re-run the fetch.** `BlockRenderer` runs the fetch once per block lifecycle. If a component genuinely needs new data on user action — a search box, pagination, a drill-down selector — it's a **domain-aware component** that owns its own fetches using standard React (`useEffect + fetch`). See [Component Data Patterns](./component-data-patterns.md) for the two-role framing.
+
+### When to skip a custom fetcher
+
+- The site serves JSON from `public/data/` — the default path handles it.
+- The foundation is bundled with its site and components call `fetch()` directly inside `useEffect`.
+- A third-party SDK (e.g. a CMS client) handles transport entirely inside components.
+
+The fetcher contract is worth the ceremony when your foundation targets a real backend, needs auth or a non-trivial response envelope, and is meant to serve more than one site.
+
+---
+
 ## See also
 
 - [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, singularization rules.
 - [Data Fetching](../reference/data-fetching.md) — Full fetch config reference, post-processing options, collection references.
 - [Content Collections](../reference/content-collections.md) — Building collections from markdown.
 - [Component Metadata](../reference/component-metadata.md) — The `data` field in meta.js.
+- [Component Data Patterns](./component-data-patterns.md) — The two fetch roles (author-driven vs component-driven) and when to use which. Read this first if you're unsure your component should even be using `fetch:` declarations.
+- [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) — Full `fetcher:` declaration reference (routes, fallback, `cacheKey`, `prerenderable`).
+- [Kit Reference → `usePageState` / `useWebsiteState`](../reference/kit-reference.md#usepagestate--usewebsitestate) — Bridge hooks for observable state.
+- [Connecting a Backend](./connecting-a-backend.md) — Recipes for the default fetcher's site-level `fetcher:` config (base URL, envelope, GraphQL / POST bodies).
+- [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths, gotchas.

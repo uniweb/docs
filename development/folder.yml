@@ -4,7 +4,9 @@ pages:
   - thinking-in-contexts
   - creating-components
   - component-patterns
+  - component-data-patterns
   - working-with-data
+  - connecting-a-backend
   - content-handlers
   - data-driven-sections
   - custom-layouts

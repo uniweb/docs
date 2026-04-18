@@ -324,6 +324,167 @@ export default function DocsLayout({ header, footer, left, right, body }) {
 
 ---
 
+## Data Fetcher
+
+A foundation can declare a data fetcher that owns transport (HTTP, auth, response shape) for the sites that use it. The sites continue to author `fetch:` / `data:` declarations the usual way — they never know whether the bytes came from a local JSON file handled by the framework's default fetcher or from a backend your foundation talks to.
+
+Declared on the default export of `foundation.js` alongside identity, theme, and layout fields:
+
+```js
+// foundation/src/foundation.js
+export default {
+  defaultLayout: 'MarketingLayout',
+
+  fetcher: {
+    routes: [
+      { match: (req) => req.schema === 'members', resolve: membersFetcher.resolve },
+      { match: (req) => req.url?.startsWith('https://api.example.com/'), resolve: apiFetcher.resolve },
+    ],
+    fallback: { resolve: customDefault.resolve },
+  },
+}
+```
+
+When the foundation's `fetcher` field is omitted, every request is handled by the runtime's built-in URL fetcher (plain GET + JSON parse + optional `transform:` dot-path). Declaring a fetcher is purely opt-in — most foundations don't need one.
+
+### Shape
+
+```js
+fetcher: {
+  routes?: [
+    { match: (request, ctx) => boolean, resolve: (request, ctx) => Promise<Return> }
+  ],
+  fallback?: { resolve: (request, ctx) => Promise<Return> },
+}
+```
+
+When a request comes in, the dispatcher walks the routes array in declared order, then each extension's routes, and finally the fallback. The first `match(request, ctx)` that returns truthy wins. If no route matches and no fallback is declared, the framework's default URL fetcher handles it.
+
+### The fetcher contract
+
+A fetcher is any object with a `resolve` method:
+
+```js
+{
+  async resolve(request, ctx) {
+    // ...
+    return { data, error?, meta? }
+  }
+}
+```
+
+**Request** — the normalized fetch config, with an extra `dynamicContext` on template-page item requests:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `schema` | string | Required. The key under `content.data` the result will be stored at. |
+| `path` | string | Local path (under `public/`). Mutually exclusive with `url`. |
+| `url` | string | Remote URL. Mutually exclusive with `path`. |
+| `transform` | string | Dot-path into the response (e.g. `data.items`). |
+| `detail` | string | `'rest'` / `'query'` / custom pattern for template-page item fetches. |
+| `where` | string | Author-provided filter expression. Opaque to the framework. |
+| `filter` / `sort` / `limit` | any | Post-processing hints the author set. |
+| `dynamicContext` | object | Present for template-page item fetches: `{ paramName, paramValue, schema }`. |
+
+**Context** — the framework singletons, handed to the fetcher directly (no `globalThis` reads needed):
+
+| Field | Description |
+| --- | --- |
+| `website` | The active Website. Read per-site transport config via `ctx.website.config.fetcher`. |
+| `page` | The Page scope of the request. `null` for site-level fetches. |
+| `block` | The Block triggering the request. `null` for page- and site-level fetches. |
+| `signal` | `AbortSignal`. Aborts on block unmount or route change. Pass to `fetch()`. |
+
+**Return** — always the same shape:
+
+```js
+{
+  data,           // the fetched data. Never undefined — empty is [] or null/{}.
+  error?: string, // presence signals failure; may coexist with stale data
+  meta?: object,  // fetcher-specific metadata; stored alongside the cache entry
+}
+```
+
+Throwing is tolerated but not idiomatic — the runtime catches and surfaces `{ data: [], error: String(err) }`. Prefer returning an explicit `error` field.
+
+### Per-fetcher knobs
+
+Optional fields on a fetcher object that the dispatcher recognizes:
+
+| Field | Default | Description |
+| --- | --- | --- |
+| `cacheKey(request)` | `{schema, path, url, transform, method?, body?}` stringified | Override when the fetcher derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
+| `prerenderable` | `true` | Set `false` to opt out of build-time (`uniweb build`) execution. The config is skipped at build and fetched at runtime in the browser. Use for fetchers that need browser-only APIs. |
+
+### Minimal example
+
+```js
+// foundation/src/foundation.js
+const myFetcher = {
+  async resolve(request, ctx) {
+    const base = ctx.website.config?.fetcher?.baseUrl ?? 'https://api.example.com'
+
+    const res = await fetch(`${base}/${request.schema}`, {
+      signal: ctx.signal,
+    })
+    if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
+    return { data: await res.json(), meta: { fetchedAt: Date.now() } }
+  },
+}
+
+export default {
+  defaultLayout: 'MarketingLayout',
+  fetcher: {
+    fallback: { resolve: myFetcher.resolve },
+  },
+}
+```
+
+### Per-site transport config
+
+Sites can set shared transport options under `fetcher:` in `site.yml`. The framework's default fetcher reads a recognized vocabulary (`baseUrl`, `headers`, `envelope`). Foundations are free to read additional keys from the same block:
+
+```yaml
+# site.yml
+foundation: my-foundation
+
+fetcher:
+  baseUrl: https://api.example.com      # recognized by the default fetcher
+  headers:                               # recognized by the default fetcher
+    X-Tenant: acme
+  envelope:                              # recognized by the default fetcher
+    collection: data.items
+  someCustomKey: value                   # foundation-specific; your fetcher reads ctx.website.config.fetcher.someCustomKey
+```
+
+Document the keys your fetcher reads in the foundation's README; the framework does no validation of unknown keys. Values ending up in `website.config.fetcher` are client-visible — the framework does not offer a "secret" configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches a URL its deployment environment proxies to an authenticated backend); see the [Secrets section of the backend guide](../development/connecting-a-backend.md#secrets).
+
+### Composing middleware
+
+`@uniweb/fetchers` ships small middleware primitives that wrap a fetcher with cross-cutting behavior. The package is middleware-only — for a complete fetcher, write your own `resolve()` against `fetch()` and compose middleware around it:
+
+```js
+import { withAuth } from '@uniweb/fetchers'
+
+const authed = withAuth(myFetcher, () => someTokenProvider())
+```
+
+### Extensions contributing fetchers
+
+An extension's `foundation.js` can declare a `fetcher:` field too. The dispatcher appends its routes after the primary foundation's routes (and before the primary's fallback), in the order extensions appear in `site.yml`. This keeps a stats-widget extension's transport packaged with its components, without the primary foundation knowing.
+
+### When to skip the fetcher declaration
+
+Most foundations don't need one. Omit `fetcher:` when:
+
+- The site serves JSON from `public/data/` (the default path works).
+- Each component calls `fetch()` directly inside `useEffect` (bundled-style foundations).
+- A third-party SDK manages transport inside the component.
+
+See [Working with Data](../development/working-with-data.md) for the narrative view — including when a custom fetcher pays off, how reactivity flows when foundations combine fetchers with `page.state`, and worked examples. For the dispatcher mechanics, cache keys, and security posture see [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md). For the set of site-level `fetcher:` keys the framework's default recognizes (so sites don't need a custom fetcher for common backends) see [Connecting a Backend](../development/connecting-a-backend.md).
+
+---
+
 ## Common Variable Patterns
 
 ### Spacing System

@@ -1,4 +1,5 @@
 title: Architecture
 pages:
   - component-content-architecture
+  - data-fetcher-architecture
   - ...

@@ -124,6 +124,48 @@ Use `isActiveOrAncestor` for parent nav items that should highlight when child p
 
 **Why `useActiveRoute` instead of `website.activePage`:** The hook reads from React Router's location, which updates synchronously during navigation. `website.activePage` is a property on a vanilla JS singleton — it's always correct but isn't reactive in the React sense, so it won't trigger re-renders on its own. The hook also delegates route comparison to `Website.isRouteActive()`, which handles normalization and base path, and accepts both page objects and strings without branching.
 
+### usePageState / useWebsiteState
+
+Bridge observable state on `page` and `website` into React. `page.state` is scoped to the current page; `website.state` is site-wide. Both persist across SPA navigation and are readable from outside React (sibling components, non-React helpers).
+
+```jsx
+import { usePageState } from '@uniweb/kit'
+
+function QuerySelector() {
+  const [slug, setSlug] = usePageState('selectedQuery', 'all-members')
+
+  return (
+    <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+      <option value="all-members">Everyone</option>
+      <option value="tenured-biology">Tenured biologists</option>
+    </select>
+  )
+}
+```
+
+Signature:
+
+```js
+const [value, setValue] = usePageState(key, defaultValue?)
+const [value, setValue] = useWebsiteState(key, defaultValue?)
+```
+
+The hook subscribes to the keyed slot of the active page's (or website's) state, returns the current value (or `defaultValue` if unset), and re-renders the calling component when the slot changes. The setter writes to the same slot and fires listeners across any other subscribers.
+
+**State changes drive React re-renders, not re-fetches.** Components subscribed to the changed slot re-render and recompute from already-loaded data (typically via `useMemo` keyed on the state value, or a utility like `@uniweb/query`'s `resolveQuery`). The framework does not re-dispatch fetches when state changes — the Uniweb model is "fetch once, filter in place" for this pattern. Components that need to re-fetch on user action are domain-aware components that own their own fetching with standard React (`useEffect + fetch`). See [Component Data Patterns](../development/component-data-patterns.md) for the two-role framing.
+
+**What belongs in `page.state` / `website.state`:**
+
+| State | Where it goes |
+| --- | --- |
+| Filter / sort / toggle state that reshapes already-loaded data | `page.state` or `website.state` |
+| Cross-section coordination on a single page (active tab across a tab group, collapsed sidebar state) | `page.state` |
+| Cross-page UI (appearance preference, authenticated user, cart open/closed) | `website.state` |
+| Component-internal UI state (modal open, input focus, hover) | React's `useState` — not these hooks |
+| Fetched data | `content.data` — not these hooks |
+
+These are small observable value stores — plain keys with values. No reactive derivations, no computed signals; if you want that, compose `useMemo` / `useEffect` in the kit layer around these hooks.
+
 ### useVersion
 
 Access version information for versioned documentation.
