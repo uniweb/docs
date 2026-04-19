@@ -75,14 +75,18 @@ fetch:
   path: /data/team.json      # Local file (under public/)
   # OR
   url: https://api.example.com/team  # Remote URL
+  # OR
+  collection: team           # Built-collection shorthand (resolves to /data/team.json)
 
-  schema: person             # Key in content.data (default: inferred from filename)
+  schema: person             # Key in content.data (default: inferred from source)
   merge: false               # Replace existing data (default: false)
   transform: data.items      # Extract nested path from response
   detail: rest               # Single-entity fetch for dynamic routes (optional)
-  limit: 6                   # Post-processing: take first N items
-  sort: date desc            # Post-processing: sort by field
-  filter: tags contains featured  # Post-processing: filter items
+
+  # Query operators — describe which records you want, in what order, how many.
+  where: { active: true }    # Predicate (where-object); see "Queries" below
+  sort: date desc            # Sort by field
+  limit: 6                   # Take first N items
 ```
 
 ### Options
@@ -91,13 +95,14 @@ fetch:
 |--------|---------|-------------|
 | `path` | — | Local file path relative to `public/` |
 | `url` | — | Remote URL (mutually exclusive with `path`) |
-| `schema` | *filename* | Key under `content.data` where data is stored |
+| `collection` | — | Built-collection shorthand (mutually exclusive with `path`/`url`) |
+| `schema` | *inferred from source* | Key under `content.data` where data is stored |
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern |
-| `limit` | — | Take first N items after filtering and sorting |
+| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)) |
 | `sort` | — | Sort by field, e.g. `date desc` |
-| `filter` | — | Filter expression, e.g. `tags contains featured` |
+| `limit` | — | Take first N records |
 
 ### Schema inference
 
@@ -192,29 +197,6 @@ Page fetch                          →  medium priority
 Folder fetch                        →  lower priority
 Site fetch                          →  lowest priority
 ```
-
----
-
-## Block-Level Refine Fetch
-
-A block's `.md` frontmatter can use `fetch: { refine: true, ... }` to **borrow the parent's fetch config** instead of introducing a new source. This lets you override specific fields per-instance:
-
-```yaml
-# pages/articles/[id]/2-related.md
----
-type: RelatedArticles
-fetch:
-  refine: true    # borrow the parent's query — don't treat this as a new URL
-  detail: false   # override: give me the collection minus the current item
-  limit: 3        # override: slice to 3 items
----
-
-# More articles
-```
-
-This is per-instance control over how the result arrives. It's a block-frontmatter override — the component side has no gate.
-
-> **Deprecated:** `inherit: true` still works as an alias for one release with a dev-mode warning; rename to `refine: true`.
 
 ---
 
@@ -390,44 +372,180 @@ fetch:
 
 The `data:` shorthand is equivalent to `fetch: { collection: name }` but more compact.
 
-### Post-processing Options
+### Query operators on collection references
 
-Collection references support filtering, sorting, and limiting:
+`where:`, `sort:`, and `limit:` work on collection refs the same way they work on any other fetch:
 
 ```yaml
 fetch:
   collection: articles
-  filter: tags contains featured   # Only featured articles
-  sort: date desc                  # Newest first
-  limit: 3                         # Take first 3
+  where: { tags: featured }   # Only featured articles
+  sort: date desc             # Newest first
+  limit: 3                    # Take first 3
 ```
 
-These options also work with regular `path` or `url` fetches:
+These options also work with `path:` and `url:` fetches:
 
 ```yaml
 fetch:
   path: /data/articles.json
-  limit: 5
   sort: date desc
+  limit: 5
 ```
 
-### Post-processing Order
+See the [Queries](#queries) section below for the full where-object format and how `where:` interacts with the source's capabilities.
 
-1. **Filter** is applied first (reduces the dataset)
-2. **Sort** is applied second (orders the filtered data)
-3. **Limit** is applied last (takes first N items)
+> **Deprecated:** the legacy `filter:` field with its DSL string (`tags contains featured`) is replaced by `where:` with where-object format (`{ tags: featured }`). The old `filter:` is still accepted for one release with a deprecation warning. Migrate when convenient.
 
-### Filter Operators
+---
 
-| Operator | Example | Description |
-|----------|---------|-------------|
-| `==` | `category == news` | Equal |
-| `!=` | `draft != true` | Not equal |
-| `>` | `date > 2025-01-01` | Greater than |
-| `<` | `price < 100` | Less than |
-| `>=` | `rating >= 4` | Greater than or equal |
-| `<=` | `order <= 10` | Less than or equal |
-| `contains` | `tags contains featured` | Array includes value |
+## Queries
+
+`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Whether the source evaluates them at the backend or the framework applies them as a fallback after the response arrives is a transport detail (see [Per-site transport config](#per-site-transport-config) → `supports:`).
+
+### The where-object
+
+`where:` accepts a structured JSON predicate — a "where-object". Top-level keys are field names (implicit AND across them); operators are nested objects:
+
+```yaml
+where:
+  # Equality (implicit AND across keys)
+  department: biology
+  tenured: true
+
+  # Comparisons (operator-object form)
+  start_year: { gte: 2010 }
+
+  # Set membership
+  rank: { in: [associate, full] }
+
+  # Pattern match
+  title: { like: 'Origin*' }
+
+  # Boolean composition
+  and:
+    - { tenured: true }
+    - or:
+        - { rank: full }
+        - { years_in_role: { gte: 10 } }
+  not:
+    department: emeritus
+```
+
+Operators (nested object form):
+
+| Operator | Meaning |
+|---|---|
+| `eq` | Equal (also implicit when the value is bare) |
+| `ne` | Not equal |
+| `gt`, `gte`, `lt`, `lte` | Comparisons |
+| `in` | Value is in the listed array |
+| `nin` | Value is not in the listed array |
+| `like` | Glob match (`*` any run, `?` one char) |
+| `exists` | Field is present (truthy bool) |
+
+Composition keys (work at any nesting level):
+
+| Key | Meaning |
+|---|---|
+| `and` | All sub-predicates match (default at the top level) |
+| `or` | At least one sub-predicate matches |
+| `not` | The sub-predicate does not match |
+
+Dotted field names descend into nested objects: `tenure.start: { gte: 2015 }`.
+
+The where-object is YAML-native (no string parsing), JSON-native for backend transport, and JS-native for the runtime fallback evaluator. Same shape, three execution sites — see [Predicates](../authoring/predicates.md) for worked examples and the saved-views pattern.
+
+### `sort:` and `limit:`
+
+```yaml
+sort: date desc                # one field
+sort: order asc, title asc     # multiple fields, comma-separated
+limit: 10
+```
+
+These run at the source when the fetcher's `supports:` lists them; otherwise the framework applies them in JS after the response.
+
+---
+
+## Deferred fields
+
+Some collections have heavy fields — article bodies, full nested arrays, large markdown — that don't belong in every list payload. Declaring `deferred:` on a collection in `site.yml` strips those fields from the cascade JSON and emits per-record full files for on-demand fetching:
+
+```yaml
+# site.yml
+collections:
+  articles:
+    path: collections/articles
+    deferred: [body]           # heavy fields; not shipped in the cascade
+```
+
+What this does:
+
+- **`/data/articles.json`** (the cascade payload that `data: articles` delivers) ships every article *without* the `body` field. List pages stay lean.
+- **`/data/articles/{slug}.json`** is emitted per record — the full record including the deferred fields.
+
+How components consume the full record:
+
+- **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered to `content.data.{singular}` automatically. The framework routes the singular detail to the per-record file. No author config needed — the existing dynamic-route flow handles it.
+- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand:
+
+  ```jsx
+  import { useEntityDetail } from '@uniweb/kit'
+
+  function ArticleCard({ article }) {
+    const [open, setOpen] = useState(false)
+    const { data: full, loading } = useEntityDetail(open ? article : null, {
+      collection: 'articles',
+    })
+    return (
+      <>
+        <h3>{article.title}</h3>
+        <p>{article.excerpt}</p>
+        <button onClick={() => setOpen(true)}>Read more</button>
+        {open && (loading ? <Spinner /> : <ArticleBody html={full.body} />)}
+      </>
+    )
+  }
+  ```
+
+Collections without `deferred:` declared behave exactly as before — every field ships in the cascade payload.
+
+**Convention:** per-record files are keyed by `item.slug`. The auto-detail flow on dynamic-route pages assumes the route param is `[slug]/`. Routes using other param names need an explicit author-written `detail:` value.
+
+---
+
+## Queryable surface
+
+For sites that build filter UIs (a population dropdown, a faceted search, a date-range picker), the collection can declare its **queryable surface** — the fields a foundation can offer for filtering, with their type and type-specific metadata:
+
+```yaml
+# site.yml
+collections:
+  members:
+    path: collections/members
+    queryable:
+      department:
+        type: enum
+        label: Department
+        options: [biology, physics, chemistry, geology]
+      rank:
+        type: enum
+        label: Rank
+        options: [assistant, associate, full, professor]
+      tenured:
+        type: boolean
+        label: Tenured
+      start_year:
+        type: range
+        label: Start year
+        min: 1800
+        max: 2025
+```
+
+Foundations read this metadata via the `useCollectionQueryable` kit hook to render filter controls and compose where-objects from user interactions. The framework doesn't ship UI components — different foundations have different vocabularies; the kit exposes the metadata, foundations build the controls. See [Predicates → Saved views and queryable surfaces](../authoring/predicates.md) for the full pattern.
+
+Field types in the starter set: `enum` (with `options:`), `boolean`, `range` (with `min`/`max`), `text`. Foundations may extend; the framework passes the metadata through as-is.
 
 ---
 
@@ -560,6 +678,11 @@ fetcher:
     item: data.article
     error: errors.0.message
 
+  # Capability declaration — which query operators the source evaluates natively.
+  # Operators in this list are shipped to the source; operators not in it are
+  # applied as a runtime fallback after the response. Default: empty.
+  supports: [where, limit, sort]
+
   # Named-transport selection — foundation-contributed transports, picked per schema.
   transports:
     articles: uniweb          # foundation's 'uniweb' transport handles `data: articles`
@@ -567,6 +690,18 @@ fetcher:
   uniweb:                       # binding config the 'uniweb' transport reads
     siteFolder: abc-123-def
 ```
+
+### `supports:` — the capability declaration
+
+The default fetcher reads `supports:` to decide whether to push down query operators or apply them locally:
+
+- **`supports: []`** (default) — the source is treated as static (file or unaware backend). The fetcher fetches the whole collection; the framework applies `where:`, `sort:`, `limit:` in JS after the response. Two pages with different `where:` clauses share one cache entry — same fetch, different post-fetch evaluation.
+- **`supports: [where]`** — the source accepts predicates. The where-object ships in the request (`?_where=<JSON>` for GET; merged into the body for POST). The cache splits per predicate.
+- **`supports: [where, limit, sort]`** — full pushdown. The source returns the final result; the framework ships through.
+
+Pushdown only applies to remote `url:` requests. Local `path:` reads are static files; operators always evaluate as a runtime fallback.
+
+The wire format the default fetcher uses is documented in [Connecting a Backend → `supports:`](../development/connecting-a-backend.md#supports). Backends written against these conventions work with no client-side glue. Backends with a different convention need a [custom transport](./foundation-config.md#data-transports).
 
 ### How selection works
 
@@ -603,5 +738,7 @@ Components should always handle the case where data might be empty.
 
 - [Dynamic Routes](./dynamic-routes.md) — Generate multiple pages from data (blogs, catalogs, etc.)
 - [Content Collections](./content-collections.md) — Markdown-based data collections
+- [Predicates](../authoring/predicates.md) — Author guide to where-objects and saved views
+- [Connecting a Backend](../development/connecting-a-backend.md) — `supports:`, transports, dev backend, secrets
 - [Content Structure](./content-structure.md) — How content is parsed and structured
 - [Component Metadata](./component-metadata.md) — Full meta.js schema reference

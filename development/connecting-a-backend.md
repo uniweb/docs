@@ -32,6 +32,7 @@ Every capability this guide describes is optional. Empty config → today's beha
 | `baseUrl` | `site.yml fetcher:` | Prepended to relative `url:` values |
 | `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
 | `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: collection / item / error |
+| `supports` | `site.yml fetcher:` | Query operators the source evaluates natively. See [`supports:`](#supports) |
 | `method: POST` | per-fetch (`page.yml` / block frontmatter) | Send request as POST |
 | `body` | per-fetch | Arbitrary object serialized as JSON; supports `{slug}` substitution in strings |
 
@@ -185,13 +186,114 @@ No special flag. `path:` (local) and `url:` (remote) are already mutually exclus
 
 ---
 
+## `supports:`
+
+When your backend can evaluate query operators (`where:`, `limit:`, `sort:`) at the source, declare what it supports. The framework will ship those operators in the request instead of fetching everything and filtering in the browser:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://api.example.com
+  supports: [where, limit, sort]
+```
+
+What changes per operator-set:
+
+- **`supports: []`** (default) — every operator is applied as a runtime fallback in JS. The framework fetches the whole collection; predicates and sorts run client-side. Two pages with different `where:` clauses share one cached fetch.
+- **`supports: [where]`** — only `where:` is shipped to the source. `limit:` and `sort:` continue to run client-side.
+- **`supports: [where, limit, sort]`** — full pushdown. The source returns the final result; the framework caches it and ships through.
+
+Pushdown only applies to remote `url:` requests. Local `path:` reads are static files; operators always evaluate as a runtime fallback.
+
+### Wire-format conventions (default fetcher)
+
+Backends written against these conventions work with no client-side glue. The defaults:
+
+**GET pushdown** — appended as URL query parameters with an underscore prefix to avoid collision with any backend-specific params already in `url:`:
+
+| Operator | Wire format |
+|---|---|
+| `where` | `?_where=<URL-encoded JSON of the where-object>` |
+| `limit` | `?_limit=N` |
+| `sort` | `?_sort=field:dir` (matches the author-facing `date desc` form, comma-separated for multi-key) |
+
+Example: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
+
+**POST pushdown** — operators are merged into the request body alongside any author-supplied body fields:
+
+```http
+POST /api/articles
+Content-Type: application/json
+
+{
+  "where": { "tags": "featured" },
+  "limit": 3,
+  "sort": "date:desc"
+}
+```
+
+When the author already supplied a body (e.g., a GraphQL request), the operators are merged in as top-level keys (`where`, `limit`, `sort`). String bodies pass through unchanged — operators are dropped and a deprecation note in the source recommends using object bodies for pushdown.
+
+### Backend doesn't match these conventions?
+
+Two options:
+
+- **Adapt at the proxy** — your same-origin proxy translates the framework's `?_where=…&_sort=…` shape into your backend's native query language. Often a few lines of code.
+- **Write a custom transport** — a foundation-level transport with its own `resolve()` and (optionally) its own `cacheKey()`. Most foundations don't need this; reach for it when the wire format gap is wider than a proxy can bridge. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
+
+---
+
+## Local dev backend
+
+For testing `supports:` end-to-end without standing up a real backend, the framework ships a tiny Node script that boots an HTTP server reading YAML/JSON collections from disk. It implements the default fetcher's wire-format conventions, so you can develop a site against a "real" backend running on `localhost`:
+
+```bash
+node scripts/framework/dev-backend.js \
+  --collections path/to/site/collections \
+  --port 8080
+```
+
+Point the site at it:
+
+```yaml
+# site.yml
+fetcher:
+  baseUrl: http://localhost:8080
+  supports: [where, limit, sort]
+```
+
+And rewrite your collection refs to URLs:
+
+```yaml
+# pages/articles/page.yml
+fetch:
+  url: /api/articles
+  schema: articles
+```
+
+The dev backend exposes `GET /api/<collection>`, `GET /api/<collection>/<slug>`, and `POST /api/<collection>` — same surface a real backend would expose against the framework's conventions. Predicates evaluate via the same `matchWhere` evaluator the runtime uses as a fallback. Switch back to the static-file mode by setting `supports: []` and removing the `--port` server; nothing else in your site changes.
+
+---
+
 ## Filter state without re-fetching
 
-A very common pattern: the site fetches a collection once, then the user picks a filter. The filtered view appears without a new network request. This is **entirely client-side** — the fetch runs once, `page.state` drives React re-renders of subscribing components, and those components narrow the already-loaded data with whatever filtering logic the foundation provides (e.g., `@uniweb/query`'s `resolveQuery`).
+A common pattern: the site fetches a collection once, then the reader picks a filter. The filtered view updates without a new network request. This is **entirely client-side** when `supports:` doesn't include `where` — the fetch runs once, the foundation reads `page.state` for the active filter and narrows the already-loaded data using `matchWhere` from `@uniweb/core`:
 
-See [Working with Data → Filter state](./working-with-data.md#filter-state-and-re-rendering-not-re-fetching) for the pattern. Nothing in `fetcher:` config is needed.
+```jsx
+import { matchWhere } from '@uniweb/core'
+import { usePageState } from '@uniweb/kit'
 
-Components that genuinely need to re-fetch on user action (search boxes, pagination, drill-down selectors) are domain-aware components — they know the endpoint and the query shape. Those use standard React `useEffect + fetch` inside the component. See [Component Data Patterns](./component-data-patterns.md).
+function FilteredList({ content }) {
+  const [filter] = usePageState('activeFilter', null)
+  const all = content.data.articles || []
+  const visible = filter ? matchWhere(filter, all) : all
+  return <ArticleGrid items={visible} />
+}
+```
+
+When `supports: [where]` is on, the same pattern applies — the foundation passes the predicate to `useFetched` instead, and the framework re-fetches the matching subset on each change. Author-side declarations don't change; only the foundation's component code differs.
+
+Components that genuinely need to compose dynamic predicates from rich UI (search boxes, faceted navigation) use the kit's `useFetched` hook with a request spec that includes the live predicate — the cache key includes the predicate, so the framework re-fetches automatically. See [Component Data Patterns](./component-data-patterns.md).
 
 ---
 
@@ -228,10 +330,6 @@ Write a foundation-level custom fetcher when:
 Most sites don't hit any of these. For those that do, [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) walks through writing the custom fetcher and composing `@uniweb/fetchers` middleware around it.
 
 ---
-
-## Current caveat: runtime-only
-
-The `baseUrl`, `headers`, and `envelope` vocabulary described above is applied by the **runtime** default fetcher — i.e., for fetches that happen in the browser. The separate build-time code path (what `uniweb build` runs for `prerender: true` configs) does not yet consume these settings. In practice this rarely matters: local-file fetches (`path:`) don't need baseUrl, and remote fetches (`url:`) default to `prerender: false` and run in the browser. A site that explicitly sets `prerender: true` on a remote fetch that relies on `baseUrl`/`headers`/`envelope` won't see them applied during build. Build-time parity is a planned follow-up.
 
 ## See also
 

@@ -160,6 +160,8 @@ collections:
 | `sort` | Order items by a field | `date desc` (newest first) |
 | `filter` | Include only matching items | `published != false` |
 | `limit` | Maximum number of items | `100` |
+| `deferred` | Heavy fields stripped from list payloads (see below) | `[body]` |
+| `queryable` | Fields a foundation can offer for filtering UI (see below) | (object) |
 
 **Sorting:** Add `asc` (A→Z, oldest first) or `desc` (Z→A, newest first) after the field name. For example, `sort: date desc` shows newest articles first. `sort: title asc` sorts alphabetically.
 
@@ -194,6 +196,52 @@ collections:
     path: collections/products
     sort: title asc
 ```
+
+### Lean list payloads with `deferred:`
+
+If your collection items have heavy fields that bloat list pages — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. They're stripped from the cascade payload (`/data/<name>.json`) that list pages get, and emitted as per-record full files for on-demand fetching:
+
+```yaml
+collections:
+  articles:
+    path: collections/articles
+    deferred: [body]
+```
+
+What this changes:
+
+- The blog list page (`data: articles`) ships every article *without* the body. Cards stay light.
+- A `[slug]/` detail page automatically receives the *full* article (body included) on `content.data.article`. The framework knows where the per-record file lives; you don't configure anything else.
+- Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useEntityDetail` kit hook to fetch the full record on demand.
+
+Skip `deferred:` for collections without heavy fields — the entire record ships, like always.
+
+### Filterable surfaces with `queryable:`
+
+For sites where readers compose their own filtered views — a department dropdown, a "show only featured" toggle, a date-range slider — you declare which fields are filterable, with their type and any type-specific metadata:
+
+```yaml
+collections:
+  members:
+    path: collections/members
+    queryable:
+      department:
+        type: enum
+        label: Department
+        options: [biology, physics, chemistry, geology]
+      tenured:
+        type: boolean
+        label: Tenured
+      start_year:
+        type: range
+        label: Start year
+        min: 1800
+        max: 2025
+```
+
+You declare the *surface* — what the foundation can offer. The foundation reads the metadata and renders matching controls (dropdown, toggle, slider). When the reader picks values, the foundation composes a predicate and fetches the matching records. No extra wiring on your side.
+
+See [Predicates](./predicates.md) for the full pattern, including saved views.
 
 ---
 
@@ -499,6 +547,7 @@ collections:
 
 ## What's Next?
 
+- **[Predicates](./predicates.md)** — Filtering with `where:` clauses and saved views
 - **[Writing Content](./writing-content.md)** — How to write sections in markdown
 - **[Recipes](./recipes.md)** — Copy-paste patterns including a full blog setup
 - **[Site Setup](./site-setup.md)** — Site configuration, pages, locales, and more
