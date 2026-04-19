@@ -1,6 +1,6 @@
 # Working with Collections
 
-Collections let you manage repeating content — blog posts, team members, products, case studies — as a set of markdown files. You write each item in its own file, tell the site where to find them, and they appear wherever you need them.
+Collections let you manage repeating content — blog posts, team members, products, case studies — as a set of files (markdown, YAML, or JSON). You write each item in its own file, tell the site where to find them, and the framework delivers them to your components as structured data.
 
 This guide covers everything you need to know as a content author. No coding required.
 
@@ -8,9 +8,11 @@ This guide covers everything you need to know as a content author. No coding req
 
 ## What Collections Are
 
-Most of your content lives in `pages/` — one folder per page, with markdown files for each section. Collections are different. They live in `collections/` and hold **items that share the same structure**.
+Most of your content lives in `pages/` — one folder per page, with markdown files for each section. That's your site's **static content**: a fixed composition of sections on a fixed set of pages.
 
-Think of it like a filing cabinet. Pages are the rooms of your site. The collections folder is where you keep organized sets of things — articles, team bios, products — that pages can pull from.
+Collections are different. They're **dynamically fetched data** — the framework loads them through the data-fetching pipeline and delivers them to components as `content.data`. The same pipeline handles remote APIs, so from a component's point of view a locally-authored collection and a backend-served collection look identical. Whether the data lives in files or behind an endpoint is a transport concern.
+
+File-based collections live in `collections/` and hold **items that share the same structure**. Think of it like a filing cabinet. Pages are the rooms of your site; the collections folder is where you keep organized sets of things — articles, team bios, products — that pages can pull from.
 
 ```
 site/
@@ -30,7 +32,21 @@ site/
 └── site.yml
 ```
 
-Each markdown file in a collection folder becomes one item. The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice."
+Each file in a collection folder becomes one item. The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice."
+
+---
+
+## Choosing a File Format
+
+Collection items can be markdown, YAML, or JSON. Pick the format that matches the content:
+
+| Format | Best for | Why |
+|---|---|---|
+| **Markdown** (`.md`) | Items with prose — articles, blog posts, case studies | Frontmatter holds structured fields (title, date, tags); the body below holds text the author edits in a familiar writing environment |
+| **YAML** (`.yml` / `.yaml`) | Structured records with no prose body — team members, products, datasets | Cleaner than squeezing structured data into a markdown frontmatter with an empty body |
+| **JSON** (`.json`) | Same as YAML | Pick it if the data is exported from another tool or you prefer JSON syntax |
+
+All three produce the same collection shape at runtime — the foundation components see records, not files. A few author-facing details *are* markdown-specific: excerpts and first-image extraction only run on markdown items (YAML/JSON items carry whatever fields the author wrote).
 
 ---
 
@@ -40,7 +56,7 @@ Collections and items-in-a-section can both show repeating content. Here's how t
 
 | | Items in a section | Collection |
 |---|---|---|
-| **Where content lives** | All in one `.md` file | Each item in its own `.md` file |
+| **Where content lives** | All in one `.md` file | Each item in its own file |
 | **Best for** | A few items that belong together (3–6 features, a short FAQ) | Many items that grow over time (blog posts, team members) |
 | **Individual pages** | No | Yes — each item can have its own URL |
 | **Sorting and filtering** | No | Yes — by date, tags, or any field |
@@ -52,7 +68,7 @@ Collections and items-in-a-section can both show repeating content. Here's how t
 
 ## Writing Collection Items
 
-Each collection item is a markdown file with two parts: **frontmatter** (the metadata at the top) and **body content** (the text below).
+A markdown item has two parts: **frontmatter** (the metadata at the top) and **body content** (the text below). A YAML or JSON item is a single structured record — no frontmatter/body split, just the fields.
 
 ### The Frontmatter
 
@@ -107,7 +123,7 @@ Look at sites you admire. Notice how they handle navigation, cards, and whitespa
 Don't wait for perfection. Ship something simple, get feedback, and improve.
 ```
 
-And here's a team member:
+And here's a team member, first as markdown:
 
 ```markdown
 ---
@@ -120,6 +136,17 @@ order: 1
 Alice leads the design team. She specializes in design systems and accessibility.
 
 Previously at Figma and Google. Speaker at Config and SmashingConf.
+```
+
+For a team member, the bio is short and there's no long-form prose — YAML is often cleaner:
+
+```yaml
+# collections/team/alice-park.yml
+title: Alice Park
+role: Lead Designer
+image: ./alice.jpg
+order: 1
+bio: Alice leads the design team. She specializes in design systems and accessibility. Previously at Figma and Google. Speaker at Config and SmashingConf.
 ```
 
 Notice the differences: the article has `date`, `tags`, and `author`; the team member has `role` and `order`. Each collection uses whatever fields make sense for its content.
@@ -139,7 +166,7 @@ collections:
   articles: collections/articles
 ```
 
-That's it. Every markdown file in `collections/articles/` becomes an item in the `articles` collection.
+That's it. Every file in `collections/articles/` (`.md`, `.yml`, `.yaml`, or `.json`) becomes an item in the `articles` collection.
 
 ### With options
 
@@ -156,7 +183,7 @@ collections:
 
 | Option | What it does | Example |
 |--------|-------------|---------|
-| `path` | Folder containing the markdown files | `collections/articles` |
+| `path` | Folder containing the collection files | `collections/articles` |
 | `sort` | Order items by a field | `date desc` (newest first) |
 | `filter` | Include only matching items | `published != false` |
 | `limit` | Maximum number of items | `100` |
@@ -216,7 +243,7 @@ What this changes:
 
 Skip `deferred:` for collections without heavy fields — the entire record ships, like always.
 
-**API-backed collections.** The above describes a markdown-backed collection — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a collection sourced from a remote API (`url:` instead of `path:`), tell the framework where to find one full record by setting `detailUrl:`:
+**API-backed collections.** The above describes a file-based collection — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a collection sourced from a remote API (`url:` instead of `path:`), tell the framework where to find one full record by setting `detailUrl:`:
 
 ```yaml
 collections:
@@ -226,7 +253,7 @@ collections:
     detailUrl: /api/articles/{slug}     # how to fetch one full record
 ```
 
-Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; markdown-backed collections leave it null and use the file default.
+Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; file-based collections leave it null and use the per-record file default.
 
 ### Filterable surfaces with `queryable:`
 

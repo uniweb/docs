@@ -172,7 +172,7 @@ collections:
     detailUrl: /api/articles/{slug}
 ```
 
-Both the dynamic-route auto-detail and the `useEntityDetail` kit hook fetch from this URL (substituting `{slug}` from the route param or `record.slug` respectively). Markdown-backed collections need no `detailUrl:` — the build emits per-record files automatically.
+Both the dynamic-route auto-detail and the `useEntityDetail` kit hook fetch from this URL (substituting `{slug}` from the route param or `record.slug` respectively). File-based collections (markdown, YAML, or JSON) need no `detailUrl:` — the build emits per-record files automatically for each item.
 
 ### Hybrid: local collections + one remote API
 

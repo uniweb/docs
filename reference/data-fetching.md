@@ -513,7 +513,7 @@ Collections without `deferred:` declared behave exactly as before — every fiel
 
 ### API-backed collections: `detailUrl:`
 
-The above describes a markdown-backed collection — the build emits per-record files at `/data/<name>/<slug>.json` and the framework finds them automatically. For an **API-backed** collection (the source is a remote URL, no per-record files on disk), the author names the per-record endpoint pattern with `detailUrl:`:
+The above describes a file-based collection — the build emits per-record files at `/data/<name>/<slug>.json` for every item (markdown, YAML, or JSON) and the framework finds them automatically. For an **API-backed** collection (the source is a remote URL, no per-record files on disk), the author names the per-record endpoint pattern with `detailUrl:`:
 
 ```yaml
 # site.yml
@@ -524,7 +524,7 @@ collections:
     detailUrl: /api/articles/{slug}    # how to fetch one full record
 ```
 
-The `{slug}` placeholder substitutes from the dynamic-route param (entity-store auto-detail) or from `record.slug` (`useEntityDetail` hook). Collections without `detailUrl:` use the static-file default.
+The `{slug}` placeholder substitutes from the dynamic-route param (entity-store auto-detail) or from `record.slug` (`useEntityDetail` hook). File-based collections leave `detailUrl:` null and use the per-record file default.
 
 **Convention:** per-record sources are keyed by `item.slug`. The auto-detail flow on dynamic-route pages assumes the route param is `[slug]/`. Routes using other param names need an explicit author-written `detail:` value.
 
