@@ -33,6 +33,8 @@ Every capability this guide describes is optional. Empty config → today's beha
 | `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
 | `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: collection / item / error |
 | `supports` | `site.yml fetcher:` | Query operators the source evaluates natively. See [`supports:`](#supports) |
+| `request.style` | `site.yml fetcher:` | How operators reshape for the wire. See [Request Styles](../authoring/fetcher-styles.md) |
+| `request.rename` | `site.yml fetcher:` | Operator name tweaks on top of a style |
 | `method: POST` | per-fetch (`page.yml` / block frontmatter) | Send request as POST |
 | `body` | per-fetch | Arbitrary object serialized as JSON; supports `{slug}` substitution in strings |
 
@@ -221,19 +223,19 @@ Pushdown only applies to remote `url:` requests. Local `path:` reads are static 
 
 ### Wire-format conventions (default fetcher)
 
-Backends written against these conventions work with no client-side glue. The defaults:
+How operators ride on the wire depends on which **request style** is active — selected via `fetcher.request.style:` in `site.yml`. The framework ships three styles; the ambient default is `json-body`.
 
-**GET pushdown** — appended as URL query parameters with an underscore prefix to avoid collision with any backend-specific params already in `url:`:
+| Style | GET | POST | Response envelope |
+|---|---|---|---|
+| `json-body` *(default)* | `?_where=<JSON>&_limit=N&_sort=field:dir` | Operators merged as top-level keys in the JSON body | None |
+| `flat-query` | `?field=value&limit=N&sort=-field` (only flat AND of equalities for `where`) | No pushdown | None |
+| `strapi` | `?filters[field][$op]=value&pagination[limit]=N&sort=field:dir` | No pushdown | `{ data }` wrapper |
 
-| Operator | Wire format |
-|---|---|
-| `where` | `?_where=<URL-encoded JSON of the where-object>` |
-| `limit` | `?_limit=N` |
-| `sort` | `?_sort=field:dir` (matches the author-facing `date desc` form, comma-separated for multi-key) |
+Full details, operator coverage, and recipes are in [Request Styles](../authoring/fetcher-styles.md).
 
-Example: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
+Example with the default `json-body`: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
 
-**POST pushdown** — operators are merged into the request body alongside any author-supplied body fields:
+POST pushdown under `json-body` merges operators into the request body alongside any author-supplied body fields:
 
 ```http
 POST /api/articles
@@ -246,14 +248,40 @@ Content-Type: application/json
 }
 ```
 
-When the author already supplied a body (e.g., a GraphQL request), the operators are merged in as top-level keys (`where`, `limit`, `sort`). String bodies pass through unchanged — operators are dropped and a deprecation note in the source recommends using object bodies for pushdown.
+When the author already supplied a body (e.g., a GraphQL request), the operators are merged in as top-level keys (`where`, `limit`, `sort`). String bodies pass through unchanged — operators are dropped; use object bodies if you want pushdown into a POST request.
 
-### Backend doesn't match these conventions?
+### Picking a style
 
-Two options:
+Pick the style that matches your backend's wire shape — no JavaScript needed:
 
-- **Adapt at the proxy** — your same-origin proxy translates the framework's `?_where=…&_sort=…` shape into your backend's native query language. Often a few lines of code.
-- **Write a custom transport** — a foundation-level transport with its own `resolve()` and (optionally) its own `cacheKey()`. Most foundations don't need this; reach for it when the wire format gap is wider than a proxy can bridge. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
+```yaml
+# site.yml
+fetcher:
+  baseUrl: https://cms.example.com/api
+  supports: [where, limit, sort]
+  request:
+    style: strapi           # or: flat-query, or: json-body (the default)
+```
+
+For operator names that are almost-but-not-quite the shipped default, `rename:` tweaks the wire names without changing the style:
+
+```yaml
+fetcher:
+  request:
+    style: flat-query
+    rename:
+      limit: pageSize       # wire name becomes ?pageSize=N instead of ?limit=N
+      sort: orderBy
+```
+
+See [Request Styles](../authoring/fetcher-styles.md) for the full picker.
+
+### Backend doesn't match any shipped style?
+
+If none of `json-body`, `flat-query`, or `strapi` fits, two paths forward:
+
+- **Adapt at the proxy** — your same-origin proxy translates one of the shipped shapes into your backend's native query language. Often a few lines of code at the edge.
+- **Write a custom transport** — a foundation-level named transport with its own `resolve()` and (optionally) its own `cacheKey()`. The site opts in per-schema via `fetcher.transports:`. Use this when the gap is wide enough that a proxy would duplicate backend logic. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
 
 ---
 
@@ -341,13 +369,14 @@ Write a foundation-level custom fetcher when:
 - **Complex pagination.** Cursor or offset conventions beyond what the default understands.
 - **A non-JSON wire protocol.** Protobuf, MessagePack, or anything not in the `fetch() + JSON.parse` flow.
 
-Most sites don't hit any of these. For those that do, [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) walks through writing the custom fetcher and composing `@uniweb/fetchers` middleware around it.
+Most sites don't hit any of these. For those that do, [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) walks through writing the named transport and composing `@uniweb/fetchers` middleware around it.
 
 ---
 
 ## See also
 
 - [Data Fetching](../reference/data-fetching.md) — Reference for `fetch:` / `data:` config and the cascade.
-- [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) — Writing a custom fetcher.
+- [Request Styles](../authoring/fetcher-styles.md) — Choosing a wire-format style: `json-body`, `flat-query`, `strapi`.
+- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing a named transport (when no style fits).
 - [Working with Data](./working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, placeholder substitution, delivery paths.
