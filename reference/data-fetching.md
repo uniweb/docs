@@ -77,7 +77,6 @@ fetch:
   url: https://api.example.com/team  # Remote URL
 
   schema: person             # Key in content.data (default: inferred from filename)
-  prerender: true            # Default: true for path, false for url
   merge: false               # Replace existing data (default: false)
   transform: data.items      # Extract nested path from response
   detail: rest               # Single-entity fetch for dynamic routes (optional)
@@ -93,7 +92,6 @@ fetch:
 | `path` | — | Local file path relative to `public/` |
 | `url` | — | Remote URL (mutually exclusive with `path`) |
 | `schema` | *filename* | Key under `content.data` where data is stored |
-| `prerender` | `true` for `path`, `false` for `url` | Fetch at build time (SSG) vs runtime |
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern |
@@ -251,39 +249,12 @@ The component receives the related items directly in `content.data.articles` —
 
 ## Build-time vs Runtime
 
-The `prerender` option controls when data is fetched. The default depends on the fetch type:
+When data is fetched depends on the deployment mode of the site, not on a per-fetch flag:
 
-- **Local paths** (`path:`) default to `prerender: true` — the file is always available at build time
-- **Remote URLs** (`url:`) default to `prerender: false` — remote fetches that fail at build time break the build; runtime fetches degrade gracefully
+- **Bundled-site builds** (`uniweb build`) emit per-page HTML; local paths (`path:`) are read at build time and embedded in the HTML payload, while remote URLs (`url:`) are fetched in the browser at runtime.
+- **Shell-mode sites** ship a single HTML shell that's prerendered just-in-time by a Cloudflare worker per request; the same `fetch:` declarations are evaluated at request time.
 
-### Build-time
-
-```yaml
-fetch:
-  path: /data/team.json
-  # prerender: true (default for local paths)
-```
-
-- Data fetched during `uniweb build`
-- Embedded in static HTML
-- Fast page loads, SEO-friendly
-- Data is snapshot at build time
-
-### Runtime
-
-```yaml
-fetch:
-  url: https://jsonplaceholder.typicode.com/posts?_limit=5
-  schema: posts
-  # prerender: false (default for remote URLs)
-```
-
-- Data fetched when page loads in browser
-- Always fresh
-- Requires JavaScript
-- Good for frequently changing data
-
-To force a remote URL to be fetched at build time, set `prerender: true` explicitly.
+You don't pick when fetching happens — the deployment mode does. Authoring `fetch: { path: ... }` and `fetch: { url: ... }` is the same in either mode; the framework picks the appropriate execution time.
 
 ---
 
@@ -550,7 +521,6 @@ fetch:
   url: https://api.myblog.com/posts
   schema: posts
   transform: data.articles
-  # prerender: false (default for remote URLs)
 ```
 
 ### Site-wide config
