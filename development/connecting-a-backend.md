@@ -158,6 +158,20 @@ fetch:
 
 The `{slug}` in `variables.slug` is substituted from the dynamic-route context. GraphQL selection sets like `{ id slug title }` are *not* substituted — the placeholder matcher is strict about `{name}` with no whitespace, so `{ id }` stays literal.
 
+### Deferred fields against an API backend
+
+For lean cascade payloads with on-demand details (the `deferred:` pattern, see [Data Fetching → Deferred fields](../reference/data-fetching.md#deferred-fields)) on an API-backed collection, declare the per-record endpoint with `detailUrl:`:
+
+```yaml
+collections:
+  articles:
+    url: /api/articles
+    deferred: [body]
+    detailUrl: /api/articles/{slug}
+```
+
+Both the dynamic-route auto-detail and the `useEntityDetail` kit hook fetch from this URL (substituting `{slug}` from the route param or `record.slug` respectively). Markdown-backed collections need no `detailUrl:` — the build emits per-record files automatically.
+
 ### Hybrid: local collections + one remote API
 
 A site can mix static JSON and a remote backend freely:

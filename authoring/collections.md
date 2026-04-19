@@ -216,6 +216,18 @@ What this changes:
 
 Skip `deferred:` for collections without heavy fields — the entire record ships, like always.
 
+**API-backed collections.** The above describes a markdown-backed collection — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a collection sourced from a remote API (`url:` instead of `path:`), tell the framework where to find one full record by setting `detailUrl:`:
+
+```yaml
+collections:
+  articles:
+    url: /api/articles                  # collection source (remote)
+    deferred: [body]
+    detailUrl: /api/articles/{slug}     # how to fetch one full record
+```
+
+Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; markdown-backed collections leave it null and use the file default.
+
 ### Filterable surfaces with `queryable:`
 
 For sites where readers compose their own filtered views — a department dropdown, a "show only featured" toggle, a date-range slider — you declare which fields are filterable, with their type and any type-specific metadata:
