@@ -155,10 +155,10 @@ function Hero({ content, params, block, website }) {
   const { theme, layout } = params
 
   // ─── From CMS (data) ────────────────────────────────
-  const events = block.data?.events || []
+  const events = content.data?.events || []
 
-  // ─── From JSON blocks (schemas) ─────────────────────
-  const navLinks = block.data?.['nav-links'] || []
+  // ─── From structured author data (tagged blocks or form UI) ──
+  const navLinks = content.data?.['nav-links'] || []
 
   return (
     <section className={theme}>
@@ -176,8 +176,12 @@ function Hero({ content, params, block, website }) {
 |--------|-------------|--------------|
 | Markdown content | `content: { ... }` | `content.title`, `content.paragraphs`, `content.items` |
 | Frontmatter params | `params: { ... }` | `params.paramName` |
-| CMS entities | `data: { entity: 'events:5' }` | `block.data.events` |
-| JSON blocks | `data: { schemas: { ... } }` | `block.data['schema-name']` |
+| CMS entities | `data: { entity: 'events:5' }` | `content.data.events` |
+| Structured author data | `data: { schemas: { ... } }` | `content.data['schema-name']` |
+
+> **Note:** `block.data` and `content.data` point at the same object at
+> runtime. Use `content.data.*` in components — it matches how the rest of
+> the framework surfaces the content tree.
 
 ---
 
@@ -616,9 +620,24 @@ preset: glass
 
 ---
 
-### Schemas (Tagged Blocks)
+### Schemas (Structured Author Data)
 
-For structured data in markdown, use tagged data blocks:
+`data.schemas` declares shapes of structured data the component accepts from
+authors. A single registry, two input paths that converge on the same
+`content.data[schema-id]` key:
+
+1. **Tagged markdown blocks** — authors write YAML/JSON in a fenced block
+   prefixed with the schema id. Great for filesystem-edited projects.
+2. **Form UI** — the Uniweb editor renders a form from the schema. Great
+   for non-technical authors editing a published site.
+
+Both produce the same shape at `content.data[schema-id]`, so components are
+agnostic to how the data was entered.
+
+#### Simple schemas — flat key/value maps
+
+Use a simple schema for flat row-like data (e.g. nav links). Fields are
+declared as a keyed object:
 
 ````markdown
 ```yaml:nav-links
@@ -630,9 +649,8 @@ For structured data in markdown, use tagged data blocks:
 ```
 ````
 
-Define the schema inside the `data` field in meta.js:
-
 ```javascript
+// meta.js
 data: {
   schemas: {
     'nav-links': {
@@ -650,18 +668,137 @@ data: {
 }
 ```
 
-The parsed data is available at `content.data['tag-name']` (YAML or JSON both work):
-
 ```jsx
 function Header({ content }) {
   const navLinks = content.data['nav-links'] || []
-  // [{ label: "Home", href: "/" }, { label: "About", href: "/about", type: "button" }]
 }
 ```
 
-Schema validation (applying defaults, type checking) is a future enhancement. Currently the raw parsed JSON is passed through.
+#### Rich schemas — ordered fields with labels, options, conditions
 
-#### Schema Field Types
+Use a rich schema when the data has an ordered field list (labels,
+required markers, conditional visibility, nested arrays). Rich schemas
+drive both tagged-block authoring *and* the FormBlock editor widget. The
+distinguishing marker is a `fields` **array** (instead of a keyed object),
+or any of `isComposite` / `childSchema`.
+
+```javascript
+// meta.js
+data: {
+  schemas: {
+    stats: {
+      name: { en: 'Stats', fr: 'Statistiques' },     // shown in editor
+      isComposite: true,                              // value is an array
+      childSchema: {
+        name: { en: 'Stat', fr: 'Statistique' },
+        fields: [
+          {
+            id: 'number',
+            type: 'text',
+            label: { en: 'Number', fr: 'Nombre' },
+            required: true,
+          },
+          {
+            id: 'text',
+            type: 'text',
+            label: 'Label',
+            default: 'metric',
+          },
+        ],
+      },
+    },
+
+    'side-content': {
+      name: 'Side Content',
+      fields: [
+        {
+          id: 'for',
+          type: 'select',
+          options: [
+            { label: 'Scholar', value: 'scholar' },
+            { label: 'News',    value: 'news' },
+          ],
+        },
+        {
+          id: 'department',
+          type: 'text',
+          condition: { for: 'scholar' },              // only when for=scholar
+        },
+        {
+          id: 'headline',
+          type: 'text',
+          condition: { for: { $in: ['news', 'feature'] } },
+        },
+      ],
+    },
+  },
+}
+```
+
+Components read the filled data by schema id:
+
+```jsx
+function Hero({ content }) {
+  const stats = content.data.stats || []
+  // [{ number: '42', text: 'users' }, { number: '1M', text: 'queries' }, ...]
+}
+```
+
+#### Rich schema — field properties
+
+| Property | Type | Notes |
+|---|---|---|
+| `id` | string (required) | field identifier (data key) |
+| `type` | string (required) | see field types below |
+| `label` | string or `{en,fr}` | shown in editor |
+| `description` | string or `{en,fr}` | editor tooltip |
+| `placeholder` | string or `{en,fr}` | input placeholder |
+| `required` | boolean | editor validation |
+| `default` | any | applied at runtime when missing |
+| `options` | `[{label, value}]` or `[string]` | for `select` |
+| `min` / `max` | number | for `number` |
+| `condition` | object | visibility predicate — see below |
+| `fields` | array | for `type: nestedObject` (inline nested fields) |
+| `childSchema` | object | for `type: form` (nested composite array) |
+
+#### Rich schema — field types
+
+- `text`, `email`, `textarea`, `number`, `checkbox`, `select` — primitives
+- `form` — nested composite array; requires `childSchema: { fields: [...] }`
+- `nestedObject` — single nested object; requires `fields: [...]`
+
+#### Rich schema — composite (`isComposite: true`)
+
+The stored value is an **array** of rows; each row matches
+`childSchema.fields`. Add/remove rows in the editor, or author the array
+directly in a tagged markdown block.
+
+#### Rich schema — conditions
+
+Any field (root or nested) can declare a `condition` that controls
+visibility:
+
+```javascript
+{ id: 'department', type: 'text', condition: { for: 'scholar' } }
+{ id: 'label',      type: 'text', condition: { for: { $in: ['a','b'] } } }
+```
+
+Supported operators: `$eq`, `$neq`, `$in`, `$nin`, `$truthy`, `$falsy`.
+Shorthand `{ key: value }` is implicit `$eq`. Multiple keys are AND'd.
+
+At runtime, fields whose conditions don't hold are **stripped from
+`content.data[id]`** before the component sees it — components don't
+need to check conditions themselves. The editor keeps hidden values in
+storage so authors can toggle back.
+
+#### Localized labels
+
+Anywhere a `label`, `name`, or `description` is accepted (on schemas,
+child schemas, fields, and option entries), you may pass either a plain
+string or an `{en, fr, ...}` object. The editor renders the user's
+active locale.
+
+#### Simple-schema field types (keyed-object form)
 
 ```javascript
 // Full form
