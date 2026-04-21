@@ -773,10 +773,10 @@ The stored value is an **array** of rows; each row matches
 `childSchema.fields`. Add/remove rows in the editor, or author the array
 directly in a tagged markdown block.
 
-#### Rich schema — conditions
+#### Rich schema — conditions (editor-side)
 
 Any field (root or nested) can declare a `condition` that controls
-visibility:
+**visibility in the editor form**:
 
 ```javascript
 { id: 'department', type: 'text', condition: { for: 'scholar' } }
@@ -786,10 +786,12 @@ visibility:
 Supported operators: `$eq`, `$neq`, `$in`, `$nin`, `$truthy`, `$falsy`.
 Shorthand `{ key: value }` is implicit `$eq`. Multiple keys are AND'd.
 
-At runtime, fields whose conditions don't hold are **stripped from
-`content.data[id]`** before the component sees it — components don't
-need to check conditions themselves. The editor keeps hidden values in
-storage so authors can toggle back.
+Conditions are a UX concern: the editor hides fields whose condition
+doesn't hold so the author sees a relevant form. **At runtime, all
+stored fields reach the component as-is** — there is no condition-based
+stripping. Components that render differently based on a controller
+field should branch on that field directly (e.g. `data.for === 'news'`)
+and ignore what isn't relevant.
 
 #### Localized labels
 
