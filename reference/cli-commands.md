@@ -715,10 +715,10 @@ uniweb invite --resend abc-123
   For:      my-foundation v1
   Uses:     1
   Expires:  2025-03-15
-  Link:     https://uniweb.app/invite/abc-123
+  Link:     https://hub.uniweb.app/invite/abc-123
 
   When client@example.com creates a site with my-foundation
-  on uniweb.app or Studio, it will be authorized automatically.
+  on hub.uniweb.app or Studio, it will be authorized automatically.
 ```
 
 The link opens a landing page where the client can create their site using the web app or download Uniweb Studio.
