@@ -434,6 +434,34 @@ inline:
 
 These generate `span[name] { ... }` CSS rules. Content authors write `[text]{name}` — no CSS knowledge needed. Styles that reference semantic tokens (like `var(--link)`) adapt to context automatically.
 
+## Math (LaTeX)
+
+LaTeX math in markdown is compiled to MathML Core at build time and rendered natively by the browser. No runtime math library, no KaTeX CSS, no CDN — the MathML ships inside the page HTML.
+
+Three forms (Pandoc / GitHub / VS Code / Jupyter / Obsidian convention):
+
+| Form | Mode | Example |
+|---|---|---|
+| `$x$` | Inline | `The identity $e^{i\pi} + 1 = 0$ is Euler's.` |
+| `$$x$$` | Display on its own line; inline display mid-paragraph | `$$\int_0^\infty e^{-x^2}\,dx = \tfrac{\sqrt{\pi}}{2}$$` |
+| ` ```math ` fence | Display (multi-line friendly) | see below |
+| `\$` | Literal `$` | `The price is \$20.` |
+
+Multi-line display math is easier to read with a fence:
+
+````markdown
+```math
+\begin{aligned}
+  f(x) &= \sum_{n=0}^\infty a_n x^n \\
+       &= a_0 + a_1 x + a_2 x^2 + \cdots
+\end{aligned}
+```
+````
+
+**Disambiguating `$...$`.** Dollar-delimited inline math requires (1) no whitespace next to either delimiter and (2) no digit immediately after the closing `$`. This means currency sentences like `It costs $5 and $10 total` and `Budget: $200` stay as prose without escaping. Use `\$` for a literal dollar when the surrounding context would otherwise trip the rules.
+
+Math flows through the same pipeline as the rest of content — it appears in prerendered HTML, survives EPUB and Paged.js compilation, and roundtrips cleanly through the editor. Malformed LaTeX renders as an inline `<span class="temml-error">` containing the source, so authors see that something is wrong without breaking the page. Foundations can style `.temml-error` in their theme CSS if they want visible error feedback.
+
 ## Links and Buttons
 
 Links are collected in the `links` array. Attributes control behavior and styling.
