@@ -324,6 +324,71 @@ export default function DocsLayout({ header, footer, left, right, body }) {
 
 ---
 
+## Document Outputs
+
+Foundations that compile their content into documents (PDF, DOCX, EPUB, Typst source bundles, HTML for Paged.js, etc.) declare the formats they support under `outputs:`. This is what powers in-page Download buttons and headless tools like `unipress` — both call `compileDocument(website, { format, foundation })` from `@uniweb/press`, which reads the map and does the rest.
+
+```js
+// foundation/src/foundation.js
+import { buildTypstOptions, buildEpubOptions } from './compile-options.js'
+
+export default {
+  defaultLayout: 'BookLayout',
+  outputs: {
+    typst: {
+      extension: 'zip',
+      getOptions: buildTypstOptions,
+    },
+    pdf: {
+      extension: 'pdf',
+      via: 'typst',                      // routes through the typst adapter
+      getOptions: buildTypstOptions,
+    },
+    epub: {
+      extension: 'epub',
+      getOptions: buildEpubOptions,
+    },
+  },
+}
+```
+
+### Per-output fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `getOptions` | `(website, hostOptions) → { adapterOptions }` (can be async) | No | Foundation-specific assembly: meta from `website.config`, typst preamble, stylesheets, cover image bytes, etc. The returned `adapterOptions` go to the Press format adapter. `hostOptions` are the rest-args the host passes to `compileDocument` — use them to branch on caller intent (e.g., `mode: 'server'` vs `mode: 'sources'` for typst). Omit when the default Press adapter output suits the format unchanged. |
+| `via` | string | No | Press format to compile through. Defaults to the output key itself. Use when the user-facing name differs from the Press adapter — `pdf` aliased to `typst`, for instance, so a headless host can fetch the typst source bundle and finish compile with its own typst binary. |
+| `extension` | string | No | Default file extension the host uses when deriving an output filename. Convention only — the host can override. |
+
+### How the shape fits the compile flow
+
+```
+  compileDocument(website, { format: 'pdf', foundation, mode: 'sources' })
+    │
+    ├─ reads    foundation.outputs.pdf
+    │             via: 'typst'         → Press uses the typst adapter
+    │             getOptions(website, { format: 'pdf', mode: 'sources' })
+    │
+    ├─ calls    getOptions(...)
+    │             → { adapterOptions: { mode, meta, preamble, template, assets } }
+    │
+    ├─ gathers  website.pages.flatMap(p => p.bodyBlocks)
+    │
+    └─ dispatches  compileSubtree(<ChildBlocks blocks={...}/>, 'typst', { adapterOptions })
+                   → Blob (a typst source-bundle zip; the host binary turns it into a PDF)
+```
+
+### Relationship to other foundation callables
+
+`outputs.*.getOptions` is a per-document callable, invoked once per compile. It is not the same as:
+
+- `handlers.{data, content, props}` — per-block callables in the **content pipeline**, invoked on every block's prepare-props pass. See [Content Handlers](../development/content-handlers.md).
+- `transports[name].resolve` — per-request callables in the **data pipeline**, invoked on every fetch. See [Data Transports](#data-transports).
+
+Each subsystem owns its lifecycle moment; `outputs` owns end-of-pipeline document compile.
+
+---
+
 ## Data Transports
 
 A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which schema. A foundation never silently intercepts a site's data request.
