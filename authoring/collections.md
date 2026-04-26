@@ -1,6 +1,6 @@
 # Working with Collections
 
-Collections let you manage repeating content — blog posts, team members, products, case studies — as a set of files (markdown, YAML, or JSON). You write each item in its own file, tell the site where to find them, and the framework delivers them to your components as structured data.
+Collections let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each item in its own file (or, for BibTeX, drop in the file your reference manager already exports), tell the site where to find them, and the framework delivers them to your components as structured data.
 
 This guide covers everything you need to know as a content author. No coding required.
 
@@ -38,15 +38,27 @@ Each file in a collection folder becomes one item. The file `getting-started.md`
 
 ## Choosing a File Format
 
-Collection items can be markdown, YAML, or JSON. Pick the format that matches the content:
+Collection items can be markdown, YAML, JSON, or BibTeX. Pick the format that matches the content:
 
 | Format | Best for | Why |
 |---|---|---|
 | **Markdown** (`.md`) | Items with prose — articles, blog posts, case studies | Frontmatter holds structured fields (title, date, tags); the body below holds text the author edits in a familiar writing environment |
 | **YAML** (`.yml` / `.yaml`) | Structured records with no prose body — team members, products, datasets | Cleaner than squeezing structured data into a markdown frontmatter with an empty body |
 | **JSON** (`.json`) | Same as YAML | Pick it if the data is exported from another tool or you prefer JSON syntax |
+| **BibTeX** (`.bib`) | Bibliographic references — academic citations, reading lists, archival metadata | Drop the file your reference manager already exports; each `@entry{key, ...}` becomes one record, with the cite key as the lookup id |
 
-All three produce the same collection shape at runtime — the foundation components see records, not files. A few author-facing details *are* markdown-specific: excerpts and first-image extraction only run on markdown items (YAML/JSON items carry whatever fields the author wrote).
+All four produce the same collection shape at runtime — the foundation components see records, not files.
+
+### One file per record, or one file with many
+
+For the three pure-data formats (YAML, JSON, BibTeX), the same authoring choice applies:
+
+- **One record per file** — write a single mapping at the top of the file. The framework uses the filename stem as `slug`. This is the typical pattern when authors hand-edit each entry: `team/alice.yml`, `team/bob.yml`, …
+- **Many records per file** — write a top-level array (YAML or JSON) or a `.bib` file with multiple `@entry{...}` blocks. Each record carries its own `slug` (the BibTeX cite key for `.bib`; an explicit `slug:` field for YAML/JSON arrays). This is the typical pattern when the data comes from another tool — a Zotero `.bib` export, a JSON dump from a backend, a YAML file your scripts emit.
+
+Within a single collection folder you can mix and match: array-form files contribute many records each, mapping-form files contribute one each, and the framework merges everything into one combined list. So a `bibliography/` folder can hold an exported `refs.bib` next to a hand-written `extras.yml`; a `team/` folder can hold a bulk `roster.yml` array alongside a single `alice.md` markdown bio for someone who needs a long prose introduction.
+
+Format-specific niceties: markdown items get auto-generated excerpts and first-image extraction. BibTeX entries are normalized to CSL-JSON fields (`author`, `title`, `issued`, `container-title`, `DOI`, …); LaTeX accents (`\"u`, `\'e`) are converted to Unicode automatically. (Configuration files — `site.yml`, `page.yml`, `folder.yml` — are always single mappings; the array-form is a *collection-item* affordance, not a YAML-anywhere one.)
 
 ---
 
@@ -166,7 +178,7 @@ collections:
   articles: collections/articles
 ```
 
-That's it. Every file in `collections/articles/` (`.md`, `.yml`, `.yaml`, or `.json`) becomes an item in the `articles` collection.
+That's it. Every file in `collections/articles/` (`.md`, `.yml`, `.yaml`, `.json`, or `.bib`) becomes an item in the `articles` collection.
 
 ### With options
 
