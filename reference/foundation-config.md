@@ -77,6 +77,31 @@ The most common pattern is to use a scoped `package.json::name` (`"@myorg/founda
 
 These fields are platform configuration, not standard npm metadata. Keeping them under `uniweb` (as opposed to spreading them across the top-level package.json or various dotfiles) gives a single, discoverable home and avoids polluting the npm-tooling-recognized surface. Future platform features that need static configuration will land here too — additions will be documented in this section.
 
+### Where does the pinned runtime version come from?
+
+You may notice your foundation's `dist/runtime-pin.json` reports a runtime version (e.g. `0.8.9`) without your `package.json` declaring `@uniweb/runtime` anywhere. This is intentional.
+
+`@uniweb/runtime` is pulled in **transitively** through `@uniweb/build` (which every foundation has as a devDependency). The runtime version baked into your foundation's pin is whichever version your `@uniweb/build` version pulled in at install time:
+
+```
+your foundation
+  └─ devDependencies: "@uniweb/build": "0.12.0"
+       └─ pulls in @uniweb/runtime  (whatever version that build version locks)
+            → resolved at install time → version goes into dist/runtime-pin.json
+```
+
+The foundation build looks for `@uniweb/runtime` in two places:
+
+1. **Transitive resolution from `@uniweb/build`'s location** — the common case. This is what every foundation hits unless it explicitly opts in to (2).
+2. **Direct dependency in your foundation's own `node_modules`** — opt-in escape hatch.
+
+#### Practical implications
+
+- **You don't need to add `@uniweb/runtime` to your foundation's dependencies.** This is by design — runtime is the host environment, not a foundation import.
+- **To bump the runtime version your foundation pins, bump your `@uniweb/build` dep.** When `@uniweb/build@0.13.0` ships pulling in a newer runtime, updating your devDependency is how you adopt it.
+- **You can override by adding `@uniweb/runtime` directly to your foundation's `dependencies`** — but this is rarely needed and creates a source of confusion (now there are two places that know about the runtime version). Don't do this unless you have a specific reason.
+- **Whatever runtime version is pinned, your foundation's `runtimePolicy` controls how sites of this foundation can move forward beyond it.** Pinning `0.8.9` with `auto-minor` lets sites pick up `0.9.0` or higher (within the same major); pinning `0.8.9` with `exact` locks them at `0.8.9` until you rebuild your foundation.
+
 ---
 
 ## CSS Variables (vars)
