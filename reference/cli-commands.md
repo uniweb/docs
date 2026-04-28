@@ -600,6 +600,7 @@ Run from a foundation directory or workspace root. If the workspace has multiple
 | Option | Description |
 |--------|-------------|
 | `--namespace <handle>` | Organization namespace to publish under (overrides package.json) |
+| `--propagate` | Opt this version into automatic version-update walks for consenting sites. Default is silent — version is published but no site moves until republish. See [Foundation runtime policy](#foundation-runtime-policy) below. |
 | `--local` | Publish to local registry (`.unicloud/`) instead of remote |
 | `--registry <url>` | Publish to a specific registry URL |
 | `--edit-access <policy>` | Set edit access: `open` (anyone) or `restricted` (invite-only, default) |
@@ -611,9 +612,59 @@ A namespace (organization handle) is required for publishing. The CLI resolves i
 
 1. `--namespace` flag
 2. `package.json` → `"uniweb": { "namespace": "myorg" }`
-3. Scoped package name → `"name": "@myorg/foundation"` extracts `myorg`
+3. Scoped package name in `package.json` → `"name": "@myorg/foundation"` extracts `myorg`
+4. Scoped name declared in `src/foundation.js`'s default export (rare — most foundations export bare display names)
 
 You must have EDITOR or higher access to the organization. Available namespaces are listed in your JWT after `uniweb login`.
+
+### Foundation runtime policy
+
+Foundations can declare a `runtimePolicy` field in `package.json` that controls how the runtime version moves forward on already-published sites:
+
+```json
+{
+  "name": "@myorg/foundation",
+  "version": "1.0.0",
+  "uniweb": {
+    "namespace": "myorg",
+    "runtimePolicy": "auto-minor"
+  }
+}
+```
+
+| Value | Meaning |
+|-------|---------|
+| `exact` | Sites stay on exactly the runtime version this foundation built against. Newer runtime versions are not auto-applied. |
+| `auto-patch` | Sites auto-update within the same `MAJOR.MINOR.x` (e.g. `0.8.9` → `0.8.10`). Conservative; matches typical npm patch semantics. |
+| `auto-minor` | Sites auto-update within the same `MAJOR.x.y` (e.g. `0.8.9` → `0.9.0`). |
+
+**Default when unset:** `auto-minor`. Most foundations don't need to set this field — the platform's runtime is internally backwards-compatible at the minor level by convention, and `auto-minor` lets sites pick up bug fixes and additive features without rebuilding the foundation.
+
+Set `exact` if your foundation depends on undocumented runtime internals or has been audited against one specific runtime release and you don't want to allow drift.
+
+The field is read at build time and emitted into `dist/runtime-pin.json` alongside the resolved runtime version:
+
+```json
+// dist/runtime-pin.json (auto-generated)
+{ "runtime": "0.8.9", "policy": "auto-minor" }
+```
+
+Sites cannot override this policy — it's the foundation author's contract with the platform.
+
+### `--propagate` and `silent` defaults
+
+`uniweb publish` defaults to `silent` classification: the artifact is uploaded and stored in the registry, sites that pin exactly that version can resolve to it, but sites using earlier versions don't move. This is the conservative default — newly-published versions don't reach existing sites until those sites explicitly opt in (republish, manual refresh, or an explicit `--propagate` push).
+
+`uniweb publish --propagate` opts this version into the platform's gated rollout. Eligible sites — sites referencing your foundation that aren't pinned and whose policy permits the version jump — pick up the new version automatically through the platform's wave-based rollout (canary → small percentage → larger percentage → full population, with health gates between waves).
+
+Use `silent` for:
+- Internal refactors / no-op patches
+- Pre-staging a release before flipping the propagation switch
+- Versions you want available but not pushed to consenting sites yet
+
+Use `--propagate` for:
+- Security or correctness fixes you want to reach existing sites
+- New features you want consenting sites to receive automatically
 
 ### What Happens
 
