@@ -36,6 +36,49 @@ If omitted, the values fall back to `package.json`. The `version` always comes f
 
 ---
 
+## `package.json` configuration
+
+The `uniweb` block in `package.json` carries platform-specific configuration that doesn't belong in the npm-standard fields. All fields are optional; the platform falls back to sensible defaults when they're omitted.
+
+```json
+{
+  "name": "@myorg/foundation",
+  "version": "1.0.0",
+  "uniweb": {
+    "namespace": "myorg",
+    "runtimePolicy": "auto-minor"
+  },
+  "dependencies": {
+    "@uniweb/core": "0.7.8",
+    "@uniweb/runtime": "0.8.9"
+  }
+}
+```
+
+### Supported fields
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|---------|
+| `namespace` | string | derived from `name` scope (see below) | Organization handle the foundation publishes under. Used by `uniweb publish` to construct the registry path `foundations/{namespace}/{foundationName}/{version}/`. |
+| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb publish`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
+
+### Namespace resolution
+
+`uniweb publish` resolves the namespace in priority order:
+
+1. `--namespace <handle>` CLI flag (overrides everything)
+2. `package.json` → `"uniweb": { "namespace": "..." }`
+3. Scope segment of `package.json::name` — `"name": "@myorg/foundation"` extracts `"myorg"`
+4. Scope segment of the foundation's own `src/foundation.js` default `name` (rare; most foundations use bare display names)
+
+The most common pattern is to use a scoped `package.json::name` (`"@myorg/foundation"`) and let the namespace be inferred. You only need `uniweb.namespace` when the npm scope and the publish namespace need to differ — for example, an npm-private package that publishes under a different organization handle.
+
+### Why a separate `uniweb` block
+
+These fields are platform configuration, not standard npm metadata. Keeping them under `uniweb` (as opposed to spreading them across the top-level package.json or various dotfiles) gives a single, discoverable home and avoids polluting the npm-tooling-recognized surface. Future platform features that need static configuration will land here too — additions will be documented in this section.
+
+---
+
 ## CSS Variables (vars)
 
 Most customization is handled by component params. Both section components and layout components declare their own params in `meta.js` — layouts are full components with params, not just structural wrappers. A header height, for example, is typically a layout param, not a foundation var.
