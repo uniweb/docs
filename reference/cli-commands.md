@@ -651,6 +651,20 @@ The field is read at build time and emitted into `dist/runtime-pin.json` alongsi
 
 Sites cannot override this policy — it's the foundation author's contract with the platform.
 
+#### What happens when fields aren't set
+
+The system has multi-layer fallbacks so missing or partial information is always handled gracefully:
+
+| Scenario | What happens |
+|----------|--------------|
+| `uniweb.runtimePolicy` not set in `package.json` | `dist/runtime-pin.json` is emitted with the runtime version but no `policy` field. At serve time the platform applies `auto-minor` as the implicit default. Most foundations don't need to set `runtimePolicy` — leaving it unset is the correct choice when you want default behavior. |
+| `@uniweb/runtime` not resolvable at build time | The build silently skips emitting `runtime-pin.json`. New foundations created with `npx uniweb create` always have `@uniweb/runtime` as a dependency, so this only affects unusual workspace setups. |
+| `runtime-pin.json` is missing or malformed | The platform's serving infrastructure detects the absence and serves the foundation through the legacy bundling path. Sites still work; they just don't participate in runtime propagation. |
+| `runtime-pin.json` has a `runtime` version that's not actually deployed | The site publish flow rejects the publish with a clear error asking you to deploy the pinned runtime version first. This is caught at publish time, not at serve time. |
+| Policy permits a newer version but none is published | The site stays on the version it pinned. The resolver only moves forward when a newer version satisfying the policy is actually available. |
+
+Bottom line: a foundation that doesn't set `runtimePolicy` gets `auto-minor` behavior automatically. A foundation that doesn't ship `runtime-pin.json` at all (e.g. a legacy build) still serves correctly through the platform's compatibility path — you just don't get the propagation benefits. Set `runtimePolicy` explicitly only when you want to override the default (typically to `exact` for stability-critical builds).
+
 ### `--propagate` and `silent` defaults
 
 `uniweb publish` defaults to `silent` classification: the artifact is uploaded and stored in the registry, sites that pin exactly that version can resolve to it, but sites using earlier versions don't move. This is the conservative default — newly-published versions don't reach existing sites until those sites explicitly opt in (republish, manual refresh, or an explicit `--propagate` push).
