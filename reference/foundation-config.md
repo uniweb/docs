@@ -44,6 +44,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
   "name": "site-src",
   "version": "1.0.0",
   "uniweb": {
+    "id": "marketing",
     "runtimePolicy": "auto-minor"
   },
   "dependencies": {
@@ -53,25 +54,27 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 }
 ```
 
+(`uniweb.id` is the foundation's published name, separate from the workspace package name. The CLI sets it on first publish via an interactive prompt, or via `--name <id>`.)
+
 ### Supported fields
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
+| `id` | string | (set on first publish via the CLI prompt, or via `--name`) | The foundation's id on the registry — the bare name segment in `~handle/<id>` or `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
 | `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations either use a scoped name (`@org/x` or `~user/x`) or a bare name (auto-resolves to the publisher's personal scope). |
 | `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb publish`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
 
-### Scope resolution
+### Identity (scope + id) resolution
 
-`uniweb publish` resolves the publish scope in priority order:
+A published foundation has two identity pieces — a **scope** (where it's stored) and an **id** (what it's called). They live in different places and resolve independently. Full details and examples in [`uniweb publish` → Identity](./cli-commands.md#identity-scope--id). The summary:
 
-1. **`--namespace <handle>` CLI flag** — explicit org override.
-2. **Sigil in `package.json::name`**:
-   - `"name": "@myorg/foundation"` → org scope `@myorg/`. Authorized via your JWT's `namespaces[]` claim.
-   - `"name": "~me/foundation"` → personal alias scope (opt-in). Authorized when the alias matches your account.
-3. **`package.json` → `"uniweb": { "namespace": "..." }`** — legacy explicit field.
-4. **Bare name** (e.g. `"name": "site-src"`) → empty scope. The server resolves it to your personal scope, anchored to your account's permanent `memberId`. The default scaffold uses this — `package.json::name: "site-src"` just works.
+**Scope** priority: `--namespace` flag → sigil in `package.json::name` (`@org/x` or `~user/x`) → `uniweb.namespace` (legacy) → empty (server resolves to publisher's personal scope, anchored to `memberId`).
 
-The bare-name path is the new default. You don't need to do anything beyond log in. Use a scoped name when you want the foundation published under an organization, or when you want a specific personal alias visible in the package URL.
+**ID** priority: `--name` flag → sigil-stripped `package.json::name` → `uniweb.id` (persisted on first publish) → interactive prompt (writes back to `uniweb.id`) → fail in non-interactive mode.
+
+The CLI prompts for the foundation id on the first publish and persists the answer to `package.json::uniweb.id`, so subsequent publishes don't ask again. To rename, run `uniweb publish --name <new-id>` once — the new id is persisted.
+
+The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is publish-only — changing it affects only the registry identity. Most users benefit from leaving the scaffold default `"name": "site-src"` forever and using `uniweb.id` to express the foundation's published identity.
 
 ### Why a separate `uniweb` block
 

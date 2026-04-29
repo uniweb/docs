@@ -600,6 +600,7 @@ Run from a foundation directory or workspace root. If the workspace has multiple
 
 | Option | Description |
 |--------|-------------|
+| `--name <id>` | Foundation id (the bare name segment, e.g. `marketing` in `~alice/marketing@1.0.0`). Overrides `package.json::uniweb.id`. Persisted to `uniweb.id` after a successful publish, so passing it once is enough. |
 | `--namespace <handle>` | Organization namespace to publish under (overrides package.json) |
 | `--propagate` | Opt this version into automatic version-update walks for consenting sites. Default is silent — version is published but no site moves until republish. See [Foundation runtime policy](#foundation-runtime-policy) below. |
 | `--local` | Publish to local registry (`.unicloud/`) instead of remote |
@@ -607,20 +608,42 @@ Run from a foundation directory or workspace root. If the workspace has multiple
 | `--edit-access <policy>` | Set edit access: `open` (anyone) or `restricted` (invite-only, default) |
 | `--dry-run` | Show what would be published without publishing |
 
-### Scope (where the foundation is published)
+### Identity (scope + id)
 
-Every published foundation is stored under a scope. The CLI accepts three scope shapes and picks one in this priority order:
+A published foundation has two identity pieces — a **scope** (where it's published) and an **id** (what it's called). They live in different places and resolve independently.
+
+#### Scope
+
+The scope determines where the foundation is stored on the registry. The CLI picks one in this priority order:
 
 1. **`--namespace <handle>` flag** — explicit org override.
 2. **Sigil in `package.json::name`**:
    - `"name": "@myorg/foundation"` → org scope `@myorg/`. You must have EDITOR or higher access to the org (the `namespaces` claim in your JWT).
    - `"name": "~me/foundation"` → personal alias scope (opt-in). Authorized when the alias matches your account.
-3. **`package.json` → `"uniweb": { "namespace": "myorg" }`** — legacy explicit field; equivalent to a `@myorg/...` scoped name.
-4. **Bare name** (e.g. `"name": "site-src"`) → empty scope. The server resolves it to your **personal scope**, anchored to your account's permanent `memberId`. The published name renders as `~<your-handle>/site-src` in the registry; you don't need to type the `~me/` prefix.
+3. **`package.json::uniweb.namespace`** — legacy explicit org-namespace field; equivalent to a `@myorg/…` scoped name. Rarely needed.
+4. **None of the above** → empty scope. The server resolves it to your **personal scope**, anchored to your account's permanent `memberId`. The published name renders as `~<your-handle>/<id>` in the registry; you don't need to type the `~me/` prefix.
 
-The default scaffold uses bare names — `package.json::name: "site-src"` — so a fresh project just publishes under the developer's personal scope without any setup. Switch to an org scope when you're ready to publish under an organization you belong to.
+The default scaffold leaves `package.json::name` bare (`site-src`), so a fresh project publishes under the developer's personal scope without any setup. Switch to an org scope when you're ready to publish under an organization you belong to.
 
 Available org namespaces are listed in your JWT after `uniweb login`.
+
+#### ID
+
+The id is the bare name segment — what comes after the slash in `~handle/<id>` or `@org/<id>`. The CLI resolves it like this:
+
+1. **`--name <id>` flag** — overrides everything for this publish, and persists to `package.json::uniweb.id` so future publishes don't need it. Use this to rename your foundation (one-shot rename: `uniweb publish --name new-name`).
+2. **Sigil-stripped `package.json::name`** — `@org/<id>` and `~user/<id>` carry the id alongside the scope.
+3. **`package.json::uniweb.id`** — the persisted publish-id. Set automatically on first publish via the prompt.
+4. **Interactive prompt** — first publish only. The CLI asks "Foundation name?" with a sensible default (the workspace folder name, with `-src` suffix stripped), then writes the answer to `package.json::uniweb.id`.
+5. **Non-interactive without a usable id** → fail with guidance.
+
+#### Why two storage locations for the id?
+
+`package.json::name` is a **workspace concern** — pnpm uses it to link packages, sites reference it in their `file:` deps and `site.yml::foundation`. Renaming `package.json::name` cascades through several files and is a real edit operation.
+
+`package.json::uniweb.id` is a **publish concern** — only the registry sees it. Renaming it affects the foundation's identity on the registry but doesn't move any workspace files. Most users benefit from leaving `package.json::name` as the scaffold default (`site-src`) forever and using `uniweb.id` to express the foundation's published identity.
+
+If you want both to be the same — for example, a portable foundation that's `@myorg/marketing` in npm and on the registry — set `"name": "@myorg/marketing"` directly. The id falls out of the sigil-stripped form and you don't need `uniweb.id`.
 
 ### Foundation runtime policy
 
@@ -688,8 +711,8 @@ Use `--propagate` for:
 
 ### What Happens
 
-1. Reads `dist/meta/schema.json` for the foundation name and version (auto-builds if `dist/` is missing).
-2. Resolves the scope per the priority above. For org or `~user/` scopes, attaches the sigil; for empty-scope publishes, sends the bare name to the server.
+1. Reads `dist/meta/schema.json` for the foundation version (auto-builds if `dist/` is missing).
+2. Resolves the scope and id per the priorities above. On a first publish without `--name` or `uniweb.id`, prompts interactively for the foundation name and persists the answer to `package.json::uniweb.id`.
 3. Server authorizes the scope against the JWT (`namespaces[]` for org, `loginName`/`sub` for personal, `sub` for empty).
 4. Checks for duplicate versions.
 5. Uploads the foundation bundle. Org-scope storage path is `foundations/{org}/{name}/{version}/`; personal-scope storage is anchored on the immutable `memberId` (`foundations/u{sub}/{name}/{version}/`) so the URL renders as `~{handle}/{name}` without the storage moving when a handle changes.
@@ -697,8 +720,17 @@ Use `--propagate` for:
 ### Examples
 
 ```bash
-# Empty-scope publish (default for new scaffolds — publishes under your personal scope)
+# First publish — prompts for the foundation name, then persists it
 uniweb publish
+
+# Provide the name explicitly (also persists to uniweb.id)
+uniweb publish --name marketing
+
+# Subsequent publishes don't re-prompt — they use uniweb.id from package.json
+uniweb publish
+
+# Rename: one-shot, persists the new name
+uniweb publish --name marketing-pro
 
 # Explicit org override
 uniweb publish --namespace myorg
