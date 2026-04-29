@@ -14,18 +14,16 @@ Every Uniweb workspace uses three wiring mechanisms. Understanding them makes al
 
 ### 1. Workspace packages
 
-`pnpm-workspace.yaml` declares which directories are packages. The default globs cover both the single and segregated layouts:
+`pnpm-workspace.yaml` declares which directories are packages. The default globs covers only the single layout:
 
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - foundation
+  - src
   - site
-  - foundations/*
-  - sites/*
 ```
 
-`foundation` and `site` match sibling packages. `foundations/*` and `sites/*` match segregated directories. Both sets can coexist — pnpm ignores globs that match nothing.
+`src` and `site` match sibling packages.
 
 ### 2. `file:` dependency
 
@@ -34,7 +32,7 @@ The site's `package.json` references its foundation as a local dependency:
 ```json
 {
   "dependencies": {
-    "foundation": "file:../foundation"
+    "foundation": "file:../src"
   }
 }
 ```
@@ -65,11 +63,11 @@ The default when you run `pnpm create uniweb`. Foundation and site are siblings 
 
 ```
 my-project/
-├── foundation/
-│   ├── package.json          ← name: "foundation"
+├── src/
+│   ├── package.json          ← name: "site-src"
 │   └── src/sections/
 ├── site/
-│   ├── package.json          ← "foundation": "file:../foundation"
+│   ├── package.json          ← "foundation": "file:../src"
 │   └── site.yml              ← foundation: foundation
 ├── pnpm-workspace.yaml
 └── package.json
@@ -78,10 +76,8 @@ my-project/
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - foundation
+  - src
   - site
-  - foundations/*
-  - sites/*
 ```
 
 **When to use it:** One foundation, one site. The workspace root stays clean. Most projects start here and many never need more.
@@ -97,10 +93,10 @@ my-project/
 ├── foundations/
 │   ├── default/
 │   │   ├── package.json      ← name: "default"
-│   │   └── src/sections/
+│   │   └── sections/
 │   └── blog/
 │       ├── package.json      ← name: "blog"
-│       └── src/sections/
+│       └── sections/
 ├── sites/
 │   ├── main/
 │   │   ├── package.json      ← "default": "file:../../foundations/default"
@@ -148,17 +144,17 @@ Each project is a self-contained directory with its own foundation and site. Thi
 ```
 my-workspace/
 ├── marketing/
-│   ├── foundation/
-│   │   └── package.json      ← name: "marketing"
+│   ├── src/
+│   │   └── package.json      ← name: "marketing-src"
 │   └── site/
-│       ├── package.json      ← "marketing": "file:../foundation"
-│       └── site.yml          ← foundation: marketing
+│       ├── package.json      ← "marketing": "file:../src"
+│       └── site.yml          ← foundation: marketing-src
 ├── docs/
-│   ├── foundation/
-│   │   └── package.json      ← name: "docs-foundation"
+│   ├── src/
+│   │   └── package.json      ← name: "docs-src"
 │   └── site/
-│       ├── package.json      ← "docs-foundation": "file:../foundation"
-│       └── site.yml          ← foundation: docs-foundation
+│       ├── package.json      ← "docs-foundation": "file:../src"
+│       └── site.yml          ← foundation: docs-src
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -166,17 +162,17 @@ my-workspace/
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - "*/foundation"
+  - "*/src"
   - "*/site"
 ```
 
-The `*/foundation` and `*/site` globs discover every project's packages automatically. Adding a new project means creating a new directory — no workspace config changes.
+The `*/src` and `*/site` globs discover every project's packages automatically. Adding a new project means creating a new directory — no workspace config changes.
 
 **When to use it:** Multiple independent brands or products that share a repo for convenience but don't share foundations. Each project has its own build, its own foundation, its own site. Teams can work in their own directory without stepping on each other.
 
-**Trade-off:** Foundation package names must be globally unique in the workspace — pnpm needs to distinguish them. If two projects both name their foundation `"foundation"`, pnpm can't link them correctly. Use project-scoped names (`"marketing"`, `"docs-foundation"`) or scoped packages (`"@acme/marketing"`).
+**Trade-off:** Foundation package names must be globally unique in the workspace — pnpm needs to distinguish them. If two projects both name their foundation `"site-src"`, pnpm can't link them correctly. Use project-scoped names (`"marketing-src"`, `"docs-src"`) or scoped packages (`"@acme/marketing"`).
 
-**One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/foundation` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit.
+**One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/src` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit.
 
 ### Extensions as siblings
 
@@ -184,14 +180,14 @@ An extension adds specialized section types without modifying the primary founda
 
 ```
 my-project/
-├── foundation/
-│   ├── package.json          ← name: "foundation"
-│   └── src/sections/         ← Header, Hero, Features, Footer
+├── src/
+│   ├── package.json          ← name: "site-src"
+│   └── sections/             ← Header, Hero, Features, Footer
 ├── effects/
 │   ├── package.json          ← name: "effects"
-│   └── src/sections/         ← ParticleHero, AnimatedCounter
+│   └── sections/             ← ParticleHero, AnimatedCounter
 ├── site/
-│   ├── package.json          ← "foundation": "file:../foundation"
+│   ├── package.json          ← "foundation": "file:../src"
 │   └── site.yml              ← see below
 ├── pnpm-workspace.yaml
 └── package.json
@@ -200,18 +196,16 @@ my-project/
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - foundation
+  - src
   - effects
   - site
-  - foundations/*
-  - sites/*
 ```
 
 The extension isn't a `file:` dependency of the site — it's loaded by URL at runtime. `site.yml` declares it:
 
 ```yaml
 # site/site.yml
-foundation: foundation
+foundation: site-src
 
 extensions:
   - /effects/foundation.js
@@ -226,7 +220,7 @@ The URL `/effects/foundation.js` works in both dev and production:
 {
   "scripts": {
     "dev": "pnpm --filter effects build && pnpm --filter site dev",
-    "build": "pnpm --filter foundation build && pnpm --filter effects build && pnpm --filter site build && cp -r effects/dist site/dist/effects"
+    "build": "pnpm --filter src build && pnpm --filter effects build && pnpm --filter site build && cp -r effects/dist site/dist/effects"
   }
 }
 ```
@@ -234,7 +228,7 @@ The URL `/effects/foundation.js` works in both dev and production:
 An extension builds like any foundation — same Vite plugin, same output. The difference is in role: it contributes section types but doesn't provide Layout or theme variables. Its `foundation.js` declares `extension: true`:
 
 ```js
-// effects/src/foundation.js
+// effects/main.js
 export default {
   extension: true
 }
@@ -356,10 +350,10 @@ This creates `sites/blog/`, adds the `sites/*` glob to `pnpm-workspace.yaml`, an
 
 ```
 my-project/
-├── foundation/
+├── src/
 ├── site/                         ← original
 ├── sites/
-│   └── blog/                     ← new, wired to foundation
+│   └── blog/                     ← new, wired to src
 └── pnpm-workspace.yaml
 ```
 
@@ -374,9 +368,9 @@ uniweb add project docs
 pnpm install
 ```
 
-This creates `docs/foundation/` and `docs/site/`, adds `*/foundation` and `*/site` globs. Package names are `docs-foundation` and `docs-site`. Use `--from` to apply template content: `add project docs --from academic`.
+This creates `docs/src/` and `docs/site/`, adds `*/src` and `*/site` globs. Package names are `docs-src` and `docs-site`. Use `--from` to apply template content: `add project docs --from academic`.
 
-Your original `foundation/` and `site/` still work — they match their existing globs. You can keep the hybrid layout or move them into a project directory when you're ready.
+Your original `src/` and `site/` still work — they match their existing globs. You can keep the hybrid layout or move them into a project directory when you're ready.
 
 ### Adding an extension
 
