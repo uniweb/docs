@@ -346,21 +346,26 @@ pnpm install
 pnpm dev
 ```
 
-The `add project` command creates a co-located foundation + site pair in one step. The same flow works for any layout:
+The `add project` command creates a co-located foundation + site pair in one step. The same flow works for any layout — the CLI creates the folder you ask for, exactly as you ask:
 
 ```bash
 # Co-located: grouped by project (preferred for multiple projects)
 uniweb add project marketing
 uniweb add project docs
 
-# Segregated: named foundations and sites
-uniweb add foundation marketing
-uniweb add foundation blog
+# Bare names — folder is at the workspace root
+uniweb add foundation marketing       # → ./marketing/   (package: marketing)
 uniweb add site main --foundation marketing
 uniweb add site docs --foundation blog
+
+# Segregated: pass the path explicitly with a slash
+uniweb add foundation foundations/marketing   # → ./foundations/marketing/
+uniweb add foundation foundations/blog        # → ./foundations/blog/
+uniweb add site sites/main --foundation marketing
+uniweb add site sites/docs --foundation blog
 ```
 
-The CLI creates the directories, writes `package.json` and config files, updates `pnpm-workspace.yaml` globs, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages.
+The CLI creates the directory, writes `package.json` and config files, registers the package in `pnpm-workspace.yaml`, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages. If a target folder or package name already exists, the command stops with a precise error.
 
 ### Adding to an existing workspace
 
@@ -372,7 +377,7 @@ uniweb add site blog
 pnpm install
 ```
 
-This creates `sites/blog/`, adds the `sites/*` glob to `pnpm-workspace.yaml`, and wires the site to the existing foundation. The original site at `site/` stays where it is.
+This creates `blog/` at the workspace root, registers it in `pnpm-workspace.yaml`, and wires the site to the existing foundation. The original site at `site/` stays where it is. To group sites under a `sites/` parent, write the path explicitly: `uniweb add site sites/blog`.
 
 ```
 my-project/

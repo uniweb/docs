@@ -158,34 +158,27 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 
 ### Placement
 
-The name you provide becomes both the directory name and the package name. `--path` overrides the default directory.
+The CLI creates exactly the folder you ask for. The name argument is taken verbatim as the folder name (and the package name) — no silent nesting under `foundations/` or `sites/`. Pass a slash-bearing argument or `--path <parent>` when you want the foundation or site to live under a parent directory.
 
-**Project placement (`add project`):**
+**Resolution rules** (foundation example; same shape for site):
 
-| Command | Location | Package names |
-|---------|----------|---------------|
-| `add project docs` | `docs/src/` + `docs/site/` | `docs-src`, `docs-site` |
+| Input | Folder | Package name |
+|-------|--------|--------------|
+| `add foundation` (no name) | `src/` | `site-src` (the only case where folder and package name differ; `src` alone isn't a valid package name) |
+| `add foundation ui` | `ui/` | `ui` |
+| `add foundation foundations/ui` | `foundations/ui/` | `ui` (last segment of the path) |
+| `add foundation ui --path libs` | `libs/ui/` | `ui` |
+| `add foundation --path foundations/effects` | `foundations/effects/` | `effects` (last segment of `--path`) |
+| `add foundation --project docs` | `docs/src/` | `docs-src` (co-located convention) |
 
-**Foundation placement:**
+Same shape for `add site` (default folder `site/`, default package `site`, co-located `<project>/site/` with package name `<project>-site`).
 
-| Scenario | Command | Location | Package name |
-|----------|---------|----------|--------------|
-| First foundation | `add foundation` | `src/` | `site-src` |
-| First foundation, named | `add foundation ui` | `foundations/ui/` | `ui` |
-| Existing co-located (`*/src` glob) | `add foundation blog` | `blog/src/` | `blog-src` |
-| Existing co-located (legacy `*/foundation` glob) | `add foundation blog` | `blog/foundation/` | `blog-foundation` |
-| Existing segregated layout | `add foundation blog` | `foundations/blog/` | `blog` |
-| Explicit co-located | `add foundation --project docs` | `docs/src/` | `docs-src` |
+**Collision handling.** Before scaffolding, the CLI checks two things:
 
-**Site placement:**
+1. **The target folder doesn't exist.** If it does, the command stops with the suggested alternatives (different name, or `--path` to a different parent).
+2. **The package name isn't already in use.** Detection uses `classifyPackage` from `@uniweb/build`, so a foundation and a site can't collide on the same name even if they live in different folders. If the name is taken, the command stops and suggests picking a different one.
 
-| Scenario | Command | Location |
-|----------|---------|----------|
-| First site | `add site` | `site/` |
-| First site, named | `add site blog` | `blog/` |
-| Existing co-located layout | `add site blog` | `blog/site/` |
-| Existing segregated layout | `add site blog` | `sites/blog/` |
-| Explicit co-located | `add site --project docs` | `docs/site/` |
+**Why no silent nesting?** The framework classifies packages by their *contents* (presence of `package.json::main` matching `_entry.generated.js`, presence of `site.yml`, etc.) — not by their location. So the folder name is purely organizational; no specific layout is required. The CLI honors that: if you write `add foundation ui`, you get `ui/`. If you want it under `foundations/`, ask for it explicitly with `add foundation foundations/ui`.
 
 **Extension placement:**
 
