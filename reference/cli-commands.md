@@ -164,7 +164,7 @@ The CLI creates exactly the folder you ask for. The name argument is taken verba
 
 | Input | Folder | Package name |
 |-------|--------|--------------|
-| `add foundation` (no name) | `src/` | `site-src` (the only case where folder and package name differ; `src` alone isn't a valid package name) |
+| `add foundation` (no name) | `src/` | `src` (folder name = package name) |
 | `add foundation ui` | `ui/` | `ui` |
 | `add foundation foundations/ui` | `foundations/ui/` | `ui` (last segment of the path) |
 | `add foundation ui --path libs` | `libs/ui/` | `ui` |
@@ -186,7 +186,7 @@ Extensions always go in `extensions/{name}/` and require a name.
 
 ### Package Naming
 
-The package name equals the name you provide (or the default `foundation`/`site`). For `add project`, names are prefixed: `{name}-foundation` and `{name}-site`. If a package name already exists in the workspace, the CLI errors with guidance instead of auto-suffixing.
+The package name equals the name you provide (or the default `src` for foundations, `site` for sites). For `add project`, names are suffixed for workspace uniqueness: `{name}-src` and `{name}-site`. If a package name already exists in the workspace, the CLI stops with guidance instead of auto-renaming.
 
 ### The `--from` Flag
 
@@ -616,7 +616,7 @@ The scope determines where the foundation is stored on the registry. The CLI pic
 3. **`package.json::uniweb.namespace`** — legacy explicit org-namespace field; equivalent to a `@myorg/…` scoped name. Rarely needed.
 4. **None of the above** → empty scope. The server resolves it to your **personal scope**, anchored to your account's permanent `memberId`. The published name renders as `~<your-handle>/<id>` in the registry; you don't need to type the `~me/` prefix.
 
-The default scaffold leaves `package.json::name` bare (`site-src`), so a fresh project publishes under the developer's personal scope without any setup. Switch to an org scope when you're ready to publish under an organization you belong to.
+The default scaffold leaves `package.json::name` bare (`src`), so a fresh project publishes under the developer's personal scope without any setup. Switch to an org scope when you're ready to publish under an organization you belong to.
 
 Available org namespaces are listed in your JWT after `uniweb login`.
 
@@ -634,7 +634,7 @@ The id is the bare name segment — what comes after the slash in `~handle/<id>`
 
 `package.json::name` is a **workspace concern** — pnpm uses it to link packages, sites reference it in their `file:` deps and `site.yml::foundation`. Renaming `package.json::name` cascades through several files and is a real edit operation.
 
-`package.json::uniweb.id` is a **publish concern** — only the registry sees it. Renaming it affects the foundation's identity on the registry but doesn't move any workspace files. Most users benefit from leaving `package.json::name` as the scaffold default (`site-src`) forever and using `uniweb.id` to express the foundation's published identity.
+`package.json::uniweb.id` is a **publish concern** — only the registry sees it. Renaming it affects the foundation's identity on the registry but doesn't move any workspace files. Most users benefit from leaving `package.json::name` as the scaffold default (`src`) forever and using `uniweb.id` to express the foundation's published identity.
 
 If you want both to be the same — for example, a portable foundation that's `@myorg/marketing` in npm and on the registry — set `"name": "@myorg/marketing"` directly. The id falls out of the sigil-stripped form and you don't need `uniweb.id`.
 
@@ -644,7 +644,7 @@ Foundations can declare a `runtimePolicy` field in `package.json` that controls 
 
 ```json
 {
-  "name": "site-src",
+  "name": "src",
   "version": "1.0.0",
   "uniweb": {
     "runtimePolicy": "auto-minor"
@@ -952,7 +952,7 @@ my-project/
 │   ├── styles.css
 │   ├── sections/
 │   ├── components/
-│   ├── package.json     # name: "site-src"
+│   ├── package.json     # name: "src"
 │   └── vite.config.js
 ├── site/                # Content and configuration
 │   ├── pages/
@@ -968,7 +968,7 @@ my-project/
 
 ```
 my-project/
-├── src/                    # Original foundation (name: "site-src")
+├── src/                    # Original foundation (name: "src")
 ├── site/                   # Original site
 ├── foundations/
 │   └── blog/               # Added: uniweb add foundation blog

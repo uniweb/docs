@@ -13,7 +13,7 @@ src/                       # the foundation package
 ├── components/            # Internal components
 ├── layouts/               # Layout components (auto-discovered)
 ├── styles.css             # Global styles
-├── package.json           # name: "site-src"
+├── package.json           # name: "src"
 └── vite.config.js
 ```
 
@@ -41,7 +41,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 
 ```json
 {
-  "name": "site-src",
+  "name": "src",
   "version": "1.0.0",
   "uniweb": {
     "id": "marketing",
@@ -74,7 +74,7 @@ A published foundation has two identity pieces — a **scope** (where it's store
 
 The CLI prompts for the foundation id on the first publish and persists the answer to `package.json::uniweb.id`, so subsequent publishes don't ask again. To rename, run `uniweb publish --name <new-id>` once — the new id is persisted.
 
-The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is publish-only — changing it affects only the registry identity. Most users benefit from leaving the scaffold default `"name": "site-src"` forever and using `uniweb.id` to express the foundation's published identity.
+The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is publish-only — changing it affects only the registry identity. Most users benefit from leaving the scaffold default `"name": "src"` forever and using `uniweb.id` to express the foundation's published identity.
 
 ### Why a separate `uniweb` block
 

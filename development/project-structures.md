@@ -4,7 +4,7 @@ A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uni
 
 This guide covers the workspace structures we've found work well, when to use each, and the concrete wiring that connects the pieces.
 
-> **The naming convention.** A site is pure content; a foundation is the site's source code. That's why a single-foundation workspace puts content in `site/` and code in `src/`. See [Folder name vs package name](#4-folder-name-vs-package-name) below for why the foundation's `package.json::name` is `site-src` rather than just `src`.
+> **The naming convention.** A site is pure content; a foundation is the site's source code. That's why a single-foundation workspace puts content in `site/` and code in `src/`. The foundation package's `name` is just `src` — folder and package name match. See [Folder name vs package name](#4-folder-name-vs-package-name) below for the multi-foundation cases where they need to differ.
 
 > **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. Use `uniweb add project` to create this structure in one step, or the `--project` flag on individual `add foundation`/`add site` commands.
 
@@ -34,19 +34,19 @@ The site's `package.json` references its foundation as a local dependency:
 ```json
 {
   "dependencies": {
-    "site-src": "file:../src"
+    "src": "file:../src"
   }
 }
 ```
 
-The key name (`"site-src"`) is the foundation package's `name` field — what the foundation declared in its own `package.json`. The path is relative to the site's `package.json`. When packages move, this path changes — that's the main wiring adjustment between layouts.
+The key name (`"src"`) is the foundation package's `name` field — what the foundation declared in its own `package.json`. The path is relative to the site's `package.json`. When packages move, this path changes — that's the main wiring adjustment between layouts.
 
 ### 3. `foundation:` in site.yml
 
 The site needs to know which package provides the foundation. `site.yml` declares this:
 
 ```yaml
-foundation: site-src
+foundation: src
 ```
 
 The value matches the package name from `package.json`. The build resolves the package through pnpm's workspace linking — the name just has to match.
@@ -59,11 +59,11 @@ The convention this guide follows:
 
 | Layout | Folder | Package `name` |
 |---|---|---|
-| Single foundation | `src/` | `site-src` |
-| Co-located, multi-foundation | `marketing-src/`, `docs-src/`, … | `marketing-src`, `docs-src`, … (matches folder) |
-| Segregated, multi-foundation | `foundations/marketing/`, `foundations/docs/`, … | `marketing`, `docs`, … (parent `foundations/` disambiguates) |
+| Single foundation | `src/` | `src` (folder name = package name) |
+| Co-located, multi-foundation | `marketing/src/`, `docs/src/`, … | `marketing-src`, `docs-src`, … (the `-src` suffix disambiguates them within one workspace, since pnpm requires unique package names) |
+| Segregated, multi-foundation | `foundations/marketing/`, `foundations/docs/`, … | `marketing`, `docs`, … (the parent `foundations/` is the disambiguator at the folder level; package names match the leaf folder name) |
 
-**Why `site-src` for the single-foundation case?** Two reasons. First, `src` alone isn't a valid Uniweb package name (it's reserved by the CLI's name validator — too generic to identify a package). Second, `site-src` reads as a noun phrase ("the source of the site"), which scales: in multi-foundation workspaces the same `<purpose>-src` pattern produces `marketing-src`, `docs-src`, `effects-src` — and there the folder names match. The single-foundation case is the one place where folder name (`src`) and package name (`site-src`) differ, because the folder gets to be bare while the package can't.
+In every layout, **folder and package name are the same string** — except in the co-located multi-foundation case, where pnpm's workspace-uniqueness rule forces a per-project suffix. The single-foundation case keeps the names matching: folder `src/`, package `src`.
 
 That's the complete wiring. Workspace globs tell pnpm what's a package, `file:` tells the site where the foundation lives on disk, and `foundation:` tells the build which package it is. Everything else — directory names, nesting depth, number of packages — is convention.
 
@@ -80,15 +80,15 @@ The default when you run `pnpm create uniweb`. Foundation and site are siblings 
 ```
 my-project/
 ├── src/                       ← the foundation package
-│   ├── package.json           ← name: "site-src"
+│   ├── package.json           ← name: "src"
 │   ├── main.js                ← foundation declarations (vars, defaultLayout, props)
 │   ├── styles.css
 │   ├── sections/
 │   ├── components/
 │   └── vite.config.js
 ├── site/
-│   ├── package.json           ← "site-src": "file:../src"
-│   ├── site.yml               ← foundation: site-src
+│   ├── package.json           ← "src": "file:../src"
+│   ├── site.yml               ← foundation: src
 │   ├── pages/
 │   └── vite.config.js
 ├── pnpm-workspace.yaml
@@ -102,7 +102,7 @@ packages:
   - site
 ```
 
-A site is pure content. A foundation is the site's source code — that's why the foundation package lives in `src/`. The package's `name` is `site-src` (a unique workspace-wide name; `site` alone is taken by the site package).
+A site is pure content. A foundation is the site's source code — that's why the foundation package lives in `src/`. Folder and package name match: the folder is `src/` and `package.json::name` is `"src"`.
 
 **When to use it:** One foundation, one site. The workspace root stays clean. Most projects start here and many never need more.
 
@@ -194,7 +194,7 @@ The `*/src` and `*/site` globs discover every project's packages automatically. 
 
 **When to use it:** Multiple independent brands or products that share a repo for convenience but don't share foundations. Each project has its own build, its own foundation, its own site. Teams can work in their own directory without stepping on each other.
 
-**Trade-off:** Foundation package names must be globally unique in the workspace — pnpm needs to distinguish them. If two projects both name their foundation `"site-src"`, pnpm can't link them correctly. Use project-scoped names (`"marketing-src"`, `"docs-src"`) or scoped packages (`"@acme/marketing"`).
+**Trade-off:** Foundation package names must be globally unique in the workspace — pnpm needs to distinguish them. If two projects both name their foundation `"src"`, pnpm can't link them correctly. Use project-scoped names (`"marketing-src"`, `"docs-src"`) or scoped packages (`"@acme/marketing"`).
 
 **One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/src` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit.
 
@@ -205,13 +205,13 @@ An extension adds specialized section types without modifying the primary founda
 ```
 my-project/
 ├── src/
-│   ├── package.json          ← name: "site-src"
+│   ├── package.json          ← name: "src"
 │   └── sections/             ← Header, Hero, Features, Footer
 ├── effects/
 │   ├── package.json          ← name: "effects"
 │   └── sections/             ← ParticleHero, AnimatedCounter
 ├── site/
-│   ├── package.json          ← "site-src": "file:../src"
+│   ├── package.json          ← "src": "file:../src"
 │   └── site.yml              ← see below
 ├── pnpm-workspace.yaml
 └── package.json
@@ -229,7 +229,7 @@ The extension isn't a `file:` dependency of the site — it's loaded by URL at r
 
 ```yaml
 # site/site.yml
-foundation: site-src
+foundation: src
 
 extensions:
   - /effects/foundation.js
@@ -244,12 +244,12 @@ The URL `/effects/foundation.js` works in both dev and production:
 {
   "scripts": {
     "dev": "pnpm --filter effects build && pnpm --filter site dev",
-    "build": "pnpm --filter site-src build && pnpm --filter effects build && pnpm --filter site build && cp -r effects/dist site/dist/effects"
+    "build": "pnpm --filter src build && pnpm --filter effects build && pnpm --filter site build && cp -r effects/dist site/dist/effects"
   }
 }
 ```
 
-(pnpm filters by package `name`, not by folder. `site-src` is the foundation package's `name`; the folder is `src/`.)
+(pnpm filters by package `name`, not by folder. `src` is the foundation package's `name`; the folder is `src/`.)
 
 An extension builds like any foundation — same Vite plugin, same output. The difference is in role: it contributes section types but doesn't provide Layout or theme variables. Its `main.js` declares `extension: true`:
 
@@ -381,10 +381,10 @@ This creates `blog/` at the workspace root, registers it in `pnpm-workspace.yaml
 
 ```
 my-project/
-├── src/                          ← foundation package (name: "site-src")
+├── src/                          ← foundation package (name: "src")
 ├── site/                         ← original
 ├── sites/
-│   └── blog/                     ← new, wired to site-src
+│   └── blog/                     ← new, wired to the src foundation
 └── pnpm-workspace.yaml
 ```
 

@@ -38,7 +38,7 @@ Publishing makes your foundation available for sites to consume — either throu
 Each version can only be published once. To publish an update, bump the version in `package.json`:
 
 ```json
-{ "name": "site-src", "version": "1.0.1" }
+{ "name": "src", "version": "1.0.1" }
 ```
 
 ### Edit Access

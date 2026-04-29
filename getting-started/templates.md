@@ -16,7 +16,7 @@ A workspace with a foundation, site, and sample content. The recommended startin
 my-project/
 ├── package.json              # Workspace root
 ├── pnpm-workspace.yaml
-├── src/                      # The foundation package (name: "site-src")
+├── src/                      # The foundation package (name: "src")
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── main.js
@@ -24,7 +24,7 @@ my-project/
 └── site/
     ├── package.json
     ├── vite.config.js
-    ├── site.yml              # foundation: site-src
+    ├── site.yml              # foundation: src
     ├── entry.js
     └── pages/
 ```

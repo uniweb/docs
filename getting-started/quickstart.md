@@ -29,11 +29,11 @@ my-site/
 │   └── sections/
 ├── site/                # Your content
 │   ├── pages/
-│   └── site.yml         # foundation: site-src
+│   └── site.yml         # foundation: src
 └── pnpm-workspace.yaml
 ```
 
-A site is pure content; a foundation is the site's source code — that's why it lives in `src/`. The foundation package's `name` is `site-src` (set in `src/package.json`).
+A site is pure content; a foundation is the site's source code — that's why it lives in `src/`. The foundation package's `name` is `src` (set in `src/package.json`).
 
 ## Start Development
 
