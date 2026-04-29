@@ -1,20 +1,19 @@
 # Foundation Configuration
 
-The `foundation.js` file defines customizable CSS variables and configuration for your foundation. Layout components live in `src/layouts/` and are auto-discovered.
+The `main.js` file at the foundation package's source root defines customizable CSS variables and configuration for your foundation. Layout components live in `src/layouts/` and are auto-discovered.
 
 ## Overview
 
 Foundations can expose configuration points that sites customize in their `theme.yml`:
 
 ```
-foundation/
-├── src/
-│   ├── foundation.js      # Name, description, variables, defaultLayout, props
-│   ├── sections/          # Section types
-│   ├── components/        # Internal components
-│   ├── layouts/           # Layout components (auto-discovered)
-│   └── styles.css         # Global styles
-├── package.json
+src/                       # the foundation package
+├── main.js                # Name, description, variables, defaultLayout, props
+├── sections/              # Section types
+├── components/            # Internal components
+├── layouts/               # Layout components (auto-discovered)
+├── styles.css             # Global styles
+├── package.json           # name: "site-src"
 └── vite.config.js
 ```
 
@@ -22,10 +21,10 @@ foundation/
 
 ## Identity
 
-By default, the foundation's `name` and `description` come from `package.json`. You can override them in `foundation.js` — useful when the npm package name differs from the display name you want in visual editors:
+By default, the foundation's `name` and `description` come from `package.json`. You can override them in `main.js` — useful when the npm package name differs from the display name you want in visual editors:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   name: 'Marketing Template',
   description: 'A modern marketing site template with hero, features, and pricing sections.',
@@ -42,10 +41,9 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 
 ```json
 {
-  "name": "@myorg/foundation",
+  "name": "site-src",
   "version": "1.0.0",
   "uniweb": {
-    "namespace": "myorg",
     "runtimePolicy": "auto-minor"
   },
   "dependencies": {
@@ -59,19 +57,21 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `namespace` | string | derived from `name` scope (see below) | Organization handle the foundation publishes under. Used by `uniweb publish` to construct the registry path `foundations/{namespace}/{foundationName}/{version}/`. |
+| `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations either use a scoped name (`@org/x` or `~user/x`) or a bare name (auto-resolves to the publisher's personal scope). |
 | `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb publish`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
 
-### Namespace resolution
+### Scope resolution
 
-`uniweb publish` resolves the namespace in priority order:
+`uniweb publish` resolves the publish scope in priority order:
 
-1. `--namespace <handle>` CLI flag (overrides everything)
-2. `package.json` → `"uniweb": { "namespace": "..." }`
-3. Scope segment of `package.json::name` — `"name": "@myorg/foundation"` extracts `"myorg"`
-4. Scope segment of the foundation's own `src/foundation.js` default `name` (rare; most foundations use bare display names)
+1. **`--namespace <handle>` CLI flag** — explicit org override.
+2. **Sigil in `package.json::name`**:
+   - `"name": "@myorg/foundation"` → org scope `@myorg/`. Authorized via your JWT's `namespaces[]` claim.
+   - `"name": "~me/foundation"` → personal alias scope (opt-in). Authorized when the alias matches your account.
+3. **`package.json` → `"uniweb": { "namespace": "..." }`** — legacy explicit field.
+4. **Bare name** (e.g. `"name": "site-src"`) → empty scope. The server resolves it to your personal scope, anchored to your account's permanent `memberId`. The default scaffold uses this — `package.json::name: "site-src"` just works.
 
-The most common pattern is to use a scoped `package.json::name` (`"@myorg/foundation"`) and let the namespace be inferred. You only need `uniweb.namespace` when the npm scope and the publish namespace need to differ — for example, an npm-private package that publishes under a different organization handle.
+The bare-name path is the new default. You don't need to do anything beyond log in. Use a scoped name when you want the foundation published under an organization, or when you want a specific personal alias visible in the package URL.
 
 ### Why a separate `uniweb` block
 
@@ -113,7 +113,7 @@ Foundation-level CSS variables are for values that must stay consistent **across
 ### Defining Variables
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 
 /**
  * CSS custom properties that sites can override in theme.yml
@@ -168,10 +168,10 @@ Color-type vars are stored separately from non-color vars. The processor routes 
 
 ### Registering Defaults in `styles.css`
 
-The `foundation.js` declaration is metadata — descriptions, types, and editor UI hints that end up in `schema.json`. To ensure the default values are present in the foundation's actual CSS output, register them in `styles.css` via `@theme inline`:
+The `main.js` declaration is metadata — descriptions, types, and editor UI hints that end up in `schema.json`. To ensure the default values are present in the foundation's actual CSS output, register them in `styles.css` via `@theme inline`:
 
 ```css
-/* foundation/src/styles.css */
+/* src/styles.css */
 @theme inline {
   --radius: 0.5rem;
   --radius-lg: 1rem;
@@ -243,7 +243,7 @@ The build generates theme CSS with the site's values. These override the foundat
 When a content section doesn't specify a `type:` in its frontmatter, the runtime needs to know which section type to use. By default it looks for a component called `Section`, but you can change this with `defaultSection`:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   defaultSection: 'FeatureGrid',
 }
@@ -273,24 +273,24 @@ function Layout({ body }) {
 Place layout components in `src/layouts/`:
 
 ```
-foundation/src/layouts/
+src/layouts/
 ├── DocsLayout/
 │   ├── index.jsx
 │   └── meta.js        # Optional: declares areas, params
 └── MarketingLayout.jsx # Bare file works too
 ```
 
-Set the default in `foundation.js`:
+Set the default in `main.js`:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   defaultLayout: 'DocsLayout',
 }
 ```
 
 ```jsx
-// foundation/src/layouts/DocsLayout/index.jsx
+// src/layouts/DocsLayout/index.jsx
 export default function DocsLayout({ header, footer, left, right, body }) {
   return (
     <div className="min-h-screen flex flex-col">
@@ -340,7 +340,7 @@ Area names aren't fixed — foundations can declare any areas in `meta.js`. The 
 Layouts can optionally declare which areas they use and what parameters they accept:
 
 ```js
-// foundation/src/layouts/DocsLayout/meta.js
+// src/layouts/DocsLayout/meta.js
 export default {
   title: 'Documentation',
   description: 'Three-column layout with sidebar navigation',
@@ -397,7 +397,7 @@ export default function DocsLayout({ header, footer, left, right, body }) {
 Foundations that compile their content into documents (PDF, DOCX, EPUB, Typst source bundles, HTML for Paged.js, etc.) declare the formats they support under `outputs:`. This is what powers in-page Download buttons and headless tools like `unipress` — both call `compileDocument(website, { format, foundation })` from `@uniweb/press`, which reads the map and does the rest.
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 import { buildTypstOptions, buildEpubOptions } from './compile-options.js'
 
 export default {
@@ -463,10 +463,10 @@ A foundation can export one or more **named transports** — reusable fetchers t
 
 When a site declares no transport for a schema, the framework's default fetcher handles it (plain GET + JSON parse + optional `transform:`, plus the site-level `baseUrl` / `headers` / `envelope` vocabulary — see [Connecting a Backend](../development/connecting-a-backend.md)). Most foundations need no transports at all.
 
-Declared on the default export of `foundation.js` alongside identity, theme, and layout fields:
+Declared on the default export of `main.js` alongside identity, theme, and layout fields:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   defaultLayout: 'MarketingLayout',
 
@@ -610,7 +610,7 @@ const authed = withAuth(myTransport, () => someTokenProvider())
 
 ### Extensions contributing transports
 
-An extension's `foundation.js` can export `transports: { … }` too. The dispatcher merges extension transports into a single registry, keyed by name. On a name collision with the primary foundation, the **primary wins** with a dev-mode warning. A malformed or throwing extension transport is logged and skipped — it never blocks the rest of the registry (parallels the `Promise.allSettled` pattern used to load extensions).
+An extension's `main.js` can export `transports: { … }` too. The dispatcher merges extension transports into a single registry, keyed by name. On a name collision with the primary foundation, the **primary wins** with a dev-mode warning. A malformed or throwing extension transport is logged and skipped — it never blocks the rest of the registry (parallels the `Promise.allSettled` pattern used to load extensions).
 
 This lets a stats-widget extension package its own transport, and sites opt into it by name in `site.yml`:
 
@@ -675,7 +675,7 @@ export const vars = {
 ## Complete Example
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 
 /**
  * Cross-cutting design tokens that sites can override in theme.yml.
@@ -716,7 +716,7 @@ export default {
 Layout dimensions like header height and sidebar width are layout params, not foundation vars — the layout component owns them:
 
 ```js
-// foundation/src/layouts/docs/meta.js
+// src/layouts/docs/meta.js
 export default {
   params: {
     headerHeight: { type: 'text', default: '4rem' },
@@ -727,7 +727,7 @@ export default {
 ```
 
 ```jsx
-// foundation/src/layouts/docs/index.jsx
+// src/layouts/docs/index.jsx
 export default function DocsLayout({ header, footer, left, right, body, params }) {
   // No need for fallback values — meta.js defaults are merged into params
   // before the layout component receives them.
@@ -800,7 +800,7 @@ function Component() {
 
 4. **Document with descriptions**: The `description` field helps site authors in the visual editor
 
-5. **Register in `styles.css`**: Declare vars in both `foundation.js` (metadata) and `styles.css` via `@theme inline` (actual CSS)
+5. **Register in `styles.css`**: Declare vars in both `main.js` (metadata) and `styles.css` via `@theme inline` (actual CSS)
 
 6. **Consider dark mode**: Vars referencing colors should use theme tokens
 
@@ -834,7 +834,7 @@ pnpm add lucide-react
 **2. Create an icon wrapper component:**
 
 ```jsx
-// foundation/src/components/Icon/index.jsx
+// src/components/Icon/index.jsx
 import * as LucideIcons from 'lucide-react'
 
 export function Icon({ name, library, size = 24, color, className }) {
@@ -884,7 +884,7 @@ The content parser recognizes these icon library prefixes:
 ### Example: Multi-Library Support
 
 ```jsx
-// foundation/src/components/Icon/index.jsx
+// src/components/Icon/index.jsx
 import * as LucideIcons from 'lucide-react'
 import * as HeroIcons from '@heroicons/react/24/outline'
 

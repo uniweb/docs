@@ -16,15 +16,16 @@ A workspace with a foundation, site, and sample content. The recommended startin
 my-project/
 ├── package.json              # Workspace root
 ├── pnpm-workspace.yaml
-├── foundation/
+├── src/                      # The foundation package (name: "site-src")
 │   ├── package.json
 │   ├── vite.config.js
-│   └── src/sections/
+│   ├── main.js
+│   └── sections/
 └── site/
     ├── package.json
     ├── vite.config.js
-    ├── site.yml
-    ├── main.js
+    ├── site.yml              # foundation: site-src
+    ├── entry.js
     └── pages/
 ```
 

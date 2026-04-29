@@ -211,10 +211,10 @@ extensions:
 
 Extensions can only add section types. They don't provide layouts, theme variables, or site-level behavior. They're structurally identical to foundations — same build, same output — but loaded as supplements.
 
-An extension declares itself in its `foundation.js`:
+An extension declares itself in its `main.js`:
 
 ```js
-// effects/src/foundation.js
+// effects/main.js
 export default {
   extension: true
 }
@@ -227,15 +227,15 @@ The build writes `role: "extension"` to the extension's `schema.json` and warns 
 
 ### Foundation npm dependencies — libraries used by components
 
-Components in your foundation can use any npm package. Charting libraries, animation frameworks, date utilities — install them in the foundation and import them in your components. They're bundled into `foundation.js` by Vite and tree-shaken per foundation.
+Components in your foundation can use any npm package. Charting libraries, animation frameworks, date utilities — install them in the foundation and import them in your components. They're bundled into `dist/foundation.js` by Vite and tree-shaken per foundation.
 
 ```bash
-cd foundation
+cd src
 pnpm add framer-motion
 ```
 
 ```jsx
-// foundation/src/sections/AnimatedHero.jsx
+// src/sections/AnimatedHero.jsx
 import { motion } from 'framer-motion'
 
 export default function AnimatedHero({ content }) {

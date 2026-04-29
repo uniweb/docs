@@ -9,7 +9,7 @@ Most React sites tangle content into JSX — strings in components, data in stat
 Uniweb solves this with a **Component Content Architecture** (CCA). Content lives in markdown files. Components live in a React project. A thin runtime connects them: markdown frontmatter names a component, the component receives parsed content as props.
 
 ```
-site/pages/home/hero.md          foundation/src/sections/Hero/index.jsx
+site/pages/home/hero.md          src/sections/Hero/index.jsx
 ┌────────────────────────┐       ┌──────────────────────────────────┐
 │ ---                    │       │ function Hero({ content }) {     │
 │ type: Hero             │──────▶│   return (                       │
@@ -37,9 +37,11 @@ my-project/
 │   ├── layout/          # Header, footer, sidebar
 │   ├── site.yml         # Site configuration
 │   └── theme.yml        # Colors, fonts, appearance
-└── foundation/          # Code (React, JSX)
-    └── src/sections/    # Components that render content
+└── src/                 # Code (React, JSX) — the foundation
+    └── sections/        # Components that render content
 ```
+
+A site is pure content; a foundation is the site's source code — that's why it lives in `src/`.
 
 The site and foundation are independent. The same foundation can serve multiple sites with different content and branding. A site can swap foundations without touching its content.
 

@@ -105,14 +105,14 @@ The general rule: if header → body → footer in a single column is enough, yo
 Layouts are discovered from `src/layouts/`, parallel to `src/sections/` and `src/components/`:
 
 ```
-foundation/src/
+src/
 ├── sections/          # Section types
 ├── components/        # Internal components
 ├── layouts/           # Layout components
 │   └── DocsLayout/
 │       ├── index.jsx  # Layout component
 │       └── meta.js    # Optional: declares areas, params
-└── foundation.js      # Set defaultLayout here
+└── main.js            # Foundation declarations — set defaultLayout here
 ```
 
 Discovery follows the same relaxed rules as `src/sections/` — root-level files and folders are addressable by default, even without `meta.js`. A bare file like `MarketingLayout.jsx` works too.
@@ -122,7 +122,7 @@ Discovery follows the same relaxed rules as `src/sections/` — root-level files
 A custom Layout equivalent to the default:
 
 ```jsx
-// foundation/src/layouts/SimpleLayout/index.jsx
+// src/layouts/SimpleLayout/index.jsx
 export default function SimpleLayout({ header, body, footer }) {
   return (
     <div className="min-h-screen flex flex-col">
@@ -145,7 +145,7 @@ This is already more than the default — it uses a flex column for full-height 
 Tell the framework which layout to use by default:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   defaultLayout: 'DocsLayout',
 }
@@ -203,7 +203,7 @@ The docs template Layout handles sticky header, responsive sidebars, a mobile dr
 ### The Structure
 
 ```jsx
-// foundation/src/layouts/DocsLayout/index.jsx
+// src/layouts/DocsLayout/index.jsx
 export default function DocsLayout({
   page, website, header, body, footer, left, right,
 }) {
@@ -351,7 +351,7 @@ Without this, documentation text would stretch to fill the space where the right
 When a foundation needs multiple page structures — a docs layout with sidebars, a marketing layout without, a dashboard layout with a toolbar — each is a separate layout component:
 
 ```
-foundation/src/layouts/
+src/layouts/
 ├── DocsLayout/
 │   ├── index.jsx
 │   └── meta.js
@@ -369,7 +369,7 @@ Pages select their layout by name:
 layout: MarketingLayout
 ```
 
-The foundation sets a default in `foundation.js`:
+The foundation sets a default in `main.js`:
 
 ```js
 export default {
@@ -435,10 +435,10 @@ export default {
 
 This follows the same pattern as `background: 'self'` in section types — the layout tells the runtime "I handle this myself."
 
-A foundation-level default can be set in `foundation.js` for all layouts that don't declare their own:
+A foundation-level default can be set in `main.js` for all layouts that don't declare their own:
 
 ```js
-// foundation.js
+// src/main.js
 export default {
   defaultLayout: 'DocsLayout',
   scroll: 'self',
@@ -543,7 +543,7 @@ Section components render `<div>`s. They don't add `<header>` or `<main>` wrappe
 
 - **Keep layout logic in Layout, rendering logic in components.** The Layout controls *where* things go. Components control *what* things look like. If you're styling content inside the Layout, it probably belongs in a component or in CSS.
 
-- **Use CSS variables for dimensions.** Declare `header-height` and `sidebar-width` in `foundation.js` so sites can tune them. Then reference `var(--header-height)` in your Layout. The docs template does this — sticky positioning, sidebar heights, and mobile drawer offsets all reference the same variable.
+- **Use CSS variables for dimensions.** Declare `header-height` and `sidebar-width` in `main.js` so sites can tune them. Then reference `var(--header-height)` in your Layout. The docs template does this — sticky positioning, sidebar heights, and mobile drawer offsets all reference the same variable.
 
 - **Close mobile drawers on route change.** SPA navigation doesn't trigger a page reload, so drawers stay open unless you close them explicitly. The docs template watches `page.route` in a `useEffect`.
 

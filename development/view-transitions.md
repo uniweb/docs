@@ -21,7 +21,7 @@ This is what the `transitions` map in layout `meta.js` does.
 Each layout can declare which of its areas participate in transitions:
 
 ```js
-// foundation/src/layouts/DocsLayout/meta.js
+// src/layouts/DocsLayout/meta.js
 export default {
   areas: ['header', 'footer', 'left', 'right'],
   transitions: {
@@ -80,7 +80,7 @@ No custom animation code. The browser handles the spatial interpolation based on
 View transitions are enabled by default. To disable them for a foundation:
 
 ```js
-// foundation/src/foundation.js
+// src/main.js
 export default {
   viewTransitions: false,
 }

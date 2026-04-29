@@ -74,7 +74,7 @@ For projects that *do* have a local foundation, extensions are unnecessary for l
 
 ## Transport alongside components
 
-A specialized section type often needs specialized data transport — a stats widget talks to a metrics API, a product viewer fetches from a catalog service. An extension can export a **named transport** in its `foundation.js` exactly the way a primary foundation does, and the site opts in per schema:
+A specialized section type often needs specialized data transport — a stats widget talks to a metrics API, a product viewer fetches from a catalog service. An extension can export a **named transport** in its `main.js` exactly the way a primary foundation does, and the site opts in per schema:
 
 ```yaml
 # site.yml

@@ -72,7 +72,7 @@ Or simply omit the `search` configuration—search is enabled by default.
 
 To use search, your foundation needs:
 
-1. **Fuse.js dependency** in `foundation/package.json`:
+1. **Fuse.js dependency** in the foundation's `package.json` (i.e. `src/package.json` for the default layout):
    ```json
    {
      "dependencies": {

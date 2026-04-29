@@ -133,7 +133,7 @@ No component-side opt-in is required. A component at `/blog/[slug]` automaticall
 Components can declare their expected entity shape in `meta.js`. This is a **hint**, not a delivery gate — it drives the visual editor, `schema.json`, and shape guarantees from `prepare-props`:
 
 ```js
-// foundation/src/sections/ArticleList/meta.js
+// src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
   data: {
@@ -573,7 +573,7 @@ pnpm add @uniweb/schemas
 ```
 
 ```js
-// foundation/src/sections/TeamGrid/meta.js
+// src/sections/TeamGrid/meta.js
 import { person } from '@uniweb/schemas'
 
 export default {

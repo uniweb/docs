@@ -581,7 +581,7 @@ Only vars declared in `meta.js` are emitted — unknown var names in frontmatter
 
 | | Foundation vars | Component vars |
 | - | --------------- | -------------- |
-| Declared in | `foundation.js` | `meta.js` |
+| Declared in | `main.js` | `meta.js` |
 | CSS scope | `:root` (global) | `#section-{id}` (scoped) |
 | Overridden by | `theme.yml` (`vars:`) | Section frontmatter (`vars:`) |
 | Context-aware types | Yes (`color`, `gradient`) | No (always context-independent) |

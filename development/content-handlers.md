@@ -1,6 +1,6 @@
 # Content Handlers
 
-Content handlers are a transform layer between data assembly and your component. They run per section, declared once in `foundation.js`, and let you reshape content before the component sees it. The most common use is Loom instantiation — resolving `{placeholder}` expressions in markdown against live data.
+Content handlers are a transform layer between data assembly and your component. They run per section, declared once in `main.js`, and let you reshape content before the component sees it. The most common use is Loom instantiation — resolving `{placeholder}` expressions in markdown against live data.
 
 ---
 
@@ -9,7 +9,7 @@ Content handlers are a transform layer between data assembly and your component.
 The foundation declares handlers as an object in its default export:
 
 ```js
-// foundation.js
+// src/main.js
 export default {
   handlers: {
     data:    (data, block) => { /* ... */ },
@@ -146,5 +146,5 @@ Both are rarely needed. The content handler covers most data-driven use cases.
 
 - [Data-Driven Sections](./data-driven-sections.md) -- Expressions, aggregation, and the repeat pattern
 - [Working with Data](./working-with-data.md) -- Data fetching and collections
-- [Foundation Configuration](../reference/foundation-config.md) -- Full foundation.js reference
+- [Foundation Configuration](../reference/foundation-config.md) -- Full main.js reference
 - [Component Metadata](../reference/component-metadata.md) -- The meta.js contract

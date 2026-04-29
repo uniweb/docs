@@ -196,6 +196,6 @@ The template includes: a profile collection (`collections/profile/darwin.yml`), 
 
 ## See Also
 
-- [Content Handlers](./content-handlers.md) -- Setting up the transform layer in foundation.js
+- [Content Handlers](./content-handlers.md) -- Setting up the transform layer in main.js
 - [Working with Data](./working-with-data.md) -- Data fetching, collections, and auto-wiring
 - [Content Collections](../reference/content-collections.md) -- Building collections from YAML and markdown

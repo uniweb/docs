@@ -131,7 +131,7 @@ main-site/
 │   │   └── page.yml        # rewrite: https://docs.university.edu
 │   └── research/
 │       └── page.yml        # rewrite: https://research.university.edu
-└── foundation/
+└── src/                    # Foundation package
 ```
 
 **Docs subsite (separate project):**
@@ -143,7 +143,7 @@ docs-site/
 │   ├── getting-started/
 │   ├── guides/
 │   └── reference/
-└── foundation/              # Different design system
+└── src/                     # Different design system
 ```
 
 **What the main site build produces:**

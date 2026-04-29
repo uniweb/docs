@@ -23,7 +23,7 @@ A theming environment applied per-section. The runtime wraps each section in a c
 A secondary foundation loaded at runtime via URL. Contributes section types but doesn't provide layouts or theme variables. Declared in `site.yml` under `extensions:`. See [Extending Your Site](../development/extending-your-site).
 
 **Foundation**
-A Vite library project containing React components. Lives in `foundation/` (or `foundations/*/`, `*/foundation/`). Builds to `foundation.js` + `schema.json`. Provides section types, layouts, and theme variable declarations. See [Building with Uniweb](../development/building-with-uniweb).
+A Vite library project containing React components — the site's source code. Lives in `src/` (single-foundation case), or `foundations/*/`, `*/src/` for multi-foundation layouts. Builds to `dist/foundation.js` + `dist/meta/schema.json`. Provides section types, layouts, and theme variable declarations. See [Building with Uniweb](../development/building-with-uniweb).
 
 **Frontmatter**
 The YAML block between `---` markers at the top of a markdown file. Contains `type:` (which component renders this section), `theme:`, params, and other configuration. This is the binding mechanism between content and code.
@@ -41,7 +41,7 @@ A file that declares a section type's interface: content expectations, params (w
 Configurable options for a section type, defined in `meta.js` and set by content authors in frontmatter. Examples: `variant: split`, `columns: 3`. The runtime guarantees defaults — components never need to check for missing params. See [Component Metadata](./component-metadata).
 
 **Project**
-In co-located layouts, a subdirectory that groups its own foundation and site (e.g., `marketing/foundation/` + `marketing/site/`). Created with `uniweb add --project`. See [Project Structures](../development/project-structures).
+In co-located layouts, a subdirectory that groups its own foundation and site (e.g., `marketing/src/` + `marketing/site/`). Created with `uniweb add project <name>`. See [Project Structures](../development/project-structures).
 
 **Section type**
 A React component in `src/sections/` that content authors can reference by name in frontmatter (`type: Hero`). Files and folders at the root of `src/sections/` are addressable by default. See [Creating Components](../development/creating-components).
@@ -50,7 +50,7 @@ A React component in `src/sections/` that content authors can reference by name 
 CSS variables (`--heading`, `--body`, `--section`, `--primary`, `--border`, etc.) that resolve differently per context. Components use these instead of hardcoded colors so they adapt to any theme automatically. See [Site Theming](./site-theming).
 
 **Site**
-A Vite app containing markdown content, configuration, and pages. Lives in `site/` (or `sites/*/`, `*/site/`). Has `pages/`, `layout/`, `site.yml`, and `theme.yml`. This is where content authors work. See [Building with Uniweb](../development/building-with-uniweb).
+A Vite app containing markdown content, configuration, and pages. Lives in `site/` (or `sites/*/`, `*/site/`). Has `pages/`, `layout/`, `site.yml`, and `theme.yml`. This is where content authors work. The site's bootstrap is `entry.js` (a 6-line file calling `start()` from `@uniweb/runtime` — never edited by hand). See [Building with Uniweb](../development/building-with-uniweb).
 
 **Workspace**
 The top-level directory created by `uniweb create` — a pnpm monorepo containing one or more foundations, sites, and extensions. Has `pnpm-workspace.yaml` and a root `package.json`. See [Project Structures](../development/project-structures).

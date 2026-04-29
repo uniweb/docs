@@ -33,12 +33,12 @@ Register your foundation on the Uniweb registry:
 uniweb publish
 ```
 
-Publishing makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The foundation name and version come from your `foundation.js` and `package.json`.
+Publishing makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The foundation's name and version come from `package.json` (the foundation's own `package.json::name` and `package.json::version`).
 
-Each version can only be published once. To publish an update, bump the version in `foundation.js`:
+Each version can only be published once. To publish an update, bump the version in `package.json`:
 
-```js
-export const version = '1.0.1'
+```json
+{ "name": "site-src", "version": "1.0.1" }
 ```
 
 ### Edit Access

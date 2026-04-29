@@ -33,7 +33,7 @@ That single line does three things:
 Your component reads it:
 
 ```jsx
-// foundation/src/sections/ArticleList/ArticleList.jsx
+// src/sections/ArticleList/ArticleList.jsx
 export default function ArticleList({ content, block }) {
   if (block.dataLoading) return <DataPlaceholder />
 
@@ -56,7 +56,7 @@ That's the full wiring. No `fetch()` call, no `useState`, no `useEffect`.
 If you want the editor to show schema hints, or want `prepare-props` to guarantee `content.data.articles` is an array, declare the entity type in `meta.js`:
 
 ```js
-// foundation/src/sections/ArticleList/meta.js
+// src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
   data: { entity: 'articles' },
@@ -266,7 +266,7 @@ fetch:
 **Component metadata:**
 
 ```js
-// foundation/src/sections/ProductGrid/meta.js
+// src/sections/ProductGrid/meta.js
 export default {
   title: 'Product Grid',
   data: { entity: 'products' },
@@ -274,7 +274,7 @@ export default {
 ```
 
 ```js
-// foundation/src/sections/ProductPage/meta.js
+// src/sections/ProductPage/meta.js
 export default {
   title: 'Product Page',
   data: { entity: 'products' },
@@ -321,7 +321,7 @@ That's one point on a spectrum. The spectrum exists because foundations can sit 
 | 3 — Transport + query compiler | Parses a query language and compiles it for the backend | That language | A foundation translating between a site's DSL and a backend's native query format |
 | 4 — Bundled data | Exactly what to ask and render | Minimal | Site-specific foundation; may just call `fetch()` in components |
 
-Positions 1 and 2 are the common ones. A portable foundation that needs auth, a custom base URL, or a specific response envelope writes a fetcher — declared on `foundation.js` — and keeps the author-visible surface unchanged.
+Positions 1 and 2 are the common ones. A portable foundation that needs auth, a custom base URL, or a specific response envelope writes a fetcher — declared on `main.js` — and keeps the author-visible surface unchanged.
 
 **The author-visible surface does not change.** Pages still write `data:` / `fetch:` in `page.yml`, components still read `content.data.{schema}`. A site can't tell whether its data came from the default URL fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
 
@@ -330,7 +330,7 @@ Positions 1 and 2 are the common ones. A portable foundation that needs auth, a 
 Full reference — object shape, cache-key knobs, extension merging — lives in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports). The minimum:
 
 ```js
-// foundation.js
+// src/main.js
 const myTransport = {
   async resolve(request, ctx) {
     const base = ctx.website.config?.fetcher?.myFoundation?.baseUrl

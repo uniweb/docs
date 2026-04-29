@@ -233,10 +233,10 @@ If the framework's dev mode is on, `rename:` entries targeting operators the sty
 
 ## When none of the styles fit
 
-Real backends outside these three shapes — Algolia, Typesense, Elasticsearch, GitHub's REST quirks, GraphQL-with-custom-extensions — need a **foundation-level named transport**. That's a few lines of JavaScript that a foundation developer writes once for the backend and exports from `foundation.js`:
+Real backends outside these three shapes — Algolia, Typesense, Elasticsearch, GitHub's REST quirks, GraphQL-with-custom-extensions — need a **foundation-level named transport**. That's a few lines of JavaScript that a foundation developer writes once for the backend and exports from `main.js`:
 
 ```js
-// foundation.js
+// src/main.js
 export default {
   transports: {
     myBackend: { resolve: async (request, ctx) => { /* ... */ } },

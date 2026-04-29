@@ -12,10 +12,9 @@ A Uniweb project is a workspace with two packages (or more, as it grows):
 
 ```
 my-project/
-├── foundation/              # React components (Vite library build)
-│   └── src/
-│       └── sections/
-│           └── Hero.jsx
+├── src/                     # React components (Vite library build) — the foundation
+│   └── sections/
+│       └── Hero.jsx
 ├── site/                    # Content + routing (Vite app)
 │   └── pages/
 │       └── home/
@@ -23,7 +22,7 @@ my-project/
 └── pnpm-workspace.yaml
 ```
 
-**Foundation** is a standard Vite library project. It builds to a single `foundation.js` bundle plus a `schema.json` that describes what's inside. Your React code lives here — components, hooks, styles, whatever you need.
+**Foundation** is a standard Vite library project, living in `src/` (the *site's source code* — that's the framing). It builds to a single `foundation.js` bundle plus a `schema.json` that describes what's inside. Your React code lives here — components, hooks, styles, whatever you need.
 
 **Site** is a standard Vite app with file-based routing. Each folder in `pages/` is a route. Markdown files inside a folder define the sections on that page. The runtime loads the foundation and renders the right component for each section.
 
@@ -130,7 +129,7 @@ Everything below is opt-in. A foundation that's just bare files in `sections/` w
 Add more files to `sections/`. Each `.jsx` file or folder at the root becomes a section type:
 
 ```
-foundation/src/sections/
+src/sections/
 ├── Hero.jsx
 ├── Features.jsx
 ├── Testimonial.jsx
@@ -146,7 +145,7 @@ Content authors can now use `type: Hero`, `type: Features`, `type: Testimonial`,
 When a component needs options — layout style, column count, whether to show an image — promote the bare file to a folder and add `meta.js`:
 
 ```
-foundation/src/sections/
+src/sections/
 └── Hero/
     ├── meta.js
     └── Hero.jsx
@@ -216,7 +215,7 @@ The progression from hardcoded to content-driven is natural. You start with a co
 A foundation declares what's customizable. A site sets the values. CSS variables bridge them:
 
 ```js
-// foundation.js
+// src/main.js
 export default {
   vars: {
     'header-height': { default: '4rem' },

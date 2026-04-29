@@ -164,17 +164,18 @@ The name you provide becomes both the directory name and the package name. `--pa
 
 | Command | Location | Package names |
 |---------|----------|---------------|
-| `add project docs` | `docs/foundation/` + `docs/site/` | `docs-foundation`, `docs-site` |
+| `add project docs` | `docs/src/` + `docs/site/` | `docs-src`, `docs-site` |
 
 **Foundation placement:**
 
-| Scenario | Command | Location |
-|----------|---------|----------|
-| First foundation | `add foundation` | `foundation/` |
-| First foundation, named | `add foundation ui` | `ui/` |
-| Existing co-located layout | `add foundation blog` | `blog/foundation/` |
-| Existing segregated layout | `add foundation blog` | `foundations/blog/` |
-| Explicit co-located | `add foundation --project docs` | `docs/foundation/` |
+| Scenario | Command | Location | Package name |
+|----------|---------|----------|--------------|
+| First foundation | `add foundation` | `src/` | `site-src` |
+| First foundation, named | `add foundation ui` | `foundations/ui/` | `ui` |
+| Existing co-located (`*/src` glob) | `add foundation blog` | `blog/src/` | `blog-src` |
+| Existing co-located (legacy `*/foundation` glob) | `add foundation blog` | `blog/foundation/` | `blog-foundation` |
+| Existing segregated layout | `add foundation blog` | `foundations/blog/` | `blog` |
+| Explicit co-located | `add foundation --project docs` | `docs/src/` | `docs-src` |
 
 **Site placement:**
 
@@ -248,7 +249,7 @@ The CLI auto-detects the project type:
 
 | Indicator | Type |
 |-----------|------|
-| `src/sections/`, `src/components/`, or `src/foundation.js` | Foundation |
+| `src/sections/`, `src/components/`, or `src/main.js` | Foundation |
 | `site.yml` or `pages/` | Site |
 | `pnpm-workspace.yaml` | Workspace (builds all) |
 
@@ -442,7 +443,7 @@ The doctor command checks your workspace and reports errors and warnings. Run it
 - Foundation is built (`dist/foundation.js` exists)
 
 **For each extension:**
-- Declares `extension: true` in `foundation.js`
+- Declares `extension: true` in `main.js`
 - Doesn't declare theme variables (`vars`) or layouts
 - Extension is built
 - Extension URLs in `site.yml` resolve to built extensions
@@ -606,16 +607,20 @@ Run from a foundation directory or workspace root. If the workspace has multiple
 | `--edit-access <policy>` | Set edit access: `open` (anyone) or `restricted` (invite-only, default) |
 | `--dry-run` | Show what would be published without publishing |
 
-### Namespace
+### Scope (where the foundation is published)
 
-A namespace (organization handle) is required for publishing. The CLI resolves it in priority order:
+Every published foundation is stored under a scope. The CLI accepts three scope shapes and picks one in this priority order:
 
-1. `--namespace` flag
-2. `package.json` → `"uniweb": { "namespace": "myorg" }`
-3. Scoped package name in `package.json` → `"name": "@myorg/foundation"` extracts `myorg`
-4. Scoped name declared in `src/foundation.js`'s default export (rare — most foundations export bare display names)
+1. **`--namespace <handle>` flag** — explicit org override.
+2. **Sigil in `package.json::name`**:
+   - `"name": "@myorg/foundation"` → org scope `@myorg/`. You must have EDITOR or higher access to the org (the `namespaces` claim in your JWT).
+   - `"name": "~me/foundation"` → personal alias scope (opt-in). Authorized when the alias matches your account.
+3. **`package.json` → `"uniweb": { "namespace": "myorg" }`** — legacy explicit field; equivalent to a `@myorg/...` scoped name.
+4. **Bare name** (e.g. `"name": "site-src"`) → empty scope. The server resolves it to your **personal scope**, anchored to your account's permanent `memberId`. The published name renders as `~<your-handle>/site-src` in the registry; you don't need to type the `~me/` prefix.
 
-You must have EDITOR or higher access to the organization. Available namespaces are listed in your JWT after `uniweb login`.
+The default scaffold uses bare names — `package.json::name: "site-src"` — so a fresh project just publishes under the developer's personal scope without any setup. Switch to an org scope when you're ready to publish under an organization you belong to.
+
+Available org namespaces are listed in your JWT after `uniweb login`.
 
 ### Foundation runtime policy
 
@@ -623,14 +628,15 @@ Foundations can declare a `runtimePolicy` field in `package.json` that controls 
 
 ```json
 {
-  "name": "@myorg/foundation",
+  "name": "site-src",
   "version": "1.0.0",
   "uniweb": {
-    "namespace": "myorg",
     "runtimePolicy": "auto-minor"
   }
 }
 ```
+
+(The bare `name` publishes under your personal scope by default. Use `"@myorg/foundation"` to publish under an organization. `uniweb.namespace` is the legacy explicit-override field; rarely needed.)
 
 | Value | Meaning |
 |-------|---------|
@@ -682,22 +688,26 @@ Use `--propagate` for:
 
 ### What Happens
 
-1. Reads `dist/meta/schema.json` for the foundation name and version (auto-builds if `dist/` is missing)
-2. Resolves namespace and constructs scoped name (`@namespace/name`)
-3. Checks namespace authorization against JWT
-4. Checks for duplicate versions
-5. Uploads the foundation bundle to R2 at `foundations/{namespace}/{name}/{version}/`
+1. Reads `dist/meta/schema.json` for the foundation name and version (auto-builds if `dist/` is missing).
+2. Resolves the scope per the priority above. For org or `~user/` scopes, attaches the sigil; for empty-scope publishes, sends the bare name to the server.
+3. Server authorizes the scope against the JWT (`namespaces[]` for org, `loginName`/`sub` for personal, `sub` for empty).
+4. Checks for duplicate versions.
+5. Uploads the foundation bundle. Org-scope storage path is `foundations/{org}/{name}/{version}/`; personal-scope storage is anchored on the immutable `memberId` (`foundations/u{sub}/{name}/{version}/`) so the URL renders as `~{handle}/{name}` without the storage moving when a handle changes.
 
 ### Examples
 
 ```bash
-# Publish with namespace from package.json (requires login)
+# Empty-scope publish (default for new scaffolds — publishes under your personal scope)
 uniweb publish
 
-# Explicit namespace override
+# Explicit org override
 uniweb publish --namespace myorg
 
-# Publish to local registry (no auth needed)
+# Personal alias scope (set in package.json::name as "~handle/foundation")
+# — published the same way as any other; no flag needed.
+
+# Publish to local registry (no auth needed; the local mock synthesizes
+# a personal-scope index entry that mirrors what production will write)
 uniweb publish --local
 
 # Preview what would be published
@@ -912,12 +922,12 @@ The CLI produces these workspace layouts:
 
 ```
 my-project/
-├── foundation/          # React components
-│   ├── src/
-│   │   ├── foundation.js
-│   │   ├── styles.css
-│   │   └── sections/
-│   ├── package.json
+├── src/                 # React components — the foundation package
+│   ├── main.js          # Foundation declarations (vars, defaultLayout, props, …)
+│   ├── styles.css
+│   ├── sections/
+│   ├── components/
+│   ├── package.json     # name: "site-src"
 │   └── vite.config.js
 ├── site/                # Content and configuration
 │   ├── pages/
@@ -933,7 +943,7 @@ my-project/
 
 ```
 my-project/
-├── foundation/             # Original foundation
+├── src/                    # Original foundation (name: "site-src")
 ├── site/                   # Original site
 ├── foundations/
 │   └── blog/               # Added: uniweb add foundation blog
@@ -950,11 +960,11 @@ my-project/
 ```
 my-workspace/
 ├── marketing/
-│   ├── foundation/
-│   └── site/
+│   ├── src/                # name: "marketing-src"
+│   └── site/               # name: "marketing-site"
 ├── docs/
-│   ├── foundation/
-│   └── site/
+│   ├── src/                # name: "docs-src"
+│   └── site/               # name: "docs-site"
 ├── package.json
 └── pnpm-workspace.yaml
 ```
@@ -969,7 +979,7 @@ The CLI auto-detects context:
 
 | Directory Contains | Detected As |
 |-------------------|-------------|
-| `src/sections/`, `src/components/`, or `src/foundation.js` | Foundation |
+| `src/sections/`, `src/components/`, or `src/main.js` | Foundation |
 | `site.yml` or `pages/` | Site |
 | `pnpm-workspace.yaml` | Workspace (builds all) |
 

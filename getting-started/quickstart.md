@@ -24,13 +24,16 @@ This creates a workspace with:
 
 ```
 my-site/
-├── foundation/          # Your React components
-│   └── src/sections/
+├── src/                 # Your React components — the foundation
+│   ├── main.js          # Foundation declarations
+│   └── sections/
 ├── site/                # Your content
 │   ├── pages/
-│   └── site.yml
+│   └── site.yml         # foundation: site-src
 └── pnpm-workspace.yaml
 ```
+
+A site is pure content; a foundation is the site's source code — that's why it lives in `src/`. The foundation package's `name` is `site-src` (set in `src/package.json`).
 
 ## Start Development
 
@@ -58,7 +61,7 @@ Create stunning websites with components and markdown.
 [Learn More](/about)
 ```
 
-This content renders through the `Hero` component in `foundation/src/sections/Hero/`.
+This content renders through the `Hero` component in `src/sections/Hero/`.
 
 **The pattern:**
 - `type: Hero` — Which component renders this section
@@ -77,7 +80,7 @@ Save. The page updates instantly.
 
 ## Edit a Component
 
-Open `foundation/src/sections/Hero.jsx` (or `Hero/Hero.jsx` if the template uses a folder). The component receives:
+Open `src/sections/Hero.jsx` (or `Hero/Hero.jsx` if the template uses a folder). The component receives:
 
 ```jsx
 export default function Hero({ content, params }) {
@@ -175,7 +178,7 @@ pnpm build
 ```
 
 This builds:
-1. The foundation → `foundation/dist/`
+1. The foundation → `src/dist/`
 2. The site → `site/dist/`
 
 With pre-rendering enabled (`build.prerender: true` in `site.yml`), you get static HTML:

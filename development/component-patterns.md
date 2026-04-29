@@ -46,7 +46,7 @@ src/
 ├── hooks/                   # Custom React hooks
 │   └── useScrollPosition.js
 ├── styles.css
-└── foundation.js
+└── main.js
 ```
 
 ### How discovery works
@@ -725,7 +725,7 @@ This is the recommended approach because real-world headers almost always have p
 For headers with no scroll-dependent behavior, target the runtime's `<header>` element directly in your foundation's stylesheet:
 
 ```css
-/* foundation/src/styles.css */
+/* src/styles.css */
 header {
   position: sticky;
   top: 0;
@@ -741,10 +741,10 @@ This lets `sticky` work naturally — the `<header>` itself becomes the sticky e
 
 ### Custom Layouts
 
-The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, the foundation provides a custom Layout via `src/foundation.js`:
+The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, the foundation provides a custom Layout via `src/main.js`:
 
 ```jsx
-// foundation/src/foundation.js
+// src/main.js
 import { SidebarLayout } from '@uniweb/kit'
 
 export default {

@@ -259,10 +259,10 @@ A foundation uses semantic tokens through Tailwind. The required setup:
 
 That's it. `theme-tokens.css` registers all semantic tokens and palette shades as Tailwind colors. You can now write `bg-card`, `text-heading`, `border-border`, `bg-primary-50`, etc.
 
-**Foundation-specific variables** (like `--radius`, `--header-height`) are declared in `foundation.js` and set by the site in `theme.yml`. These are separate from semantic tokens — they don't change with context:
+**Foundation-specific variables** (like `--radius`, `--header-height`) are declared in `main.js` and set by the site in `theme.yml`. These are separate from semantic tokens — they don't change with context:
 
 ```js
-// foundation.js
+// src/main.js
 export default {
   vars: {
     'radius': { default: '0.5rem' },

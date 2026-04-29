@@ -51,7 +51,7 @@ The conventional area names are `header`, `footer`, `left`, and `right`. These a
 The foundation's Layout component controls where areas appear:
 
 ```jsx
-// foundation/src/layouts/DocsLayout/index.jsx
+// src/layouts/DocsLayout/index.jsx
 export default function DocsLayout({ header, footer, left, right, body }) {
   return (
     <div className="layout">
@@ -264,7 +264,7 @@ See [Page Configuration](./page-configuration.md) for all visibility options.
 ### Header with Automatic Navigation
 
 ```jsx
-// foundation/src/sections/Header/index.jsx
+// src/sections/Header/index.jsx
 import { useWebsite } from '@uniweb/kit'
 
 export default function Header({ content }) {
@@ -300,7 +300,7 @@ export default function Header({ content }) {
 ### Footer with Locale Switcher
 
 ```jsx
-// foundation/src/sections/Footer/index.jsx
+// src/sections/Footer/index.jsx
 import { useWebsite, getLocaleLabel } from '@uniweb/kit'
 
 export default function Footer({ content }) {
@@ -333,7 +333,7 @@ export default function Footer({ content }) {
 ### Sidebar with Version Awareness
 
 ```jsx
-// foundation/src/sections/Sidebar/index.jsx
+// src/sections/Sidebar/index.jsx
 import { useVersion } from '@uniweb/kit'
 
 export default function Sidebar({ content }) {

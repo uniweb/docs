@@ -414,7 +414,7 @@ Foundations can define customizable CSS variables that sites override:
 
 ### Foundation Definition
 
-In `foundation/src/foundation.js`:
+In `src/main.js`:
 
 ```js
 export const vars = {

@@ -96,7 +96,7 @@ type: Article
 ### 4. Create your components
 
 ```js
-// foundation/src/sections/ArticleList/meta.js
+// src/sections/ArticleList/meta.js
 // `data:` is optional — delivery is default-on. Declaring `entity` lets
 // prepare-props guarantee shape and lets the editor show schema hints.
 export default {
@@ -106,7 +106,7 @@ export default {
 ```
 
 ```jsx
-// foundation/src/sections/ArticleList/index.jsx
+// src/sections/ArticleList/index.jsx
 export default function ArticleList({ content, block }) {
   if (block.dataLoading) {
     return <div className="animate-pulse">Loading...</div>
@@ -127,7 +127,7 @@ export default function ArticleList({ content, block }) {
 ```
 
 ```js
-// foundation/src/sections/Article/meta.js
+// src/sections/Article/meta.js
 export default {
   title: 'Article',
   data: { entity: 'articles' },
@@ -135,7 +135,7 @@ export default {
 ```
 
 ```jsx
-// foundation/src/sections/Article/index.jsx
+// src/sections/Article/index.jsx
 export default function Article({ content, block }) {
   if (block.dataLoading) {
     return <div className="animate-pulse">Loading...</div>

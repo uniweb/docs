@@ -44,7 +44,7 @@ The minimum viable migration. You create a Uniweb project, paste the entire orig
 **Foundation:**
 
 ```
-foundation/src/sections/
+src/sections/
 └── App.jsx         ← paste the entire file: Nav, Hero, Footer, everything
 ```
 
@@ -81,10 +81,10 @@ This level is useful when you need to get something live quickly and plan to imp
 
 This is where you break the monolith into separate section types — one per section — and give them names that describe what they _render_ rather than what they _say_. The content is still hardcoded in JSX, but the sections are now independent and reusable.
 
-Shared helpers like `Button`, `Badge`, `Section` move to `foundation/src/components/` — ordinary React components, imported by section types.
+Shared helpers like `Button`, `Badge`, `Section` move to `src/components/` — ordinary React components, imported by section types.
 
 ```
-foundation/src/
+src/
 ├── sections/            # Addressable — section types
 │   ├── Hero.jsx
 │   ├── SplitContent.jsx
@@ -156,7 +156,7 @@ The CCA approach: **one section type per clear purpose**. If you have three hero
 This is where a section type graduates from a bare file to a folder — because it now needs `meta.js` to declare the variant param, and it has sub-components to house.
 
 ```
-foundation/src/
+src/
 ├── sections/
 │   └── Hero/
 │       ├── meta.js          # Declares variant param

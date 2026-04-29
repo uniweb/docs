@@ -4,10 +4,10 @@ Build custom components for your foundation.
 
 ## Component Structure
 
-Each section type lives in its own folder under `foundation/src/sections/`:
+Each section type lives in its own folder under `src/sections/`:
 
 ```
-foundation/src/sections/
+src/sections/
 └── FeatureCard/
     ├── FeatureCard.jsx   # The React component (or index.jsx — both work)
     └── meta.js           # Content interface declaration
