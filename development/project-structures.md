@@ -4,7 +4,7 @@ A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uni
 
 This guide covers the workspace structures we've found work well, when to use each, and the concrete wiring that connects the pieces.
 
-> **The naming convention.** A site is pure content; a foundation is the site's source code. That's why a single-foundation workspace puts content in `site/` and code in `src/`. The foundation package's `name` is `site-src` (so it's unique alongside `site`), and `site/site.yml` references it as `foundation: site-src`. When you read `src/`, think "the source of this site"; when you read `site-src`, think "the package whose folder is `src` and whose role is the site's source."
+> **The naming convention.** A site is pure content; a foundation is the site's source code. That's why a single-foundation workspace puts content in `site/` and code in `src/`. See [Folder name vs package name](#4-folder-name-vs-package-name) below for why the foundation's `package.json::name` is `site-src` rather than just `src`.
 
 > **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. Use `uniweb add project` to create this structure in one step, or the `--project` flag on individual `add foundation`/`add site` commands.
 
@@ -50,6 +50,20 @@ foundation: site-src
 ```
 
 The value matches the package name from `package.json`. The build resolves the package through pnpm's workspace linking — the name just has to match.
+
+### 4. Folder name vs package name
+
+These are independent. The folder is what you see on disk; the package name is what pnpm and `site.yml` reference. A package's `name` is whatever its `package.json::name` says — the folder name is just a place.
+
+The convention this guide follows:
+
+| Layout | Folder | Package `name` |
+|---|---|---|
+| Single foundation | `src/` | `site-src` |
+| Co-located, multi-foundation | `marketing-src/`, `docs-src/`, … | `marketing-src`, `docs-src`, … (matches folder) |
+| Segregated, multi-foundation | `foundations/marketing/`, `foundations/docs/`, … | `marketing`, `docs`, … (parent `foundations/` disambiguates) |
+
+**Why `site-src` for the single-foundation case?** Two reasons. First, `src` alone isn't a valid Uniweb package name (it's reserved by the CLI's name validator — too generic to identify a package). Second, `site-src` reads as a noun phrase ("the source of the site"), which scales: in multi-foundation workspaces the same `<purpose>-src` pattern produces `marketing-src`, `docs-src`, `effects-src` — and there the folder names match. The single-foundation case is the one place where folder name (`src`) and package name (`site-src`) differ, because the folder gets to be bare while the package can't.
 
 That's the complete wiring. Workspace globs tell pnpm what's a package, `file:` tells the site where the foundation lives on disk, and `foundation:` tells the build which package it is. Everything else — directory names, nesting depth, number of packages — is convention.
 
