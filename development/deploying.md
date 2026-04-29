@@ -60,7 +60,7 @@ This is what you get when `site.yml` references the foundation by its workspace 
 foundation: src
 ```
 
-**When to use it.** A single site, a single foundation, a single team. You want a self-contained static bundle you can hand to any host. You don't need to update foundation code without rebuilding the site.
+**When to use it.** A single site, a single foundation, a single team. You want a self-contained static bundle you can hand to any host. You don't need a visual editor for content authors ([Uniweb App](https://uniweb.app)).
 
 ### Linked mode
 
@@ -92,9 +92,9 @@ A site enters linked mode automatically when its `foundation:` field is one of:
 
 The browser fetches `foundation.js` once and caches it. React, the JSX runtime, and `@uniweb/core` are resolved through an `<script type="importmap">` the site emits, so the foundation borrows the site's copy of those instead of shipping its own — no duplicate React, single component identity.
 
-**A foundation is not a library.** It has no programmatic API for other developers to consume. It is not on public npm. Its audience is content authors, who compose sites by writing `type: Hero` in markdown frontmatter — not developers calling `import { Hero }`. What linked mode delivers is a *federated ES module*: code addressed by URL and dynamically linked to a runtime. That is a deployment shape, not a developer-facing API.
+**A foundation is not a library.** It has no programmatic API for other developers to consume. It is not on public code. Its audience is licensed content authors, who compose sites by writing `type: Hero` in markdown frontmatter — not developers calling `import { Hero }`. What linked mode delivers is a *dynamically linked module*: an ES module addressed by URL and dynamically linked to a runtime. That is a deployment shape, not a developer-facing API.
 
-**When to use it.** More than one site shares the foundation, or foundation and sites have different release cadences, or you want updates to propagate to existing sites without redeploying each one.
+**When to use it.** More than one site shares the foundation, or foundation and sites have different release cadences, or you want to offer a visual editor to content authors via the [Uniweb App](https://uniweb.app).
 
 > **Bundled vs linked is about deployment, not foundation design.** A separate axis — whether a foundation hardcodes its data and theme or parameterizes them — is covered in [Foundation Categories](./foundation-categories.md). A foundation can be portable (parameterized) and bundled, or domain-specific and linked. The two choices compose independently.
 
