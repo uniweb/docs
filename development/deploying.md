@@ -126,34 +126,39 @@ The new site is just another sibling at the workspace root — no extra nesting.
 
 When you're ready to scale further — multiple foundations, segregated layouts, co-located projects (each with its own foundation+site pair), extensions that add specialized section types — the same workspace primitives compose. See [Project Structures](./project-structures.md) for the full menu of layouts, including when to use each.
 
-The deployment story doesn't change between layouts. Each site in the workspace deploys independently with `uniweb deploy`. The foundation is published once with `uniweb publish` (in linked mode) or bundled into each site's build (in bundled mode), and the choice is per-site — one site in the workspace can be linked while another is bundled.
+The deployment story doesn't change between layouts. Each site in the workspace deploys independently with `uniweb deploy`. For workspace-local foundations, `uniweb deploy` auto-publishes the foundation as part of the deploy under a site-scoped slot; you don't run `uniweb publish` separately unless the foundation is a deliberate catalog product.
 
 ---
 
-## Two verbs, in order
+## Three verbs, three intents
 
-In linked mode the foundation has to exist at a URL before a site can reference it. The order is:
-
-```bash
-# Linked mode — two artifacts, two destinations
-cd src && uniweb publish        # foundation → registry
-cd ../site && uniweb deploy     # site → host
-```
-
-```bash
-# Bundled mode — one artifact, one destination
-cd site && uniweb build         # produces a self-contained dist/
-# ship dist/ wherever
-```
-
-The verbs map to concepts:
+Each command does one thing. Pick by what you're trying to ship:
 
 | | What it sends | Where it goes |
 |---|---|---|
-| `uniweb publish` | Built foundation (`dist/foundation.js` + `schema.json`) | A registry — the Uniweb registry by default |
-| `uniweb deploy` | Built site (`dist/`) | A host — Uniweb hosting by default |
+| `uniweb deploy` | Built site (data only) + auto-published foundation | Uniweb-edge hosting |
+| `uniweb export` | Self-contained `dist/` (vite-built bundle) | Your filesystem; you upload to a third-party host |
+| `uniweb publish` | Built foundation as a catalog product | Uniweb registry, named, versioned, discoverable |
 
-`uniweb deploy` against a site whose `foundation:` is a workspace reference checks whether the foundation is already published (via its `dist/publish.json` receipt) and runs `uniweb publish` for you when it isn't, before deploying the site against the resulting registry version. The two-step nature is preserved internally; you type one command. If you want full control — to publish under an organization, set propagation flags, or stage a release — run `publish` and `deploy` separately.
+The common case is just `uniweb deploy`:
+
+```bash
+cd site && uniweb deploy        # site + workspace-local foundation, all-in-one
+```
+
+For a third-party static host:
+
+```bash
+cd site && uniweb export        # produces dist/ for Netlify, Vercel, GitHub Pages, S3, etc.
+```
+
+For cataloging a foundation as a product (other sites can pin to its versions):
+
+```bash
+cd src && uniweb publish @your-org/foundation-name
+```
+
+`uniweb publish` requires a deliberate name. Site-bound foundations don't use this command — they're auto-published by `uniweb deploy` under a slot scoped to the site, with no naming ceremony, no catalog visibility, and no developer-vs-site ownership confusion. If a foundation only powers one site, that's the right model; reach for `uniweb publish` only when you mean to ship the foundation as a product across multiple sites.
 
 ---
 

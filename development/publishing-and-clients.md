@@ -1,6 +1,8 @@
 # Publishing and Working with Clients
 
-After building a foundation, you have two paths to get clients started: **invite** them to create their own site, or **hand off** a populated site you built for them.
+This page covers **catalog publishing** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to publish it manually: just run `uniweb deploy` from the site directory and the CLI will auto-publish your foundation under a site-scoped slot as part of the deploy. See [Deploying](./deploying.md) for the site-bound flow.
+
+After building a foundation that you do want to catalog, you have two paths to get clients started: **invite** them to create their own site, or **hand off** a populated site you built for them.
 
 ## Prerequisites
 
@@ -27,13 +29,23 @@ This produces `dist/foundation.js` and `dist/meta/schema.json`. If you skip this
 
 ## Publishing
 
-Register your foundation on the Uniweb registry:
+Register your foundation on the Uniweb catalog:
 
 ```bash
-uniweb publish
+uniweb publish @your-org/foundation-name
 ```
 
-Publishing makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The foundation's name and version come from `package.json` (the foundation's own `package.json::name` and `package.json::version`).
+The name argument is required — `uniweb publish` is the deliberate "this foundation is a catalog product" command. Bare `uniweb publish` (with no name) errors out and points you at `uniweb deploy` for site-bound foundations.
+
+In CI, you also need `--catalog` to confirm the public-catalog publish:
+
+```bash
+uniweb publish @your-org/foundation-name --catalog
+```
+
+Interactive runs prompt for confirmation instead of requiring the flag.
+
+Publishing makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The version comes from `package.json::version`.
 
 Each version can only be published once. To publish an update, bump the version in `package.json`:
 
