@@ -24,7 +24,7 @@ These are independent operations. They can run on different schedules, by differ
 
 Most JavaScript frameworks (Next.js, Remix, Astro, Gatsby, SvelteKit) couple a site and its code into a single deployable unit. You build the app; the build emits HTML and JavaScript; the bundle *is* the site. There is no separate "library of components" that other sites can reuse without forking the repo.
 
-Uniweb supports that mode — we call it **bundled mode**, and it's a perfectly good choice for a single site with a single team. But Uniweb also supports a second mode, **linked mode**, in which the foundation lives at one URL and any number of sites load it from there at runtime. The site bundle is small (just the runtime, content, and theme); the foundation arrives separately on first page load.
+Uniweb supports that mode — we call it **standalone mode**, and it's a perfectly good choice for a single site with a single team. But Uniweb also supports a second mode, **linked mode**, in which the foundation lives at one URL and any number of sites load it from there at runtime. The site bundle is small (just the runtime, content, and theme); the foundation arrives separately on first page load.
 
 The reason this exists:
 
@@ -32,15 +32,15 @@ The reason this exists:
 - **Content authors and component developers don't share a release cycle.** Authors push content changes without touching code. Developers push foundation changes without coordinating with every site that uses them.
 - **Foundations as products.** A design studio publishes a portable foundation; clients adopt it. The foundation is the product; the clients' sites are the deliverables.
 
-Once you stop assuming the site and its code have to ship together, deployment options open up that the bundled model can't express.
+Once you stop assuming the site and its code have to ship together, deployment options open up that the standalone model can't express.
 
 ---
 
-## Bundled vs linked
+## Standalone vs linked
 
 A site picks its mode in `site.yml`. The framework auto-detects from the shape of the `foundation:` field — there is no `mode:` switch.
 
-### Bundled mode
+### Standalone mode
 
 The foundation source is bundled into the site at build time, the way any Vite app bundles its imports. One artifact, one deploy.
 
@@ -53,14 +53,31 @@ site/dist/
 └── ...
 ```
 
-This is what you get when `site.yml` references the foundation by its workspace package name:
+You get standalone mode when the `foundation:` declaration resolves to a workspace-local source. Two equally valid patterns:
 
 ```yaml
-# site/site.yml
+# site/site.yml — bare workspace name
 foundation: src
 ```
 
-**When to use it.** A single site, a single foundation, a single team. You want a self-contained static bundle you can hand to any host. You don't need a visual editor for content authors ([Uniweb App](https://uniweb.app)).
+```yaml
+# site/site.yml — canonical scoped name
+foundation: '@your-org/marketing'
+```
+
+The second form is the natural pattern when the foundation has a stable identity it would carry into the catalog if/when published. Pair it with a `file:` dep in the site's `package.json` so the framework knows where to find the local source:
+
+```json
+{
+  "dependencies": {
+    "@your-org/marketing": "file:../foundations/marketing"
+  }
+}
+```
+
+The site references the foundation by its canonical name; the package.json maps that name to the on-disk location. When you later publish the foundation to the catalog as `@your-org/marketing@0.1.2`, only the package.json (or the `site.yml` line — adding a version pin) needs to change. The canonical name in `site.yml` stays put.
+
+**When to use standalone.** A single site, a single foundation, a single team. You want a self-contained static bundle you can hand to any host. You don't need a visual editor for content authors ([Uniweb App](https://uniweb.app)).
 
 ### Linked mode
 
@@ -96,7 +113,7 @@ The browser fetches `foundation.js` once and caches it. React, the JSX runtime, 
 
 **When to use it.** More than one site shares the foundation, or foundation and sites have different release cadences, or you want to offer a visual editor to content authors via the [Uniweb App](https://uniweb.app).
 
-> **Bundled vs linked is about deployment, not foundation design.** A separate axis — whether a foundation hardcodes its data and theme or parameterizes them — is covered in [Foundation Categories](./foundation-categories.md). A foundation can be portable (parameterized) and bundled, or domain-specific and linked. The two choices compose independently.
+> **Standalone vs linked is about deployment, not foundation design.** A separate axis — whether a foundation hardcodes its data and theme or parameterizes them — is covered in [Foundation Categories](./foundation-categories.md). A foundation can be portable (parameterized) and standalone, or domain-specific and linked. The two choices compose independently.
 
 ---
 
@@ -126,7 +143,7 @@ The new site is just another sibling at the workspace root — no extra nesting.
 
 When you're ready to scale further — multiple foundations, segregated layouts, co-located projects (each with its own foundation+site pair), extensions that add specialized section types — the same workspace primitives compose. See [Project Structures](./project-structures.md) for the full menu of layouts, including when to use each.
 
-The deployment story doesn't change between layouts. Each site in the workspace deploys independently with `uniweb deploy`. For workspace-local foundations, `uniweb deploy` auto-publishes the foundation as part of the deploy under a site-scoped slot; you don't run `uniweb publish` separately unless the foundation is a deliberate catalog product.
+The deployment story doesn't change between layouts. Each site in the workspace deploys independently with `uniweb deploy`. For workspace-local foundations, `uniweb deploy` auto-publishes the foundation **site-bound** — uploaded with the site's other published assets, never to the catalog. You don't run `uniweb publish` separately unless the foundation is a deliberate catalog product (a foundation you want to share across sites or expose in the Uniweb App's catalog).
 
 ---
 
@@ -136,8 +153,8 @@ Each command does one thing. Pick by what you're trying to ship:
 
 | | What it sends | Where it goes |
 |---|---|---|
-| `uniweb deploy` | Built site (data only) + auto-published foundation | Uniweb-edge hosting |
-| `uniweb export` | Self-contained `dist/` (vite-built bundle) | Your filesystem; you upload to a third-party host |
+| `uniweb deploy` | Built site + (if local) site-bound foundation | Uniweb hosting (default), or any static host via `--host=<adapter>` |
+| `uniweb export` | Self-contained `dist/` for any static host | Your filesystem; you upload manually |
 | `uniweb publish` | Built foundation as a catalog product | Uniweb registry, named, versioned, discoverable |
 
 The common case is just `uniweb deploy`:
@@ -146,10 +163,11 @@ The common case is just `uniweb deploy`:
 cd site && uniweb deploy        # site + workspace-local foundation, all-in-one
 ```
 
-For a third-party static host:
+For a third-party static host, `uniweb deploy --host=<adapter>` builds and uploads in one step. Built-in adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `generic-static`. Or use `uniweb export` to produce `dist/` for manual upload to any host:
 
 ```bash
-cd site && uniweb export        # produces dist/ for Netlify, Vercel, GitHub Pages, S3, etc.
+cd site && uniweb deploy --host=cloudflare-pages   # build + upload
+cd site && uniweb export                            # build only; you upload
 ```
 
 For cataloging a foundation as a product (other sites can pin to its versions):
@@ -158,7 +176,7 @@ For cataloging a foundation as a product (other sites can pin to its versions):
 cd src && uniweb publish @your-org/foundation-name
 ```
 
-`uniweb publish` requires a deliberate name. Site-bound foundations don't use this command — they're auto-published by `uniweb deploy` under a slot scoped to the site, with no naming ceremony, no catalog visibility, and no developer-vs-site ownership confusion. If a foundation only powers one site, that's the right model; reach for `uniweb publish` only when you mean to ship the foundation as a product across multiple sites.
+`uniweb publish` requires a deliberate `@org/name` namespace. Site-bound foundations don't use this command — they're auto-published by `uniweb deploy` and stored alongside the site's own assets, never reaching the catalog. No naming ceremony, no catalog visibility, no cross-site exposure. If a foundation only powers one site, that's the right model; reach for `uniweb publish` only when you mean to ship the foundation as a product across multiple sites.
 
 ---
 
@@ -166,8 +184,10 @@ cd src && uniweb publish @your-org/foundation-name
 
 The shortest path. Uniweb provides:
 
-- A free **registry** for foundation publishing — under your personal scope, an organization you belong to, or a public scope.
+- A free **registry** for foundation publishing — under an organization namespace (`@org/name`) you own or belong to.
 - A **hosting platform** that serves sites with edge SSR, locale-aware routing, and automatic propagation of foundation and runtime updates to consenting sites.
+
+Site-bound foundations don't go to the registry at all — they're uploaded with the site's own assets when you run `uniweb deploy`. The registry is for cataloged foundations: foundations you intend to share across sites or expose to content authors via the catalog.
 
 ```bash
 # One-time setup
@@ -229,35 +249,47 @@ This is one of the things you give up when you don't deploy to the Uniweb platfo
 The Uniweb registry and hosting are conveniences, not requirements. The framework doesn't lock you to either. You can:
 
 - Publish a foundation to any HTTPS URL, and consume it from any site.
-- Deploy a site to any static host (bundled or linked).
+- Deploy a site to any static host (standalone or linked).
 - Mix providers — host the foundation in one place, the site in another.
 
-### Site on a generic static host (bundled mode)
+### Site to a static host with a built-in adapter
 
-A built bundled-mode site is a standard Vite output. It deploys to any static host:
+`uniweb deploy --host=<adapter>` handles the host's quirks (directory-index resolution, redirect helpers, cache headers) and runs the upload + invalidation in one step. Configure the destination in `site.yml`:
+
+```yaml
+# site/site.yml
+deploy:
+  host: cloudflare-pages
+```
+
+Then deploy:
+
+```bash
+cd site && uniweb deploy
+```
+
+`--host=<adapter>` on the command line overrides `site.yml` for one-off deploys. Built-in adapters:
+
+| Adapter | What the adapter handles |
+|---|---|
+| `cloudflare-pages` | Emits `_redirects` for `redirect:` / `rewrite:` directives. Same format works for Netlify deploys. No upload step (push to git, host pulls). |
+| `github-pages` | Emits `.nojekyll` so directories starting with `_` aren't silently stripped. No upload step (push to your `gh-pages` branch, GitHub serves it). |
+| `s3-cloudfront` | Emits a CloudFront Function (URI-rewrite for directory-index) plus a deploy manifest. Runs `aws s3 sync` and `aws cloudfront create-invalidation` — requires the `aws` CLI on PATH and standard AWS credentials. Configure `bucket`, `distributionId`, `region` in `site.yml`'s `deploy:` block. |
+| `generic-static` | No host-specific output. Use when the host needs nothing extra and you just want `uniweb build` semantics in the deploy command. |
+
+For hosts not in the built-in list, use `uniweb export` to produce `dist/` and upload manually:
 
 ```bash
 cd site
-uniweb build
+uniweb export
 # Output: site/dist/
 
-# Vercel
-vercel --prod
-
-# Netlify
-netlify deploy --prod --dir=dist
-
-# Cloudflare Pages
-wrangler pages deploy dist
-
-# GitHub Pages
-npx gh-pages -d dist
-
-# AWS S3
-aws s3 sync dist/ s3://your-bucket --delete
+# Then upload with the host's own tooling, e.g.:
+vercel --prod                              # Vercel
+aws s3 sync dist/ s3://your-bucket --delete  # plain S3 (no CloudFront)
 ```
 
-The bundle is self-contained; the host doesn't need to know anything about Uniweb. See [Static hosting](../reference/deployment.md) for per-host configuration: base paths under subdirectories, SPA fallback for unknown routes, GitHub Pages routing rules.
+The artifact is self-contained; the host doesn't need to know anything about Uniweb. See [Static hosting](../reference/deployment.md) for per-host notes on subdirectory base paths, SPA fallback for unknown routes, and other rare cases.
 
 ### Foundation on GitHub Pages
 
@@ -341,7 +373,7 @@ The two destinations don't have to be the same provider. Realistic combinations:
 | Uniweb registry | Uniweb hosting | Easiest. Propagation, gated rollouts, edge SSR. |
 | Uniweb registry | Vercel / Netlify / GH Pages | Linked mode against the registry URL; the site is a generic static deploy. No platform-driven propagation, but the foundation URL's version is fixed in the site's `site.yml`. |
 | GH Pages / S3 / etc. | Vercel / Netlify / GH Pages | Fully self-hosted. No platform dependencies. Move forward by editing the foundation URL in `site.yml` and redeploying. |
-| (none — bundled) | Anywhere static | Bundled mode. Foundation source is in the site bundle. |
+| (none — standalone) | Anywhere static | Standalone mode. Foundation source is in the site bundle. |
 
 Uniweb hosting is currently optimized for foundations served from the Uniweb registry — that's the path the propagation system and edge SSR are built around. Sites hosted on Uniweb but pointing at an external foundation URL fall outside the propagation system. Sites hosted elsewhere can point anywhere.
 
@@ -356,13 +388,13 @@ A foundation is **published**. A site is **deployed**. They answer different que
 | Where does this code live so other sites can use it? | A registry, or any HTTPS URL. `uniweb publish` writes here. |
 | Where does this site live so visitors can read it? | A host — Uniweb hosting, or any static host. `uniweb deploy` writes here. |
 
-In bundled mode, the two collapse — the site bundle contains the foundation's code, so deploying the site is the only step. There is no separate "where does the foundation live?" because the answer is "inside the site."
+In standalone mode, the two collapse — the site bundle contains the foundation's code, so deploying the site is the only step. There is no separate "where does the foundation live?" because the answer is "inside the site."
 
 In linked mode, the two are explicit and ordered. Publish the foundation first; deploy the site that references it. They can run on different schedules, in different repos, by different people. A foundation can serve sites on multiple hosts at once. A site can switch foundations without changing where it's hosted. A team can update the foundation without touching any site, and have the change reach existing sites through propagation (on the Uniweb platform) or through a one-line edit in `site.yml` (everywhere else).
 
-The CLI lets you blend the two when convenient — `uniweb deploy` will auto-publish a workspace foundation that hasn't been published yet — but it does not erase the distinction. The framework knows about both verbs, in both orders, against both kinds of destinations. That awareness is what lets you start with the bundled-mode default and grow into linked mode without restructuring the project, or run a foundation as a product across many sites without funneling everything through one repo.
+The CLI lets you blend the two when convenient — `uniweb deploy` will auto-publish a workspace foundation site-bound when it hasn't been deployed yet — but it does not erase the distinction. The framework knows about both verbs, in both orders, against both kinds of destinations. That awareness is what lets you start with the standalone-mode default and grow into linked mode without restructuring the project, or run a foundation as a product across many sites without funneling everything through one repo.
 
-You don't have to pick upfront. Most projects start bundled — that's what `pnpm create uniweb` produces — and many stay bundled forever. The ones that need to share a foundation, or want propagation, get linked mode by changing one line in `site.yml`. The build, the runtime, and the CLI already know how to handle both.
+You don't have to pick upfront. Most projects start standalone — that's what `pnpm create uniweb` produces — and many stay standalone forever. The ones that need to share a foundation, or want propagation, get linked mode by changing one line in `site.yml`. The build, the runtime, and the CLI already know how to handle both.
 
 ---
 
@@ -370,7 +402,7 @@ You don't have to pick upfront. Most projects start bundled — that's what `pnp
 
 - **[Building with Uniweb](./building-with-uniweb.md)** — The two-package model and how content connects to components.
 - **[Project Structures](./project-structures.md)** — Workspace layouts: single, segregated, co-located, extensions.
-- **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable on the foundation-design axis (orthogonal to bundled vs linked deployment).
+- **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable on the foundation-design axis (orthogonal to standalone vs linked deployment).
 - **[Publishing and Clients](./publishing-and-clients.md)** — Invite and handoff workflows for getting a site into a content author's hands.
 - **[CLI Commands](../reference/cli-commands.md)** — Full reference for `uniweb publish`, `uniweb deploy`, runtime policy, and propagation flags.
 - **[Static Hosting](../reference/deployment.md)** — Per-host recipes for Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, and self-hosted servers.
