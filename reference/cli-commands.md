@@ -894,7 +894,7 @@ uniweb handoff client@example.com --web
 
 ## uniweb deploy
 
-Deploy a built site to Uniweb hosting.
+Deploy a site. The destination depends on `deploy.host:` in the site's `site.yml` (default: `uniweb` — Uniweb hosting).
 
 ```bash
 uniweb deploy [options]
@@ -906,36 +906,62 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 
 | Option | Description |
 |--------|-------------|
-| `--local` | Deploy to local server (no auth required) |
-| `--registry <url>` | Deploy to a specific server URL |
-| `--dry-run` | Show what would be deployed without deploying |
+| `--host <adapter>` | Override `deploy.host:` in site.yml. Built-in adapters: `uniweb` (default), `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `generic-static`. |
+| `--dry-run` | Show what would be deployed without deploying. |
+| `--no-auto-publish` | Don't auto-publish a workspace-local foundation as part of the deploy. (Default behavior is to auto-publish site-bound.) |
 
 ### What Happens
 
-1. Reads the site's `dist/` directory (auto-builds if missing)
-2. Derives a site ID from `package.json` name or directory name
-3. Uploads all files to the server
-4. The site is served at the deployment URL
+The default flow (`uniweb` host):
+
+1. Reads `site.yml`. Validates the `foundation:` declaration.
+2. Detects whether the foundation is workspace-local or a registry ref. If local, prepares to auto-publish it site-bound.
+3. Authenticates with the platform (`uniweb login` if needed). First deploy of a new site opens a browser to confirm name, plan, and (if applicable) payment.
+4. Builds `dist/` (link mode — emits content + assets only, no JS bundle).
+5. Uploads content + assets + (if applicable) the local foundation, all addressed under the site's per-site storage.
+
+The static-host flow (`--host=<adapter>` other than `uniweb`):
+
+1. Reads `site.yml` and `deploy:` block; validates the adapter and its required config.
+2. Builds `dist/` in bundle mode (`uniweb build --bundle`) with the adapter's `postBuild` hook (e.g., `_redirects`, `.nojekyll`, `cloudfront-function.js`).
+3. Hands `dist/` to the adapter's `deploy` hook for upload + invalidation. Errors from the adapter (missing AWS CLI, expired credentials, missing config, etc.) surface as friendly messages with hints.
 
 ### Examples
 
 ```bash
-# Deploy to Uniweb hosting (requires login)
+# Deploy to Uniweb hosting (default; requires `uniweb login`)
 uniweb deploy
 
-# Deploy to local server
-uniweb deploy --local
+# Static-host deploy to S3 + CloudFront (configure deploy: in site.yml)
+uniweb deploy --host=s3-cloudfront
+
+# Static-host deploy to Cloudflare Pages
+uniweb deploy --host=cloudflare-pages
 
 # Preview what would be deployed
 uniweb deploy --dry-run
 
-# Deploy to a custom server
-uniweb deploy --registry http://localhost:4001
+# Skip auto-publishing the workspace-local foundation
+uniweb deploy --no-auto-publish
 ```
+
+### Configuring the destination in `site.yml`
+
+```yaml
+# site.yml
+deploy:
+  host: s3-cloudfront
+  bucket: my-bucket
+  distributionId: E1ABC...
+  region: us-east-1
+  profile: my-aws-profile    # optional; sets AWS_PROFILE for the subprocess
+```
+
+The `--host=<adapter>` flag on the command line overrides `deploy.host:`. Adapter-specific fields (`bucket`, `distributionId`, etc.) live under `deploy:` in `site.yml`.
 
 ### Static Hosting Alternative
 
-The `dist/` folder is a standard Vite static build. You can also deploy to any static host (Vercel, Netlify, GitHub Pages, etc.) — see [Deployment](./deployment.md) for details.
+For hosts not covered by a built-in adapter, use `uniweb export` to produce `dist/` and upload manually — see [Deployment](./deployment.md) for per-host recipes.
 
 ---
 
