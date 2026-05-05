@@ -506,6 +506,13 @@ uniweb deploy        # default host: 'uniweb' — Uniweb hosting
 
 The CLI auto-builds if `dist/` is missing. The first deploy of a new site opens a browser to confirm the site name, plan, and (if the site uses paid features such as a custom domain) payment. Subsequent deploys are silent.
 
+Uniweb hosting always serves linked-mode sites — the foundation is a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Two flavours:
+
+- **Site-bound** — `foundation: ~self/<name>@<version>` in `site.yml`. The foundation rides with the site; `uniweb deploy` builds and uploads everything together. Served from the site's own origin (e.g., `https://www.uniweb.io/_module/io/0.1.2/entry.js`). One repo, one workflow.
+- **Cataloged** — `foundation: '@<org>/<name>@<version>'` in `site.yml`. The foundation is a catalog product, published once via `uniweb publish` and licensed to consuming sites. Served from the catalog's CDN.
+
+Both flavours get the same edge serving (JIT prerender, locale routing, Tier 0–3 caching, version propagation). See [Deploying](../development/deploying.md#two-flavours-of-linked-site-bound-vs-cataloged) for the full picture.
+
 ### Options
 
 ```bash
@@ -515,8 +522,11 @@ uniweb deploy --dry-run
 # Skip auto-publishing a workspace-local foundation as part of the deploy
 uniweb deploy --no-auto-publish
 
-# Override `deploy.host:` in site.yml
+# Override the resolved deploy.yml target's host (one-off; not saved)
 uniweb deploy --host=cloudflare-pages
+
+# Pick a non-default target from deploy.yml
+uniweb deploy --target=preview
 ```
 
 Uniweb hosting requires authentication — run `uniweb login` first.
@@ -527,9 +537,11 @@ For the full developer-to-client workflow (publishing foundations, creating invi
 
 ## Publishing a foundation to the catalog
 
-Foundations are runtime federated modules — **not npm packages.** They're not libraries for developers to import; they're vocabularies of section types that content authors compose sites from. The framework has no `npm publish` path for foundations and the registry is not on npm.
+Foundations are runtime federated modules — **not npm packages.** They're not libraries for developers to import; they're vocabularies of section types that content authors compose sites from. The framework has no `npm publish` path for foundations and the catalog is not on npm.
 
-To publish a foundation as a catalog product (so multiple sites can pin to its versions, content authors can discover it, and propagation can move sites forward without redeploying):
+The Uniweb catalog is a private, access-segregated inventory of commercial foundation products. You see only the foundations you own or are a registered editor of; clients see only the foundations licensed to their sites. Foundations are typically built by developers and agencies for paying clients; clients receive a license to use the foundation on a specific site, and that license rides with site ownership when sites are transferred.
+
+To publish a foundation as a catalog product (so it can be licensed across multiple sites, and propagation can move sites forward without redeploying):
 
 ```bash
 cd foundation         # the foundation's directory
