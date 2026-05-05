@@ -2,6 +2,8 @@
 
 A Uniweb project produces two artifacts, not one. Understanding why is the shortcut to understanding every deployment option Uniweb supports — including the ones other frameworks don't.
 
+> **In a hurry?** Free static hosts (Vercel, Netlify, Cloudflare Pages, GitHub Pages) work great for "I have a site, I want to publish it." See [Picking a deploy path](#picking-a-deploy-path) below to decide.
+
 ---
 
 ## Two artifacts
@@ -180,6 +182,48 @@ cd src && uniweb publish @your-org/foundation-name
 
 ---
 
+## Picking a deploy path
+
+The framework has no preferred host. The right choice depends on what you're trying to ship.
+
+| | Uniweb hosting | Free static hosts (Vercel, CF Pages, Netlify, GH Pages) | AWS S3 + CloudFront |
+|---|---|---|---|
+| **Cost** | Paid — starts at $14/month per site | Free for typical sites; paid tiers for high traffic | Pay-as-you-go AWS |
+| **Best for** | Foundation developers and agencies whose clients are non-technical content authors | Developers shipping their own site to a known audience | Teams already on AWS, custom origin requirements |
+| **Lifecycle** | `uniweb deploy` (CLI-push) | Push to GitHub, host runs the build (Git-driven) | `uniweb deploy --host=s3-cloudfront` (CLI-push) |
+| **Foundation mode** | **Linked** or **site-bound** — share one foundation across many sites; updates propagate without redeploying each site | **Standalone** — foundation inlined into the site bundle; no propagation, no cross-site sharing | Either; static hosts work best with standalone |
+| **Visual editor for content authors** | Yes — [Uniweb App](https://uniweb.app) (web + desktop) | No | No |
+| **Multi-site CMS** | Yes — content authors manage sites independently of the developer | No — each site is a static deploy | No |
+| **JIT prerender + edge SSR** | Yes | No (host runs the build, then serves files) | No |
+
+### Why uniweb hosting starts at a price
+
+Uniweb hosting is not a cheaper Vercel — it's a different product. It exists to support a specific shape of team:
+
+- **A developer or agency builds a foundation** (one or several, for different clients).
+- **Clients (non-technical authors) compose their sites** through the Uniweb App's visual editor, web or desktop.
+- **The web app is also a CMS** that holds live content with a life independent of any one site — content can be reshaped, re-themed, and re-published without touching the foundation.
+- **Foundation updates propagate** through the registry to consenting sites — bug fixes and new section types reach every client that opted in, without anyone redeploying.
+
+That ecosystem is what costs money to operate (edge SSR, JIT prerender, multi-tenant CMS, propagation gates, registry CDN). It's also what most "static hosting" doesn't offer at any price.
+
+If you don't need that — if you're building one site for one team and you'll deploy it yourself — a free static host is the right call. The framework was designed so neither choice is a trap. The same code base runs on both. Move from one to the other by changing one line in `deploy.yml`.
+
+### Why free static hosts work well
+
+Free static hosts (Vercel, Cloudflare Pages, Netlify, GitHub Pages) are excellent at "I have a site, I want to publish it." They:
+
+- Connect to GitHub and auto-deploy on each push (Git-driven).
+- Serve files from a global CDN with sensible defaults (directory-index resolution, asset caching, SPA fallback).
+- Charge nothing for typical site traffic.
+- Offer their own preview-deploy, custom-domain, and analytics features.
+
+They don't try to be a CMS. They don't have a visual editor for content authors. They don't propagate foundation updates across sites. They serve files — and that's exactly what most one-team-one-site projects need.
+
+In Uniweb terms, free static hosts pair naturally with **standalone mode**: the foundation is bundled into the site's `dist/` and the host serves the result. **Linked mode** also works against any URL the host can reach, including the Uniweb registry's CDN — useful when you want one foundation across multiple sites but don't need the rest of the platform's features.
+
+---
+
 ## Practical: deploying with the Uniweb platform
 
 The shortest path. Uniweb provides:
@@ -254,12 +298,16 @@ The Uniweb registry and hosting are conveniences, not requirements. The framewor
 
 ### Site to a static host with a built-in adapter
 
-`uniweb deploy --host=<adapter>` handles the host's quirks (directory-index resolution, redirect helpers, cache headers) and runs the upload + invalidation in one step. Configure the destination in `site.yml`:
+The framework ships adapters that know each host's quirks (directory-index resolution, redirect helpers, cache headers) and emit the right helper files into `dist/`. Some adapters also run the upload + invalidation step (`s3-cloudfront`); others run in **Git-driven** mode where the host runs the build itself (`vercel`, `cloudflare-pages`, `netlify`, `github-pages`).
+
+Configure the destination in `deploy.yml`, a sibling of `site.yml`:
 
 ```yaml
-# site/site.yml
-deploy:
-  host: cloudflare-pages
+# site/deploy.yml — safe to commit
+default: production
+targets:
+  production:
+    host: cloudflare-pages   # or vercel, netlify, github-pages, s3-cloudfront, generic-static, uniweb
 ```
 
 Then deploy:
@@ -268,14 +316,18 @@ Then deploy:
 cd site && uniweb deploy
 ```
 
-`--host=<adapter>` on the command line overrides `site.yml` for one-off deploys. Built-in adapters:
+`--host=<adapter>` on the command line overrides the resolved target's host for one-off experiments (no save). `--target=<name>` selects a non-default target.
 
-| Adapter | What the adapter handles |
-|---|---|
-| `cloudflare-pages` | Emits `_redirects` for `redirect:` / `rewrite:` directives. Same format works for Netlify deploys. No upload step (push to git, host pulls). |
-| `github-pages` | Emits `.nojekyll` so directories starting with `_` aren't silently stripped. No upload step (push to your `gh-pages` branch, GitHub serves it). |
-| `s3-cloudfront` | Emits a CloudFront Function (URI-rewrite for directory-index) plus a deploy manifest. Runs `aws s3 sync` and `aws cloudfront create-invalidation` — requires the `aws` CLI on PATH and standard AWS credentials. Configure `bucket`, `distributionId`, `region` in `site.yml`'s `deploy:` block. |
-| `generic-static` | No host-specific output. Use when the host needs nothing extra and you just want `uniweb build` semantics in the deploy command. |
+Built-in adapters:
+
+| Adapter | Lifecycle | What the adapter handles |
+|---|---|---|
+| `vercel` | Git-driven | No helper files needed (Vercel handles directory-index + caching natively). The build's CI-context detection picks this automatically when `VERCEL=1`. |
+| `cloudflare-pages` | Git-driven | Emits `_redirects` for `redirect:` / `rewrite:` directives. Auto-detected when `CF_PAGES=1`. |
+| `netlify` | Git-driven | Alias of `cloudflare-pages` (same `_redirects` format). The deploy manifest still records `host: netlify`. Auto-detected when `NETLIFY=true`. |
+| `github-pages` | Git-driven (Actions) | Emits `.nojekyll` so directories starting with `_` aren't silently stripped. |
+| `s3-cloudfront` | CLI-push | Emits a CloudFront Function (URI rewrite for directory-index) plus a deploy manifest. Runs `aws s3 sync` and `aws cloudfront create-invalidation` — requires the `aws` CLI on PATH and standard AWS credentials. Configure `bucket`, `distributionId`, `region` under the target. |
+| `generic-static` | — | No host-specific output. Use when the host needs nothing extra. |
 
 For hosts not in the built-in list, use `uniweb export` to produce `dist/` and upload manually:
 
@@ -290,6 +342,21 @@ aws s3 sync dist/ s3://your-bucket --delete  # plain S3 (no CloudFront)
 ```
 
 The artifact is self-contained; the host doesn't need to know anything about Uniweb. See [Static hosting](../reference/deployment.md) for per-host notes on subdirectory base paths, SPA fallback for unknown routes, and other rare cases.
+
+### CI-context auto-detection
+
+When `uniweb build` runs in a CI environment owned by a known static host, the build reads the host's well-known env vars and picks the matching adapter automatically. No `--host` flag is needed when the CI host *is* the deploy target:
+
+| Detected env | Adapter selected | Branch / SHA / URL captured |
+|---|---|---|
+| `VERCEL=1` | `vercel` | `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_URL`, `VERCEL_ENV` |
+| `CF_PAGES=1` | `cloudflare-pages` | `CF_PAGES_BRANCH`, `CF_PAGES_COMMIT_SHA`, `CF_PAGES_URL` |
+| `NETLIFY=true` | `netlify` | `BRANCH`, `COMMIT_REF`, `DEPLOY_PRIME_URL`, `CONTEXT` |
+| `GITHUB_ACTIONS=true` | (none — see below) | `GITHUB_REF_NAME`, `GITHUB_SHA` |
+
+GitHub Actions is treated as a runner, not a host. A GHA workflow can deploy anywhere — the framework records the runner metadata but won't default `--host` from `GITHUB_ACTIONS=true`. If your GHA workflow is deploying to GitHub Pages, set `host: github-pages` in `deploy.yml` (or pass `--host=github-pages` to the build step).
+
+Provenance from the detected context is recorded into the deploy manifest (e.g., `dist/.uniweb-deploy-manifest.json` for `s3-cloudfront`) so the on-disk artifact is honest about where it was built.
 
 ### Foundation on GitHub Pages
 

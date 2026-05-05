@@ -64,33 +64,61 @@ Most sites should enable pre-rendering.
 | Command | What it does |
 |---|---|
 | `uniweb deploy` | Default. Deploys to Uniweb hosting — edge SSR, locale-aware routing, foundation propagation. Requires `uniweb login`. |
-| `uniweb deploy --host=<adapter>` | Builds and uploads to a static host via a built-in adapter. V1 adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `generic-static`. The adapter handles host-specific quirks (URI rewrites, redirect helpers, cache headers, invalidation). |
-| `uniweb export` | Builds `dist/` for a static host but doesn't upload. Use with hosts that aren't covered by a built-in adapter. |
+| `uniweb deploy --host=<adapter>` | Builds and uploads to a static host via a built-in adapter. Adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `vercel`, `netlify`, `generic-static`. The adapter handles host-specific quirks (URI rewrites, redirect helpers, cache headers, invalidation). |
+| `uniweb deploy --target=<name>` | Picks a target by name from `deploy.yml` (a sibling of `site.yml`). |
+| `uniweb export` | Builds `dist/` for a static host but doesn't upload. Use with hosts that aren't covered by a built-in adapter, or when you let the host (Vercel, Cloudflare Pages, Netlify, etc.) run the build itself via Git integration. |
 | `pnpm build` | Equivalent to `uniweb build` from the site directory. Produces `dist/` only — no upload, no host-specific helpers. Useful for inspecting build output during development. |
 
-Configure the destination in `site.yml`:
+Configure the destination in `deploy.yml` (a sibling of `site.yml`):
 
 ```yaml
-# site/site.yml
-deploy:
-  host: cloudflare-pages         # or s3-cloudfront, github-pages, generic-static, uniweb
-  # adapter-specific fields below — see the per-host sections.
+# site/deploy.yml — safe to commit
+default: production
+
+targets:
+  production:
+    host: cloudflare-pages         # or s3-cloudfront, github-pages, vercel, netlify, generic-static, uniweb
+    # adapter-specific fields below — see the per-host sections.
+
+autoSave: lastDeploy               # off | lastDeploy | full
+
+# Auto-managed by uniweb deploy on success — do not edit by hand.
+lastDeploy:
+  production:
+    at: 2026-05-05T18:22:11Z
+    url: https://example.com
+    foundation: { shape: linked, ref: '@uniweb/marketing@0.4.2' }
+    runtime: 0.8.9
 ```
 
-The `--host=<adapter>` CLI flag overrides `site.yml` for one-off deploys.
+The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off deploys (no save). `--target=<name>` selects a target other than `default:`. With no `deploy.yml` at all, bare `uniweb deploy` resolves to Uniweb hosting (`host: uniweb`).
+
+### Two deploy lifecycles
+
+Static hosts come in two flavors. Both are first-class:
+
+- **CLI-push.** You run `uniweb deploy` locally; the CLI builds, uploads, and invalidates. State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. Adapters with this lifecycle today: `s3-cloudfront`, `uniweb`.
+- **Git-driven.** You wire up your host's GitHub integration (Vercel, Cloudflare Pages, Netlify, GitHub Pages via Actions). The host runs `npx uniweb build` in CI on each push and serves the resulting `dist/`. State of record: the host's dashboard. Auth: the host's GitHub integration. The CLI's `deploy` step never runs.
+
+For Git-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `lastDeploy:` block stays empty for Git-driven targets — the host's dashboard is the truth.
 
 ---
 
 ## Vercel
 
-### Via CLI
+Lifecycle: **Git-driven**. You connect your repo to Vercel; Vercel runs `npx uniweb build` in CI on each push and serves `dist/`. The CLI's `deploy` step never runs (the `vercel` adapter is intentionally postBuild-only).
 
-```bash
-cd site
-npx vercel
+### Recommended setup
+
+```yaml
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: vercel
 ```
 
-Follow the prompts. Vercel auto-detects the Vite configuration.
+Vercel handles directory-index resolution, asset caching, and SPA fallback natively — the framework has nothing to drop into `dist/`. The adapter exists so the artifact and the deploy manifest record what the user picked, and so the build's CI-context detection picks `vercel` automatically when `VERCEL=1`.
 
 ### Via Git Integration
 
@@ -100,11 +128,22 @@ Follow the prompts. Vercel auto-detects the Vite configuration.
 4. Deploy
 
 **Build settings (auto-detected):**
-- Build Command: `pnpm build`
+- Build Command: `pnpm build`  *or*  `npx uniweb build`
 - Output Directory: `dist`
 - Install Command: `pnpm install`
 
+### Via Vercel CLI
+
+```bash
+cd site
+npx vercel
+```
+
+Follow the prompts. Vercel auto-detects the Vite configuration.
+
 ### vercel.json (optional)
+
+Most Vercel projects don't need one. Add it only when you need custom rewrites or headers:
 
 ```json
 {
@@ -113,11 +152,25 @@ Follow the prompts. Vercel auto-detects the Vite configuration.
 }
 ```
 
+The `vercel` adapter does **not** emit a `vercel.json` automatically. Hand-authored `vercel.json` files are left alone.
+
 ---
 
 ## Netlify
 
-### Via CLI
+Lifecycle: **Git-driven**. Same shape as Vercel — Netlify connects to your repo, runs `npx uniweb build` on each push, serves `dist/`.
+
+```yaml
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: netlify
+```
+
+`netlify` is registered as an alias of `cloudflare-pages` because both consume the same `_redirects` format — one tested code path, two discoverable names. The deploy manifest still records `host: netlify` (what you picked), not the canonical implementation behind it. The build auto-detects `NETLIFY=true` and picks this adapter without needing `--host` in CI.
+
+### Via Netlify CLI (one-off uploads)
 
 ```bash
 cd site
@@ -159,19 +212,17 @@ If the site declares `redirect:` or `rewrite:` directives in `page.yml`, the bui
 
 ## Cloudflare Pages
 
-### Via `uniweb deploy --host`
+Lifecycle: **Git-driven** (typical) or one-off Wrangler uploads. CF Pages auto-resolves directory indexes, so no URI-rewrite worker is needed. The adapter's job is to emit `_redirects` from any `redirect:` / `rewrite:` directives in `page.yml`.
 
 ```yaml
-# site/site.yml
-deploy:
-  host: cloudflare-pages
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: cloudflare-pages
 ```
 
-```bash
-cd site && uniweb deploy
-```
-
-The adapter emits `_redirects` from the site's `redirect:` / `rewrite:` directives. Cloudflare Pages auto-resolves directory indexes, so no URI-rewrite worker is needed. Push to git or use Wrangler — the host pulls or you upload `dist/`.
+The build auto-detects `CF_PAGES=1` and picks this adapter without needing `--host` in CI.
 
 ### Via Dashboard
 
@@ -191,16 +242,14 @@ npx wrangler pages deploy dist
 
 ## GitHub Pages
 
-### Via `uniweb deploy --host`
+Lifecycle: **Git-driven** via GitHub Actions, or manual deploy with `gh-pages`.
 
 ```yaml
-# site/site.yml
-deploy:
-  host: github-pages
-```
-
-```bash
-cd site && uniweb deploy
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: github-pages
 ```
 
 The adapter emits `.nojekyll` at the dist root. **This is critical:** without it, GitHub Pages's Jekyll processing silently strips paths whose components start with `_` — including the `_pages/` per-route content shards and any other underscore-prefixed directory the build produces. The site appears to deploy successfully but with parts missing.
@@ -270,16 +319,18 @@ export default defineConfig({
 
 ## AWS S3 + CloudFront
 
-### Via `uniweb deploy --host`
+Lifecycle: **CLI-push.** This is the only built-in adapter today that runs the upload step itself — `uniweb deploy` builds, syncs to S3, and invalidates CloudFront in one command.
 
 ```yaml
-# site/site.yml
-deploy:
-  host: s3-cloudfront
-  bucket: your-bucket-name
-  distributionId: E1ABC...
-  region: us-east-1
-  profile: your-aws-profile         # optional — overrides default AWS credential chain
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: s3-cloudfront
+    bucket: your-bucket-name
+    distributionId: E1ABC...
+    region: us-east-1
+    profile: your-aws-profile         # optional — overrides default AWS credential chain
 ```
 
 ```bash
