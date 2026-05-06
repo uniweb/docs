@@ -10,6 +10,7 @@ uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb build                   # Build the current project
 uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
+uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb login                   # Authenticate with Uniweb platform
 uniweb publish                 # Publish foundation to Uniweb registry
@@ -452,6 +453,85 @@ uniweb doctor
 
 # From a site directory (finds workspace root automatically)
 cd site && uniweb doctor
+```
+
+---
+
+## uniweb update
+
+Reconcile a workspace's state with the running CLI. Three convergence steps:
+
+1. **Self-update** the global CLI install via the package manager that owns it (auto-detected: npm, pnpm, yarn).
+2. **Align workspace deps** — edit every `package.json` so `@uniweb/*` and `uniweb` versions match the CLI's bundled matrix, then run the workspace's package manager (auto-detected from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm).
+3. **Refresh `AGENTS.md`** from the CLI's bundled partial.
+
+```bash
+uniweb update [options]
+```
+
+### Why all three together
+
+`AGENTS.md` is regenerated from the CLI's current partials and stamped with the CLI version. Refreshing it while the workspace's declared `@uniweb/*` deps lag the CLI silently produces a doc that documents features the installed code doesn't have. The verb's drift gate refuses that combination unless you pass `--allow-mismatch`.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--deps-only` | Skip self-update and `AGENTS.md`; only align deps. |
+| `--agents-only` | Skip self-update and deps; only refresh `AGENTS.md`. |
+| `--no-deps` | Skip the deps-alignment step. |
+| `--no-agents` | Skip the `AGENTS.md` step. |
+| `--dry-run` | Print the survey and would-be writes; make no changes. |
+| `--allow-mismatch` | Allow `AGENTS.md` to refresh even when declared deps lag. |
+| `--yes` | Skip confirmation prompts. |
+| `--non-interactive` | Auto-detected; never auto-installs from a script. |
+
+### What you see
+
+The verb prints a version survey first, regardless of flags:
+
+```
+uniweb CLI:             v0.12.15
+AGENTS.md stamp:        v0.9.5
+
+Workspace deps (declared):
+  (root)/
+    ✗ uniweb           ^0.9.5     → ^0.12.15    behind
+  foundation/
+    ✗ @uniweb/core     ^0.6.1     → ^0.7.11     behind
+    ✗ @uniweb/kit      ^0.8.2     → ^0.9.11     behind
+    ✗ @uniweb/build    ^0.9.4     → ^0.14.3     behind
+  site/
+    ✗ @uniweb/runtime  ^0.7.4     → ^0.8.13     behind
+    ✗ @uniweb/build    ^0.9.4     → ^0.14.3     behind
+```
+
+Each row is one declared dep in one workspace `package.json`, marked `aligned`, `behind` (the CLI ships a newer version), or `ahead of CLI` (left untouched — `update` never downgrades).
+
+After the survey, each step prompts in TTY; `--yes` accepts the defaults; non-interactive prints the plan without mutating.
+
+### Install failures
+
+If the package manager's install step fails after `package.json` edits succeed, the edits are **kept**. The verb prints a `git checkout --` revert command and the install command to retry. There's no automatic rollback — install failures usually need human attention (peer-dep conflicts, lockfile contention) that hiding the diff would only obscure.
+
+### Project-local installs
+
+When the running CLI lives in `node_modules` (project-local), self-update is a no-op — the version is pinned by your project's `package.json`. The deps and `AGENTS.md` steps still run.
+
+### Examples
+
+```bash
+# Full reconcile (typical TTY use)
+uniweb update
+
+# Just align workspace deps and run install
+uniweb update --deps-only
+
+# CI: print plan without mutating, exit non-zero on drift
+uniweb update --dry-run --non-interactive
+
+# CI: align deps and refresh AGENTS.md without prompts
+uniweb update --yes --non-interactive
 ```
 
 ---
