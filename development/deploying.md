@@ -402,7 +402,7 @@ Built-in adapters:
 | `vercel` | Git-driven | No helper files needed (Vercel handles directory-index + caching natively). The build's CI-context detection picks this automatically when `VERCEL=1`. |
 | `cloudflare-pages` | Git-driven | Emits `_redirects` for `redirect:` / `rewrite:` directives. Auto-detected when `CF_PAGES=1`. |
 | `netlify` | Git-driven | Alias of `cloudflare-pages` (same `_redirects` format). The deploy manifest still records `host: netlify`. Auto-detected when `NETLIFY=true`. |
-| `github-pages` | Git-driven (Actions) | Emits `.nojekyll` so directories starting with `_` aren't silently stripped. |
+| `github-pages` | Git-driven (Actions) | Emits `.nojekyll` so directories starting with `_` aren't silently stripped. The CLI scaffolds the GHA workflow for you — see [Deploying to GitHub Pages](deploy-github-pages.md). |
 | `s3-cloudfront` | CLI-push | Emits a CloudFront Function (URI rewrite for directory-index) plus a deploy manifest. Runs `aws s3 sync` and `aws cloudfront create-invalidation` — requires the `aws` CLI on PATH and standard AWS credentials. Configure `bucket`, `distributionId`, `region` under the target. |
 | `generic-static` | — | No host-specific output. Use when the host needs nothing extra. |
 
@@ -550,3 +550,4 @@ You don't have to pick upfront. Most projects start standalone — that's what `
 - **[Publishing and Clients](./publishing-and-clients.md)** — Invite and handoff workflows for getting a site into a content author's hands.
 - **[CLI Commands](../reference/cli-commands.md)** — Full reference for `uniweb publish`, `uniweb deploy`, runtime policy, and propagation flags.
 - **[Static Hosting](../reference/deployment.md)** — Per-host recipes for Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, and self-hosted servers.
+- **[Deploying to GitHub Pages](./deploy-github-pages.md)** — Step-by-step recipe: `uniweb add ci`, custom domain, draft-mode escape hatches.

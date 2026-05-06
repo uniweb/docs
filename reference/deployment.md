@@ -242,78 +242,39 @@ npx wrangler pages deploy dist
 
 ## GitHub Pages
 
-Lifecycle: **Git-driven** via GitHub Actions, or manual deploy with `gh-pages`.
+Lifecycle: **Git-driven** via GitHub Actions.
 
 ```yaml
 # site/deploy.yml
-default: production
+default: github-pages
 targets:
-  production:
+  github-pages:
     host: github-pages
+    domain: mysite.com    # optional; omit for project-pages URL
 ```
 
 The adapter emits `.nojekyll` at the dist root. **This is critical:** without it, GitHub Pages's Jekyll processing silently strips paths whose components start with `_` — including the `_pages/` per-route content shards and any other underscore-prefixed directory the build produces. The site appears to deploy successfully but with parts missing.
 
-The deploy step itself happens via your usual GitHub Pages workflow (push to `gh-pages` branch, or to the configured source branch).
+> **Step-by-step recipe:** [Deploying to GitHub Pages](../development/deploy-github-pages.md). The CLI scaffolds the workflow, the CNAME (when you pass `--domain`), and the `deploy.yml` entry above with one command:
+>
+> ```bash
+> uniweb add ci                          # project pages: <user>.github.io/<repo>/
+> uniweb add ci --domain mysite.com      # custom domain at root
+> ```
+>
+> The generated workflow uses GitHub's official `actions/deploy-pages` flow (Settings → Pages → Source: GitHub Actions) and sets `UNIWEB_BASE` at build time so `site.yml` stays clean.
 
-### Manual Deploy
+### Manual deploy (without the workflow)
+
+If you'd rather not use a CI workflow, build locally and push to a branch yourself:
 
 ```bash
 cd site
-pnpm build
-npx gh-pages -d dist
+UNIWEB_BASE=/<repo>/ uniweb build --host=github-pages   # or UNIWEB_BASE=/ for a custom domain
+npx gh-pages -d dist --dotfiles                          # --dotfiles preserves .nojekyll
 ```
 
-If you go this route, **add `.nojekyll` to the dist root yourself** (or use `--host=github-pages` so the build does it):
-
-```bash
-touch dist/.nojekyll
-npx gh-pages -d dist --dotfiles
-```
-
-### GitHub Actions
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - run: pnpm install
-      - run: pnpm build
-
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site/dist
-```
-
-**Note:** For project sites (not `username.github.io`), set the base path in `vite.config.js`:
-
-```js
-export default defineConfig({
-  base: '/repo-name/',
-  // ...
-})
-```
+The `--dotfiles` flag is required so `gh-pages` doesn't drop the `.nojekyll` file the adapter wrote. With Settings → Pages → Source set to "Deploy from a branch" → `gh-pages`, GitHub will serve the result. The CI flow is recommended over this for ongoing deploys, but manual is fine for one-off experiments.
 
 ---
 
