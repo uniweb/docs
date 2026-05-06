@@ -4,7 +4,7 @@ GitHub Pages is the lowest-friction way to put a Uniweb site on the public web f
 
 This page walks through the full recipe — create a project, push it to GitHub, deploy. If you're already comfortable with the deploy story and just want the host overview, see [Deploying](deploying.md). For the "two artifacts" mental model that explains *why* the framework ships these adapters, the same page covers it up front.
 
-> **What it's good for.** Marketing sites, documentation, blogs, portfolios — anything that fits in a static-host artifact. GitHub Pages serves prerendered HTML + static assets; if your site needs server-side data fetching at request time or platform features (visual editing, foundation propagation), [Uniweb hosting](deploying.md#practical-deploying-with-the-uniweb-platform) is the better fit.
+> **What it's good for.** Marketing sites, documentation, blogs, portfolios — anything that fits in a static-host artifact. GitHub Pages serves prerendered HTML + static assets; if your site needs server-side data fetching at request time or platform features (visual editing, foundation propagation), [Uniweb hosting](deploying.md#when-to-choose-uniweb-hosting) is the better fit.
 
 ---
 
@@ -164,10 +164,10 @@ A few cases where another path is better:
 
 | Need | Better fit |
 |---|---|
-| Visual editing for content authors | [Uniweb hosting](deploying.md#practical-deploying-with-the-uniweb-platform) |
+| Visual editing for content authors | [Uniweb hosting](deploying.md#when-to-choose-uniweb-hosting) |
 | Server-side data fetching at request time | Uniweb hosting (edge SSR) |
 | Branch deploy previews automatically | Cloudflare Pages or Vercel via their native git integrations (no GHA workflow needed) |
-| Foundation that other people's sites consume | Publish the foundation separately. See [Foundation on GitHub Pages](deploying.md#foundation-on-github-pages) for the version-pinned URL pattern, or the Uniweb registry for managed propagation. |
+| Foundation that other people's sites consume | Publish the foundation separately. See [Foundation on GitHub Pages](deploying.md#foundation-on-a-third-party-url--github-pages-s3-anywhere) for the version-pinned URL pattern, or the Uniweb registry for managed propagation. |
 | Multi-locale with per-domain routing (`mysite.com` → English, `monsite.fr` → French) | Uniweb hosting (Cloudflare-for-SaaS-backed custom domains) |
 
 For everything else — most marketing sites, docs, blogs, portfolios — GitHub Pages is a fine permanent home, not just a "test it out" choice.
