@@ -27,13 +27,14 @@ Create a new Uniweb project.
 
 ```bash
 uniweb create [name] [options]
+uniweb create .                  # Scaffold into the current directory
 ```
 
 ### Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `name` | Project directory name (prompted if omitted) |
+| `name` | Project directory name (prompted if omitted), or `.` to scaffold into the current directory |
 
 ### Options
 
@@ -41,8 +42,25 @@ uniweb create [name] [options]
 |--------|-------------|
 | `--template <type>` | Template to use (default: starter) |
 | `--blank` | Create an empty workspace (grow with `uniweb add`) |
-| `--name <name>` | Project display name (for package.json) |
+| `--name <name>` | Project name (overrides slugified basename when used with `.`) |
 | `--no-git` | Skip git repository initialization |
+
+### In-place mode (`uniweb create .`)
+
+Scaffolds into the current directory instead of creating a new one. Pairs with the GitHub-first workflow — create the repo on GitHub, clone it locally, then run `uniweb create .` inside the clone:
+
+```bash
+gh repo create my-site --public --clone
+cd my-site
+uniweb create . --template marketing
+uniweb add ci --host=github-pages   # Optional: add CI for GitHub Pages
+```
+
+**Naming.** The project name comes from the cwd basename, slugified to a valid npm name (`MyProject` → `myproject`, `my_site` → `my-site`). If the slug is empty, the verb errors and asks you to pass `--name=<slug>` explicitly.
+
+**Conflict handling.** Pre-existing `README.md` and `.gitignore` are overwritten — the scaffold's versions (project-shaped README, Vite/Node-aware ignores) are more useful than what `gh repo create` puts in a fresh repo. Any other collision aborts with the list of conflicting files; move or remove them and re-run. Files outside the scaffold's write set (e.g. `LICENSE`) are left alone.
+
+**Git.** `git init` is skipped when a `.git/` directory already exists.
 
 ### Default Behavior
 
@@ -104,6 +122,11 @@ uniweb create my-site --template github:myorg/custom-template
 
 # Use local template
 uniweb create my-site --template ./my-template
+
+# Scaffold into the current directory (e.g., a freshly-cloned GitHub repo)
+uniweb create .
+uniweb create . --template docs
+uniweb create . --name=my-app
 ```
 
 > **Backward compatibility:** `--template blank` still works as an alias for `--blank`.
