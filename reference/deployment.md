@@ -1,6 +1,8 @@
-# Deployment
+# Deployment Reference
 
-Deploy your Uniweb site to any static hosting platform.
+Per-host recipes for deploying Uniweb sites — Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3 + CloudFront, and self-hosted servers.
+
+> **For the conceptual model** — path 1 (you manage the content) vs path 2 (foundation as a product), free CI vs Uniweb hosting, the two-artifact framing — see **[Deploying](../development/deploying.md)**. This page is the per-host deep-dive.
 
 ## Build for Production
 
@@ -469,12 +471,9 @@ uniweb deploy        # default host: 'uniweb' — Uniweb hosting
 
 The CLI auto-builds if `dist/` is missing. The first deploy of a new site opens a browser to confirm the site name, plan, and (if the site uses paid features such as a custom domain) payment. Subsequent deploys are silent.
 
-Uniweb hosting always serves linked-mode sites — the foundation is a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Two flavours:
+Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Foundations come in two flavours — **site-bound** (rides with the site, served from the site's own origin) and **cataloged** (published once via `uniweb publish`, licensed to consuming sites, served from the catalog's CDN). Both get the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
 
-- **Site-bound** — `foundation: ~self/<name>@<version>` in `site.yml`. The foundation rides with the site; `uniweb deploy` builds and uploads everything together. Served from the site's own origin (e.g., `https://www.uniweb.io/_module/io/0.1.2/entry.js`). One repo, one workflow.
-- **Cataloged** — `foundation: '@<org>/<name>@<version>'` in `site.yml`. The foundation is a catalog product, published once via `uniweb publish` and licensed to consuming sites. Served from the catalog's CDN.
-
-Both flavours get the same edge serving (JIT prerender, locale routing, Tier 0–3 caching, version propagation). See [Deploying](../development/deploying.md#two-flavours-of-linked-site-bound-vs-cataloged) for the full picture.
+See [Deploying → Site-bound vs cataloged foundations](../development/deploying.md#site-bound-vs-cataloged-foundations) for the full picture.
 
 ### Options
 
