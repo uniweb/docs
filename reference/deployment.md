@@ -282,6 +282,8 @@ The `--dotfiles` flag is required so `gh-pages` doesn't drop the `.nojekyll` fil
 
 Lifecycle: **CLI-push.** This is the only built-in adapter today that runs the upload step itself — `uniweb deploy` builds, syncs to S3, and invalidates CloudFront in one command.
 
+> **First-time setup** (S3 bucket, CloudFront distribution, OAC, IAM user, directory-index Function, custom error responses) is documented in [AWS S3 + CloudFront — one-time setup](aws-s3-cloudfront-setup.md). Do that walkthrough once per site, then come back here for the per-deploy reference.
+
 ```yaml
 # site/deploy.yml
 default: production
