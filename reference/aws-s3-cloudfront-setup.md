@@ -40,13 +40,23 @@ In the AWS Console: **S3** → **Create bucket**.
 
 | Setting | Value |
 |---|---|
-| Bucket name | Globally unique. We use `uniweb-app-marketing` as the example below — pick your own. |
-| AWS Region | Any region. Pick what's close to your users or matches the rest of your infra. |
+| Bucket name | Globally unique — pick your own |
+| AWS Region | Any region (see below) |
 | Object Ownership | ACLs disabled (default) |
-| Block Public Access | **All four ON** (the default) — do not unblock anything. |
-| Bucket Versioning | Optional. Enable if you want rollback-by-S3-version. |
+| Block Public Access | **All four ON** (the default) |
+| Bucket Versioning | Optional |
 | Default encryption | SSE-S3 (default) |
-| Static website hosting | **Do NOT enable.** We use the bucket's REST endpoint via OAC, not the website endpoint. |
+| Static website hosting | **Do NOT enable** (see below) |
+
+**Bucket name.** Must be globally unique across all AWS accounts. We use `uniweb-app-marketing` as the example below — pick your own.
+
+**AWS Region.** Any region works. Pick what's close to your users or matches the rest of your infra.
+
+**Block Public Access.** Leave all four boxes **ON** — do not unblock anything. The bucket stays private; CloudFront reaches it via OAC.
+
+**Bucket Versioning.** Enable if you want rollback-by-S3-version. Optional otherwise.
+
+**Static website hosting.** Do not enable this. We use the bucket's REST endpoint via OAC, not the website endpoint. The two are mutually exclusive — the website endpoint requires a public bucket, which we don't want. See the note below.
 
 Click **Create bucket**.
 
@@ -92,12 +102,17 @@ Pick **Single website or app**.
 > **Not "Multi-tenant"** — that's for SaaS providers serving many customer-owned domains from shared edge config. For a single site, even one that combines marketing + app behind path-based routing later, the single-distribution path is right.
 
 #### Origin
+
 | Setting | Value |
 |---|---|
-| Origin domain | Your bucket's REST endpoint from the dropdown (e.g. `uniweb-app-marketing.s3.ca-central-1.amazonaws.com`). **Not** the website endpoint. |
+| Origin domain | Your bucket's REST endpoint (see below) |
 | Origin path | leave empty |
-| Origin access | **Origin access control settings (recommended)** |
-| Origin access control | Click **Create new OAC**. Name it `uniweb-app-oac`. Sign requests = "Yes, sign requests (recommended)". Origin type = S3. Click **Create**. |
+| Origin access | Origin access control settings (recommended) |
+| Origin access control | Click **Create new OAC** (see below) |
+
+**Origin domain.** Pick the bucket from the dropdown (e.g. `uniweb-app-marketing.s3.ca-central-1.amazonaws.com`). Pick the REST endpoint, **not** the static-website endpoint.
+
+**Origin access control.** Click **Create new OAC**. Name it `uniweb-app-oac`. Sign requests = "Yes, sign requests (recommended)". Origin type = S3. Click **Create**.
 
 A blue alert appears: *"You must update the S3 bucket policy."* Leave it for now; you'll do this in step 4 once the distribution exists.
 
@@ -120,11 +135,16 @@ A blue alert appears: *"You must update the S3 bucket policy."* Leave it for now
 Leave all other association slots empty.
 
 #### Settings
+
 | Setting | Value |
 |---|---|
-| Price class | "Use only North America and Europe" is cheapest. "All edge locations" if you want global. |
-| Alternate domain name (CNAME) | Leave empty for now. Add when you're ready to point a real domain. |
+| Price class | See below — pick what fits your traffic |
+| Alternate domain name (CNAME) | Leave empty for now |
 | Default root object | `index.html` |
+
+**Price class.** "Use only North America and Europe" is the cheapest option. "All edge locations" gives global edge presence. Pick by where your users are.
+
+**Alternate domain name (CNAME).** Leave empty for now — we're using the auto-generated `*.cloudfront.net` domain. Add a real domain later when you're ready (see [Pointing your custom domain](#pointing-your-custom-domain) below).
 
 Click **Create distribution**.
 
