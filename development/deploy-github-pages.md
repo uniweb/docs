@@ -1,6 +1,6 @@
 # Deploying to GitHub Pages
 
-GitHub Pages is the lowest-friction way to put a Uniweb site on the public web for free. You already have a GitHub account; the framework ships an adapter that knows GH Pages's quirks; one command scaffolds a workflow that builds and publishes on every push to `main`. No accounts to create, no DNS to wire up (unless you want a custom domain).
+GitHub Pages is the lowest-friction way to put a Uniweb site on the public web for free. You already have a GitHub account; the framework ships an adapter that knows GH Pages's quirks; one command scaffolds a workflow that builds and publishes on every push to your default branch. No accounts to create, no DNS to wire up (unless you want a custom domain).
 
 This page walks through the full recipe — create a project, push it to GitHub, deploy. If you're already comfortable with the deploy story and just want the host overview, see [Deploying](deploying.md). For the "two artifacts" mental model that explains *why* the framework ships these adapters, the same page covers it up front.
 
@@ -62,7 +62,7 @@ Then on GitHub:
 1. Open your repository's **Settings** → **Pages**.
 2. Under **Source**, pick **GitHub Actions**.
 
-That's the only one-time setup. From now on, every push to `main` triggers a deploy.
+That's the only one-time setup. From now on, every push to `main` (or `master` — the workflow listens to both) triggers a deploy. If your default branch is something else, edit the `branches:` line in the workflow.
 
 ### 5. Wait ~90 seconds for the first build
 
@@ -101,7 +101,7 @@ To switch back from a custom domain to the `*.github.io` URL: delete `site/publi
 
 | File | Purpose | Edit by hand? |
 |---|---|---|
-| `.github/workflows/deploy-github-pages.yml` | Builds on push to `main`, uploads `dist/` to GitHub Pages. | Yes — it's plain GHA YAML. Re-running `add ci` will refresh it (use `--force`). |
+| `.github/workflows/deploy-github-pages.yml` | Builds on push to `main` or `master`, uploads `dist/` to GitHub Pages. | Yes — it's plain GHA YAML. Re-running `add ci` will refresh it (use `--force`). |
 | `site/deploy.yml` | Records the deploy target so `add ci` can read back the domain on re-runs. | Yes — comments and other targets are preserved through CLI updates. |
 | `site/public/CNAME` (custom domain only) | Tells GitHub Pages to serve at `mysite.com` instead of `*.github.io`. | The CLI manages it through `--domain`; no need to hand-edit. |
 
@@ -111,11 +111,11 @@ The workflow is intentionally readable. Open it and skim — there's no magic, j
 
 ## Working in draft mode
 
-The default workflow publishes on every push to `main`. That's the right shape for the "I want to ship now" case, but it's not the right shape for "I want to work on a draft for a few days." Three escape hatches, in order of how often you'll want them:
+The default workflow publishes on every push to `main` or `master`. That's the right shape for the "I want to ship now" case, but it's not the right shape for "I want to work on a draft for a few days." Three escape hatches, in order of how often you'll want them:
 
 ### Draft branch (recommended)
 
-Do your work on a non-default branch — `dev`, `drafts`, `wip`, whatever you like. Push freely; the workflow only fires on `main`. When you're ready to publish, merge to `main`:
+Do your work on a non-default branch — `dev`, `drafts`, `wip`, whatever you like. Push freely; the workflow only fires on the default branch. When you're ready to publish, merge there:
 
 ```bash
 git checkout -b drafts
