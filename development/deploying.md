@@ -32,10 +32,16 @@ Five sub-options under this path. They differ in *who builds*, *who uploads*, an
 ### The 3-line recipe — GitHub Pages
 
 ```bash
+# A) From a freshly-cloned GitHub repo (recommended):
+npm create uniweb . --template starter
+uniweb add ci --host=github-pages
+# Commit, push, enable Pages in repo settings → live site
+
+# B) Starting locally, then pushing to a new GitHub repo:
 npm create uniweb my-site
 cd my-site
 uniweb add ci --host=github-pages
-# Commit, push to GitHub, enable Pages in repo settings → live site
+# Create the GitHub repo, push, enable Pages → live site
 ```
 
 Enable Pages on the repo at *Settings → Pages → Source: "GitHub Actions"*. Every push runs `uniweb build` and publishes the result. Pre-rendering is on by default — your site loads as static HTML, fast first paint, SEO out of the box.

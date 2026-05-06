@@ -10,22 +10,25 @@ This page walks through the full recipe — create a project, push it to GitHub,
 
 ## The recipe
 
-### 1. Create a project
+### 1. Get a project on GitHub
 
-If you don't already have one:
+Two equivalent starting points — pick whichever fits how you usually work.
+
+**A) GitHub-first (recommended).** Create the repo on GitHub first, clone it, then scaffold inside the clone:
+
+```bash
+gh repo create mysite --public --clone   # or use the GitHub web UI + git clone
+cd mysite
+npx uniweb create . --template marketing
+```
+
+`uniweb create .` overwrites a pre-existing `README.md` and `.gitignore` with the scaffold's versions (the GitHub repo-init defaults aren't useful for a Uniweb project). `LICENSE` and other unrelated files are left alone. The verb skips its own `git init` because `.git/` already exists.
+
+**B) Local-first.** Scaffold locally, then create the repo on GitHub and push:
 
 ```bash
 npx uniweb create mysite --template marketing
 cd mysite
-```
-
-Any template works — `marketing`, `docs`, `cv-loom`, etc. See [the template tour](template-tour.md) for the full list.
-
-### 2. Put the project on GitHub
-
-Create a repository on GitHub (the website's "New repository" button) and push:
-
-```bash
 git init
 git add .
 git commit -m "Initial commit"
@@ -34,9 +37,9 @@ git remote add origin git@github.com:<your-user>/mysite.git
 git push -u origin main
 ```
 
-The repo can be public or private — GitHub Pages works either way on free accounts.
+Either way, any template works — `marketing`, `docs`, `cv-loom`, etc. See [the template tour](template-tour.md) for the full list. The repo can be public or private — GitHub Pages works either way on free accounts.
 
-### 3. Add the deploy workflow
+### 2. Add the deploy workflow
 
 ```bash
 uniweb add ci
@@ -49,7 +52,7 @@ This command:
 
 Multi-site workspaces? `add ci` will prompt for which site the workflow should build, or pass `--site <name>` directly.
 
-### 4. Push the workflow and enable Pages
+### 3. Push the workflow and enable Pages
 
 ```bash
 git add .github site/deploy.yml
@@ -64,7 +67,7 @@ Then on GitHub:
 
 That's the only one-time setup. From now on, every push to `main` (or `master` — the workflow listens to both) triggers a deploy. If your default branch is something else, edit the `branches:` line in the workflow.
 
-### 5. Wait ~90 seconds for the first build
+### 4. Wait ~90 seconds for the first build
 
 Watch progress in your repository's **Actions** tab. When the run finishes, the deployed URL appears at the bottom of the run summary — typically `https://<your-user>.github.io/<repo>/`.
 
