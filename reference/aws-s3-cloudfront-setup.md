@@ -18,7 +18,7 @@ If you're starting from scratch, follow the sections in order.
 - A **CloudFront Function** that resolves directory paths (`/about` → `/about/index.html`).
 - An **IAM user (or role)** with the minimum permissions `uniweb deploy` needs.
 
-The IAM user explicitly *cannot* mutate distribution config or create functions — provisioning is a one-time setup; deploys can only push files and invalidate.
+The IAM user explicitly _cannot_ mutate distribution config or create functions — provisioning is a one-time setup; deploys can only push files and invalidate.
 
 ---
 
@@ -38,15 +38,15 @@ Before you start:
 
 In the AWS Console: **S3** → **Create bucket**.
 
-| Setting | Value |
-|---|---|
-| Bucket name | Globally unique — pick your own |
-| AWS Region | Any region (see below) |
-| Object Ownership | ACLs disabled (default) |
-| Block Public Access | **All four ON** (the default) |
-| Bucket Versioning | Optional |
-| Default encryption | SSE-S3 (default) |
-| Static website hosting | **Do NOT enable** (see below) |
+| Setting                | Value                           |
+| ---------------------- | ------------------------------- |
+| Bucket name            | Globally unique — pick your own |
+| AWS Region             | Any region (see below)          |
+| Object Ownership       | ACLs disabled (default)         |
+| Block Public Access    | **All four ON** (the default)   |
+| Bucket Versioning      | Optional                        |
+| Default encryption     | SSE-S3 (default)                |
+| Static website hosting | **Do NOT enable** (see below)   |
 
 **Bucket name.** Must be globally unique across all AWS accounts. We use `uniweb-app-marketing` as the example below — pick your own.
 
@@ -68,23 +68,23 @@ CloudFront Functions are global — no region.
 
 In the AWS Console: **CloudFront** → **Functions** → **Create function**.
 
-| Setting | Value |
-|---|---|
-| Name | `uniweb-directory-index` |
-| Runtime | `cloudfront-js-2.0` |
+| Setting | Value                    |
+| ------- | ------------------------ |
+| Name    | `uniweb-directory-index` |
+| Runtime | `cloudfront-js-2.0`      |
 
 Click **Next**, paste the source from your build's `dist/cloudfront-function.js`:
 
 ```js
 function handler(event) {
-    var request = event.request;
-    var uri = request.uri;
-    if (uri.endsWith('/')) {
-        request.uri = uri + 'index.html';
-    } else if (!uri.split('/').pop().includes('.')) {
-        request.uri = uri + '/index.html';
-    }
-    return request;
+  var request = event.request
+  var uri = request.uri
+  if (uri.endsWith('/')) {
+    request.uri = uri + 'index.html'
+  } else if (!uri.split('/').pop().includes('.')) {
+    request.uri = uri + '/index.html'
+  }
+  return request
 }
 ```
 
@@ -97,50 +97,53 @@ Click **Save changes**, then **Publish** at the top of the function page (this p
 In the AWS Console: **CloudFront** → **Distributions** → **Create distribution**.
 
 #### Distribution type
+
 Pick **Single website or app**.
 
 > **Not "Multi-tenant"** — that's for SaaS providers serving many customer-owned domains from shared edge config. For a single site, even one that combines marketing + app behind path-based routing later, the single-distribution path is right.
 
 #### Origin
 
-| Setting | Value |
-|---|---|
-| Origin domain | Your bucket's REST endpoint (see below) |
-| Origin path | leave empty |
-| Origin access | Origin access control settings (recommended) |
-| Origin access control | Click **Create new OAC** (see below) |
+| Setting               | Value                                        |
+| --------------------- | -------------------------------------------- |
+| Origin domain         | Your bucket's REST endpoint (see below)      |
+| Origin path           | leave empty                                  |
+| Origin access         | Origin access control settings (recommended) |
+| Origin access control | Click **Create new OAC** (see below)         |
 
 **Origin domain.** Pick the bucket from the dropdown (e.g. `uniweb-app-marketing.s3.ca-central-1.amazonaws.com`). Pick the REST endpoint, **not** the static-website endpoint.
 
 **Origin access control.** Click **Create new OAC**. Name it `uniweb-app-oac`. Sign requests = "Yes, sign requests (recommended)". Origin type = S3. Click **Create**.
 
-A blue alert appears: *"You must update the S3 bucket policy."* Leave it for now; you'll do this in step 4 once the distribution exists.
+A blue alert appears: _"You must update the S3 bucket policy."_ Leave it for now; you'll do this in step 4 once the distribution exists.
 
 #### Default cache behavior
-| Setting | Value |
-|---|---|
-| Path pattern | Default (\*) |
-| Viewer protocol policy | **Redirect HTTP to HTTPS** |
-| Allowed HTTP methods | GET, HEAD |
-| Cache policy | **CachingOptimized** (AWS-managed) |
-| Origin request policy | None |
-| Compress objects automatically | **Yes** |
+
+| Setting                        | Value                              |
+| ------------------------------ | ---------------------------------- |
+| Path pattern                   | Default                            |
+| Viewer protocol policy         | **Redirect HTTP to HTTPS**         |
+| Allowed HTTP methods           | GET, HEAD                          |
+| Cache policy                   | **CachingOptimized** (AWS-managed) |
+| Origin request policy          | None                               |
+| Compress objects automatically | **Yes**                            |
 
 #### Function associations
-| Setting | Value |
-|---|---|
-| Viewer request — Function type | **CloudFront Functions** |
+
+| Setting                            | Value                                                      |
+| ---------------------------------- | ---------------------------------------------------------- |
+| Viewer request — Function type     | **CloudFront Functions**                                   |
 | Viewer request — Function ARN/Name | `uniweb-directory-index` (the one you published in step 2) |
 
 Leave all other association slots empty.
 
 #### Settings
 
-| Setting | Value |
-|---|---|
-| Price class | See below — pick what fits your traffic |
-| Alternate domain name (CNAME) | Leave empty for now |
-| Default root object | `index.html` |
+| Setting                       | Value                                   |
+| ----------------------------- | --------------------------------------- |
+| Price class                   | See below — pick what fits your traffic |
+| Alternate domain name (CNAME) | Leave empty for now                     |
+| Default root object           | `index.html`                            |
 
 **Price class.** "Use only North America and Europe" is the cheapest option. "All edge locations" gives global edge presence. Pick by where your users are.
 
@@ -159,18 +162,20 @@ Go to **S3** → your bucket → **Permissions** → **Bucket policy** → **Edi
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Sid": "AllowCloudFrontServicePrincipalReadOnly",
-    "Effect": "Allow",
-    "Principal": { "Service": "cloudfront.amazonaws.com" },
-    "Action": "s3:GetObject",
-    "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*",
-    "Condition": {
-      "StringEquals": {
-        "AWS:SourceArn": "arn:aws:cloudfront::YOUR-AWS-ACCOUNT-ID:distribution/YOUR-DISTRIBUTION-ID"
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontServicePrincipalReadOnly",
+      "Effect": "Allow",
+      "Principal": { "Service": "cloudfront.amazonaws.com" },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "arn:aws:cloudfront::YOUR-AWS-ACCOUNT-ID:distribution/YOUR-DISTRIBUTION-ID"
+        }
       }
     }
-  }]
+  ]
 }
 ```
 
@@ -182,13 +187,13 @@ Click **Save changes**.
 
 In the distribution → **Error pages** tab → **Create custom error response**, do this twice:
 
-| Field | 404 entry | 403 entry |
-|---|---|---|
-| HTTP error code | 404: Not Found | 403: Forbidden |
-| Customize error response | Yes | Yes |
-| Response page path | `/404.html` | `/404.html` |
-| HTTP Response code | 404 | 404 |
-| Error caching minimum TTL | 60 | 60 |
+| Field                     | 404 entry      | 403 entry      |
+| ------------------------- | -------------- | -------------- |
+| HTTP error code           | 404: Not Found | 403: Forbidden |
+| Customize error response  | Yes            | Yes            |
+| Response page path        | `/404.html`    | `/404.html`    |
+| HTTP Response code        | 404            | 404            |
+| Error caching minimum TTL | 60             | 60             |
 
 > **Why both 403 and 404?** S3 returns 403 for missing-object-via-OAC (not 404). Map both to your branded `/404.html` so genuinely-not-found paths return real 404 status with the marketing 404 page.
 >
@@ -198,8 +203,8 @@ In the distribution → **Error pages** tab → **Create custom error response**
 
 Go to **IAM** → **Users** → **Create user**.
 
-| Setting | Value |
-|---|---|
+| Setting   | Value                    |
+| --------- | ------------------------ |
 | User name | e.g. `uniweb-app-deploy` |
 
 In **permissions**: choose **Attach policies directly** → **Create policy** → JSON tab → paste:
@@ -225,10 +230,7 @@ In **permissions**: choose **Attach policies directly** → **Create policy** �
     {
       "Sid": "CloudFrontInvalidate",
       "Effect": "Allow",
-      "Action": [
-        "cloudfront:CreateInvalidation",
-        "cloudfront:GetDistribution"
-      ],
+      "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetDistribution"],
       "Resource": "arn:aws:cloudfront::YOUR-AWS-ACCOUNT-ID:distribution/YOUR-DISTRIBUTION-ID"
     }
   ]
@@ -315,7 +317,7 @@ targets:
     bucket: YOUR-BUCKET-NAME
     distributionId: YOUR-DISTRIBUTION-ID
     region: YOUR-BUCKET-REGION
-    profile: uniweb-app-deploy        # optional — omit if using default credentials
+    profile: uniweb-app-deploy # optional — omit if using default credentials
 ```
 
 Replace the four substitutions with your real values. Optional fields like `cacheRules` and `invalidationPaths` have sensible defaults; see [Deployment reference](deployment.md) for the full schema.
