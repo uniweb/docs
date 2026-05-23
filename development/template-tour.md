@@ -39,7 +39,7 @@ A documentation site with versioned content, API reference pages, search, and sy
 
 **Navigation integration.** `LeftPanel` reads the page hierarchy from the website object to build the sidebar navigation tree. This is the clearest example of a section type that consumes CCA's routing data rather than markdown content.
 
-**API reference with data schemas.** `ApiReference/meta.js` declares structured data schemas for API definitions (method, path, parameters, request body, response). Content authors write API specs in tagged YAML blocks (`yaml:api`) and the component renders interactive documentation. This shows how `meta.js` data schemas can structure complex domain-specific content.
+**API reference with a data schema.** `ApiReference/meta.js` uses its `data:` field to declare the schema for an API definition (method, path, parameters, request body, response). Content authors write API specs in tagged YAML blocks (`yaml:api`) and the component renders interactive documentation. This shows how a `meta.js` `data:` entry can structure complex domain-specific content.
 
 ### What it keeps bundled
 
@@ -97,7 +97,7 @@ A multilingual site (English, Spanish, French) with blog, team pages, and full i
 
 **Full i18n with three languages.** The `site/locales/` directory contains `es.json`, `fr.json`, and `manifest.json`. This is the only template that demonstrates the complete translation workflow — extraction, manifest hashes, and locale files. If you need to build a multilingual site, this is the reference.
 
-**Data cascade.** The page's `page.yml` declares `data: articles`. `ArticleList` receives that data automatically in `content.data.articles` — no component-side opt-in required. `meta.js` can optionally declare `data: { entity: 'articles' }` as a hint for the editor and shape guarantees. The page fetches the collection once; every section type on the page consumes it. This is the CCA data layer pattern: page declares, component reads.
+**Data cascade.** The page's `page.yml` declares `data: articles`. `ArticleList` receives that data automatically in `content.data.articles` — no component-side opt-in required. `meta.js` can optionally declare `data: { articles: '@/article' }` to set the key's schema (field defaults and editor hints); the `@/article` ref resolves to the foundation's `foundation/schemas/article.yml`. The page fetches the collection once; every section type on the page consumes it. This is the CCA data layer pattern: page declares, component reads.
 
 **Dynamic routes with i18n.** The `site/pages/blog/[slug]/` folder creates dynamic routes for blog posts, and translations apply to the dynamic content. This shows how CCA's routing and i18n systems compose.
 

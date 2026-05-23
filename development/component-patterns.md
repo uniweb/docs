@@ -514,7 +514,7 @@ When a section type fetches data at runtime (`prerender: false`), there's a gap 
 // meta.js
 export default {
   data: {
-    entity: 'articles:6',
+    articles: '@/article',
   },
 }
 ```

@@ -126,35 +126,24 @@ Page fetch                      →  available to all sections on that page
 Block fetch / tagged blocks     →  block-local, wins on key collision
 ```
 
-No component-side opt-in is required. A component at `/blog/[slug]` automatically sees `content.data.articles` (from the folder-level fetch) and `content.data.article` (the matched item on the template page).
+No component-side opt-in is required. A component at `/blog/[slug]` automatically sees `content.data.articles` — the full collection on the list page, and a single-element array (the matched item) on the template page.
 
 ### Declaring what your component works with (optional)
 
-Components can declare their expected entity shape in `meta.js`. This is a **hint**, not a delivery gate — it drives the visual editor, `schema.json`, and shape guarantees from `prepare-props`:
+Components declare the **schema** for each `content.data` key in `meta.js` via the `data:` field. This is a **hint**, not a delivery gate — it drives the visual editor, the foundation's published metadata, and the field defaults the runtime applies to each item. Each entry's value is a named ref, an inline field map, or an inline rich-form:
 
 ```js
 // src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
-  data: {
-    entity: 'articles',        // "designed for articles-shaped data"
-    schemas: {                  // optional: field-level defaults and validation
-      articles: {
-        slug: { type: 'string', default: '' },
-        title: { type: 'string', default: '' },
-        excerpt: { type: 'string', default: '' },
-      },
-    },
-  },
+  // 'articles' is the content.data key; '@/article' is this foundation's schema.
+  data: { articles: '@/article' },
 }
 ```
 
-When `entity` is declared and the cascade delivered a match, `prepare-props` guarantees shape:
+The schema supplies field defaults that the runtime applies across every item in the array. When no cascade source exists, the key stays absent — `content.data.articles === undefined` distinguishes "no source" from `[]` (empty source).
 
-- `content.data.articles` is coerced to an array (single item wraps to `[item]`).
-- On template pages, `content.data.article` exists as either the matched item or `null`.
-
-When no cascade match exists, keys stay absent — `content.data.articles === undefined` distinguishes "no source" from `[]` (empty source).
+Collections are always delivered as **arrays**: the full collection on a list page, a single-element array on a `[slug]` detail page, `[]` when nothing matches. See [Dynamic Routes](./dynamic-routes.md) for the detail-page flow.
 
 ### Opting out (rare)
 
@@ -220,12 +209,12 @@ fetch:
 ```js
 // RelatedArticles/meta.js
 export default {
-  data: { entity: 'articles' },
-  // detail: false and limit are set per-instance in the .md frontmatter
+  data: { articles: '@/article' },
+  // refine: true, detail: false, and limit are set per-instance in the .md frontmatter
 }
 ```
 
-The component receives the related items directly in `content.data.articles` — filtered and sliced, ready to render.
+The component receives the related items directly in `content.data.articles` — filtered and sliced, ready to render. Because `detail: false` asks for the collection (not the focused record), the component gets the related-articles array, not a single-element one.
 
 ---
 
@@ -487,7 +476,7 @@ What this does:
 
 How components consume the full record:
 
-- **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered to `content.data.{singular}` automatically. The framework routes the singular detail to the per-record file. No author config needed — the existing dynamic-route flow handles it.
+- **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered as a **single-element array** under the collection key — `content.data.articles[0]`. The framework routes the detail fetch to the per-record file. No author config needed — the existing dynamic-route flow handles it.
 - **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand:
 
   ```jsx
@@ -566,7 +555,7 @@ Field types in the starter set: `enum` (with `options:`), `boolean`, `range` (wi
 
 ## Using Standard Schemas
 
-For validated, structured data, use `@uniweb/schemas`:
+For a shared, versioned shape, reference a standard schema from `@uniweb/schemas` by its namespace:
 
 ```bash
 pnpm add @uniweb/schemas
@@ -574,20 +563,14 @@ pnpm add @uniweb/schemas
 
 ```js
 // src/sections/TeamGrid/meta.js
-import { person } from '@uniweb/schemas'
-
 export default {
   title: 'Team Grid',
-  data: {
-    entity: 'team',
-    schemas: {
-      team: person,  // Validate fetched data against person schema
-    },
-  },
+  // 'team' is the content.data key; '@uniweb/person' is the shared standard schema.
+  data: { team: '@uniweb/person' },
 }
 ```
 
-The runtime applies defaults from the schema and ensures data structure.
+The build resolves the ref and the runtime applies the schema's field defaults across each item. A ref uses Uniweb namespacing — `@uniweb/<name>` for a shared standard, `@/<name>` for one of this foundation's own `foundation/schemas/` files. See [Component Metadata → Data](./component-metadata.md#data) for all three value forms (named ref, inline field map, inline rich-form).
 
 ---
 
@@ -641,7 +624,7 @@ type: TeamGrid
 // meta.js — `data:` is optional; delivery is default-on
 export default {
   title: 'Team Grid',
-  data: { entity: 'team' },
+  data: { team: '@uniweb/person' },
 }
 ```
 

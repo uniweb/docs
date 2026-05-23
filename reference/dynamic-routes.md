@@ -97,11 +97,11 @@ type: Article
 
 ```js
 // src/sections/ArticleList/meta.js
-// `data:` is optional — delivery is default-on. Declaring `entity` lets
-// prepare-props guarantee shape and lets the editor show schema hints.
+// `data:` declares the schema for content.data.articles. Delivery is
+// default-on; the schema supplies the field defaults and editor hints.
 export default {
   title: 'Article List',
-  data: { entity: 'articles' },
+  data: { articles: '@/article' },
 }
 ```
 
@@ -130,7 +130,7 @@ export default function ArticleList({ content, block }) {
 // src/sections/Article/meta.js
 export default {
   title: 'Article',
-  data: { entity: 'articles' },
+  data: { articles: '@/article' },
 }
 ```
 
@@ -141,7 +141,9 @@ export default function Article({ content, block }) {
     return <div className="animate-pulse">Loading...</div>
   }
 
-  const article = content.data.article
+  // On a detail page, the focused record is the first (and only) element
+  // of the collection array.
+  const article = content.data.articles?.[0]
 
   if (!article) {
     return (
@@ -193,16 +195,15 @@ During prerender, the dynamic route expands:
 |                 | `/articles/advanced-features`    |
 |                 | `/articles/best-practices`       |
 
-### 5. Data cascaded to each page
+### 5. Data delivered to each page
 
-Each generated page receives:
+Each generated detail page receives the focused record under the **collection key**, as a single-element array:
 
-| Key                       | Value                | Description                        |
-|---------------------------|----------------------|------------------------------------|
-| `content.data.article`    | `{ id, title, ... }` | Current item (singularized schema) |
-| `content.data.articles`   | `[...]`              | All items from parent              |
+| Key                       | Value                  | Description                                  |
+|---------------------------|------------------------|----------------------------------------------|
+| `content.data.articles`   | `[{ id, title, ... }]` | A one-element array — the route-matched item |
 
-The schema name is automatically singularized: `articles` → `article`.
+The collection key is the same on the list page and the detail page — only the array length differs (the full collection on the list page, one element on the detail page). The detail section reads the focused record with `content.data.articles[0]`. There is no separate singular key.
 
 ---
 
@@ -260,18 +261,17 @@ If your folder is `[id]`, every item must have an `id` field:
 
 Missing the param field (e.g., only having `slug` when the folder is `[id]`) causes the item to be skipped.
 
-### Automatic singularization
+### Collections stay arrays
 
-The schema name is singularized for the current item:
+The collection is always delivered as an **array** under its own key — there is no singular key and no name transformation. On a detail page, the route-matched record is the single element of that array:
 
-| Parent Schema | Current Item Key | All Items Key |
-|---------------|------------------|---------------|
-| `articles`    | `article`        | `articles`    |
-| `products`    | `product`        | `products`    |
-| `people`      | `person`         | `people`      |
-| `posts`       | `post`           | `posts`       |
+| Page           | `content.data.articles`           |
+|----------------|-----------------------------------|
+| List page      | `[ {...}, {...}, {...} ]` (all)   |
+| Detail page    | `[ {...} ]` (the matched item)    |
+| Detail, no match | `[]`                            |
 
-Common irregular plurals are handled: `people` → `person`, `children` → `child`, etc.
+A detail section reads `content.data.articles[0]`. The runtime never coerces the array to a single object — reshaping to a single record is the foundation's job.
 
 ---
 
@@ -279,7 +279,7 @@ Common irregular plurals are handled: `people` → `person`, `children` → `chi
 
 ### Receiving the data
 
-Data delivery is **default-on** on template pages — the matched item and the collection arrive in `content.data` without any component-side opt-in. A minimal component has no `data:` field in its `meta.js`:
+Data delivery is **default-on** on template pages — the collection arrives in `content.data` without any component-side opt-in. A minimal component has no `data:` field in its `meta.js`:
 
 ```js
 // meta.js — no data declaration needed
@@ -288,16 +288,18 @@ export default {
 }
 ```
 
-Optionally declare the expected entity type. This is a hint for the editor and triggers `prepare-props` shape guarantees (e.g. `content.data.article` is guaranteed to exist as an object or `null`):
+Optionally declare the schema for the key. This drives the editor and supplies the field defaults the runtime applies to each item:
 
 ```js
 export default {
   title: 'Article',
-  data: { entity: 'articles' },
+  data: { articles: '@/article' },
 }
 ```
 
 ### Accessing the data
+
+On a detail page, the focused record is the single element of the collection array:
 
 ```jsx
 export default function Article({ content, block }) {
@@ -306,8 +308,8 @@ export default function Article({ content, block }) {
     return <div className="animate-pulse">Loading...</div>
   }
 
-  // Current item for this page
-  const article = content.data.article
+  // Focused record for this page — first element of the collection array
+  const article = content.data.articles?.[0]
 
   // Always handle not found
   if (!article) {
@@ -355,9 +357,11 @@ export default function ArticleList({ content, block }) {
 
 ## Not Found Handling
 
-EntityStore always fetches the collection first to validate that the requested ID exists in it. If the ID is not found in the collection, `content.data.article` is `null`. Your component should handle this gracefully:
+The runtime validates the requested ID against the collection. If the ID is not found, the collection key is delivered as an empty array, so `content.data.articles[0]` is `undefined`. Your component should handle this gracefully:
 
 ```jsx
+const article = content.data.articles?.[0]
+
 if (!article) {
   return (
     <div style={{ textAlign: 'center', padding: '4rem' }}>
@@ -381,7 +385,7 @@ A section on a dynamic page can receive the full collection **minus the current 
 ---
 type: RelatedArticles
 fetch:
-  inherit: true   # merge with parent fetch, not a new data source
+  refine: true    # borrow the parent's query, not a new data source
   detail: false   # give me the collection minus the current item
   limit: 3        # slice to 3 items
 ---
@@ -393,8 +397,8 @@ fetch:
 // RelatedArticles/meta.js
 export default {
   title: 'Related Articles',
-  data: { entity: 'articles' },
-  // detail: false and limit are set per-instance in the .md frontmatter
+  data: { articles: '@/article' },
+  // refine: true, detail: false, and limit are set per-instance in the .md frontmatter
 }
 ```
 
@@ -456,7 +460,7 @@ pages/articles/
 │   └── 1-articles.md
 └── [id]/
     ├── 1-article.md
-    └── 2-related.md  # fetch: { inherit: true, detail: false, limit: 3 }
+    └── 2-related.md  # fetch: { refine: true, detail: false, limit: 3 }
 ```
 
 ### Blog (flat structure — alternative)
@@ -502,12 +506,12 @@ Dynamic pages can have multiple sections, each receiving the cascaded data:
 
 ```text
 pages/articles/[id]/
-├── 1-article.md      # type: Article       — receives content.data.article automatically
-├── 2-author.md       # type: AuthorBio     — receives content.data.article automatically
-└── 3-related.md      # type: RelatedArticles — fetch: { inherit: true, detail: false, limit: 3 }
+├── 1-article.md      # type: Article       — reads content.data.articles[0] (focused record)
+├── 2-author.md       # type: AuthorBio     — reads content.data.articles[0] (focused record)
+└── 3-related.md      # type: RelatedArticles — fetch: { refine: true, detail: false, limit: 3 }
 ```
 
-Each component reads only the data it cares about from `content.data`. The `3-related.md` block uses the block-level inherit-merge fetch to get the collection minus the current item.
+Each component reads only the data it cares about from `content.data`. The detail sections read the focused record as `content.data.articles[0]`. The `3-related.md` block uses the block-level refine fetch (`detail: false`) to get the collection minus the current item — an array it maps over.
 
 ---
 
@@ -525,7 +529,7 @@ type: Article
 # Custom Override
 ```
 
-The component receives both `content.data.article` (cascaded) and any tagged blocks that override it.
+The component receives both `content.data.articles` (cascaded — `[0]` is the focused record) and any tagged blocks that override their own keys.
 
 ### With additional fetches
 
@@ -538,7 +542,7 @@ data: comments
 ---
 ```
 
-The component receives both `content.data.article` (cascaded) and `content.data.comments` (fetched).
+The component receives both `content.data.articles` (cascaded — focused record at `[0]`) and `content.data.comments` (fetched).
 
 ---
 
@@ -596,21 +600,16 @@ fetch:
 
 ### What the component receives
 
-From a detail query, the component receives only the singular key:
+Either way, the focused record arrives under the **collection key** as a single-element array. A detail section reads `content.data.articles[0]`:
 
 ```js
-content.data.article   // { id: 'my-post', title: '...' }
-content.data.articles  // undefined (no collection fetched)
+// From a detail query (direct landing) or a cached collection (SPA navigation),
+// the detail page delivers the focused record as a one-element array:
+content.data.articles      // [{ id: 'my-post', title: '...' }]
+content.data.articles[0]   // { id: 'my-post', title: '...' }
 ```
 
-From a cached collection (the normal SPA navigation case), both are available:
-
-```js
-content.data.article   // { id: 'my-post', title: '...' }
-content.data.articles  // [...all items...]
-```
-
-Components that already handle `if (!article) return ...` work in both cases.
+The access pattern is identical in both cases — `detail` only changes *how* the runtime obtains that one record (a single-entity fetch vs. extracting from the cached collection), not how the component reads it. Components that handle `const article = content.data.articles?.[0]; if (!article) return ...` work in both cases.
 
 ### Detail query examples
 
@@ -662,25 +661,31 @@ data: articles
 
 **Cause:** The ID was not found in the collection (EntityStore validates every ID against the collection before resolving).
 
-**Fix:** This is usually the right signal — show a proper not-found UI. Verify the folder-level `page.yml` declares the right collection, and that every item in the collection has the param field (e.g., `slug` for `[slug]/`).
+**Fix:** This is usually the right signal — show a proper not-found UI. Verify the folder-level `page.yml` declares the right collection, and that every item in the collection has the param field (e.g., `slug` for `[slug]/`). Remember the focused record is at `content.data.articles[0]`, not a separate singular key.
 
-Delivery itself is automatic; no `data: { inherit: true }` or `meta.js` opt-in is required.
+Delivery itself is automatic; no `meta.js` opt-in is required.
 
 ### Wrong data in component
 
-**Cause:** Schema name mismatch between fetch and component declaration.
+**Cause:** The component reads a different key than the fetch delivers.
 
-**Fix:** Ensure names match (accounting for singularization):
+**Fix:** Ensure the key matches the collection name. The same key carries the array on both list and detail pages:
 
 ```yaml
 # page.yml
 fetch:
-  schema: articles  # plural
+  schema: articles
 ```
 
 ```js
-// meta.js — declaration is optional; singular/plural are derived automatically
-data: { entity: 'articles' }
+// meta.js — declaration is optional; it sets the schema for the 'articles' key
+data: { articles: '@/article' }
+```
+
+```jsx
+// component — same key on list and detail pages
+const articles = content.data.articles || []   // list page
+const article = content.data.articles?.[0]      // detail page
 ```
 
 ---

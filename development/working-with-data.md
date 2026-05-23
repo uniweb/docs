@@ -51,19 +51,20 @@ export default function ArticleList({ content, block }) {
 
 That's the full wiring. No `fetch()` call, no `useState`, no `useEffect`.
 
-### Optional: declare the expected entity shape
+### Optional: declare the data schema
 
-If you want the editor to show schema hints, or want `prepare-props` to guarantee `content.data.articles` is an array, declare the entity type in `meta.js`:
+If you want the editor to show schema hints, or want the runtime to apply field defaults to each item, declare the schema for the `content.data` key in `meta.js`. The value is a named ref, an inline field map, or an inline rich-form:
 
 ```js
 // src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
-  data: { entity: 'articles' },
+  // 'articles' is the content.data key; '@/article' is this foundation's schema.
+  data: { articles: '@/article' },
 }
 ```
 
-This is a **declaration**, not a gate. A component without this field still receives `content.data.articles` — it just won't get the shape guarantees.
+This is a **declaration**, not a gate. A component without this field still receives `content.data.articles` — it just won't get the schema's field defaults applied. (`@/article` resolves to this foundation's `foundation/schemas/article.{js,json,yml}`; use `@uniweb/<name>` for a shared standard schema.)
 
 ---
 
@@ -81,16 +82,16 @@ pages/
         └── article.md        # type: Article
 ```
 
-The `[slug]` page declares no data. It doesn't need to. The runtime walks the ancestor levels — block → page → parent page → site — looking for a fetch config. It finds `data: articles` on the parent `/blog` page, fetches it, extracts the item matching the current slug, and delivers both:
+The `[slug]` page declares no data. It doesn't need to. The runtime walks the ancestor levels — block → page → parent page → site — looking for a fetch config. It finds `data: articles` on the parent `/blog` page, fetches it, extracts the item matching the current slug, and delivers it under the collection key as a single-element array:
 
 ```js
-content.data.articles  // [...all articles...]
-content.data.article   // { slug: 'my-post', title: '...' }
+content.data.articles      // [{ slug: 'my-post', title: '...' }]  — just the matched item on a detail page
+content.data.articles[0]   // { slug: 'my-post', title: '...' }
 ```
 
-The plural key is the full collection. The singular key (`article`, automatically singularized) is the item matching the route parameter.
+The collection key is the same on the list page and the detail page — only the array length differs (the full collection on `/blog`, one element on `/blog/my-post`). There is no separate singular key.
 
-No component-side opt-in. No `inherit: true`. The template page's Article component reads `content.data.article` directly.
+No component-side opt-in. No `refine: true`. The template page's Article component reads `content.data.articles[0]` directly.
 
 ---
 
@@ -149,23 +150,21 @@ The placeholder name (`{slug}`) comes from the dynamic route folder name (`[slug
 
 ### What the component sees
 
-When data comes from a detail query, the component receives only the singular key:
+The focused record always arrives under the collection key as a single-element array — whether it came from a detail query or from the cached collection:
 
 ```js
-content.data.article   // { slug: 'my-post', title: '...' }
-content.data.articles  // undefined — no collection was fetched
+content.data.articles      // [{ slug: 'my-post', title: '...' }]
+content.data.articles[0]   // { slug: 'my-post', title: '...' }
 ```
 
-When data comes from a cached collection (the normal case), both are available:
+`detail` only changes *how* the runtime obtains that one record — a single-entity fetch on direct landing, or extraction from the cached collection during SPA navigation. The component reads it the same way either way:
 
 ```js
-content.data.article   // { slug: 'my-post', title: '...' }
-content.data.articles  // [...all items...]
+const article = content.data.articles?.[0]
+if (!article) return <NotFound />
 ```
 
-Components that check `if (!article) return ...` work in both cases.
-
-If you need the collection for a "related articles" section and it's not there (detail-query path), that section renders its empty state — which is the right behavior, since the user didn't come from the list.
+A "related articles" section that wants the *full* collection (not just the focused record) declares a block-level `fetch: { refine: true, detail: false }` — that asks for the collection minus the current item, which arrives as a multi-element array.
 
 ### When to use it
 
@@ -214,7 +213,7 @@ fetch:
 
 ---
 
-## Per-instance overrides: block-level `fetch: { inherit: true, ... }`
+## Per-instance overrides: block-level `fetch: { refine: true, ... }`
 
 Sometimes a specific block on a template page needs the data shaped differently — "give me the collection, not the matched item" (for a related-items panel), or "give me a slice." A block's `.md` frontmatter can borrow the parent's query with modifications:
 
@@ -223,7 +222,7 @@ Sometimes a specific block on a template page needs the data shaped differently 
 ---
 type: RelatedArticles
 fetch:
-  inherit: true   # borrow the parent's query
+  refine: true    # borrow the parent's query
   detail: false   # collection, minus the current item
   limit: 3        # slice to 3
 ---
@@ -269,7 +268,7 @@ fetch:
 // src/sections/ProductGrid/meta.js
 export default {
   title: 'Product Grid',
-  data: { entity: 'products' },
+  data: { products: '@/product' },
 }
 ```
 
@@ -277,7 +276,7 @@ export default {
 // src/sections/ProductPage/meta.js
 export default {
   title: 'Product Page',
-  data: { entity: 'products' },
+  data: { products: '@/product' },
 }
 ```
 
@@ -285,12 +284,12 @@ export default {
 
 | Scenario | What the runtime does |
 |----------|----------------------|
-| User visits `/products` | Fetches full collection from API. Caches it. ProductGrid reads `content.data.products`. |
-| User clicks a product | Navigates to `/products/42`. Cache hit — extracts item. ProductPage reads `content.data.product` and `content.data.products`. |
-| User lands directly on `/products/42` | Cache empty. `detail: rest` → fetches `GET /api/products/42`. ProductPage reads `content.data.product` only. |
-| User then visits `/products` | Fetches full collection. ProductGrid reads `content.data.products`. |
+| User visits `/products` | Fetches full collection from API. Caches it. ProductGrid reads `content.data.products` (the full array). |
+| User clicks a product | Navigates to `/products/42`. Cache hit — extracts item. ProductPage reads `content.data.products[0]` (the focused record). |
+| User lands directly on `/products/42` | Cache empty. `detail: rest` → fetches `GET /api/products/42`. ProductPage reads `content.data.products[0]`. |
+| User then visits `/products` | Fetches full collection. ProductGrid reads `content.data.products` (the full array). |
 
-Both components declare `data: { entity: 'products' }` as a hint — the runtime delivers the right shape for each context automatically.
+Both components declare the same `data: { products: '@/product' }` schema. The collection always arrives under the `products` key as an array — the full collection on the list page, a single-element array on a detail page. ProductPage reads `content.data.products[0]`; ProductGrid maps over `content.data.products`.
 
 ---
 
@@ -403,7 +402,7 @@ The fetcher contract is worth the ceremony when your foundation targets a real b
 
 ## See also
 
-- [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, singularization rules.
+- [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, and how the focused record arrives as `content.data.<collection>[0]`.
 - [Data Fetching](../reference/data-fetching.md) — Full fetch config reference, post-processing options, collection references.
 - [Content Collections](../reference/content-collections.md) — Building collections from markdown.
 - [Component Metadata](../reference/component-metadata.md) — The `data` field in meta.js.

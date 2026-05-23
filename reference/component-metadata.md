@@ -74,7 +74,7 @@ export default {
   background: true,
 
   data: {
-    entity: 'events:1',  // optional: dynamic data from CMS
+    events: '@uniweb/event',  // optional: declares the shape of content.data.events
   },
 
   content: {
@@ -154,7 +154,7 @@ function Hero({ content, params, block, website }) {
   // ─── From frontmatter (params) ──────────────────────
   const { theme, layout } = params
 
-  // ─── From CMS (data) ────────────────────────────────
+  // ─── From bound data (collection, tagged block, or form UI) ──
   const events = content.data?.events || []
 
   // ─── From structured author data (tagged blocks or form UI) ──
@@ -176,8 +176,8 @@ function Hero({ content, params, block, website }) {
 |--------|-------------|--------------|
 | Markdown content | `content: { ... }` | `content.title`, `content.paragraphs`, `content.items` |
 | Frontmatter params | `params: { ... }` | `params.paramName` |
-| CMS entities | `data: { entity: 'events:5' }` | `content.data.events` |
-| Structured author data | `data: { schemas: { ... } }` | `content.data['schema-name']` |
+| Bound collection data | `data: { events: '@uniweb/event' }` | `content.data.events` |
+| Structured author data | `data: { 'nav-links': { ... } }` | `content.data['nav-links']` |
 
 > **Note:** `block.data` and `content.data` point at the same object at
 > runtime. Use `content.data.*` in components — it matches how the rest of
@@ -346,16 +346,19 @@ background:
 
 ### Data
 
-Data delivery is **default-on**. A block on a page with a `data:` or `fetch:` declaration automatically receives `content.data.{schema}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it provides declarative hints that drive the editor, `schema.json`, and `prepare-props` shape guarantees.
+The `data` field declares the **schema** for each `content.data` key your component renders. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
+
+Data delivery is **default-on**. A block on a page with a `data:` or `fetch:` declaration automatically receives `content.data.{key}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item.
 
 ```javascript
 data: {
-  entity: 'events:6',           // entity-type declaration (hint, not gate)
-  schemas: { ... },             // structure / defaults for tagged blocks and entity data
+  events: '@uniweb/event',                            // named ref (shared standard)
+  specs:  { cpu: { type: 'string', default: '' } },   // inline field map
+  signup: { fields: [{ id: 'email', type: 'text' }] },// inline rich-form (editor form)
 }
 ```
 
-All subfields are optional — include only what your component needs.
+Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below). The site, author, or editor decides *how* each key is filled — a fetched collection, a tagged code block, or an editor form — and the schema is the same regardless of source.
 
 **Opt-out:** a component that should not receive any ambient data declares `data: false`. Rare — used only for pure layout primitives or debug components.
 
@@ -365,29 +368,67 @@ export default {
 }
 ```
 
-> Component-side `inherit` (`data: { inherit: true }` / `inherit: [...]`) has been removed as a delivery gate — delivery is default-on. The block-frontmatter form `fetch: { inherit: true, detail: false, limit: 3 }` in a `.md` file is a different mechanism (per-instance override of the parent's query) and is retained. See [Data Fetching](./data-fetching.md) for details.
+> A `data:` declaration is a hint (it drives the editor and supplies defaults), never a delivery gate. The block-frontmatter form `fetch: { refine: true, detail: false, limit: 3 }` in a `.md` file is a different mechanism (per-instance override of the parent's query). See [Data Fetching](./data-fetching.md) for details.
 
-#### Entity binding
+#### The three value forms
 
-Declares what CMS entity types the component works with:
+**1. Named ref** — points at a schema module, resolved at build time. Refs use Uniweb namespacing:
 
 ```javascript
-data: { entity: 'events' }       // unlimited events
-data: { entity: 'articles:5' }   // up to 5 articles
-data: { entity: 'project:1' }    // exactly 1 project
+data: {
+  members: '@/member',       // '@/' = this foundation's own foundation/schemas/member.{js,json,yml}
+  authors: '@uniweb/person', // '@uniweb/' = a shared standard schema
+}
 ```
 
-#### Standard Entity Types
+`@/name` is the **self** namespace — a schema this foundation owns, in `foundation/schemas/`. The empty scope means "this foundation," so a foundation never writes its own org name in source; `@/`-refs are portable. `@uniweb/name` names the **shared standards** namespace (the `@uniweb/schemas` package). A ref names a *namespace*, not a package path.
 
-| Type | Description |
+A foundation-local schema file (`.js`, `.json`, `.yml`, or `.yaml`) holds the canonical shape:
+
+```yaml
+# foundation/schemas/member.yml   — referenced as '@/member'
+name: member
+version: 1.0.0
+description: A team member
+fields:
+  name:   { type: string, required: true }
+  role:   { type: string, default: '' }
+  bio:    { type: string, default: '' }
+  avatar: { type: string, default: '' }
+```
+
+The `name`/`version` are the schema's identity (recorded in the foundation's published metadata) — they are **not** `content.data` keys.
+
+**2. Inline field map** — a flat keyed object, written directly in `meta.js`. Good for one-off foundation-local shapes:
+
+```javascript
+data: {
+  pricing: {
+    name:        { type: 'string', required: true },
+    price:       { type: 'number', required: true },
+    period:      { type: 'string', default: 'month' },
+    features:    { type: 'array', of: 'string' },
+    highlighted: { type: 'boolean', default: false },
+  },
+}
+```
+
+**3. Inline rich-form** — an editor form, distinguished by a `fields` **array**. See [Structured Author Data](#structured-author-data) below for the full rich-form reference.
+
+#### Standard schema refs
+
+The shared `@uniweb/schemas` package provides a common vocabulary any foundation can reference:
+
+| Ref | Description |
 |------|-------------|
-| `articles` | Blog posts, news items |
-| `events` | Calendar events |
-| `projects` | Portfolio/case studies |
-| `publications` | Academic papers, research |
-| `opportunities` | Jobs, grants, calls |
-| `team` | Team members, people |
-| `products` | E-commerce products |
+| `@uniweb/person` | Team members, authors, people |
+| `@uniweb/article` | Blog posts, news items |
+| `@uniweb/event` | Calendar events |
+| `@uniweb/project` | Portfolio/case studies |
+| `@uniweb/publication` | Academic papers, research |
+| `@uniweb/opportunity` | Jobs, grants, calls |
+
+Add `@uniweb/schemas` as a dependency when a `@uniweb/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
 
 #### Example: Event Listing
 
@@ -396,9 +437,8 @@ export default {
   title: 'Event Grid',
   category: 'showcase',
 
-  data: {
-    entity: 'events:6',
-  },
+  // Renders event-shaped data; field defaults come from the standard event schema.
+  data: { events: '@uniweb/event' },
 
   content: {
     title: 'Section title',
@@ -415,7 +455,17 @@ export default {
 }
 ```
 
-The component receives entities via props and renders them alongside markdown content.
+The component reads the events from `content.data.events` and renders them alongside markdown content.
+
+#### Collections always arrive as arrays
+
+A `data:` binding describes the shape of *each item*. The runtime delivers a bound collection key as an **array**, always:
+
+- A list page receives the full collection array.
+- A dynamic `[slug]` detail page receives a **single-element array** — the route-matched record — under the same key. A detail section reads `content.data.events[0]`.
+- A detail page where nothing matches receives an empty array `[]`.
+
+The runtime never coerces an array to a single object and never synthesizes a separate singular key — reshaping to a single record is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Dynamic Routes](./dynamic-routes.md) for the detail-page flow.
 
 #### Loading states
 
@@ -620,24 +670,28 @@ preset: glass
 
 ---
 
-### Schemas (Structured Author Data)
+### Structured Author Data
 
-`data.schemas` declares shapes of structured data the component accepts from
-authors. A single registry, two input paths that converge on the same
-`content.data[schema-id]` key:
+The same `data:` keys that bind collection schemas (above) also declare the
+shapes of structured data a component accepts directly from authors. There is
+no separate `schemas:` key — a `data:` entry is the one declaration surface.
+Two input paths converge on the same `content.data[key]`:
 
 1. **Tagged markdown blocks** — authors write YAML/JSON in a fenced block
-   prefixed with the schema id. Great for filesystem-edited projects.
+   prefixed with the key. Great for filesystem-edited projects.
 2. **Form UI** — the Uniweb editor renders a form from the schema. Great
    for non-technical authors editing a published site.
 
-Both produce the same shape at `content.data[schema-id]`, so components are
-agnostic to how the data was entered.
+Both produce the same shape at `content.data[key]`, so components are
+agnostic to how the data was entered. The value of a `data:` entry is either
+an **inline field map** (a keyed object, below) or an **inline rich-form** (a
+`fields` array — the editor form). It can also be a named ref (`'@/…'`,
+`'@uniweb/…'`) when the shape is shared/versioned.
 
-#### Simple schemas — flat key/value maps
+#### Inline field map — flat key/value maps
 
-Use a simple schema for flat row-like data (e.g. nav links). Fields are
-declared as a keyed object:
+Use a field map for flat row-like data (e.g. nav links). Fields are
+declared as a keyed object directly on the `data:` entry:
 
 ````markdown
 ```yaml:nav-links
@@ -652,18 +706,16 @@ declared as a keyed object:
 ```javascript
 // meta.js
 data: {
-  schemas: {
-    'nav-links': {
-      label: { type: 'string' },
-      href: { type: 'string' },
-      type: {
-        type: 'select',
-        options: ['plain', 'button', 'dropdown'],
-        default: 'plain',
-      },
-      icon: 'string',  // Shorthand for { type: 'string' }
-      children: { type: 'array', of: 'nav-links' },  // Recursive
+  'nav-links': {
+    label: { type: 'string' },
+    href: { type: 'string' },
+    type: {
+      type: 'select',
+      options: ['plain', 'button', 'dropdown'],
+      default: 'plain',
     },
+    icon: 'string',  // Shorthand for { type: 'string' }
+    children: { type: 'array', of: 'nav-links' },  // Recursive
   },
 }
 ```
@@ -674,10 +726,10 @@ function Header({ content }) {
 }
 ```
 
-#### Rich schemas — ordered fields with labels, options, conditions
+#### Rich-form schemas — ordered fields with labels, options, conditions
 
-Use a rich schema when the data has an ordered field list (labels,
-required markers, conditional visibility, nested arrays). Rich schemas
+Use a rich-form schema when the data has an ordered field list (labels,
+required markers, conditional visibility, nested arrays). Rich-form schemas
 drive both tagged-block authoring *and* the FormBlock editor widget. The
 distinguishing marker is a `fields` **array** (instead of a keyed object),
 or any of `isComposite` / `childSchema`.
@@ -685,57 +737,55 @@ or any of `isComposite` / `childSchema`.
 ```javascript
 // meta.js
 data: {
-  schemas: {
-    stats: {
-      name: { en: 'Stats', fr: 'Statistiques' },     // shown in editor
-      isComposite: true,                              // value is an array
-      childSchema: {
-        name: { en: 'Stat', fr: 'Statistique' },
-        fields: [
-          {
-            id: 'number',
-            type: 'text',
-            label: { en: 'Number', fr: 'Nombre' },
-            required: true,
-          },
-          {
-            id: 'text',
-            type: 'text',
-            label: 'Label',
-            default: 'metric',
-          },
-        ],
-      },
-    },
-
-    'side-content': {
-      name: 'Side Content',
+  stats: {
+    name: { en: 'Stats', fr: 'Statistiques' },     // shown in editor
+    isComposite: true,                              // value is an array
+    childSchema: {
+      name: { en: 'Stat', fr: 'Statistique' },
       fields: [
         {
-          id: 'for',
-          type: 'select',
-          options: [
-            { label: 'Scholar', value: 'scholar' },
-            { label: 'News',    value: 'news' },
-          ],
+          id: 'number',
+          type: 'text',
+          label: { en: 'Number', fr: 'Nombre' },
+          required: true,
         },
         {
-          id: 'department',
+          id: 'text',
           type: 'text',
-          condition: { for: 'scholar' },              // only when for=scholar
-        },
-        {
-          id: 'headline',
-          type: 'text',
-          condition: { for: { $in: ['news', 'feature'] } },
+          label: 'Label',
+          default: 'metric',
         },
       ],
     },
   },
+
+  'side-content': {
+    name: 'Side Content',
+    fields: [
+      {
+        id: 'for',
+        type: 'select',
+        options: [
+          { label: 'Scholar', value: 'scholar' },
+          { label: 'News',    value: 'news' },
+        ],
+      },
+      {
+        id: 'department',
+        type: 'text',
+        condition: { for: 'scholar' },              // only when for=scholar
+      },
+      {
+        id: 'headline',
+        type: 'text',
+        condition: { for: { $in: ['news', 'feature'] } },
+      },
+    ],
+  },
 }
 ```
 
-Components read the filled data by schema id:
+Components read the filled data by key:
 
 ```jsx
 function Hero({ content }) {
@@ -800,7 +850,7 @@ child schemas, fields, and option entries), you may pass either a plain
 string or an `{en, fr, ...}` object. The editor renders the user's
 active locale.
 
-#### Simple-schema field types (keyed-object form)
+#### Inline field-map field types (keyed-object form)
 
 ```javascript
 // Full form

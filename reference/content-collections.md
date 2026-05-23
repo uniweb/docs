@@ -604,7 +604,7 @@ Combine collections with [dynamic routes](./dynamic-routes.md) for individual ar
 title: Article
 ```
 
-The parent's fetched data (`articles`) cascades to the dynamic route. Each generated page (`/blog/getting-started`, `/blog/design-patterns`, etc.) receives the current item as `content.data.article`.
+The parent's fetched data (`articles`) cascades to the dynamic route. Each generated page (`/blog/getting-started`, `/blog/design-patterns`, etc.) receives the matched item under the collection key as a single-element array — the detail section reads `content.data.articles[0]`.
 
 See [Dynamic Routes](./dynamic-routes.md) for details.
 
