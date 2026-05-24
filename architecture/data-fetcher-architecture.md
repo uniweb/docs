@@ -200,7 +200,7 @@ Only keys actually present in the context substitute. Unknown keys pass through 
 
 ## Delivery paths
 
-Uniweb sites reach the browser through two framework-level delivery modes (see also `kb/framework/architecture/dual-mode-why.md`):
+Uniweb sites reach the browser through two framework-level delivery modes:
 
 - **Baked-in build (`uniweb build`).** Site content is embedded into the built HTML at `__SITE_CONTENT__` (a Vite `define`). `prerender: true` fetch configs are executed by the build pipeline (in Node, using `process.env` for anything that needs it), and their results are pre-populated into `DataStore` on runtime startup.
 - **Shell mode (`uniweb build --shell`).** Built HTML contains no site content. Something else (a serve script, an edge worker, any backend) stamps `__DATA__` into the HTML at request time and decides what goes in it. The framework provides the shell; the framework does not provide the stamper.
