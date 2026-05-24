@@ -10,6 +10,7 @@ uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb build                   # Build the current project
 uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
+uniweb validate                # Check content against the data schemas your foundation declares
 uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb login                   # Authenticate with Uniweb platform
@@ -476,6 +477,60 @@ uniweb doctor
 
 # From a site directory (finds workspace root automatically)
 cd site && uniweb doctor
+```
+
+---
+
+## uniweb validate
+
+Check a project's file-based data against the data schemas your foundation declares for the sections that consume it.
+
+```bash
+uniweb validate [path]
+```
+
+Where `doctor` checks your project against framework conventions, `validate` checks your *data* against the contracts you declared in `meta.js` (`data: { … }`) — "does my content match what I said it should be?" It warns by default and never blocks a build on its own: the live render path stays tolerant (applies field defaults, ignores the rest), so this is a pre-ship / CI gate you run on purpose.
+
+### What It Checks
+
+For each section with a file-based data input, it resolves the schema bound to that input and checks every record for:
+
+- Missing **required** fields
+- **Type** mismatches against the field's declared type
+- Values outside an **enum**
+- **Format** violations (`url`, `email`)
+- Nested object and array fields, recursively
+
+It does not flag unknown or extra fields, and it does not flag an absent optional field that has a default — the runtime fills those.
+
+### Deferred
+
+Inputs that can't be resolved from static files are reported as **deferred**, never silently skipped: remote (`url:`) sources, entity references (`ref` / `options`), and rich `sections`-form schemas. Validate these by pointing the source at live data.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--strict` | Treat findings as errors (non-zero exit) — for CI |
+| `--json` | Machine-readable output for CI annotations |
+| `--site <name>` | Check one site in a multi-site workspace |
+
+Exit codes: `0` clean (or warnings only), `1` violations under `--strict`, `2` setup error (e.g. not in a workspace).
+
+### Examples
+
+```bash
+# Check every site in the workspace
+uniweb validate
+
+# Fail (exit 1) on any violation — wire into CI
+uniweb validate --strict
+
+# Machine-readable output
+uniweb validate --json
+
+# One site in a multi-site workspace
+uniweb validate --site blog
 ```
 
 ---

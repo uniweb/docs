@@ -400,6 +400,46 @@ The fetcher contract is worth the ceremony when your foundation targets a real b
 
 ---
 
+## Validating your data
+
+The `data:` schema is a contract — it says what shape `content.data.<key>` will have. `uniweb validate` checks your file-based data against that contract, so a misspelled field or a value outside an enum surfaces while you're working, not as a blank slot on a live page.
+
+```bash
+uniweb validate            # warn about any record that doesn't match its schema
+uniweb validate --strict   # non-zero exit — wire this into CI
+```
+
+It reports the exact chain — route, section, data key, file, item, field — so you fix the record directly:
+
+```
+✗ /data/projects.json · schema @acme/project
+    used by /work › Projects › data.projects
+    • item "cinder" › name: missing required field 'name'
+    • item "cinder" › status: 42 is not one of ["active", "archived"]
+```
+
+This is deliberately a gate you run, not part of every build. The runtime stays tolerant — it applies defaults and ignores the rest — so a data mistake degrades gracefully in production instead of breaking the build. `validate` is where you catch it on purpose, before shipping. It's distinct from `uniweb doctor`, which checks your *project* against framework conventions; `validate` checks your *data* against the schemas you declared. Full reference: [CLI Commands → uniweb validate](../reference/cli-commands.md#uniweb-validate).
+
+---
+
+## Sharing schemas across foundations
+
+Build more than one foundation — a few brands, a client's product line — and they tend to want the same shapes: a `person`, a `project`, an `article`. You don't copy the schema into each foundation. Define it once and reference it, two ways:
+
+- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you publish) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
+- **A routed directory** — keep the schemas in a plain folder anywhere on disk and point each foundation's `schemas.config.js` at it. No package, no install:
+
+  ```js
+  // foundation/schemas.config.js
+  export default { '@acme': '../shared/acme-schemas' }
+  ```
+
+  `@acme/person` then resolves to `../shared/acme-schemas/person.{js,yml}`. The config is plain JS, so the path can be relative, absolute, or read from an environment variable — useful when one schema repo is shared across many client workspaces on your machine.
+
+Either way the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. Reference: [Component Metadata → Routing a scope](../reference/component-metadata.md#routing-a-scope-with-schemasconfigjs).
+
+---
+
 ## See also
 
 - [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, and how the focused record arrives as `content.data.<collection>[0]`.

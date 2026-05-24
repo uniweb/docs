@@ -74,7 +74,7 @@ export default {
   background: true,
 
   data: {
-    events: '@uniweb/event',  // optional: declares the shape of content.data.events
+    events: '@std/event',  // optional: declares the shape of content.data.events
   },
 
   content: {
@@ -176,7 +176,7 @@ function Hero({ content, params, block, website }) {
 |--------|-------------|--------------|
 | Markdown content | `content: { ... }` | `content.title`, `content.paragraphs`, `content.items` |
 | Frontmatter params | `params: { ... }` | `params.paramName` |
-| Bound collection data | `data: { events: '@uniweb/event' }` | `content.data.events` |
+| Bound collection data | `data: { events: '@std/event' }` | `content.data.events` |
 | Structured author data | `data: { 'nav-links': { ... } }` | `content.data['nav-links']` |
 
 > **Note:** `block.data` and `content.data` point at the same object at
@@ -352,7 +352,7 @@ Data delivery is **default-on**. A block on a page with a `data:` or `fetch:` de
 
 ```javascript
 data: {
-  events: '@uniweb/event',                            // named ref (shared standard)
+  events: '@std/event',                            // named ref (shared standard)
   specs:  { cpu: { type: 'string', default: '' } },   // inline field map
   signup: { fields: [{ id: 'email', type: 'text' }] },// inline rich-form (editor form)
 }
@@ -377,11 +377,11 @@ export default {
 ```javascript
 data: {
   members: '@/member',       // '@/' = this foundation's own foundation/schemas/member.{js,json,yml}
-  authors: '@uniweb/person', // '@uniweb/' = a shared standard schema
+  authors: '@std/person',    // '@std/' = a shared standard schema
 }
 ```
 
-`@/name` is the **self** namespace — a schema this foundation owns, in `foundation/schemas/`. The empty scope means "this foundation," so a foundation never writes its own org name in source; `@/`-refs are portable. `@uniweb/name` names the **shared standards** namespace (the `@uniweb/schemas` package). A ref names a *namespace*, not a package path.
+`@/name` is the **self** namespace — a schema this foundation owns, in `foundation/schemas/`. The empty scope means "this foundation," so a foundation never writes its own org name in source; `@/`-refs are portable. `@std/name` names the **shared standards** namespace (shipped in the `@uniweb/schemas` package); `@org/name` resolves from that org's `@org/schemas` package, letting a team share schemas across foundations. A ref names a *namespace*, not a package path.
 
 A foundation-local schema file (`.js`, `.json`, `.yml`, or `.yaml`) holds the canonical shape:
 
@@ -421,14 +421,35 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 
 | Ref | Description |
 |------|-------------|
-| `@uniweb/person` | Team members, authors, people |
-| `@uniweb/article` | Blog posts, news items |
-| `@uniweb/event` | Calendar events |
-| `@uniweb/project` | Portfolio/case studies |
-| `@uniweb/publication` | Academic papers, research |
-| `@uniweb/opportunity` | Jobs, grants, calls |
+| `@std/person` | Team members, authors, people |
+| `@std/article` | Blog posts, news items |
+| `@std/event` | Calendar events |
+| `@std/project` | Portfolio/case studies |
+| `@std/publication` | Academic papers, research |
+| `@std/opportunity` | Jobs, grants, calls |
 
-Add `@uniweb/schemas` as a dependency when a `@uniweb/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
+Add `@uniweb/schemas` as a dependency when a `@std/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
+
+#### Routing a scope with `schemas.config.js`
+
+By default an `@org/name` ref resolves to a *package* — the `@org/schemas` package in the foundation's `node_modules`. A foundation can instead **route a scope to a directory**: a plain folder of schema files anywhere on disk, with no package and no install. Add an optional `schemas.config.js` at the foundation root:
+
+```js
+// foundation/schemas.config.js
+export default {
+  '@acme':  '../shared/acme-schemas',   // relative to the foundation
+  '@brand': process.env.BRAND_SCHEMAS,   // absolute / machine-specific, via env
+}
+```
+
+`@acme/person` then resolves to `../shared/acme-schemas/person.{js,json,yml,yaml}` — a bare schema file, not a package. The config is plain JS (like `main.js` and `vite.config.js`), so a path can be relative to the foundation, absolute, read from an environment variable, or computed — whatever the layout needs.
+
+This is how a team reuses one set of schemas across many foundations, or across many workspaces, without publishing a package: keep the schemas in one folder and point each foundation's `schemas.config.js` at it.
+
+- A routed scope takes precedence over the `@org/schemas` package convention.
+- `@/` (self) and `@uniweb` (reserved) are never routable.
+- A scope whose value is empty — for example, an unset environment variable — is skipped, and that scope falls back to the package convention.
+- Foundations without a `schemas.config.js` resolve exactly as before.
 
 #### Example: Event Listing
 
@@ -438,7 +459,7 @@ export default {
   category: 'showcase',
 
   // Renders event-shaped data; field defaults come from the standard event schema.
-  data: { events: '@uniweb/event' },
+  data: { events: '@std/event' },
 
   content: {
     title: 'Section title',
