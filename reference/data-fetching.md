@@ -565,12 +565,12 @@ pnpm add @uniweb/schemas
 // src/sections/TeamGrid/meta.js
 export default {
   title: 'Team Grid',
-  // 'team' is the content.data key; '@uniweb/person' is the shared standard schema.
-  data: { team: '@uniweb/person' },
+  // 'team' is the content.data key; '@std/person' is the shared standard schema.
+  data: { team: '@std/person' },
 }
 ```
 
-The build resolves the ref and the runtime applies the schema's field defaults across each item. A ref uses Uniweb namespacing — `@uniweb/<name>` for a shared standard, `@/<name>` for one of this foundation's own `foundation/schemas/` files. See [Component Metadata → Data](./component-metadata.md#data) for all three value forms (named ref, inline field map, inline rich-form).
+The build resolves the ref and the runtime applies the schema's field defaults across each item. A ref uses Uniweb namespacing — `@std/<name>` for a shared standard (shipped in `@uniweb/schemas`), `@org/<name>` for an org's own `@org/schemas` package, `@/<name>` for one of this foundation's own `foundation/schemas/` files. See [Component Metadata → Data](./component-metadata.md#data) for all three value forms (named ref, inline field map, inline rich-form).
 
 ---
 
@@ -624,7 +624,7 @@ type: TeamGrid
 // meta.js — `data:` is optional; delivery is default-on
 export default {
   title: 'Team Grid',
-  data: { team: '@uniweb/person' },
+  data: { team: '@std/person' },
 }
 ```
 
