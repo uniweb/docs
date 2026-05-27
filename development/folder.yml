@@ -6,6 +6,7 @@ pages:
   - component-patterns
   - component-data-patterns
   - working-with-data
+  - data-schemas
   - connecting-a-backend
   - content-handlers
   - data-driven-sections

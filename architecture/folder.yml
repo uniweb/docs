@@ -1,5 +1,6 @@
 title: Architecture
 pages:
   - component-content-architecture
+  - data-schemas-as-contracts
   - data-fetcher-architecture
   - ...

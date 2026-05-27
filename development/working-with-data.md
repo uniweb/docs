@@ -442,6 +442,7 @@ Either way the payoff is a single source of truth: fix `person` once and every f
 
 ## See also
 
+- [Data Schemas](./data-schemas.md) — Authoring a schema, the three namespaces (`@/`, `@std`, `@org`), sharing across projects, and registering schemas as reusable content types.
 - [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, and how the focused record arrives as `content.data.<collection>[0]`.
 - [Data Fetching](../reference/data-fetching.md) — Full fetch config reference, post-processing options, collection references.
 - [Content Collections](../reference/content-collections.md) — Building collections from markdown.
