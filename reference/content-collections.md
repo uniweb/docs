@@ -129,6 +129,52 @@ Each collection generates its own JSON file: `/data/articles.json`, `/data/produ
 
 ---
 
+## The `collections.yml` file (optional)
+
+For richer setups you can add a `collections/collections.yml` — a document that sits
+**with the data it describes**. It is entirely optional: with no `collections.yml`, the
+conventions on this page still apply. When present, it can do three useful things,
+none of which require any backend.
+
+```yaml
+# collections/collections.yml
+collections:
+  articles:                 # key = collection name; default path = ./articles
+    schema: "@/article"     # map this collection to a data schema (see below)
+    sort: date desc
+    where: { published: true }
+  team:
+    schema: "@/person"
+
+folders:                    # an organizational tree, independent of the on-disk layout
+  - segment: blog
+    label: Blog
+    entries: [articles]
+  - segment: about
+    entries: [team]
+```
+
+**1. Map a collection to a data schema.** A data schema gives a collection's items a
+typed shape (used for validation and i18n extraction). By default each collection maps
+to the **singular of its folder name** — `articles/` → the `@/article` schema in your
+foundation's `schemas/`. Set `schema:` to override that default (or to point at a
+shared schema). `@/name` resolves to your foundation's own `schemas/name`; `@uniweb/name`
+to a bundled standard schema.
+
+**2. Declare query/display config in one place.** The same `sort` / `where` / `limit` /
+`excerpt` options you can set in `site.yml::collections` can live here instead, co-located
+with the collection folders.
+
+**3. Lay out a virtual organization.** `folders:` describes a tree of `segment` branches
+whose `entries` are collection names (or nested branches). This organization is yours to
+choose — it does **not** have to mirror the on-disk `collections/` directory layout.
+
+`collections.yml` takes precedence over `site.yml::collections` per key, so you can keep
+remote sources in `site.yml` and move file-based declarations here. The file may also
+hold a machine-managed `$uuid` and `sync:` flag — leave those to the tooling.
+
+---
+
 ## Content Item Fields
 
 Each `.md` file in a collection becomes a JSON object with the following fields. For `.yml`/`.yaml` and `.json` files, see [Data Items (YAML)](#data-items-yaml) and [Data Items (JSON)](#data-items-json) — they produce only `slug` plus whatever fields you declare.
