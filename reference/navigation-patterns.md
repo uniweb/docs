@@ -46,15 +46,16 @@ Pages can opt out of automatic navigation via `page.yml`:
 ```yaml
 # pages/admin/page.yml
 title: Admin Dashboard
-hideInHeader: true # Don't show in header navigation
-hideInFooter: true # Don't show in footer navigation
+hideIn: [header, footer] # Don't show in the header or footer nav
 ```
 
-| Option               | Effect                                                   |
-| -------------------- | -------------------------------------------------------- |
-| `hidden: true`       | Hide from all navigation (page still accessible via URL) |
-| `hideInHeader: true` | Hide from header nav only                                |
-| `hideInFooter: true` | Hide from footer nav only                                |
+| Option             | Effect                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| `hidden: true`     | Hide from all navigation (page still accessible via URL)     |
+| `hideIn: [header]` | Hide from named nav areas only (`header`, `footer`, `sidebar`, …) |
+
+`hideIn` lists the nav areas to suppress the page from. (The legacy `hideInHeader` /
+`hideInFooter` booleans still work as shorthand for `hideIn: [header]` / `hideIn: [footer]`.)
 
 ## Manual Navigation
 
@@ -461,6 +462,6 @@ const renderNavItem = (item) => {
 ## See Also
 
 - [Content Structure](./content-structure.md) — Full content parsing reference
-- [Page Configuration](./page-configuration.md) — Navigation visibility options (hidden, hideInHeader, hideInFooter)
+- [Page Configuration](./page-configuration.md) — Navigation visibility options (hidden, hideIn)
 - [Linking](./linking.md) — The `page:` protocol for stable internal links
 - [Component Metadata](./component-metadata.md) — Documenting nav expectations in meta.js

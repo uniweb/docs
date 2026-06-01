@@ -251,8 +251,7 @@ hidden: true           # Hide from all navigation
 ```yaml
 # pages/legal/page.yml
 title: Privacy Policy
-hideInHeader: true     # Hide from header nav
-hideInFooter: false    # Show in footer nav
+hideIn: [header]       # Hide from the header nav (still shown in footer)
 ```
 
 See [Page Configuration](./page-configuration.md) for all visibility options.

@@ -30,8 +30,7 @@ index: team                     # Or just set the index page
 
 # Navigation Visibility
 hidden: true                    # Hide from all navigation
-hideInHeader: true              # Hide from header nav only
-hideInFooter: true              # Hide from footer nav only
+hideIn: [header]                # Hide from named nav areas only (header, footer, sidebar, …)
 
 # Layout
 layout: DocsLayout              # Layout name (or use default)
@@ -191,21 +190,26 @@ Control where the page appears in automatically-generated navigation.
 
 ```yaml
 hidden: true          # Hide everywhere (page still accessible via URL)
-hideInHeader: true    # Hide from header navigation only
-hideInFooter: true    # Hide from footer navigation only
+hideIn: [header]      # Hide from specific named nav areas (a list of area names)
 ```
+
+`hideIn` lists the nav areas to suppress the page from — `header`, `footer`, or any
+area a foundation's layout declares (e.g. `sidebar`). `hidden` removes it from all nav.
 
 | Option | Header Nav | Footer Nav | Direct URL |
 |--------|------------|------------|------------|
 | (default) | ✓ | ✓ | ✓ |
-| `hideInHeader: true` | ✗ | ✓ | ✓ |
-| `hideInFooter: true` | ✓ | ✗ | ✓ |
+| `hideIn: [header]` | ✗ | ✓ | ✓ |
+| `hideIn: [footer]` | ✓ | ✗ | ✓ |
 | `hidden: true` | ✗ | ✗ | ✓ |
 
 Use cases:
 - **Admin pages**: `hidden: true`
-- **Legal pages**: `hideInHeader: true` (show only in footer)
-- **Landing pages**: `hideInFooter: true` (show only in header)
+- **Legal pages**: `hideIn: [header]` (show only in footer)
+- **Landing pages**: `hideIn: [footer]` (show only in header)
+
+> The older `hideInHeader: true` / `hideInFooter: true` booleans still work as shorthand
+> for `hideIn: [header]` / `hideIn: [footer]`.
 
 ---
 
