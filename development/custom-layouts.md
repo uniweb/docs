@@ -381,7 +381,7 @@ Pages without an explicit `layout:` use the default. The layout name matches the
 
 ### Layout meta.js
 
-Layouts can declare metadata — which areas they render, parameters they accept, and (future) view transition participation:
+Layouts can declare metadata — which areas they render, parameters they accept, and [view transition](./view-transitions.md) overrides (areas animate automatically; the map is optional):
 
 ```js
 // src/layouts/DocsLayout/meta.js

@@ -8,17 +8,20 @@ This is enabled by default. In browsers that don't support the API, pages swap i
 
 ## What You Get for Free
 
-Without any configuration, every Uniweb site gets a whole-page crossfade on navigation. The browser captures the entire viewport as one unit and crossfades it, giving the user visual continuity between pages.
+Without any configuration, every Uniweb site animates navigation — and for layouts with named areas, it does the *right* thing automatically. The runtime gives each rendered area (`header`, `left`, `right`, `footer`, …) plus the body its own `view-transition-name`, so the browser animates them independently:
 
-To go further, you tell the browser which parts of the page are the *same* across navigations. A header that appears on every page shouldn't crossfade — it should stay put. A sidebar that persists across pages should stay put too. Only the main content area should transition.
+- **Persistent chrome** — a header, sidebar, or footer that's the same across pages — stays put, no crossfade.
+- **The body** — the part that actually changes — crossfades to the new page.
 
-This is what the `transitions` map in layout `meta.js` does.
+You don't declare anything. A layout that lists `areas: ['header', 'left', 'right', 'footer']` already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, `uw-body`, and so on. A layout with no named areas simply crossfades the page body, which is the sensible default.
+
+The `transitions` map below is an **override** for advanced cases — you don't need it for the common "header stays, content crossfades" effect.
 
 ---
 
-## Named Transitions in Layout meta.js
+## Overriding the Defaults
 
-Each layout can declare which of its areas participate in transitions:
+Add a `transitions` map to a layout's `meta.js` only when you want to *change* the automatic names — to pick CSS-friendly names, group areas across different layouts (see below), or opt a region out:
 
 ```js
 // src/layouts/DocsLayout/meta.js
@@ -69,9 +72,10 @@ No custom animation code. The browser handles the spatial interpolation based on
 
 ### Rules
 
+- Every rendered area is given an independent transition automatically, named `uw-<area>` (and `uw-body` for the page body). An explicit `transitions` entry replaces that name.
 - Transition names must be unique on the page. Two elements with the same `view-transition-name` at the same time causes the transition to be skipped. Elements with `display: none` (like a mobile sidebar hidden on desktop) are excluded from this check.
 - Names are arbitrary CSS identifiers. Use descriptive names (`header`, `main`, `sidebar`) — they appear in devtools.
-- Areas without a transition entry are included in the default crossfade. Only areas you name get independent animation.
+- To exclude a region, set its entry to `null` (it folds back into the page crossfade); to drop per-region names for a whole layout, set `transitions: false` (the layout gets one whole-page crossfade).
 
 ---
 
@@ -86,7 +90,7 @@ export default {
 }
 ```
 
-This is a foundation-level setting, not site-level, because the foundation is the authority on page structure. The `transitions` map in layout meta.js only makes sense if the foundation author designed the layouts with transitions in mind.
+This is a foundation-level setting, not site-level, because the foundation is the authority on page structure. To opt out more narrowly instead, set a single region to `null` in a layout's `transitions` map, or set `transitions: false` on the layout to drop per-region names entirely.
 
 ---
 
@@ -123,6 +127,6 @@ The browser creates pseudo-elements for each transitioning area that you can sty
 }
 ```
 
-The names in parentheses (`main`, `sidebar`) match the values from your layout's `transitions` map. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
+The names in parentheses match your regions' `view-transition-name`s — the values from your layout's `transitions` map, or the automatic `uw-<area>` / `uw-body` names when you haven't set one. If you intend to write this CSS, giving regions explicit names via the `transitions` map keeps the selectors readable. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
 
 Without any custom CSS, the browser uses a default ~250ms crossfade — which already looks good for most sites.
