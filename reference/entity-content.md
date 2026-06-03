@@ -117,7 +117,8 @@ catalogue). No wrappers, no encoding overhead:
 
 | Schema type | Value shape |
 |---|---|
-| `string`, `text`, `richtext`, `int`, `decimal`, `bool` | The raw value |
+| `string`, `text`, `int`, `decimal`, `bool` | The raw value |
+| `text` with `format: markdown` / `html` | The raw source string (a rich-content body) |
 | `date`, `datetime` | ISO-8601 string (e.g. `2026-05-01`, `2026-05-01T12:00:00Z`) |
 | `entity_ref` | Either a bare uuid string, or `{ model, entity }` for cross-Model references |
 | `item_ref` | The chosen option's identifier (matches the `options:` source) |
@@ -203,7 +204,7 @@ published: 2026-04-12
 
 # Welcome
 
-The body is the value of the schema's body field (typically `richtext`).
+The body is the value of the schema's body field (typically a `text` field with `format: markdown`).
 ```
 
 ### BibTeX

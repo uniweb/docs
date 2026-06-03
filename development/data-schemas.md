@@ -34,7 +34,7 @@ fields:
   featured:    { type: boolean }
 ```
 
-The types are plain and content-oriented — `string`, `text`, `markdown`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, plus structural `object`, `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` is rich text, `image` is a file, `number` is a decimal).
+The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, plus structural `object`, `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `image` is a file, `number` is a decimal).
 
 A section type binds the schema by naming it in `meta.js`:
 
