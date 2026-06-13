@@ -20,6 +20,9 @@ title: About Us
 description: Learn about our company
 label: About                    # Short nav label (defaults to title)
 id: about                       # Stable ID for page: links
+slug:                           # Localized URL segments (multilingual sites)
+  fr: a-propos
+  es: acerca-de
 
 # Ordering
 order: 2                        # Sort position in navigation
@@ -210,6 +213,27 @@ Use cases:
 
 > The older `hideInHeader: true` / `hideInFooter: true` booleans still work as shorthand
 > for `hideIn: [header]` / `hideIn: [footer]`.
+
+---
+
+## Localized URLs
+
+On a multilingual site, give a page a localized URL segment per language with `slug:`:
+
+```yaml
+# pages/About-Us/page.yml
+slug:
+  fr: a-propos      # /About-Us (en) → /a-propos (fr)
+  es: acerca-de     # → /acerca-de (es)
+```
+
+The folder name stays the page's stable, canonical route — used in the default language and for internal `page:` links — and each entry sets the URL segment for that locale. Only list the non-default languages; the default language always uses the folder name.
+
+- Each value is a **single path segment** (no slashes or spaces).
+- **Nesting composes automatically:** if a parent folder is localized (`/blog` → `/blogue`), its children follow (`/blog/my-post` → `/blogue/my-post`) without repeating the parent. Give a child its own `slug:` only to localize its own segment too.
+- Localized URLs flow through navigation, the language switcher, and the sitemap (`hreflang`).
+
+This controls only the **URL**. Translating page *content* (titles, text) is separate — see [Internationalization](../development/internationalization.md).
 
 ---
 
@@ -546,6 +570,7 @@ seo:
 ## See Also
 
 - [Site Configuration](./site-configuration.md) — site.yml reference
+- [Internationalization](../development/internationalization.md) — Multilingual content and localized URLs
 - [Content Structure](./content-structure.md) — Section content format
 - [Linking](./linking.md) — Stable page references with IDs
 - [Dynamic Routes](./dynamic-routes.md) — Data-driven pages

@@ -148,6 +148,29 @@ The default language never has a prefix. Other languages always have their code 
 
 ---
 
+## Localized URL Segments
+
+By default the path after the language prefix matches the default language (`/about` → `/es/about`). To give the path a **native segment** per language, add `slug:` to the page's `page.yml`:
+
+```yaml
+# pages/about/page.yml
+slug:
+  es: acerca-de
+  fr: a-propos
+```
+
+| Page | English (default) | Spanish | French |
+|------|-------------------|---------|--------|
+| About | `/about` | `/es/acerca-de` | `/fr/a-propos` |
+
+- The folder name stays the page's stable canonical route (default language + internal `page:` links); list only the non-default languages.
+- Each value is a single path segment (no slashes). Nested folders **compose automatically** — localize a parent (`/blog` → `/blogue`) and its children follow (`/blog/post` → `/blogue/post`).
+- Localized segments flow through navigation, `website.getLocaleUrl()` (the language switcher below), and the `hreflang` tags.
+
+See [Page Configuration → Localized URLs](../reference/page-configuration.md#localized-urls) for the full reference.
+
+---
+
 ## Language Switcher
 
 ### Building a Switcher
