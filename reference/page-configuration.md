@@ -59,7 +59,10 @@ fetch:                          # Advanced: full fetch config
 # SEO
 seo:
   noindex: false
-  image: /og-about.png
+  image: /og-about.png            # Open Graph / social-card image
+  ogTitle: About Acme             # Social title (defaults to the page title)
+  ogDescription: Meet the team
+  canonical: https://acme.com/about
   changefreq: monthly
   priority: 0.8
 ```
@@ -431,7 +434,10 @@ Fine-tune search engine optimization.
 ```yaml
 seo:
   noindex: false           # Allow indexing (default)
-  image: /og-about.png     # Open Graph image
+  image: /og-about.png     # Open Graph / social-card image
+  ogTitle: About Acme      # Social title (defaults to the page title)
+  ogDescription: Meet the team behind Acme
+  canonical: https://acme.com/about
   changefreq: monthly      # Sitemap change frequency
   priority: 0.8            # Sitemap priority (0.0-1.0)
 ```
@@ -442,8 +448,13 @@ seo:
 |--------|------|-------------|
 | `noindex` | boolean | Prevent search engine indexing |
 | `image` | string | Open Graph / social sharing image |
+| `ogTitle` | string | Social-card title (defaults to the page title) |
+| `ogDescription` | string | Social-card description (defaults to the page description) |
+| `canonical` | string | Canonical URL for this page |
 | `changefreq` | string | Sitemap hint: `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never` |
 | `priority` | number | Sitemap priority (0.0 to 1.0, default 0.5) |
+
+Set site-wide defaults for `image`, `ogTitle`, `ogDescription`, `keywords`, and `noindex` in [site.yml](./site-configuration.md#seo--social-sharing) — a page overrides any field it sets.
 
 ### Noindex Pages
 

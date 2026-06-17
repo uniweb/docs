@@ -18,6 +18,10 @@ That's all you need to get started. Everything else has sensible defaults.
 # Identity
 name: My Site
 description: A brief description for SEO
+keywords: [components, react, cms]   # Default meta keywords (pages can override)
+seo:                                 # Site-level social card + SEO defaults
+  image: /og-default.png             # Default Open Graph / social-sharing image
+  ogTitle: My Site
 
 # Page Ordering
 pages: [home, about, ...]            # Inclusive order (first is homepage, ... = rest)
@@ -67,6 +71,33 @@ description: Build modern websites with components
 |-------|------|-------------|
 | `name` | string | Site name (used in `<title>`, metadata) |
 | `description` | string | Default meta description |
+
+---
+
+## SEO & Social Sharing
+
+Site-level metadata for the homepage's social card and search — and the defaults every page inherits. These mirror the page-level `seo:` / `keywords:` in [page.yml](./page-configuration.md#seo-configuration), hoisted to the site root.
+
+```yaml
+keywords: [components, react, cms]   # Default keywords (pages can override)
+seo:
+  image: /og-default.png             # Default Open Graph / social-card image
+  ogTitle: Acme — Build with Components
+  ogDescription: The component content platform.
+  noindex: false                     # Set true to keep the whole site out of search
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `keywords` | string[] | Default meta keywords; a page's own `keywords` override |
+| `seo.image` | string | Default Open Graph / social-sharing image (the site's social card) |
+| `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
+| `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
+| `seo.noindex` | boolean | Keep the entire site out of search engines (cascades to every page) |
+
+**Cascade:** site-level `seo` and `keywords` are *defaults*. Each page overrides any field it sets — the page wins, the site fills the gaps. The social image is the field most worth setting once at the site level.
+
+These render into the static HTML `<head>` (Open Graph, Twitter Card, canonical, robots) for the homepage and every page, so crawlers and social unfurlers see them without running JavaScript. For arbitrary tags beyond these, use [Custom Head Injection](#custom-head-injection).
 
 ---
 
@@ -461,6 +492,8 @@ site/
 ```
 
 **Common uses:** analytics (Google Analytics, Plausible), tag managers, error monitoring (Sentry), cookie consent scripts, custom meta tags, font preconnects.
+
+> For social/SEO meta (Open Graph image, title, description, canonical, robots), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`. Reserve `head.html` for everything else.
 
 ### Example: Google Analytics
 
