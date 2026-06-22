@@ -156,6 +156,8 @@ uniweb deploy
 
 The CLI handles login, foundation publishing (workspace-local foundations get auto-published *site-bound* — see [Site-bound vs cataloged](#site-bound-vs-cataloged-foundations)), site creation, and deployment in a single flow.
 
+**Local media.** Images, video, and PDFs you reference by a site-root path (`/images/hero.jpg`, with the file under `public/`) are uploaded to the platform's CDN and rewritten to durable serve URLs automatically — no manual asset step. On the Uniweb-hosting path, reference local media by a site-root path rather than a path relative to the markdown file (`./hero.jpg`). Media already hosted elsewhere — a full `https://…` URL — is left untouched and loaded from its source.
+
 ---
 
 ## Path 2 — You ship a foundation as a product
