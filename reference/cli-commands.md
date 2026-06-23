@@ -14,7 +14,7 @@ uniweb validate                # Check content against the data schemas your fou
 uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb login                   # Authenticate with Uniweb platform
-uniweb publish                 # Publish foundation to Uniweb registry
+uniweb register                # Register a foundation + its data schemas
 uniweb invite <email>          # Invite a client to use your foundation
 uniweb handoff <email>         # Create a site and transfer to a client
 uniweb deploy                  # Deploy a built site to Uniweb hosting
@@ -740,64 +740,58 @@ Login is required for `publish`, `invite`, `handoff`, and `deploy` (remote). The
 
 ---
 
-## uniweb publish
+## uniweb register
 
-Publish a foundation to the Uniweb registry.
+Register a foundation — together with the data schemas it renders — to the Uniweb registry. Re-registering ships a **new version**; a registered version is immutable.
 
 ```bash
-uniweb publish [options]
+uniweb register [options]
 ```
 
-Run from a foundation directory or workspace root. If the workspace has multiple foundations, you're prompted to choose one.
+Run from a foundation directory, a workspace root (you're prompted if there are several foundations), or a **schemas-only package** — a package that exports schemas, or a bare `schemas/*.yml` folder — which registers just the data schemas (no foundation).
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--name <id>` | Foundation id (the bare name segment, e.g. `marketing` in `~alice/marketing@1.0.0`). Overrides `package.json::uniweb.id`. Persisted to `uniweb.id` after a successful publish, so passing it once is enough. |
-| `--namespace <handle>` | Organization namespace to publish under (overrides package.json) |
-| `--propagate` | Opt this version into automatic version-update walks for consenting sites. Default is silent — version is published but no site moves until republish. See [Foundation runtime policy](#foundation-runtime-policy) below. |
-| `--local` | Publish to local registry (`.unicloud/`) instead of remote |
-| `--registry <url>` | Publish to a specific registry URL |
-| `--edit-access <policy>` | Set edit access: `open` (anyone) or `restricted` (invite-only, default) |
-| `--dry-run` | Show what would be published without publishing |
+| `--scope @org` | Register under organization `@org` (resolves `@/x` → `@org/x`). Default: `package.json::uniweb.scope`. |
+| `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
+| `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
+| `-o <file>` | Write the `.uwx` to a file; submit nothing. |
+| `--json` | Porcelain: one compact JSON line on stdout (`{ok,scope,origin,entities:[{name,uuid,version,unchanged}]}`); human output to stderr. |
+| `--registry <url>` (alias `--backend`) | Submit to a specific registry origin. |
+| `--token <bearer>` | Submit with this bearer; skips `uniweb login`. |
+
+> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; target a local registry with `--registry <url>` or `UNIWEB_REGISTER_URL`.
 
 ### Identity (scope + id)
 
-A published foundation has two identity pieces — a **scope** (where it's published) and an **id** (what it's called). They live in different places and resolve independently.
+A registered foundation has two identity pieces — a **scope** (the org it's registered under) and an **id** (its name). They resolve independently.
 
 #### Scope
 
-`uniweb publish` catalogs a foundation as a product, so it publishes under an **organization scope** (`@org/`) you belong to. The CLI resolves the scope in this priority order:
+`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to:
 
-1. **`--namespace <handle>` flag** — explicit org override.
-2. **Scoped `package.json::name`** — `"name": "@myorg/foundation"` → org scope `@myorg/`. You must have EDITOR or higher access to the org (the `namespaces` claim in your JWT).
-3. **`package.json::uniweb.namespace`** — legacy explicit org-namespace field; equivalent to a `@myorg/…` scoped name. Rarely needed.
+1. **`--scope @org` flag** — explicit.
+2. **`package.json::uniweb.scope`** — the persisted default.
+3. *(real submit only)* derived from your login membership.
 
-A foundation with no org scope — a bare name like the scaffold default `src`, or no name at all — is **not** cataloged. `uniweb publish` stops and points you to the right path:
-
-- If the foundation powers a **single site**, run `uniweb deploy` instead — it uploads the foundation alongside the site's assets, with no naming ceremony.
-- If you're cataloging a **reusable product**, give it an org name: `uniweb publish @your-org/foundation-name`.
-
-Available org namespaces are listed in your JWT after `uniweb login`.
+A foundation with no resolvable scope is rejected — bare `@/…` names can't be registered. Set `uniweb.scope`, pass `--scope @org`, or use a scoped `package.json::name`.
 
 #### ID
 
-The id is the bare name segment — what comes after the slash in `@org/<id>`. The CLI resolves it like this:
+The id is the bare name segment — what comes after the slash in `@org/<id>`. It is the **sigil-stripped `package.json::name`**: a scoped name like `@acme/marketing` carries both id and scope; a bare name like the scaffold default `src` gets the chosen scope prepended. `package.json::uniweb.id` records the registered id when you want it to differ from the workspace name.
 
-1. **`--name <id>` flag** — overrides everything for this publish, and persists to `package.json::uniweb.id` so future publishes don't need it. Use this to rename your foundation (one-shot rename: `uniweb publish --name new-name`).
-2. **Scoped `package.json::name`** — `@org/<id>` carries the id alongside the scope.
-3. **`package.json::uniweb.id`** — the persisted publish-id. Set automatically on first publish via the prompt.
-4. **Interactive prompt** — first publish only. The CLI asks "Foundation name?" with a sensible default (the workspace folder name, with `-src` suffix stripped), then writes the answer to `package.json::uniweb.id`.
-5. **Non-interactive without a usable id** → fail with guidance.
+There is **no interactive name prompt and no `--name` flag** — the id follows `package.json`.
 
-#### Why two storage locations for the id?
+#### Renaming
 
-`package.json::name` is a **workspace concern** — pnpm uses it to link packages, sites reference it in their `file:` deps and `site.yml::foundation`. Renaming `package.json::name` cascades through several files and is a real edit operation.
+A registered version is immutable, so there is **no registry-rename flag**. To rename:
 
-`package.json::uniweb.id` is a **publish concern** — only the registry sees it. Renaming it affects the foundation's identity on the registry but doesn't move any workspace files. Most users benefit from leaving `package.json::name` as the scaffold default (`src`) forever and using `uniweb.id` to express the foundation's published identity.
+- The **workspace package** (pnpm links, `file:` deps, `site.yml::foundation` refs) → `uniweb rename foundation <old> <new>`.
+- The **registered identity** → register under the new name; consuming sites repoint their `foundation:` ref, and the old versions stay reachable.
 
-If you want both to be the same — for example, a portable foundation that's `@myorg/marketing` in npm and on the registry — set `"name": "@myorg/marketing"` directly. The id falls out of the sigil-stripped form and you don't need `uniweb.id`.
+`package.json::name` is a workspace concern; the registered id is a registry concern — keeping them separate (via `uniweb.id`) means a workspace rename never disturbs the registry, and vice versa.
 
 ### Foundation runtime policy
 
@@ -813,7 +807,7 @@ Foundations can declare a `runtimePolicy` field in `package.json` that controls 
 }
 ```
 
-(`name` here is the scaffold default. Cataloging a foundation needs an org scope — `"@myorg/foundation"`, or `--namespace myorg` — see [Identity](#identity-scope--id) above.)
+(`name` here is the scaffold default. Cataloging a foundation needs an org scope — `"@myorg/foundation"`, or `--scope @myorg` — see [Identity](#identity-scope--id) above.)
 
 | Value | Meaning |
 |-------|---------|
@@ -848,63 +842,43 @@ The system has multi-layer fallbacks so missing or partial information is always
 
 Bottom line: a foundation that doesn't set `runtimePolicy` gets `auto-minor` behavior automatically. A foundation that doesn't ship `runtime-pin.json` at all (e.g. a legacy build) still serves correctly through the platform's compatibility path — you just don't get the propagation benefits. Set `runtimePolicy` explicitly only when you want to override the default (typically to `exact` for stability-critical builds).
 
-### `--propagate` and `silent` defaults
+### Propagation (currently silent)
 
-`uniweb publish` defaults to `silent` classification: the artifact is uploaded and stored in the registry, sites that pin exactly that version can resolve to it, but sites using earlier versions don't move. This is the conservative default — newly-published versions don't reach existing sites until those sites explicitly opt in (republish, manual refresh, or an explicit `--propagate` push).
+Today every `register` is **silent**: the version is uploaded and stored, sites that pin it exactly resolve to it, but sites on earlier versions don't move until they re-pin.
 
-`uniweb publish --propagate` opts this version into the platform's gated rollout. Eligible sites — sites referencing your foundation that aren't pinned and whose policy permits the version jump — pick up the new version automatically through the platform's wave-based rollout (canary → small percentage → larger percentage → full population, with health gates between waves).
-
-Use `silent` for:
-- Internal refactors / no-op patches
-- Pre-staging a release before flipping the propagation switch
-- Versions you want available but not pushed to consenting sites yet
-
-Use `--propagate` for:
-- Security or correctness fixes you want to reach existing sites
-- New features you want consenting sites to receive automatically
+Automatic **propagation** — a gated rollout that moves consenting sites forward (canary → a percentage → the full population, with health gates between waves) — is a registry capability being brought to `register`; the explicit opt-in control (the legacy `--propagate`) isn't wired yet. Until it lands, sites move forward by re-pinning their `foundation:` version, or through the runtime policy below.
 
 ### What Happens
 
-1. Reads `dist/meta/schema.json` for the foundation version (auto-builds if `dist/` is missing).
-2. Resolves the scope and id per the priorities above. On a first publish without `--name` or `uniweb.id`, prompts interactively for the foundation name and persists the answer to `package.json::uniweb.id`.
-3. Server authorizes the org scope against the JWT (`namespaces[]`).
-4. Checks for duplicate versions.
-5. Uploads the foundation bundle to `foundations/{org}/{name}/{version}/`.
+1. Builds-if-stale, then reads `dist/meta/schema.json` for the foundation version and the data schemas it declares.
+2. Resolves the scope (`--scope` → `uniweb.scope` → login membership) and the id (the scoped `package.json::name`).
+3. Submits a names-only `.uwx`; the registry authorizes the org scope against your membership.
+4. A version already registered is **immutable** — the schema submit no-ops (the CLI resumes any unfinished code delivery; completed files are idempotent).
+5. Delivers the foundation's `dist/` code (skipped by `--schema-only`).
 
 ### Examples
 
 ```bash
-# Catalog a foundation under an org you belong to (first publish confirms)
-uniweb publish @myorg/marketing
+# Register the foundation + its data schemas under an org you belong to
+uniweb register --scope @myorg
 
-# With "@myorg/marketing" set as package.json::name, no argument is needed
-uniweb publish
+# With "@myorg/marketing" as package.json::name (or uniweb.scope set), no flag is needed
+uniweb register
 
-# Provide just the org scope; the CLI resolves (or prompts for) the id
-uniweb publish --namespace myorg
+# Register just the data schemas (from a foundation or a schemas-only package)
+uniweb register --schema-only
 
-# Rename on the registry: one-shot, persists the new id to uniweb.id
-uniweb publish --name marketing-pro
+# Preview the .uwx (and the code-file plan); submit nothing
+uniweb register --dry-run
 
-# Site-bound foundation? Don't publish — deploy uploads it automatically
-uniweb deploy
-
-# Publish to a local registry for development (skips the org-scope gate; no auth)
-uniweb publish --local
-
-# Preview what would be published
-uniweb publish --dry-run
-
-# Publish to a custom registry
-uniweb publish --registry http://localhost:4001
+# Submit to a specific registry origin
+uniweb register --registry http://localhost:8080
 ```
 
-### After Publishing
-
-The CLI shows next steps for working with clients:
+### After Registering
 
 ```
-✓ Published @myorg/foundation@1.0.0
+✓ Registered @myorg/marketing@1.0.0 + 2 data schema(s)
 
   Working with clients:
     uniweb invite <email>    Client creates their own site with your foundation
@@ -982,6 +956,27 @@ uniweb clone <site-uuid> [name|.]
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
 | `--project <dir>` | Co-locate as `<dir>/site` |
 | `--no-collections` | Pull pages only; skip collection records |
+
+---
+
+## uniweb publish
+
+Make a **backend-hosted site** live — a CMS-style "go live" that promotes the site's current backend state. The site must already be synced (`uniweb push` first, or use `uniweb deploy`, which pushes and publishes in one step).
+
+```bash
+uniweb login
+uniweb publish
+```
+
+`publish` makes the site's **current backend state** live — including edits made through the Uniweb apps since your last push. It does **not** push your local files: run `uniweb push` first if you want unpushed local edits live. A site that was never pushed has no `site.yml::$uuid`, and `publish` says so.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--dry-run` | Resolve everything (runtime, languages); POST nothing. |
+| `--backend <url>` | Override the backend origin. |
+| `--token <bearer>` | Auth bearer; skips `uniweb login`. |
 
 ---
 
