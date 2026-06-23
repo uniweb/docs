@@ -101,7 +101,8 @@ collections:
   articles:
     path: collections/articles
     sort: date desc           # Field + direction
-    filter: published != false
+    where:
+      published: { ne: false }
     limit: 100                # Max items (0 = unlimited)
     excerpt:
       maxLength: 160          # Auto-excerpt character limit
@@ -330,42 +331,26 @@ Single-item JSON files with `published: false` are excluded, just like YAML item
 
 ## Filtering
 
-Filter items using simple expressions:
+Filter items with a `where:` predicate — a structured object whose keys are field names. Bare values match by equality; operators nest as objects:
 
 ```yaml
 collections:
   articles:
     path: collections/articles
-    filter: published != false
+    where:
+      published: { ne: false }
 ```
 
-### Supported operators
+Common shapes:
 
-| Operator | Example | Description |
-|----------|---------|-------------|
-| `==` | `category == tutorial` | Equal |
-| `!=` | `published != false` | Not equal |
-| `>` | `date > 2025-01-01` | Greater than |
-| `<` | `price < 100` | Less than |
-| `>=` | `rating >= 4` | Greater than or equal |
-| `<=` | `order <= 10` | Less than or equal |
-| `contains` | `tags contains featured` | Array includes value |
+| Goal | `where:` |
+|---|---|
+| Only published | `{ published: { ne: false } }` |
+| After a date | `{ date: { gt: '2025-01-01' } }` |
+| Tagged "featured" | `{ tags: featured }` |
+| In a category | `{ category: tutorial }` |
 
-### Examples
-
-```yaml
-# Only published items
-filter: published != false
-
-# Items after a date
-filter: date > 2025-01-01
-
-# Items with a specific tag
-filter: tags contains featured
-
-# Items in a category
-filter: category == tutorial
-```
+Operators: `eq` `ne` `gt` `gte` `lt` `lte` `in` `nin` `like` `exists`. Compose with `and:` / `or:` / `not:`. Full reference and the saved-views pattern: [Predicates](../authoring/predicates.md).
 
 ---
 

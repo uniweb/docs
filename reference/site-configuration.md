@@ -411,7 +411,8 @@ collections:
   articles:
     path: collections/articles
     sort: date desc
-    filter: published != false
+    where:
+      published: { ne: false }
 
   team:
     path: collections/team
@@ -424,7 +425,7 @@ collections:
 |--------|-------------|
 | `path` | Folder containing markdown files |
 | `sort` | Sort expression (`field asc/desc`) |
-| `filter` | Filter expression |
+| `where` | Filter predicate (where-object) |
 | `limit` | Maximum items |
 | `excerpt.maxLength` | Auto-excerpt character limit |
 | `excerpt.field` | Frontmatter field for excerpt |

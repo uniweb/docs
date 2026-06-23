@@ -534,8 +534,8 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 | `url` | string | Remote URL. Mutually exclusive with `path`. |
 | `transform` | string | Dot-path into the response (e.g. `data.items`). |
 | `detail` | string | `'rest'` / `'query'` / custom pattern for template-page item fetches. |
-| `where` | string | Author-provided filter expression. Opaque to the framework. |
-| `filter` / `sort` / `limit` | any | Post-processing hints the author set. |
+| `where` | object | Author-provided predicate (where-object). |
+| `sort` / `limit` | any | Order and cap hints the author set. |
 | `dynamicContext` | object | Present for template-page item fetches: `{ paramName, paramValue, schema }`. |
 
 **Context** — the framework singletons, handed to the fetcher directly (no `globalThis` reads needed):

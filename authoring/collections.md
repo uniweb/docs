@@ -189,7 +189,8 @@ collections:
   articles:
     path: collections/articles
     sort: date desc
-    filter: published != false
+    where:
+      published: { ne: false }
     limit: 100
 ```
 
@@ -197,25 +198,22 @@ collections:
 |--------|-------------|---------|
 | `path` | Folder containing the collection files | `collections/articles` |
 | `sort` | Order items by a field | `date desc` (newest first) |
-| `filter` | Include only matching items | `published != false` |
+| `where` | Include only matching items (predicate) | `{ published: { ne: false } }` |
 | `limit` | Maximum number of items | `100` |
 | `deferred` | Heavy fields stripped from list payloads (see below) | `[body]` |
 | `queryable` | Fields a foundation can offer for filtering UI (see below) | (object) |
 
 **Sorting:** Add `asc` (A→Z, oldest first) or `desc` (Z→A, newest first) after the field name. For example, `sort: date desc` shows newest articles first. `sort: title asc` sorts alphabetically.
 
-**Filtering:** Common filters:
+**Filtering:** Filter items with a `where:` predicate. Common shapes:
 
-```yaml
-# Only published items (skip drafts)
-filter: published != false
+| Goal | `where:` |
+|---|---|
+| Only published (skip drafts) | `{ published: { ne: false } }` |
+| Tagged "featured" | `{ tags: featured }` |
+| From 2025 onward | `{ date: { gte: '2025-01-01' } }` |
 
-# Only items tagged "featured"
-filter: tags contains featured
-
-# Only items from 2025 onward
-filter: date > 2025-01-01
-```
+See [Predicates](./predicates.md) for the full operator reference.
 
 ### Multiple collections
 
@@ -586,7 +584,7 @@ collections:
 | Create a collection | Add markdown files to a folder in `collections/` |
 | Declare it | Add a `collections:` entry in `site.yml` |
 | Sort items | `sort: date desc` or `sort: title asc` in `site.yml` |
-| Filter items | `filter: published != false` in `site.yml` |
+| Filter items | `where: { published: { ne: false } }` in `site.yml` |
 | Show on a page | `data: articles` in `page.yml` |
 | Show a subset | `fetch: { collection: articles, limit: 3 }` in section frontmatter |
 | Create detail pages | Add a `[slug]/` folder under the list page |

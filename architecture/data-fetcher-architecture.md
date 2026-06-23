@@ -97,7 +97,7 @@ Normalized from the author's `fetch:` / `data:` config. Carried fields:
 | `method` | no | `GET` (default) or `POST`. Unsupported values warn and fall back to GET. |
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
 | `envelope` | no | Per-request overrides of site-level envelope (usually set by object-form `detail:`). |
-| `filter` / `sort` / `limit` | no | Author-provided client-side post-processing hints. Opaque to the default fetcher. |
+| `where` / `sort` / `limit` | no | Author-provided query hints (predicate, order, cap). Applied client-side unless the source's `supports:` lists them. |
 | `dynamicContext` | no | Present on template-page item fetches: `{ paramName, paramValue, schema }`. |
 
 ### Context
@@ -165,7 +165,7 @@ JSON.stringify({
 
 Fields that do **not** contribute:
 
-- `limit`, `sort`, `filter` — applied client-side post-fetch; must not split the cache.
+- `limit`, `sort`, `where` — applied client-side post-fetch (fallback case); must not split the cache.
 - `detail` — the detail fetch produces a different URL or body, which already splits the key.
 - `dynamicContext` — carried on the request for resolution; the cache key's `body` already contains the substituted values.
 
@@ -220,7 +220,7 @@ A site that explicitly opts a remote fetch into `prerender: true` and relies on 
 
 ## Post-processing
 
-`filter:` / `sort:` / `limit:` are applied after fetch (not sent to the backend).
+`where:` / `sort:` / `limit:` are applied after fetch in the fallback case (when the source's `supports:` doesn't push them down).
 
 - **Static build:** applied in `build/src/site/data-fetcher.js`'s `applyPostProcessing` before embedding into `__SITE_CONTENT__`.
 - **Runtime:** currently not applied — runtime fetches return raw data, and the build-time pipeline is where narrowing happens today. This is a latent gap that'll land as a dedicated runtime post-processing step when it's needed.

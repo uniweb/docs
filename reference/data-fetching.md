@@ -384,8 +384,6 @@ fetch:
 
 See the [Queries](#queries) section below for the full where-object format and how `where:` interacts with the source's capabilities.
 
-> **Deprecated:** the legacy `filter:` field with its DSL string (`tags contains featured`) is replaced by `where:` with where-object format (`{ tags: featured }`). The old `filter:` is still accepted for one release with a deprecation warning. Migrate when convenient.
-
 ---
 
 ## Queries

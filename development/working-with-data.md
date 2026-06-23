@@ -192,7 +192,7 @@ fetch:
   transform: data.items                  # Extract nested path from response
   limit: 6                               # Post-processing: take first N items
   sort: date desc                        # Post-processing: sort by field
-  filter: tags contains featured         # Post-processing: filter items
+  where: { tags: featured }              # filter to matching records (predicate)
 ```
 
 Shorthands for common cases:
