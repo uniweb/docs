@@ -220,6 +220,7 @@ A few practical notes:
 
 ## See Also
 
+- [Designing Data Schemas](./designing-data-schemas.md) — the modeling decisions behind a set of related types: sections, subsections, embed vs reference, and relationship (edge) attributes, with a worked LMS example.
 - [Working with Data](./working-with-data.md) — How data is fetched, cached, and delivered to components at runtime; the `@org/schemas` package and routed-directory sharing mechanisms; `uniweb validate`.
 - [Component Metadata → Data](../reference/component-metadata.md#data) — The `data:` field reference: named refs, inline field maps, and the editor rich-form.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — Why one schema serves validation, editor UI, and delivery — and how the registry makes content types shareable.
