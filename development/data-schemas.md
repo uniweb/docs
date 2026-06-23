@@ -71,6 +71,77 @@ The flat `fields:` form is the common case; reach for `sections:` only when a si
 
 ---
 
+## Field types and formats
+
+The friendly type you write folds to a small set of **canonical kinds** the framework stores and ships. Write the word that fits the content — the framework normalizes it:
+
+| You write | Canonical kind | Holds |
+|---|---|---|
+| `string` | `string` | A short, single-line value |
+| `text` | `text` | Long-form text (see `format` below) |
+| `number` | `decimal` | A number |
+| `integer` | `int` | A whole number |
+| `boolean` | `bool` | `true` / `false` |
+| `date`, `datetime` | `date`, `datetime` | An ISO-8601 date / timestamp |
+| `image` | `file` | A path or URL to a file |
+| `url`, `email` | `string` (+ `format`) | A validated string |
+| `markdown`, `html` | `text` (+ `format`) | A rich-content body |
+| `json` | `json` | An opaque structured value (see `format`) |
+| `object` | `object` | A nested record — declare its `fields:` |
+| `array` | `array` | A list — declare the item type with `items:` |
+| `ref` | `ref` | A reference to another schema (`ref: '@/person'`) |
+
+You can always write the canonical kind directly; the friendly names just save you the folding.
+
+### Rich content: `format`
+
+A `format` marks a field as carrying rich content. It is **type-bound** — the framework rejects a mismatch at build time:
+
+| `format` | Valid on | Use it for |
+|---|---|---|
+| `markdown` | `text` | A markdown body that round-trips as plain source |
+| `html` | `text` | An HTML body |
+| `prosemirror` | `json` | A rich document edited through a structured editor |
+| `scene` | `json` | A visual scene composition (rendered by `@uniweb/scene`) |
+
+```yaml
+fields:
+  summary: { type: text, format: markdown }     # a markdown body
+  body:    { type: json, format: prosemirror }  # a structured rich document
+```
+
+The friendly aliases set this for you — `type: markdown` is exactly `type: text, format: markdown`. Reach for `json` + `format: prosemirror` only when the content must round-trip through a structured editor; for a file-based body, `text` + `format: markdown` is simpler and stays readable as source.
+
+### Translatable fields: `localized`
+
+Text and rich-content fields are **translatable by default** — the framework keeps one value per locale. Set `translatable: false` to opt a field out (an ID, a slug, a machine code that's the same in every language):
+
+```yaml
+fields:
+  title: { type: string }                        # translatable by default
+  body:  { type: text, format: markdown }        # translatable by default
+  sku:   { type: string, translatable: false }   # one value across all locales
+```
+
+You author a translatable field as a plain value in your source locale; translations live in the `locales/` folder. See [Internationalization](./internationalization.md).
+
+### Picklists: `enum` and `options`
+
+Two ways to constrain a field to a set of choices:
+
+```yaml
+fields:
+  status:  { type: string, enum: [draft, published, archived] }  # inline list
+  country: { type: string, options: '@/countries' }              # curated, shared
+```
+
+- **`enum:`** — an **inline** list of allowed values. Best for a short, fixed set.
+- **`options:`** — a **`@/<name>` ref** to a curated options schema. Best when the choices are a managed list reused across fields or foundations.
+
+An inline array always belongs on `enum:`; `options:` always takes a ref.
+
+---
+
 ## Three namespaces
 
 A schema reference is a name in one of three namespaces. The prefix says where the definition lives, and who owns it:
