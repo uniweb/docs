@@ -707,7 +707,7 @@ Both produce the same shape at `content.data[key]`, so components are
 agnostic to how the data was entered. The value of a `data:` entry is either
 an **inline field map** (a keyed object, below) or an **inline rich-form** (a
 `fields` array — the editor form). It can also be a named ref (`'@/…'`,
-`'@uniweb/…'`) when the shape is shared/versioned.
+`'@std/…'`) when the shape is shared/versioned.
 
 #### Inline field map — flat key/value maps
 
