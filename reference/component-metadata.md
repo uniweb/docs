@@ -407,7 +407,7 @@ data: {
     name:        { type: 'string', required: true },
     price:       { type: 'number', required: true },
     period:      { type: 'string', default: 'month' },
-    features:    { type: 'array', of: 'string' },
+    features:    { type: 'array', items: { type: 'string' } },
     highlighted: { type: 'boolean', default: false },
   },
 }
@@ -730,13 +730,12 @@ data: {
   'nav-links': {
     label: { type: 'string' },
     href: { type: 'string' },
-    type: {
-      type: 'select',
-      options: ['plain', 'button', 'dropdown'],
-      default: 'plain',
+    type: { type: 'string', enum: ['plain', 'button', 'dropdown'], default: 'plain' },
+    icon: 'string',  // shorthand for { type: 'string' }
+    children: {      // one level of sub-links
+      type: 'array',
+      items: { type: 'object', fields: { label: 'string', href: 'string' } },
     },
-    icon: 'string',  // Shorthand for { type: 'string' }
-    children: { type: 'array', of: 'nav-links' },  // Recursive
   },
 }
 ```
@@ -873,6 +872,8 @@ active locale.
 
 #### Inline field-map field types (keyed-object form)
 
+An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name.
+
 ```javascript
 // Full form
 field: { type: 'string', default: 'value' }
@@ -882,23 +883,15 @@ field: 'string'
 field: 'number'
 field: 'boolean'
 
-// Select
-field: {
-  type: 'select',
-  options: ['a', 'b', 'c'],
-  default: 'a',
-}
+// Closed value set (an inline list of allowed values)
+field: { type: 'string', enum: ['a', 'b', 'c'], default: 'a' }
 
-// Nested object
-field: {
-  type: 'object',
-  schema: { name: 'string', value: 'number' },
-}
+// Nested object — nests via `fields:`
+field: { type: 'object', fields: { name: 'string', value: 'number' } }
 
-// Array
-field: { type: 'array', of: 'string' }
-field: { type: 'array', of: 'other-schema-name' }
-field: { type: 'array', of: { name: 'string' } }
+// Array — element type via `items:`
+field: { type: 'array', items: { type: 'string' } }
+field: { type: 'array', items: { type: 'object', fields: { name: 'string' } } }
 ```
 
 ---
