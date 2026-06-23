@@ -19,13 +19,13 @@ Before writing any fields, list the **things** your domain is about. For an LMS:
 
 Each becomes a schema. The interesting part isn't the fields inside each one — it's how they relate. That's what the rest of this guide is about.
 
-> Reuse before inventing: the standards (`@std/person`, `@std/event`, …) already cover common shapes. This guide defines its own `@/person` to keep the example self-contained, but reach for a `@std/*` type when one fits.
+> Reuse before inventing: the standards (`@std/person`, `@std/event`, …) already cover common shapes. This guide defines its own `@/person` to stay self-contained, but reach for a `@std/*` type when one fits.
 
 ---
 
 ## Sections: group fields into named parts
 
-The simplest schema is a flat list of fields:
+The simplest schema is a flat list of fields — one record's worth of data:
 
 ```yaml
 name: lesson
@@ -35,24 +35,31 @@ fields:
   minutes: { type: int }
 ```
 
-When a type has **distinct groups** of fields, or **repeating** or **nested** data, you reach for named **sections** instead. A section is a namespace for a group of fields, with a *kind*:
+When a type has **distinct groups** of fields, or **repeating** data, you organize them into named **sections**. A section is a namespace for a group of fields, with a *kind*:
 
-- **`single`** — one record (an object). The type's own attributes.
-- **`multi`** — a repeating list of records (an array). Many of something.
+- **`single`** — one record (an object).
+- **`multi`** — a repeating list of records (an array).
 
-Mark one `single` section **`brief: true`** — it's the type's summary, the handful of fields that represent it at a glance (typically its title).
+A type can have **several** sections. Use multiple `single` sections to keep distinct concerns apart; use `multi` sections for "many of something." Mark one `single` section **`brief: true`** — the type's lean summary: its title and the few fields that identify it. The brief is the type's stand-in wherever it's shown in short form (for example, in a reference from another type), so keep it to the essentials.
 
 ```yaml
 name: course
 sections:
-  identity:                 # a single section — the course's own attributes
+  identity:                 # the brief — what the course is
     kind: single
     brief: true
     fields:
       title:   { type: string, required: true }
       summary: { type: text, format: markdown }
       level:   { type: string, enum: [intro, intermediate, advanced] }
+  details:                  # a second single section — a separate concern
+    kind: single
+    fields:
+      credits: { type: int }
+      weeks:   { type: int }
 ```
+
+> **Field or section?** A **field** holds one value, or a simple list (`{ type: array, items: { type: string } }`). A **section** holds a whole record, or many records. Reach for a section when the group has its own structure — multiple fields, repetition, or nesting; keep it a field when it's a single value or a flat list.
 
 ---
 
@@ -81,7 +88,7 @@ sections:
           body:  { type: text, format: markdown }
 ```
 
-A record of this schema nests the same way: each module is a record with a `lessons` array inside it (see [Entity Content Structure](../reference/entity-content.md)). The hierarchy is **pure structure** — no IDs to wire up, no back-pointers; the data tree mirrors the schema tree.
+(A section can hold both its own `fields` *and* child `sections`, as `modules` does here.) A record nests the same way: each module is a record with a `lessons` array inside it (see [Entity Content Structure](../reference/entity-content.md)). The hierarchy is **pure structure** — no IDs to wire up, no back-pointers; the data tree mirrors the schema tree.
 
 Subsections are the right tool when the nested data is **owned by** and **local to** its parent — modules and lessons only exist *inside* their course. When that's not true, you reach for a reference instead.
 
@@ -96,12 +103,7 @@ This is the central modeling decision. You have a second type — say `person` �
 **Reference** — store a pointer to a separate record with a **`ref`** field:
 
 ```yaml
-  identity:
-    kind: single
-    brief: true
-    fields:
-      title:      { type: string }
-      instructor: { type: ref, ref: '@/person' }   # points at a separate person record
+instructor: { type: ref, ref: '@/person' }   # points at a separate person record
 ```
 
 A `ref` field stores a pointer to a record of another type, by its slug — the two records stay separate. Choose between embed and reference by asking **"does this thing exist on its own?"**
@@ -172,7 +174,21 @@ The question is always *how much does the link carry* — nothing (a bare list o
 
 ## Worked example: the LMS, end to end
 
-Five types, each modeling decision visible:
+Four types. The references between them:
+
+```mermaid
+flowchart LR
+  person[person]
+  course[course]
+  program[program]
+  enrollment[enrollment]
+  course -->|instructor ref| person
+  program -->|courses ref + edge attrs| course
+  enrollment -->|student ref| person
+  enrollment -->|course ref| course
+```
+
+*Arrows are references. `course` also **embeds** its modules and lessons (owned, so not a link), and carries a `prerequisites` list of `course` references.*
 
 ```yaml
 # @/person — an independent type (instructors and students both)
@@ -184,19 +200,24 @@ fields:
 ```
 
 ```yaml
-# @/course — embeds what it owns, references what it doesn't
+# @/course — namespaces its own fields, embeds what it owns, references what it doesn't
 name: course
 sections:
-  identity:
+  identity:                                                                    # the brief
     kind: single
     brief: true
     fields:
-      title:         { type: string, required: true }
-      summary:       { type: text, format: markdown }
-      level:         { type: string, enum: [intro, intermediate, advanced] }
+      title:   { type: string, required: true }
+      summary: { type: text, format: markdown }
+      level:   { type: string, enum: [intro, intermediate, advanced] }
+  details:                                                                     # a separate concern
+    kind: single
+    fields:
+      credits:       { type: int }
+      weeks:         { type: int }
       instructor:    { type: ref, ref: '@/person' }                          # one reference
       prerequisites: { type: array, items: { type: ref, ref: '@/course' } }  # a list of references
-  modules:                                                                   # embedded: owned by this course
+  modules:                                                                     # embedded: owned by this course
     kind: multi
     fields:
       title: { type: string }
@@ -236,7 +257,7 @@ fields:
   status:      { type: string, enum: [active, completed, withdrawn] }
 ```
 
-Notice the pattern: `person` is flat and independent; `course` **embeds** what it owns (modules, lessons) and **references** what it doesn't (instructor, prerequisite courses); `program` and `enrollment` carry **edge attributes** on their links.
+The pattern: `person` is flat and independent; `course` **namespaces** its own fields into sections, **embeds** what it owns (modules, lessons), and **references** what it doesn't (instructor, prerequisite courses); `program` and `enrollment` carry **edge attributes** on their links.
 
 ---
 
@@ -245,7 +266,7 @@ Notice the pattern: `person` is flat and independent; `course` **embeds** what i
 - **Default to a flat `fields:` schema.** Reach for sections only when you have repeating groups, hierarchy, or genuinely distinct namespaces.
 - **Embed what's owned; reference what's independent.** "Does it exist on its own?" is the question.
 - **If the link has data, it's an edge** — a `multi` section of `{ ref + fields }`, or a standalone relationship type.
-- **Mark the brief.** One `single` section, `brief: true` — the type's at-a-glance summary.
+- **Mark the brief.** One `single` section, `brief: true` — the type's at-a-glance summary; keep it lean.
 - **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework handle the rest.
 
 ---
