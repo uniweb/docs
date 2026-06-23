@@ -54,27 +54,27 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 }
 ```
 
-(`uniweb.id` is the foundation's published name, separate from the workspace package name. The CLI sets it on first publish via an interactive prompt, or via `--name <id>`.)
+(`uniweb.id` is the foundation's registered name, separate from the workspace package name.)
 
 ### Supported fields
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `id` | string | (set on first publish via the CLI prompt, or via `--name`) | The foundation's id on the registry — the bare name segment in `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
+| `id` | string | (the bare segment of `package.json::name`, or an explicit `uniweb.id`) | The foundation's id on the registry — the bare name segment in `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
 | `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations set a scoped name (`@org/x`) directly. |
-| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb publish`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
+| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
 
 ### Identity (scope + id) resolution
 
-A published foundation has two identity pieces — a **scope** (where it's stored) and an **id** (what it's called). They live in different places and resolve independently. Full details and examples in [`uniweb publish` → Identity](./cli-commands.md#identity-scope--id). The summary:
+A registered foundation has two identity pieces — a **scope** (where it's stored) and an **id** (what it's called). They live in different places and resolve independently. Full details and examples in [`uniweb register` → Identity](./cli-commands.md#identity-scope--id). The summary:
 
-**Scope** priority: `--namespace` flag → scoped `package.json::name` (`@org/x`) → `uniweb.namespace` (legacy). Cataloging requires an org scope; a bare or unscoped name isn't cataloged — site-bound foundations are uploaded by `uniweb deploy` instead.
+**Scope** priority: `--scope @org` → scoped `package.json::name` (`@org/x`) → `package.json::uniweb.scope`. Cataloging requires an org scope; a bare or unscoped name isn't cataloged — site-bound foundations are uploaded by `uniweb deploy` instead.
 
-**ID** priority: `--name` flag → sigil-stripped `package.json::name` → `uniweb.id` (persisted on first publish) → interactive prompt (writes back to `uniweb.id`) → fail in non-interactive mode.
+**ID**: the bare (sigil-stripped) segment of `package.json::name` (or an explicit `uniweb.id`).
 
-The CLI prompts for the foundation id on the first publish and persists the answer to `package.json::uniweb.id`, so subsequent publishes don't ask again. To rename, run `uniweb publish --name <new-id>` once — the new id is persisted.
+To rename the foundation's workspace package and update its dependent sites, run `uniweb rename foundation <old> <new>`. The workspace name and the registered id (`uniweb.id`) are independent.
 
-The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is publish-only — changing it affects only the registry identity. It lets you keep the scaffold default `"name": "src"` for the workspace while giving the foundation a distinct published id — the org scope still comes from a scoped name or `uniweb.namespace`.
+The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is register-only — changing it affects only the registry identity. It lets you keep the scaffold default `"name": "src"` for the workspace while giving the foundation a distinct registered id — the org scope still comes from a scoped name or `uniweb.namespace`.
 
 ### Why a separate `uniweb` block
 

@@ -1,6 +1,6 @@
 # Publishing and Working with Clients
 
-This page covers **catalog publishing** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to publish it manually: just run `uniweb deploy` from the site directory and the CLI will auto-publish your foundation under a site-scoped slot as part of the deploy. See [Deploying](./deploying.md) for the site-bound flow.
+This page covers **catalog registration** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to register it manually: just run `uniweb deploy` from the site directory and the CLI will auto-register your foundation under a site-scoped slot as part of the deploy. See [Deploying](./deploying.md) for the site-bound flow.
 
 After building a foundation that you do want to catalog, you have two paths to get clients started: **invite** them to create their own site, or **hand off** a populated site you built for them.
 
@@ -18,36 +18,36 @@ You'll be prompted for your email and an API token from uniweb.app/cli-login. To
 
 ### Build Your Foundation
 
-Your foundation must be built before publishing:
+Your foundation must be built before registering:
 
 ```bash
 cd foundation
 uniweb build
 ```
 
-This produces `dist/foundation.js` and `dist/meta/schema.json`. If you skip this step, `uniweb publish` will build automatically.
+This produces `dist/foundation.js` and `dist/meta/schema.json`. If you skip this step, `uniweb register` will build automatically.
 
-## Publishing
+## Registering
 
 Register your foundation on the Uniweb catalog:
 
 ```bash
-uniweb publish @your-org/foundation-name
+uniweb register --scope @your-org
 ```
 
-The name argument is required — `uniweb publish` is the deliberate "this foundation is a catalog product" command. Bare `uniweb publish` (with no name) errors out and points you at `uniweb deploy` for site-bound foundations.
+The org scope is required — `uniweb register` is the deliberate "this foundation is a catalog product" command. Bare `uniweb register` (with no org scope) errors out and points you at `uniweb deploy` for site-bound foundations.
 
-In CI, you also need `--catalog` to confirm the public-catalog publish:
+In CI, you also need `--catalog` to confirm the public-catalog registration:
 
 ```bash
-uniweb publish @your-org/foundation-name --catalog
+uniweb register --scope @your-org --catalog
 ```
 
 Interactive runs prompt for confirmation instead of requiring the flag.
 
-Publishing makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The version comes from `package.json::version`.
+Registering makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The version comes from `package.json::version`.
 
-Each version can only be published once. To publish an update, bump the version in `package.json`:
+Each version can only be registered once. To register an update, bump the version in `package.json`:
 
 ```json
 { "name": "src", "version": "1.0.1" }
@@ -58,7 +58,7 @@ Each version can only be published once. To publish an update, bump the version 
 By default, only clients you explicitly invite can create sites with your foundation (`restricted` access). To allow anyone to use it:
 
 ```bash
-uniweb publish --edit-access open
+uniweb register --edit-access open
 ```
 
 ## Invite Path

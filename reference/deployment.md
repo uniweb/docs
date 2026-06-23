@@ -471,7 +471,7 @@ uniweb deploy        # default host: 'uniweb' — Uniweb hosting
 
 The CLI auto-builds if `dist/` is missing. The first deploy of a new site opens a browser to confirm the site name, plan, and (if the site uses paid features such as a custom domain) payment. Subsequent deploys are silent.
 
-Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Foundations come in two flavours — **site-bound** (rides with the site, served from the site's own origin) and **cataloged** (published once via `uniweb publish`, licensed to consuming sites, served from the catalog's CDN). Both get the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
+Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Foundations come in two flavours — **site-bound** (rides with the site, served from the site's own origin) and **cataloged** (registered once via `uniweb register`, licensed to consuming sites, served from the catalog's CDN). Both get the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
 
 See [Deploying → Site-bound vs cataloged foundations](../development/deploying.md#site-bound-vs-cataloged-foundations) for the full picture.
 
@@ -493,25 +493,25 @@ uniweb deploy --target=preview
 
 Uniweb hosting requires authentication — run `uniweb login` first.
 
-For the full developer-to-client workflow (publishing foundations, creating invites, handing off sites), see [Publishing and Clients](../development/publishing-and-clients.md).
+For the full developer-to-client workflow (registering foundations, creating invites, handing off sites), see [Publishing and Clients](../development/publishing-and-clients.md).
 
 ---
 
-## Publishing a foundation to the catalog
+## Registering a foundation to the registry
 
 Foundations are runtime federated modules — **not npm packages.** They're not libraries for developers to import; they're vocabularies of section types that content authors compose sites from. The framework has no `npm publish` path for foundations and the catalog is not on npm.
 
 The Uniweb catalog is a private, access-segregated inventory of commercial foundation products. You see only the foundations you own or are a registered editor of; clients see only the foundations licensed to their sites. Foundations are typically built by developers and agencies for paying clients; clients receive a license to use the foundation on a specific site, and that license rides with site ownership when sites are transferred.
 
-To publish a foundation as a catalog product (so it can be licensed across multiple sites, and propagation can move sites forward without redeploying):
+To register a foundation as a catalog product (so it can be licensed across multiple sites, and propagation can move sites forward without redeploying):
 
 ```bash
 cd foundation         # the foundation's directory
 uniweb login          # first time only
-uniweb publish @your-org/foundation-name
+uniweb register --scope @your-org
 ```
 
-Catalog publishes require an `@org/name` namespace. Site-bound foundations — foundations that exist for one specific site — don't go through `uniweb publish` at all. They're auto-published as part of `uniweb deploy` and stored alongside the site's other published assets, never reaching the catalog. Reach for `uniweb publish` only when you mean to ship the foundation across multiple sites or expose it in the catalog.
+Catalog registrations require an `@org` scope. Site-bound foundations — foundations that exist for one specific site — don't go through `uniweb register` at all. They're auto-registered as part of `uniweb deploy` and stored alongside the site's other deployed assets, never reaching the catalog. Reach for `uniweb register` only when you mean to ship the foundation across multiple sites or expose it in the catalog.
 
 Sites control their foundation update policy in `site.yml`:
 
@@ -521,7 +521,7 @@ foundation:
   policy: auto-minor    # exact | auto-patch | auto-minor
 ```
 
-See [CLI Commands](./cli-commands.md) and [Deploying](../development/deploying.md) for the full publish + propagation surface.
+See [CLI Commands](./cli-commands.md) and [Deploying](../development/deploying.md) for the full register + propagation surface.
 
 ---
 

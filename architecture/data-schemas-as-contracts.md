@@ -24,14 +24,14 @@ This is the same bargain CCA makes everywhere: a constraint (one declaration, no
 
 ## Identity is the name
 
-A schema is addressed by an **org-scoped name** — `@std/person`, `@acme/product` — not by a file path, a database id, or an import. The name is the whole contract. The definition behind it resolves locally during development (from a package or a folder on disk) and from the Uniweb registry once published, but the *reference* never changes.
+A schema is addressed by an **org-scoped name** — `@std/person`, `@acme/product` — not by a file path, a database id, or an import. The name is the whole contract. The definition behind it resolves locally during development (from a package or a folder on disk) and from the Uniweb registry once registered, but the *reference* never changes.
 
 That indirection is what makes the schema shareable rather than copied:
 
-- A foundation writes `@/product` in its source and never hard-codes its own org. The same foundation can be published under any scope — the name resolves relative to where it's published.
-- A reference to `@std/person`, or to a schema another organization published, is a name the registry resolves. The foundation declares *what shape it renders*, not *where the definition lives*.
+- A foundation writes `@/product` in its source and never hard-codes its own org. The same foundation can be registered under any scope — the name resolves relative to where it's registered.
+- A reference to `@std/person`, or to a schema another organization registered, is a name the registry resolves. The foundation declares *what shape it renders*, not *where the definition lives*.
 
-Because identity is the name, you publish a schema by declaring it under a scope you own — not by minting an id or managing a version yourself. Re-declaring an unchanged schema is a no-op; a changed one becomes a new version. The producer never tracks versions; the name stays stable while the definition behind it evolves.
+Because identity is the name, you register a schema by declaring it under a scope you own — not by minting an id or managing a version yourself. Re-declaring an unchanged schema is a no-op; a changed one becomes a new version. The producer never tracks versions; the name stays stable while the definition behind it evolves.
 
 ---
 

@@ -152,7 +152,7 @@ A schema reference is a name in one of three namespaces. The prefix says where t
 | `@std/person` | A **shared standard** — common types anyone can use | the `@uniweb/schemas` package |
 | `@acme/product` | **An org's** shared schema | that org's `@acme/schemas` package |
 
-`@/` is the *self* namespace — "this foundation's own." Because you never write your own org name in your source, `@/`-refs stay portable: the same foundation can be published under any scope. The standards (`@std/person`, `@std/event`, `@std/article`, `@std/project`, …) cover the shapes most sites need — reach for one before inventing your own, the same way you'd pull a well-known type off the shelf rather than redefining it.
+`@/` is the *self* namespace — "this foundation's own." Because you never write your own org name in your source, `@/`-refs stay portable: the same foundation can be registered under any scope. The standards (`@std/person`, `@std/event`, `@std/article`, `@std/project`, …) cover the shapes most sites need — reach for one before inventing your own, the same way you'd pull a well-known type off the shelf rather than redefining it.
 
 Add `@uniweb/schemas` as a dependency when you reference any `@std/<name>`. Full reference, including how `@org/<name>` resolves: [Component Metadata → Data](../reference/component-metadata.md#data).
 
@@ -208,13 +208,13 @@ cd acme-schemas        # the @acme/schemas package
 uniweb register --scope @acme
 ```
 
-`register` detects a schemas-only package (one named `@org/schemas`, or any bare `schemas/*.yml` folder) and submits just its data schemas. This is exactly how the standards under `@std` are published — now under your own org. So the `@acme/schemas` package earns its keep twice: every foundation references `@acme/product` and resolves it **locally** during development, and `uniweb register` publishes those same definitions so they exist as managed types. Define once, develop offline, register to publish.
+`register` detects a schemas-only package (one named `@org/schemas`, or any bare `schemas/*.yml` folder) and submits just its data schemas. This is exactly how the standards under `@std` are registered — now under your own org. So the `@acme/schemas` package earns its keep twice: every foundation references `@acme/product` and resolves it **locally** during development, and `uniweb register` registers those same definitions so they exist as managed types. Define once, develop offline, register.
 
 A few practical notes:
 
 - Set `"uniweb": { "scope": "@acme" }` in the package's `package.json` and you can drop `--scope` on every run.
-- You register under a scope you belong to — membership over the declared scope is what authorizes the publish. (That's why you can register `@acme` but not `@std`.)
-- Re-registering is safe: an unchanged schema is a no-op (no new version), and a changed one publishes a new version. Re-running `register` on a repo you haven't edited costs nothing.
+- You register under a scope you belong to — membership over the declared scope is what authorizes the registration. (That's why you can register `@acme` but not `@std`.)
+- Re-registering is safe: an unchanged schema is a no-op (no new version), and a changed one registers a new version. Re-running `register` on a repo you haven't edited costs nothing.
 
 ---
 

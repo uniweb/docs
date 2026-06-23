@@ -141,7 +141,7 @@ packages:
 
 The `file:` path goes up two levels from `sites/main/` to the workspace root, then down into `foundations/default/`.
 
-**When to use it:** Multiple sites sharing a foundation, or multiple foundations with clear separation. The foundation is often the primary deliverable — published to the Uniweb registry and delivered via CDN to sites. The site packages serve as development harnesses for testing the foundation.
+**When to use it:** Multiple sites sharing a foundation, or multiple foundations with clear separation. The foundation is often the primary deliverable — registered to the Uniweb registry and delivered via CDN to sites. The site packages serve as development harnesses for testing the foundation.
 
 **Trade-off:** Deeper nesting means longer `file:` paths. A single-foundation project doesn't benefit from the extra directories.
 
@@ -264,7 +264,7 @@ This causes the build to write `role: "extension"` to the extension's `schema.js
 
 Content authors use section types from extensions the same way — `type: ParticleHero` in frontmatter. The runtime resolves the type from whichever foundation provides it. Primary foundation wins if both define the same name; extensions are checked in declared order.
 
-**When to use it:** Adding specialized capabilities (visual effects, data visualization, interactive widgets) that don't belong in a general-purpose foundation. The extension can be developed, tested, and published independently.
+**When to use it:** Adding specialized capabilities (visual effects, data visualization, interactive widgets) that don't belong in a general-purpose foundation. The extension can be developed, tested, and registered independently.
 
 **Trade-off:** Extensions are always runtime-loaded, which means an additional network request on first page load. The custom Vite plugin for dev serving is small but manual — each extension needs its route served.
 
@@ -314,7 +314,7 @@ The wiring is the same as the sibling extension recipe, but organized for scale.
 | Situation | Layout |
 |-----------|--------|
 | One foundation, one site | Single |
-| Publishing a portable foundation | Segregated (site is the dev harness) |
+| Registering a portable foundation | Segregated (site is the dev harness) |
 | Multiple sites sharing a foundation | Segregated |
 | Multiple independent brands | Co-located |
 | Adding specialized section types | Extensions as siblings |

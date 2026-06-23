@@ -426,7 +426,7 @@ This is deliberately a gate you run, not part of every build. The runtime stays 
 
 Build more than one foundation — a few brands, a client's product line — and they tend to want the same shapes: a `person`, a `project`, an `article`. You don't copy the schema into each foundation. Define it once and reference it, two ways:
 
-- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you publish) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
+- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you register) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
 - **A routed directory** — keep the schemas in a plain folder anywhere on disk and point each foundation's `schemas.config.js` at it. No package, no install:
 
   ```js

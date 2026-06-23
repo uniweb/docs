@@ -170,7 +170,7 @@ A few cases where another path is better:
 | Visual editing for content authors | [Uniweb hosting](deploying.md#when-to-choose-uniweb-hosting) |
 | Server-side data fetching at request time | Uniweb hosting (edge SSR) |
 | Branch deploy previews automatically | Cloudflare Pages or Vercel via their native git integrations (no GHA workflow needed) |
-| Foundation that other people's sites consume | Publish the foundation separately. See [Foundation on GitHub Pages](deploying.md#foundation-on-a-third-party-url--github-pages-s3-anywhere) for the version-pinned URL pattern, or the Uniweb registry for managed propagation. |
+| Foundation that other people's sites consume | Register the foundation separately. See [Foundation on GitHub Pages](deploying.md#foundation-on-a-third-party-url--github-pages-s3-anywhere) for the version-pinned URL pattern, or the Uniweb registry for managed propagation. |
 | Multi-locale with per-domain routing (`mysite.com` → English, `monsite.fr` → French) | Uniweb hosting (Cloudflare-for-SaaS-backed custom domains) |
 
 For everything else — most marketing sites, docs, blogs, portfolios — GitHub Pages is a fine permanent home, not just a "test it out" choice.
