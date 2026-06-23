@@ -1,25 +1,29 @@
 # Designing Data Schemas
 
-A data schema defines an **entity type** — the shape of a thing your site is about. A course. A lesson. A person. You write the schema once, and it drives validation, the editor's forms, and how records reach your components.
+A **data schema** defines a *content type* — the shape of a thing your project is about. A course. A lesson. An instructor. You write the schema once, and it drives validation, the editor's forms, and how records reach your components.
 
-This guide is about the **design decisions** you make when you model a set of related types — how to group fields, when to nest, and when to connect one type to another. It runs on a small **learning-management** example (people, courses, programs, enrollments) throughout.
+This guide is about the **design decisions** you make when you model a set of related types — how to group fields, when to nest, when to connect one type to another, and — just as important — **what doesn't belong in a content schema at all**. It runs on one example throughout: the content model behind a **course platform** (an LMS, in the Thinkific / Teachable mold).
 
-For the field-by-field syntax (types, `format`, `localized`, namespaces), see [Data Schemas](./data-schemas.md). For how a record of a schema is written out, see [Entity Content Structure](../reference/entity-content.md).
+> **Sites *and* app-based solutions — one data model.** The `uniweb` CLI builds more than static sites. A uniweb project can be a **content-driven site** (file-backed, prerendered, no server) or an **app-based solution** — the same site backed by its own **backend**: a database, user accounts, commerce, and your data schemas served dynamically. The backend is **optional**, and it doesn't change how you *design* your data. The schemas in this guide are the data model either way; the backend is what gives them users, access control, and persistence. Where that line falls is [its own section below](#content-vs-the-backend).
+
+For the field-by-field syntax (types, `format`, `localized`, namespaces), see [Data Schemas](./data-schemas.md). For how a record is written out, see [Entity Content Structure](../reference/entity-content.md). For how records reach your components at runtime, see [Working with Data](./working-with-data.md).
 
 ---
 
 ## Start by naming the types
 
-Before writing any fields, list the **things** your domain is about. For an LMS:
+Before writing any fields, list the **things** your domain is about. For a course platform, the *content* is:
 
-- **person** — an instructor or a student
 - **course** — a unit of learning
-- **program** — a curriculum made of courses
-- **enrollment** — a student taking a course
+- **lesson** — a single teachable piece (sometimes part of a course, sometimes reusable)
+- **instructor** — the person who teaches, as a public profile
+- **program** — a curriculum made of several courses
 
 Each becomes a schema. The interesting part isn't the fields inside each one — it's how they relate. That's what the rest of this guide is about.
 
-> Reuse before inventing: the standards (`@std/person`, `@std/event`, …) already cover common shapes. This guide defines its own `@/person` to stay self-contained, but reach for a `@std/*` type when one fits.
+> **Notice who's *not* on that list.** A course platform obviously has **students**, **enrollments**, and **purchases** — and none of them are content types. A student is a *user account*; an enrollment is a record the *backend* writes when someone buys. They aren't data you author. Knowing what to leave out is half of good schema design — we come back to it in [Content vs. the backend](#content-vs-the-backend).
+
+> Reuse before inventing: the standards (`@std/person`, `@std/event`, …) already cover common shapes. An instructor profile is just a person — reach for `@std/person` rather than rolling your own. This guide writes its own `@/…` types to stay self-contained, but a real project leans on `@std/*` wherever one fits.
 
 ---
 
@@ -40,7 +44,7 @@ When a type has **distinct groups** of fields, or **repeating** data, you organi
 - **`single`** — one record (an object).
 - **`multi`** — a repeating list of records (an array).
 
-A type can have **several** sections. Use multiple `single` sections to keep distinct concerns apart; use `multi` sections for "many of something." Mark one `single` section **`brief: true`** — the type's lean summary: its title and the few fields that identify it. The brief is the type's stand-in wherever it's shown in short form (for example, in a reference from another type), so keep it to the essentials.
+A type can have **several** sections. Use multiple `single` sections to keep distinct concerns apart; use `multi` sections for "many of something." Mark one `single` section **`brief: true`** — the type's lean summary: its title and the few fields that identify it. The brief is the type's stand-in wherever it's shown in short form (in a reference from another type, a card, a search result), so keep it to the essentials.
 
 ```yaml
 name: course
@@ -96,11 +100,11 @@ Subsections are the right tool when the nested data is **owned by** and **local 
 
 ## Embed or reference?
 
-This is the central modeling decision. You have a second type — say `person` — and another type needs to point at it. Two options:
+This is the central modeling decision. You have a second type — say `instructor` — and another type needs to point at it. Two options:
 
 **Embed** — put the fields directly inside, as a subsection. The data lives in the parent and belongs to it.
 
-**Reference** — store a pointer to a separate record with a **`ref`** field:
+**Reference** — store a pointer to a separate record with a **`ref`** field (a *relation*, in database terms):
 
 ```yaml
 instructor: { type: ref, ref: '@/person' }   # points at a separate person record
@@ -121,23 +125,9 @@ A `ref` field stores a pointer to a record of another type, by its slug — the 
 
 ## Relationships with attributes: edge attributes
 
-Sometimes the **relationship itself** has data — facts that belong to neither end alone. A student "takes" a course *with a grade and an enrollment date*. The grade isn't a property of the student, nor of the course — it's a property of **the connection between them**.
+Sometimes the **relationship itself** has data — facts that belong to neither end alone. A program includes a course *as required or elective, in a particular order*. "Required" isn't a property of the program, nor of the course — it's a property of **the link between them**.
 
-Model this as a **`multi` section whose items carry a `ref` plus sibling fields**. The reference names the other end; the sibling fields are the **edge attributes** — the relationship's own data:
-
-```yaml
-name: enrollment
-fields:
-  student:     { type: ref, ref: '@/person' }   # one end
-  course:      { type: ref, ref: '@/course' }   # the other end
-  enrolled_on: { type: date }                    # edge attribute
-  grade:       { type: string, enum: [A, B, C, D, F, incomplete] }  # edge attribute
-  status:      { type: string, enum: [active, completed, withdrawn] }
-```
-
-Here `enrollment` is a type in its own right — the join between students and courses. Reach for a standalone relationship type when the connection is **first-class**: it has its own attributes, you query it directly, or it's a many-to-many with data on each link.
-
-You can also attach edge attributes **inside** a parent, when the relationship clearly belongs to one side. A program's link to each of its courses carries data — is the course required, and in what order?
+Model this as a **`multi` section whose items carry a `ref` plus sibling fields**. The reference names the other end; the sibling fields are the **edge attributes** — the relationship's own data (the columns you'd put on a join table, if you think in SQL):
 
 ```yaml
 name: program
@@ -156,6 +146,24 @@ sections:
       order:       { type: int }                                   # edge attribute
 ```
 
+Here the edge attributes live **inside a parent** (`program`), because the relationship clearly belongs to the program's side. That's the common case for a content-to-content join.
+
+### When the relationship is its own type
+
+Sometimes a relationship is important enough to be a **type in its own right** — it has its own attributes and you query it directly. The textbook LMS example is **enrollment**: a student takes a course, with an enrollment date and a grade.
+
+```yaml
+name: enrollment
+fields:
+  student:     { type: ref, ref: '@/person' }   # one end
+  course:      { type: ref, ref: '@/course' }   # the other end
+  enrolled_on: { type: date }                    # edge attribute
+  grade:       { type: string, enum: [A, B, C, D, F, incomplete] }
+  status:      { type: string, enum: [active, completed, withdrawn] }
+```
+
+Structurally this is a perfect standalone relationship type — two references plus data on the link — and for a **content-to-content** join, it's exactly the right shape. But look closely at *this* one: **the `student` end isn't content.** A student is a person who logs in and pays. That single fact moves `enrollment` out of your content schemas entirely — and it's the cleanest illustration of the most important line in schema design, so it gets its own section next.
+
 ---
 
 ## The three shapes of "many"
@@ -166,32 +174,61 @@ When one type relates to *many* of another, pick the shape by how much the **lin
 |---|---|---|
 | **Embedded subsection** | a `multi` section with full fields | the children are owned and local (a course's modules) |
 | **List of references** | `{ type: array, items: { type: ref, ref: '@/course' } }` | you only need pointers, no per-link data (a course's prerequisites) |
-| **References with edge attributes** | a `multi` section of `{ ref + sibling fields }` | the connection itself has data (program → courses, enrollment) |
+| **References with edge attributes** | a `multi` section of `{ ref + sibling fields }` | the connection itself has data (a program's courses) |
 
 The question is always *how much does the link carry* — nothing (a bare list of refs), its own attributes (a multi section of ref + fields), or it's really an owned child (embed it).
 
 ---
 
-## Worked example: the LMS, end to end
+## Content vs. the backend
 
-Four types. The references between them:
+The sharpest question in schema design isn't *how* to model something — it's **whether it's content at all.** A content schema models **what your project is about.** It does **not** model **who uses your project**, or **what they've done.**
+
+Three things a course platform clearly needs, none of them content:
+
+| Not content | What it actually is |
+|---|---|
+| **Student** | a **user account** — an identity that logs in, whose credentials the backend holds |
+| **Enrollment / purchase** | a **record the backend writes** when someone buys or signs up — not authored |
+| **Progress, completion, quiz scores** | **per-user activity** the app records as people use it |
+
+The tell is always the same: **if a record is about a *person who logs in*, or about *something they did*, it isn't content.** An instructor *bio* is content — you author it, it renders on the course page. The instructor's *login* is an account. Same human, two different things, in two different layers. Don't model the account as content, and don't try to author the enrollment.
+
+**This is where the optional backend comes in.** A static uniweb site has no users and no database, so this layer simply doesn't exist — you ship content, visitors read it. Turn the project into an **app-based solution** and it gains a **backend**: user accounts and authentication, **commerce** (checkout, subscriptions), and a database that **serves your data schemas dynamically** instead of from files. Crucially, the backend doesn't ask you to redesign anything — **the same `@/course`, `@/lesson`, `@/program` schemas you design here are what it stores and serves.** What the backend *adds* is precisely the layer that isn't content: the accounts, the purchases, the access control, the per-user records. You design the content; the backend gives it users and memory.
+
+So the boundary is a feature, not a limitation. Keep your schemas about the domain — courses, lessons, instructors, programs — and let the backend own identity and transactions. The two stay cleanly separated, which is exactly why the **same content** can move from a static brochure site to a full course platform without reshaping a single schema.
+
+---
+
+## Worked example: the course-platform content graph
+
+Four content types and the references between them — and, set apart, the things the backend owns rather than your schemas:
 
 ```mermaid
 flowchart LR
-  person[person]
-  course[course]
-  program[program]
-  enrollment[enrollment]
-  course -->|instructor ref| person
-  program -->|courses ref + edge attrs| course
-  enrollment -->|student ref| person
-  enrollment -->|course ref| course
+  subgraph content["Your content schemas — what you design"]
+    instructor[instructor]
+    course[course]
+    program[program]
+    course -->|instructor ref| instructor
+    program -->|courses ref + edge attrs| course
+  end
+  subgraph backend["The backend's job — accounts &amp; records, not content"]
+    student((student<br/>account))
+    purchase[purchase / enrollment]
+    progress[progress]
+  end
+  student -.->|buys| course
+  purchase -.->|grants access to| course
+  progress -.->|tracks| course
+  classDef notcontent fill:#f6f4ff,stroke-dasharray:5 5
+  class backend,student,purchase,progress notcontent
 ```
 
-*Arrows are references. `course` also **embeds** its modules and lessons (owned, so not a link), and carries a `prerequisites` list of `course` references.*
+*Solid arrows are references between content types. `course` also **embeds** its modules and lessons (owned, so not a link) and carries a `prerequisites` list of `course` references. The dashed cluster is what an app-based solution's backend manages — accounts and per-user records — never authored as content.*
 
 ```yaml
-# @/person — an independent type (instructors and students both)
+# @/person — an independent type (the instructor's public profile; use @std/person in practice)
 name: person
 fields:
   name:  { type: string, required: true }
@@ -246,18 +283,18 @@ sections:
       order:       { type: int }
 ```
 
-```yaml
-# @/enrollment — a first-class relationship (student × course + its own data)
-name: enrollment
-fields:
-  student:     { type: ref, ref: '@/person' }
-  course:      { type: ref, ref: '@/course' }
-  enrolled_on: { type: date }
-  grade:       { type: string, enum: [A, B, C, D, F, incomplete] }
-  status:      { type: string, enum: [active, completed, withdrawn] }
-```
+The pattern: `person` is flat and independent; `course` **namespaces** its own fields into sections, **embeds** what it owns (modules, lessons), and **references** what it doesn't (instructor, prerequisite courses); `program` carries **edge attributes** on its links. Students, enrollments, and progress are nowhere in the schemas — they're the backend's, by design.
 
-The pattern: `person` is flat and independent; `course` **namespaces** its own fields into sections, **embeds** what it owns (modules, lessons), and **references** what it doesn't (instructor, prerequisite courses); `program` and `enrollment` carry **edge attributes** on their links.
+---
+
+## From schema to a live experience
+
+A schema isn't the destination — it's the contract that lets a **foundation** (the React component library that renders your content) turn records into pages. The last step is wiring data to components, and it reads the same whether or not you have a backend:
+
+- **Content-driven site.** A page declares `data: courses`; the runtime delivers the collection as `content.data.courses` to a `CourseGrid`; a `[slug]/` template page delivers the focused record as `content.data.courses[0]` to a `CoursePage` or `LessonViewer`. No `fetch()`, no loading state — see [Working with Data](./working-with-data.md).
+- **App-based solution.** The same components read the same `content.data.courses` — only now the backend serves it, gated by accounts and purchases. A well-built foundation lights up extra affordances when a backend is present (a price tag, an "enroll" button, a progress bar) and degrades gracefully to read-only content when it isn't.
+
+The schema is the stable contract in the middle: design it once, and it drives validation, the editor's forms, runtime delivery, and — when you add a backend — dynamic serving and access control. Everything on either side can change; the content type stays put. ([Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) is the deeper *why*.)
 
 ---
 
@@ -267,12 +304,16 @@ The pattern: `person` is flat and independent; `course` **namespaces** its own f
 - **Embed what's owned; reference what's independent.** "Does it exist on its own?" is the question.
 - **If the link has data, it's an edge** — a `multi` section of `{ ref + fields }`, or a standalone relationship type.
 - **Mark the brief.** One `single` section, `brief: true` — the type's at-a-glance summary; keep it lean.
-- **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework handle the rest.
+- **Model what your project is *about*, not who *uses* it or what they've *done*.** People who log in are accounts; what they bought or completed are backend records — neither is a content schema.
+- **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework (and the backend) handle the rest.
 
 ---
 
 ## See also
 
 - [Data Schemas](./data-schemas.md) — the field-by-field authoring reference: types, `format`, `localized`, and the `@/` · `@std` · `@org` namespaces.
+- [Working with Data](./working-with-data.md) — how a declared schema's records reach your components at runtime (collections, template pages, detail queries).
 - [Entity Content Structure](../reference/entity-content.md) — how a record is written: sections become keys, subsections become inline fields.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — why one schema serves validation, editor forms, and delivery at once.
+</content>
+</invoke>
