@@ -125,7 +125,7 @@ sections:
 
 A common source of confusion: a page fetches a collection once (Role 1), and the user picks a filter that narrows the view. This looks like "user interaction drives a fetch," but it's *not* — the data was already loaded; the filter just reshapes what's visible.
 
-This is the academic-metrics pattern. A site fetches a members collection once; a filter selector writes to `page.state`; subscribing components re-render and recompute filtered results client-side (typically with a helper like `@uniweb/query`'s `resolveQuery`). No new fetch. The framework's `page.state` / `website.state` + kit hooks (`usePageState`, `useWebsiteState`) exist for exactly this.
+This is the academic-metrics pattern. A site fetches a members collection once; a filter selector writes to `page.state`; subscribing components re-render and recompute filtered results client-side (typically with a helper like `@uniweb/core`'s `matchWhere`). No new fetch. The framework's `page.state` / `website.state` + kit hooks (`usePageState`, `useWebsiteState`) exist for exactly this.
 
 If your filter can be satisfied by filtering the data you already have, this is the right tool. If it needs data the browser doesn't have yet, you're in Role 2 — switch to `useEffect + fetch` in a component that knows the endpoint.
 

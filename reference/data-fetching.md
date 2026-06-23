@@ -268,7 +268,7 @@ See [Content Collections](./content-collections.md) for the recommended approach
 
 ### Manual JSON files (power users)
 
-For configuration data, companion schemas, or integration with external tools that generate JSON, you can place files directly in `public/data/`. Most users should use `library/` collections instead.
+For configuration data, companion schemas, or integration with external tools that generate JSON, you can place files directly in `public/data/`. Most users should use `collections/` instead.
 
 ```yaml
 # Reference a manual JSON file

@@ -386,7 +386,7 @@ function QuerySelector() {
 }
 ```
 
-When the user picks a new filter, `page.state.set()` fires → subscribing React components re-render → they recompute from the data that's already in `content.data`. Typical pattern: the page fetches a collection once at load time, a kit-side hook or utility (e.g. `@uniweb/query`'s `resolveQuery`) narrows it in memory, and the filtered view appears.
+When the user picks a new filter, `page.state.set()` fires → subscribing React components re-render → they recompute from the data that's already in `content.data`. Typical pattern: the page fetches a collection once at load time, a kit-side hook or utility (e.g. `@uniweb/core`'s `matchWhere`) narrows it in memory, and the filtered view appears.
 
 **Changing `page.state` does not re-run the fetch.** `BlockRenderer` runs the fetch once per block lifecycle. If a component genuinely needs new data on user action — a search box, pagination, a drill-down selector — it's a **domain-aware component** that owns its own fetches using standard React (`useEffect + fetch`). See [Component Data Patterns](./component-data-patterns.md) for the two-role framing.
 

@@ -152,7 +152,7 @@ const [value, setValue] = useWebsiteState(key, defaultValue?)
 
 The hook subscribes to the keyed slot of the active page's (or website's) state, returns the current value (or `defaultValue` if unset), and re-renders the calling component when the slot changes. The setter writes to the same slot and fires listeners across any other subscribers.
 
-**State changes drive React re-renders, not re-fetches.** Components subscribed to the changed slot re-render and recompute from already-loaded data (typically via `useMemo` keyed on the state value, or a utility like `@uniweb/query`'s `resolveQuery`). The framework does not re-dispatch fetches when state changes — the Uniweb model is "fetch once, filter in place" for this pattern. Components that need to re-fetch on user action are domain-aware components that own their own fetching with standard React (`useEffect + fetch`). See [Component Data Patterns](../development/component-data-patterns.md) for the two-role framing.
+**State changes drive React re-renders, not re-fetches.** Components subscribed to the changed slot re-render and recompute from already-loaded data (typically via `useMemo` keyed on the state value, or a utility like `@uniweb/core`'s `matchWhere`). The framework does not re-dispatch fetches when state changes — the Uniweb model is "fetch once, filter in place" for this pattern. Components that need to re-fetch on user action are domain-aware components that own their own fetching with standard React (`useEffect + fetch`). See [Component Data Patterns](../development/component-data-patterns.md) for the two-role framing.
 
 **What belongs in `page.state` / `website.state`:**
 

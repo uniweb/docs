@@ -481,7 +481,7 @@ uniweb i18n prune --freeform             # Remove orphaned files
 
 ## Collections i18n
 
-Collection data is translated alongside page content by default. The `extract` command processes both pages and all collection JSON — whether generated from `library/` collections or hand-written.
+Collection data is translated alongside page content by default. The `extract` command processes both pages and all collection JSON — whether generated from `collections/` or hand-written.
 
 ### Extract Collection Strings
 

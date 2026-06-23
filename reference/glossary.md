@@ -11,7 +11,7 @@ The runtime representation of a section. Wraps parsed content, params, and navig
 The pattern at the core of Uniweb: content (markdown) and code (React components) are separate artifacts connected by convention. Content authors write markdown, developers build components, and the runtime connects them via frontmatter. See [Component Content Architecture](../architecture/component-content-architecture).
 
 **Collection**
-A set of markdown, YAML, or JSON files in `library/` that compile into structured data. Used for blogs, team members, products — any growing catalog of items. See [Collections](../authoring/collections).
+A set of markdown, YAML, or JSON files in `collections/` that compile into structured data. Used for blogs, team members, products — any growing catalog of items. See [Collections](../authoring/collections).
 
 **Content shape**
 The guaranteed structure that the semantic parser extracts from markdown: `title`, `subtitle`, `paragraphs`, `links`, `images`, `icons`, `items`, `sequence`, etc. Arrays are always arrays, strings are always strings — no null checks needed. See [Content Structure](./content-structure).

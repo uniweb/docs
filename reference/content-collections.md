@@ -158,7 +158,7 @@ folders:                    # an organizational tree, independent of the on-disk
 typed shape (used for validation and i18n extraction). By default each collection maps
 to the **singular of its folder name** — `articles/` → the `@/article` schema in your
 foundation's `schemas/`. Set `schema:` to override that default (or to point at a
-shared schema). `@/name` resolves to your foundation's own `schemas/name`; `@uniweb/name`
+shared schema). `@/name` resolves to your foundation's own `schemas/name`; `@std/name`
 to a bundled standard schema.
 
 **2. Declare query/display config in one place.** The same `sort` / `where` / `limit` /
@@ -170,8 +170,8 @@ whose `entries` are collection names (or nested branches). This organization is 
 choose — it does **not** have to mirror the on-disk `collections/` directory layout.
 
 `collections.yml` takes precedence over `site.yml::collections` per key, so you can keep
-remote sources in `site.yml` and move file-based declarations here. The file may also
-hold a machine-managed `$uuid` and `sync:` flag — leave those to the tooling.
+remote sources in `site.yml` and move file-based declarations here. Some entries here are
+managed automatically by the tooling — leave those alone.
 
 ---
 
