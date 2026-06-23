@@ -2,7 +2,7 @@
 
 A **data schema** defines a *content type* — the shape of a thing your project is about. A course. A lesson. An instructor. You write the schema once, and it drives validation, the editor's forms, and how records reach your components.
 
-This guide is about the **design decisions** you make when you model a set of related types — how to group fields, when to nest, when to connect one type to another, and — just as important — **what doesn't belong in a content schema at all**. It runs on one example throughout: the content model behind a **course platform** (an LMS, in the Thinkific / Teachable mold).
+This guide is about the **design decisions** you make when you model a set of related types — how to group fields, when to nest, when to connect one type to another, and — just as important — **what doesn't belong in a content schema at all**. It runs on one example throughout: the content model behind a **course platform**.
 
 > **Sites *and* app-based solutions — one data model.** The `uniweb` CLI builds more than static sites. A uniweb project can be a **content-driven site** (file-backed, prerendered, no server) or an **app-based solution** — the same site backed by its own **backend**: a database, user accounts, commerce, and your data schemas served dynamically. The backend is **optional**, and it doesn't change how you *design* your data. The schemas in this guide are the data model either way; the backend is what gives them users, access control, and persistence. Where that line falls is [its own section below](#content-vs-the-backend).
 
