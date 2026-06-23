@@ -21,6 +21,7 @@ uniweb deploy                  # Deploy a built site to Uniweb hosting
 uniweb push                    # Push local site content to the Uniweb backend
 uniweb pull                    # Pull backend site content to local files
 uniweb clone <site-uuid>       # Start a local project from a backend site
+uniweb status                  # Show a site's sync state (unpushed content)
 ```
 
 ---
@@ -977,6 +978,21 @@ uniweb publish
 | `--dry-run` | Resolve everything (runtime, languages); POST nothing. |
 | `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
+
+---
+
+## uniweb status
+
+Show how a site's local files compare to the Uniweb backend — its **sync identity**, **unpushed content**, and the **foundation** it references. Local and offline by default: it runs the same emit + diff as `push`, with no backend round-trip.
+
+```bash
+uniweb status
+uniweb status --json     # { synced, uuid, foundation, changed, unchanged }
+```
+
+Run from a site, or a workspace with one site. The content diff is exactly what `uniweb push` would send — so `changed: 0` means a `push` would be a no-op.
+
+*(Richer signals — whether a newer foundation version is registered, and whether the synced draft differs from what's live — are added as the backend exposes them.)*
 
 ---
 
