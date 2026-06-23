@@ -18,6 +18,9 @@ uniweb publish                 # Publish foundation to Uniweb registry
 uniweb invite <email>          # Invite a client to use your foundation
 uniweb handoff <email>         # Create a site and transfer to a client
 uniweb deploy                  # Deploy a built site to Uniweb hosting
+uniweb push                    # Push local site content to the Uniweb backend
+uniweb pull                    # Pull backend site content to local files
+uniweb clone <site-uuid>       # Start a local project from a backend site
 ```
 
 ---
@@ -907,6 +910,78 @@ The CLI shows next steps for working with clients:
     uniweb invite <email>    Client creates their own site with your foundation
     uniweb handoff <email>   Create a web or local site and hand it off to a client
 ```
+
+---
+
+## uniweb push
+
+Push a site's content to the Uniweb backend — the **local → backend** direction of the git-style site-content sync. It sends two lanes: the static half (pages, sections, layout, theme, foundation ref) and the dynamic half (collections).
+
+```bash
+uniweb login
+uniweb push
+```
+
+Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` writes it into `site.yml::$uuid`); later pushes update it. Push is last-write-wins.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--dry-run` | Report what would be pushed; submit nothing |
+| `-o <file>` | Write the `.uwx` package(s) instead of submitting |
+| `--as-org @org` | Act as `@org` (membership-gated) |
+| `--all` | Send every record (bypass the changed-only cache) |
+| `--foundation <dir>` | Use this local foundation for the data-schema shape |
+| `--registry <url>` | Override the backend origin |
+| `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
+
+`uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward, or use `uniweb deploy` (which pushes *and* publishes in one step).
+
+---
+
+## uniweb pull
+
+Bring the backend's copy of a site back down to local files — the **backend → local** direction, the read-side mirror of `uniweb push`. It projects the returned content to `site.yml`/`theme.yml`, `pages/**`, and the collection files.
+
+```bash
+uniweb login
+uniweb pull
+```
+
+Pull is git-pull-like: it reconciles your working tree to the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree). A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--no-delete` | Project, but keep local files that have no backend item |
+| `--no-collections` | Pull pages only; skip the collections lane |
+| `--dry-run` | Report what it would fetch; write nothing |
+| `--registry <url>` | Override the backend origin |
+| `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
+
+---
+
+## uniweb clone
+
+Materialize a backend site as a **brand-new local file project** — the "git clone" of the site-content model. Use it to bootstrap a project from a site that already lives on the backend (typically authored in the Uniweb apps).
+
+```bash
+uniweb login
+uniweb clone <site-uuid> [name|.]
+```
+
+`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), seeds `site.yml::$uuid`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Sites are private — authenticate with `uniweb login` first.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `<name>` / `.` | New workspace named `<name>`, or `.` for in-place / the current workspace |
+| `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
+| `--project <dir>` | Co-locate as `<dir>/site` |
+| `--no-collections` | Pull pages only; skip collection records |
 
 ---
 

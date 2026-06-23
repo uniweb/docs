@@ -7,9 +7,9 @@ A Uniweb project's deployment shape depends on **who manages the content**. That
 Two paths today:
 
 - **Path 1: You manage the content.** You (or your dev team) write the markdown. Deploy site + foundation together — to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront, or Uniweb's paid hosting if you need dynamic-page prerender or version propagation.
-- **Path 2: Someone else manages the content.** You publish a foundation; sites built on it are composed by content authors in the Uniweb apps. The repo's `site/` is a test harness, not a deploy target.
+- **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb apps. The repo's `site/` is a test harness, not a deploy target.
 
-A third path is on the **[roadmap](#roadmap--hybrid)** — markdown in git syncing two-way with apps content — but it's not available today.
+A third path — git-style **content sync** with the Uniweb backend (`uniweb push`/`pull`/`clone`) — is available today; see **[Hybrid — git-style content sync](#hybrid--git-style-content-sync)**.
 
 The same framework powers both paths. The difference is the deployment artifact and who owns the content lifecycle.
 
@@ -154,7 +154,7 @@ pnpm install              # one-time dependency install
 uniweb deploy
 ```
 
-The CLI handles login, foundation publishing (workspace-local foundations get auto-published *site-bound* — see [Site-bound vs cataloged](#site-bound-vs-cataloged-foundations)), site creation, and deployment in a single flow.
+The CLI handles login, foundation registration (workspace-local foundations get auto-registered *site-bound* — see [Site-bound vs cataloged](#site-bound-vs-cataloged-foundations)), site creation, and deployment in a single flow.
 
 **Local media.** Images, video, and PDFs you reference by a site-root path (`/images/hero.jpg`, with the file under `public/`) are uploaded to the platform's CDN and rewritten to durable serve URLs automatically — no manual asset step. On the Uniweb-hosting path, reference local media by a site-root path rather than a path relative to the markdown file (`./hero.jpg`). Media already hosted elsewhere — a full `https://…` URL — is left untouched and loaded from its source.
 
@@ -162,7 +162,7 @@ The CLI handles login, foundation publishing (workspace-local foundations get au
 
 ## Path 2 — You ship a foundation as a product
 
-You're building a foundation for clients, content authors, or any team that won't write markdown. The foundation is your product; the repo's `site/` is a test harness for the code (run `pnpm dev` to preview your components against sample content). You don't deploy a site — you publish a foundation.
+You're building a foundation for clients, content authors, or any team that won't write markdown. The foundation is your product; the repo's `site/` is a test harness for the code (run `pnpm dev` to preview your components against sample content). You don't deploy a site — you register a foundation.
 
 The sites that use your foundation are managed in the **Uniweb apps** (web + desktop) — visual editors designed for non-technical authors. They never see git, markdown, yaml, or React. They see *your* components, with live previews and visual controls for the params you defined. The foundation becomes the editor's native vocabulary for that site: you keep creative control of the design system, they get an editor that feels custom-built for them.
 
@@ -173,17 +173,17 @@ This is a paid path (catalog + hosting + apps). The right shape when:
 - The same foundation drives multiple sites with different content and themes.
 - Site ownership transfers (developer creates the site, hands it to a client).
 
-### Publishing to the Uniweb registry — `uniweb publish`
+### Registering to the Uniweb registry — `uniweb register`
 
 The catalog is a **private, access-segregated** inventory of commercial foundation products, organized under organization namespaces (`@org/name`) you own or belong to. It is *not* a public package registry. You only see the foundations you own or are a registered editor of.
 
 ```bash
 uniweb login              # one-time
 cd src                    # the foundation directory
-uniweb publish @your-org/foundation-name
+uniweb register --scope @your-org
 ```
 
-The first publish under a namespace requires that you own the namespace (or are invited to it). Each subsequent publish bumps the version per the foundation's `package.json::version`.
+The first registration under a scope requires that you own the org scope (or are invited to it). Each subsequent `register` bumps the version per the foundation's `package.json::version`. `register` submits the foundation together with the data schemas it renders.
 
 Consuming sites pin the foundation by name and version:
 
@@ -280,29 +280,23 @@ Foundations come in two flavours, distinguished by *who owns the foundation* and
 |---|---|---|
 | `site.yml` | `foundation: ~self/<name>@<version>` | `foundation: '@<org>/<name>@<version>'` |
 | Where the foundation is served | The site's own origin (`mysite.com/_module/<name>/<version>/entry.js`) | The catalog's CDN |
-| Workflow | `uniweb deploy` builds and uploads everything together | `uniweb publish` (separate, deliberate) → consuming sites pin and deploy |
+| Workflow | `uniweb deploy` builds and uploads everything together | `uniweb register` (separate, deliberate) → consuming sites pin and deploy |
 | Multi-site shareable | No — bound to this site | Yes — license-gated, across whichever sites the foundation owner grants access |
 | Discoverable | n/a — it's not a separate object | Yes, to users with access |
 | Propagation | Yes — version updates flow without site republishing | Yes — across every licensed site whose policy permits the version jump |
 | Live example | [uniweb.io](https://www.uniweb.io/) | [proximify.com](https://www.proximify.com/) |
 
-**Site-bound** is the natural choice when a foundation only powers one site. No publish step, no namespace, no catalog visibility. The foundation rides along with `uniweb deploy`. [uniweb.io](https://www.uniweb.io/) ships exactly this way: one repo, one workflow, `uniweb deploy` from the site's directory and the foundation goes with it.
+**Site-bound** is the natural choice when a foundation only powers one site. No separate register step, no org scope, no catalog visibility. The foundation rides along with `uniweb deploy`. [uniweb.io](https://www.uniweb.io/) ships exactly this way: one repo, one workflow, `uniweb deploy` from the site's directory and the foundation goes with it.
 
-**Cataloged** is the natural choice when the foundation is a deliberate product across multiple sites. You publish it once with `uniweb publish`; consuming sites pin it by name and version. [proximify.com](https://www.proximify.com/) ships this way — its foundation is a catalog product the site's owner is licensed to use.
+**Cataloged** is the natural choice when the foundation is a deliberate product across multiple sites. You register it once with `uniweb register`; consuming sites pin it by name and version. [proximify.com](https://www.proximify.com/) ships this way — its foundation is a catalog product the site's owner is licensed to use.
 
-You don't have to commit upfront. A foundation that started as site-bound can later become cataloged when a second site wants to use it; the move is a deliberate `uniweb publish` and a one-line edit in each consuming site's `site.yml`.
+You don't have to commit upfront. A foundation that started as site-bound can later become cataloged when a second site wants to use it; the move is a deliberate `uniweb register` and a one-line edit in each consuming site's `site.yml`.
 
 ### Foundation propagation
 
-When you publish a new foundation version, sites that already use it don't move automatically by default. The default classification is *silent*: the version is stored, sites that pin it exactly can resolve to it, but earlier-version sites don't move.
+When you register a new foundation version, sites that already use it don't move automatically by default — registration is *silent*: the version is stored, sites that pin it exactly can resolve to it, but earlier-version sites don't move.
 
-To opt a release into propagation:
-
-```bash
-uniweb publish --propagate
-```
-
-Sites that aren't pinned and whose foundation update policy permits the version jump pick up the new version through a gated rollout — canary first, then a small percentage, then the full population, with health gates between waves. The site's foundation version moves forward on the platform without redeploying the site.
+Opting a release into automatic **propagation** — a gated rollout to consenting sites (canary → a small percentage → the full population, with health gates between waves) — is a registry capability being brought to `register`; today every registration is silent. Once it lands, a site that isn't pinned and whose foundation update policy permits the version jump picks up the new version on the platform without redeploying the site.
 
 A site declares its update policy in `site.yml`:
 
@@ -317,17 +311,22 @@ foundation:
   pinned: false
 ```
 
-A foundation can also declare its own policy intent in `package.json::uniweb.runtimePolicy`, which controls how the runtime version moves forward independently of the foundation version. See [CLI Commands → uniweb publish](../reference/cli-commands.md#uniweb-publish) for the full propagation surface.
+A foundation can also declare its own policy intent in `package.json::uniweb.runtimePolicy`, which controls how the runtime version moves forward independently of the foundation version. See [CLI Commands](../reference/cli-commands.md) for the full propagation surface.
 
 This is one thing you give up when you don't deploy to the Uniweb platform: propagation is a property of the registry+hosting combination, not of the framework. Sites hosted elsewhere move forward only when you redeploy them.
 
 ---
 
-## Roadmap — Hybrid
+## Hybrid — git-style content sync
 
-A future version will let markdown in a git repo and content in the Uniweb apps stay in two-way sync. Authors edit visually, devs edit in their IDE, both surfaces work on the same content. Conflict resolution, branch isolation, and review flows are still being designed.
+When a site is hosted on the Uniweb backend, its content lives there as data — and you can work on it from a file project with **git-style sync verbs**:
 
-This isn't available today — no need to plan around it. Mention it here so the framework's eventual shape doesn't surprise you.
+- `uniweb clone <site-uuid>` — start a local file project from a site that already lives on the backend (often authored in the apps).
+- `uniweb pull` — bring the backend's current content down into your files (prunes pages/sections removed on the backend; `--no-delete` to keep them).
+- `uniweb push` — send your local edits back up (first push creates the site and mints its id).
+- `uniweb publish` — make the backend's current state **live**.
+
+This is available today; `push`/`pull` are last-write-wins. What's still evolving is the **advanced two-way merge** — conflict resolution, branch isolation, and review flows for when authors edit visually *and* devs edit in their IDE on the same content concurrently. Until that lands, treat sync as directional: `pull` before you edit, `push` when you're done.
 
 ---
 
@@ -340,7 +339,9 @@ This isn't available today — no need to plan around it. Mention it here so the
 | `uniweb add ci --host=<adapter>` | Scaffold a CI workflow in your repo (today: `github-pages`). The host runs `uniweb build` on each push. |
 | `uniweb deploy` | Deploy to Uniweb hosting (default). With `--host=<adapter>`, push directly to a static host — builds, uploads, invalidates in one step. |
 | `uniweb export` | Produce a self-contained `dist/` for any static host. You upload it yourself. `--host=<adapter>` adds host-specific helper files. |
-| `uniweb publish @org/name` | Publish a foundation to the catalog (path 2). |
+| `uniweb register --scope @org` | Register a foundation + its data schemas to the registry (path 2). |
+| `uniweb push` / `uniweb pull` / `uniweb clone` | Git-style content sync with the Uniweb backend. |
+| `uniweb publish` | Make a backend-hosted site's current state live (does not push — run `push` first, or use `deploy`). |
 | `uniweb build` | Inspect a build locally. For shipping, use `deploy` or `export`. |
 
 `--host=<adapter>` is the same option across `deploy`, `export`, and `add ci`. Each adapter implements only the operations it supports — `add ci` is `github-pages`-only today because it's the only host that needs a workflow file in the repo. Cloudflare Pages, Netlify, and Vercel are dashboard-driven; their adapters power the auto-detection used by `build`/`export`/`deploy`.
@@ -396,22 +397,34 @@ Uniweb hosting is currently optimized for foundations served from the Uniweb reg
 
 The path-based recipes above are enough for shipping. The rest of this section explains *why* the framework is shaped the way it is — useful when something doesn't fit cleanly, or when you're deciding between two reasonable options.
 
-### Two artifacts, three verbs
+### Two artifacts, and the verbs that ship them
 
 A Uniweb project is a workspace with two kinds of packages:
 
 - **A site** — pure content. Markdown pages, theme settings, locales, configuration. Plus a small bootstrap (`site/entry.js`) that the CLI scaffolds once and you never edit.
 - **A foundation** — pure code. React components, layouts, theme variable declarations, content handlers, styles. A vocabulary of section types content authors compose sites from.
 
-Three verbs, three intents:
+**The foundation goes to the registry** with one verb:
 
 | | What it sends | Where it goes |
 |---|---|---|
-| `uniweb deploy` | Built site + (if local) site-bound foundation | Uniweb hosting (default), or any static host via `--host=<adapter>` |
-| `uniweb export` | Self-contained `dist/` for any static host | Your filesystem; you upload manually |
-| `uniweb publish` | Built foundation as a catalog product | Uniweb registry, named, versioned, discoverable |
+| `uniweb register` | Built foundation + the data schemas it renders | Uniweb registry — named, versioned, discoverable |
 
-`uniweb deploy` and `uniweb publish` are independent operations. They can run on different schedules, by different people, against different destinations. The CLI blends them when convenient (`uniweb deploy` auto-publishes a workspace foundation that hasn't been published yet), but the framework treats them as distinct concepts.
+**The site goes live**, two ways:
+
+| | What it does |
+|---|---|
+| `uniweb deploy` | The one-shot: on Uniweb hosting, build → push → publish; on a static host, build → upload |
+| `uniweb export` | Build a self-contained `dist/` for any static host; you upload it yourself |
+
+On Uniweb hosting a site's content also lives on the backend, with **git-style primitives** underneath `deploy`: `uniweb push` (local → backend), `uniweb pull` (backend → local), `uniweb clone` (a backend site → a new project), and `uniweb publish` (make the backend's current state live).
+
+**Two footguns worth stating plainly:**
+
+- **`deploy` ≈ `push` + `publish`.** It builds your local files, pushes them, and publishes — the "make my local site live" button.
+- **`publish` does *not* push.** It makes the backend's *current* state live — which can include edits made in the apps, but **not** your unpushed local files. Run `uniweb push` first, or just `uniweb deploy`.
+
+`uniweb deploy` (ships a site) and `uniweb register` (catalogs a foundation) are independent operations — different schedules, people, destinations. The CLI blends them when convenient (`uniweb deploy` auto-registers a workspace foundation site-bound when it hasn't been registered yet), but the framework treats them as distinct concepts.
 
 ### Why we don't pattern-match on Next.js
 
@@ -441,20 +454,20 @@ In linked mode, React, the JSX runtime, and `@uniweb/core` are resolved through 
 
 `--link` and `--bundle` are internal CLI vocabulary. You don't pass them; `uniweb deploy` and `uniweb export` pick the right pipeline from the foundation reference shape.
 
-### Publishing and deploying are different concepts
+### Registering and deploying are different concepts
 
-A foundation is **published**. A site is **deployed**. They answer different questions:
+A foundation is **registered**. A site is **deployed**. They answer different questions:
 
 | Question | Answer |
 |---|---|
-| Where does this code live so other sites can use it? | A registry, or any HTTPS URL. `uniweb publish` writes here. |
+| Where does this code live so other sites can use it? | A registry, or any HTTPS URL. `uniweb register` writes here. |
 | Where does this site live so visitors can read it? | A host — Uniweb hosting, or any static host. `uniweb deploy` writes here. |
 
 In standalone mode, the two collapse — the site bundle contains the foundation's code, so deploying the site is the only step. There is no separate "where does the foundation live?" because the answer is "inside the site."
 
-In linked mode, the two are explicit and ordered. Publish the foundation first; deploy the site that references it. They can run on different schedules, in different repos, by different people. A foundation can serve sites on multiple hosts at once. A site can switch foundations without changing where it's hosted. A team can update the foundation without touching any site, and have the change reach existing sites through propagation (on the Uniweb platform) or through a one-line edit in `site.yml` (everywhere else).
+In linked mode, the two are explicit and ordered. Register the foundation first; deploy the site that references it. They can run on different schedules, in different repos, by different people. A foundation can serve sites on multiple hosts at once. A site can switch foundations without changing where it's hosted. A team can update the foundation without touching any site, and have the change reach existing sites through propagation (on the Uniweb platform) or through a one-line edit in `site.yml` (everywhere else).
 
-The CLI lets you blend the two when convenient — `uniweb deploy` will auto-publish a workspace foundation site-bound when it hasn't been deployed yet — but it does not erase the distinction. The framework knows about both verbs, in both orders, against both kinds of destinations. That awareness is what lets you start with path 1 and grow into path 2 without restructuring the project.
+The CLI lets you blend the two when convenient — `uniweb deploy` will auto-register a workspace foundation site-bound when it hasn't been deployed yet — but it does not erase the distinction. The framework knows about both verbs, in both orders, against both kinds of destinations. That awareness is what lets you start with path 1 and grow into path 2 without restructuring the project.
 
 ---
 
@@ -464,6 +477,6 @@ The CLI lets you blend the two when convenient — `uniweb deploy` will auto-pub
 - **[Project Structures](./project-structures.md)** — Workspace layouts: single, segregated, co-located, extensions; multiple sites sharing one foundation.
 - **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable on the foundation-design axis (orthogonal to standalone vs linked deployment).
 - **[Publishing and Clients](./publishing-and-clients.md)** — Invite and handoff workflows for getting a site into a content author's hands.
-- **[CLI Commands](../reference/cli-commands.md)** — Full reference for `uniweb publish`, `uniweb deploy`, runtime policy, and propagation flags.
+- **[CLI Commands](../reference/cli-commands.md)** — Full reference for `uniweb register`, `uniweb deploy`, `uniweb push`/`pull`/`publish`, runtime policy, and propagation.
 - **[Static Hosting](../reference/deployment.md)** — Per-host recipes for Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, and self-hosted servers.
 - **[Deploying to GitHub Pages](./deploy-github-pages.md)** — The full recipe: scaffold, push, custom domain, draft-mode escape hatches, troubleshooting.
