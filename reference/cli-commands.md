@@ -976,8 +976,11 @@ uniweb publish
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Resolve everything (runtime, languages); POST nothing. |
+| `--no-verify` | Skip the unpushed-content pre-flight prompt (also `--yes` / `--force`). |
 | `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
+
+Interactively, if you have unpushed local content `publish` warns and asks before going live (since it publishes the *backend's* current state, not your local files).
 
 ---
 
