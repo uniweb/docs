@@ -190,7 +190,7 @@ Three things a course platform clearly needs, none of them content:
 |---|---|
 | **Student** | a **user account** — an identity that logs in, whose credentials the backend holds |
 | **Enrollment / purchase** | a **record the backend writes** when someone buys or signs up — not authored |
-| **Progress, completion, quiz scores** | **per-user activity** the app records as people use it |
+| **Progress, completion, quiz scores** | **what a person *did*** — activity, not authored content *(storing it is the app's job; nothing tracks it for you)* |
 
 The tell is always the same: **if a record is about a *person who logs in*, or about *something they did*, it isn't content.** An instructor *bio* is content — you author it, it renders on the course page. The instructor's *login* is an account. Same human, two different things, in two different layers. Don't model the account as content, and don't try to author the enrollment.
 
