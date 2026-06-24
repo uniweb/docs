@@ -69,6 +69,31 @@ sections:
 
 The flat `fields:` form is the common case; reach for `sections:` only when a single record genuinely can't express the content.
 
+### Append-only sections
+
+A `multi` section can be marked **insert-only** with `append_only: true` — records may be added, but never edited or deleted:
+
+```yaml
+# foundation/schemas/membership.yml
+name: membership
+sections:
+  identity:
+    kind: single
+    brief: true
+    fields:
+      name: { type: string, required: true }
+  activity:
+    kind: multi
+    append_only: true              # records accumulate; existing ones are immutable
+    fields:
+      at:    { type: datetime }
+      event: { type: string }
+```
+
+Once you [register](#registering-schemas) the schema, this rule is enforced wherever entities of the type are written — appends are accepted, but changing or removing an existing record is refused. There's no "replace the whole section" shortcut either: re-submitting records adds new ones rather than overwriting what's already there. Because the rule lives in the content type rather than in a form, it holds for every writer, not just the editor UI. That makes an append-only section **tamper-evident**: the accumulated history stands on its own. Reach for it for activity logs, submissions, audit trails — anything meant to accumulate and never be rewritten.
+
+`append_only` is only valid on a `multi` section (a single record has nothing to append to). For file-based collections there's no write step, so it has no effect until the type is registered.
+
 ---
 
 ## Field types and formats
