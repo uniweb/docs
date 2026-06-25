@@ -83,6 +83,9 @@ targets:
                                    # vercel, netlify, generic-static), or 'uniweb' to
                                    # delegate to `uniweb publish` (Uniweb hosting).
     # adapter-specific fields below — see the per-host sections.
+    # For host: uniweb, an optional `backend:` pins which Uniweb backend this
+    # site publishes to (default: https://uniweb.app). `uniweb publish` records
+    # it here on first publish; it overrides the logged-in backend for this site.
 
 autoSave: lastDeploy               # off | lastDeploy | full
 
