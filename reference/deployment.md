@@ -79,7 +79,9 @@ default: production
 
 targets:
   production:
-    host: cloudflare-pages         # or s3-cloudfront, github-pages, vercel, netlify, generic-static
+    host: cloudflare-pages         # a third-party adapter (s3-cloudfront, github-pages,
+                                   # vercel, netlify, generic-static), or 'uniweb' to
+                                   # delegate to `uniweb publish` (Uniweb hosting).
     # adapter-specific fields below — see the per-host sections.
 
 autoSave: lastDeploy               # off | lastDeploy | full

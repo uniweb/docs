@@ -1138,7 +1138,7 @@ uniweb handoff client@example.com --web
 
 ## uniweb deploy
 
-Deploy a site to a **third-party static host**. The host is named by `--host=<adapter>` or `deploy.host:` in the site's `site.yml`. `deploy` builds a self-contained site bundle and hands it to the adapter — it does **not** target Uniweb hosting and ships no foundation code to the catalog. To go live on Uniweb hosting, use [`uniweb publish`](#uniweb-publish) instead; bare `uniweb deploy` with no host prompts you to pick a third-party adapter (or, when non-interactive, points you to `uniweb publish`).
+Ship a site to its resolved target. For a **third-party static host** (named by `--host=<adapter>` or `deploy.host:` in `site.yml`), `deploy` builds a self-contained site bundle and hands it to the adapter. For a **Uniweb target** (`--host=uniweb`, or a `uniweb` target in deploy.yml), `deploy` delegates to [`uniweb publish`](#uniweb-publish) — the canonical direct verb for Uniweb hosting (so deploy.yml stays one actionable "where this site deploys" record). Bare `uniweb deploy` with no host prompts you to pick a third-party adapter (or, when non-interactive, points you at `uniweb publish` / `--host`).
 
 ```bash
 uniweb deploy --host=<adapter> [options]
@@ -1150,7 +1150,7 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 
 | Option | Description |
 |--------|-------------|
-| `--host <adapter>` | The static host. Built-in adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `netlify`, `vercel`, `generic-static`. Overrides `deploy.host:` in site.yml. |
+| `--host <adapter>` | The host to ship to. Third-party adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `netlify`, `vercel`, `generic-static`. `--host=uniweb` delegates to [`uniweb publish`](#uniweb-publish). Overrides `deploy.host:` in site.yml. |
 | `--dry-run` | Show what would be deployed without deploying. |
 
 ### What Happens
