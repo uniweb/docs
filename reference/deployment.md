@@ -65,8 +65,8 @@ Most sites should enable pre-rendering.
 
 | Command | What it does |
 |---|---|
-| `uniweb deploy` | Default. Deploys to Uniweb hosting — edge SSR, locale-aware routing, foundation propagation. Requires `uniweb login`. |
-| `uniweb deploy --host=<adapter>` | Builds and uploads to a static host via a built-in adapter. Adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `vercel`, `netlify`, `generic-static`. The adapter handles host-specific quirks (URI rewrites, redirect helpers, cache headers, invalidation). |
+| `uniweb publish` | Publishes to Uniweb hosting — brings the foundation along, syncs content, goes live (edge SSR, locale-aware routing, foundation propagation). Requires `uniweb login`. See [Publishing to Uniweb hosting](#publishing-to-uniweb-hosting). |
+| `uniweb deploy --host=<adapter>` | Builds and uploads to a third-party static host via a built-in adapter. Adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `vercel`, `netlify`, `generic-static`. The adapter handles host-specific quirks (URI rewrites, redirect helpers, cache headers, invalidation). |
 | `uniweb deploy --target=<name>` | Picks a target by name from `deploy.yml` (a sibling of `site.yml`). |
 | `uniweb export` | Builds `dist/` for a static host but doesn't upload. Use with hosts that aren't covered by a built-in adapter, or when you let the host (Vercel, Cloudflare Pages, Netlify, etc.) run the build itself via Git integration. |
 | `pnpm build` | Equivalent to `uniweb build` from the site directory. Produces `dist/` only — no upload, no host-specific helpers. Useful for inspecting build output during development. |
@@ -79,7 +79,7 @@ default: production
 
 targets:
   production:
-    host: cloudflare-pages         # or s3-cloudfront, github-pages, vercel, netlify, generic-static, uniweb
+    host: cloudflare-pages         # or s3-cloudfront, github-pages, vercel, netlify, generic-static
     # adapter-specific fields below — see the per-host sections.
 
 autoSave: lastDeploy               # off | lastDeploy | full
@@ -93,13 +93,13 @@ lastDeploy:
     runtime: 0.8.9
 ```
 
-The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off deploys (no save). `--target=<name>` selects a target other than `default:`. With no `deploy.yml` at all, bare `uniweb deploy` resolves to Uniweb hosting (`host: uniweb`).
+The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off deploys (no save). `--target=<name>` selects a target other than `default:`. `uniweb deploy` always targets a third-party host — `--host=<adapter>` or a `deploy.yml` target is required; to go live on Uniweb hosting, use `uniweb publish`.
 
 ### Two deploy lifecycles
 
 Static hosts come in two flavors. Both are first-class:
 
-- **CLI-push.** You run `uniweb deploy` locally; the CLI builds, uploads, and invalidates. State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. Adapters with this lifecycle today: `s3-cloudfront`, `uniweb`.
+- **CLI-push.** You run `uniweb deploy` locally; the CLI builds, uploads, and invalidates. State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. The adapter with this lifecycle today: `s3-cloudfront`.
 - **Git-driven.** You wire up your host's GitHub integration (Vercel, Cloudflare Pages, Netlify, GitHub Pages via Actions). The host runs `npx uniweb build` in CI on each push and serves the resulting `dist/`. State of record: the host's dashboard. Auth: the host's GitHub integration. The CLI's `deploy` step never runs.
 
 For Git-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `lastDeploy:` block stays empty for Git-driven targets — the host's dashboard is the truth.
@@ -461,35 +461,20 @@ Configure your server to serve `.gz` or `.br` files when available.
 
 ---
 
-## Uniweb Hosting
+## Publishing to Uniweb hosting
 
-Deploy directly to Uniweb hosting with a single command:
-
-```bash
-uniweb deploy        # default host: 'uniweb' — Uniweb hosting
-```
-
-The CLI auto-builds if `dist/` is missing. The first deploy of a new site opens a browser to confirm the site name, plan, and (if the site uses paid features such as a custom domain) payment. Subsequent deploys are silent.
-
-Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-deployed sites without redeploying. Foundations come in two flavours — **site-bound** (rides with the site, served from the site's own origin) and **cataloged** (registered once via `uniweb register`, licensed to consuming sites, served from the catalog's CDN). Both get the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
-
-See [Deploying → Site-bound vs cataloged foundations](../development/deploying.md#site-bound-vs-cataloged-foundations) for the full picture.
-
-### Options
+Go live on Uniweb hosting with a single command:
 
 ```bash
-# Preview what would be deployed
-uniweb deploy --dry-run
-
-# Skip auto-publishing a workspace-local foundation as part of the deploy
-uniweb deploy --no-auto-publish
-
-# Override the resolved deploy.yml target's host (one-off; not saved)
-uniweb deploy --host=cloudflare-pages
-
-# Pick a non-default target from deploy.yml
-uniweb deploy --target=preview
+uniweb login         # first time only
+uniweb publish       # brings the foundation along, syncs content, goes live
 ```
+
+`uniweb publish` resolves which site, brings its foundation along (releasing the site's local foundation to the catalog under your `@org` when its code changed), syncs the content, and makes the site live. When going live needs payment (a first go-live, or a change that adds a paid feature), it opens a browser to settle it; an already-paid site just goes live.
+
+Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-published sites without republishing. Foundations on Uniweb hosting are always **cataloged** (`@org/name@version`) — served from the catalog's CDN, licensed to the sites that use them. Whether you let `uniweb publish` release the foundation for you (single-site) or registered it deliberately with `uniweb register` (a multi-site product), it gets the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
+
+See [Deploying → How a foundation reaches the catalog](../development/deploying.md#how-a-foundation-reaches-the-catalog) for the full picture.
 
 Uniweb hosting requires authentication — run `uniweb login` first.
 
@@ -511,7 +496,7 @@ uniweb login          # first time only
 uniweb register --scope @your-org
 ```
 
-Catalog registrations require an `@org` scope. Site-bound foundations — foundations that exist for one specific site — don't go through `uniweb register` at all. They're auto-registered as part of `uniweb deploy` and stored alongside the site's other deployed assets, never reaching the catalog. Reach for `uniweb register` only when you mean to ship the foundation across multiple sites or expose it in the catalog.
+Catalog registrations require an `@org` scope. A foundation that exists for one specific site doesn't need a deliberate `uniweb register` step — `uniweb publish` brings it along, releasing it to the catalog under your `@org` automatically when its code changed. Reach for `uniweb register` directly when the foundation is a product meant for multiple sites, or when you want to register it on its own schedule independent of any one site's go-live.
 
 Sites control their foundation update policy in `site.yml`:
 

@@ -1,6 +1,6 @@
 # Publishing and Working with Clients
 
-This page covers **catalog registration** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to register it manually: just run `uniweb deploy` from the site directory and the CLI will auto-register your foundation under a site-scoped slot as part of the deploy. See [Deploying](./deploying.md) for the site-bound flow.
+This page covers **catalog registration** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to register it as a deliberate, separate step: just run `uniweb publish` from the site directory and the CLI brings the foundation along — releasing it to the catalog under your `@org` automatically when its code changed. See [Deploying](./deploying.md) for the publish flow.
 
 After building a foundation that you do want to catalog, you have two paths to get clients started: **invite** them to create their own site, or **hand off** a populated site you built for them.
 
@@ -35,7 +35,7 @@ Register your foundation on the Uniweb catalog:
 uniweb register --scope @your-org
 ```
 
-The org scope is required — `uniweb register` is the deliberate "this foundation is a catalog product" command. Bare `uniweb register` (with no org scope) errors out and points you at `uniweb deploy` for site-bound foundations.
+The org scope is required — `uniweb register` is the deliberate "this foundation is a catalog product" command. Bare `uniweb register` (with no org scope) errors out and asks you to set one. If you only mean to ship a single site, you don't need to call `register` yourself — `uniweb publish` brings the site's local foundation along.
 
 In CI, you also need `--catalog` to confirm the public-catalog registration:
 
@@ -164,19 +164,19 @@ uniweb handoff client@example.com --web
 
 This shows step-by-step guidance for creating the site on uniweb.app and transferring ownership through the UI.
 
-## Deploying
+## Publishing
 
-For a conventional static deployment (no client workflow):
+For a site you manage yourself (no client workflow), publish it to Uniweb hosting:
 
 ```bash
-uniweb deploy
+uniweb publish
 ```
 
-This uploads your built `dist/` to Uniweb hosting. The `dist/` folder is a standard Vite build, so you can also deploy to any static host — see [Deployment](../reference/deployment.md).
+`uniweb publish` brings the site's local foundation along, syncs the content, and goes live. To ship to a third-party static host instead, build `dist/` with `uniweb export` (or `uniweb deploy --host=<adapter>`) and upload it anywhere — see [Deployment](../reference/deployment.md).
 
 ## Choosing a Path
 
-| | Invite | Handoff | Deploy |
+| | Invite | Handoff | Publish |
 |---|---|---|---|
 | **Who creates the site** | Client | Developer | Developer |
 | **Client gets** | Blank site with your foundation | Populated site with content | A live website |

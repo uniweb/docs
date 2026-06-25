@@ -68,7 +68,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 
 A registered foundation has two identity pieces — a **scope** (where it's stored) and an **id** (what it's called). They live in different places and resolve independently. Full details and examples in [`uniweb register` → Identity](./cli-commands.md#identity-scope--id). The summary:
 
-**Scope** priority: `--scope @org` → scoped `package.json::name` (`@org/x`) → `package.json::uniweb.scope`. Cataloging requires an org scope; a bare or unscoped name isn't cataloged — site-bound foundations are uploaded by `uniweb deploy` instead.
+**Scope** priority: `--scope @org` → scoped `package.json::name` (`@org/x`) → `package.json::uniweb.scope`. Cataloging requires an org scope; a bare or unscoped name isn't cataloged. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog under your `@org` automatically — so set a scope before publishing too.
 
 **ID**: the bare (sigil-stripped) segment of `package.json::name` (or an explicit `uniweb.id`).
 

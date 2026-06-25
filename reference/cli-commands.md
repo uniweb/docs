@@ -17,7 +17,8 @@ uniweb login                   # Authenticate with Uniweb platform
 uniweb register                # Register a foundation + its data schemas
 uniweb invite <email>          # Invite a client to use your foundation
 uniweb handoff <email>         # Create a site and transfer to a client
-uniweb deploy                  # Deploy a built site to Uniweb hosting
+uniweb publish                 # Publish a site to Uniweb hosting (brings the foundation along)
+uniweb deploy --host=<adapter> # Deploy a built site to a third-party static host
 uniweb push                    # Push local site content to the Uniweb backend
 uniweb pull                    # Pull backend site content to local files
 uniweb clone <site-uuid>       # Start a local project from a backend site
@@ -737,7 +738,7 @@ uniweb login --token-paste
 
 ### When It's Needed
 
-Login is required for `publish`, `invite`, `handoff`, and `deploy` (remote). The CLI prompts you to log in automatically if you run one of these commands without credentials.
+Login is required for `publish`, `register`, `push`, `pull`, `invite`, and `handoff`. The CLI prompts you to log in automatically if you run one of these commands without credentials. (`uniweb deploy --host=<adapter>` authenticates with the third-party host, not with Uniweb.)
 
 ---
 
@@ -911,7 +912,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 | `--registry <url>` | Override the backend origin |
 | `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
 
-`uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward, or use `uniweb deploy` (which pushes *and* publishes in one step).
+`uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward. (`uniweb publish` can also bring everything along itself — foundation, content, go-live — in one step.)
 
 ---
 
@@ -962,14 +963,14 @@ uniweb clone <site-uuid> [name|.]
 
 ## uniweb publish
 
-Make a **backend-hosted site** live — a CMS-style "go live" that promotes the site's current backend state. The site must already be synced (`uniweb push` first, or use `uniweb deploy`, which pushes and publishes in one step).
+Publish a site to **Uniweb hosting** — the smart path for going live. Run it from a site directory and it resolves which site, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed), syncs the content, and makes the site live. This is the command to reach for when you mean *"make my site live."*
 
 ```bash
 uniweb login
 uniweb publish
 ```
 
-`publish` makes the site's **current backend state** live — including edits made through the Uniweb apps since your last push. It does **not** push your local files: run `uniweb push` first if you want unpushed local edits live. A site that was never pushed has no `site.yml::$uuid`, and `publish` says so.
+`publish` also promotes edits made through the Uniweb apps since your last sync. If you have unpushed local content, it warns and asks before going live; run `uniweb push` first if you want to be explicit about sending local edits. A site that was never synced has no `site.yml::$uuid`, and `publish` says so.
 
 ### Options
 
@@ -1137,10 +1138,10 @@ uniweb handoff client@example.com --web
 
 ## uniweb deploy
 
-Deploy a site. The destination depends on `deploy.host:` in the site's `site.yml` (default: `uniweb` — Uniweb hosting).
+Deploy a site to a **third-party static host**. The host is named by `--host=<adapter>` or `deploy.host:` in the site's `site.yml`. `deploy` builds a self-contained site bundle and hands it to the adapter — it does **not** target Uniweb hosting and ships no foundation code to the catalog. To go live on Uniweb hosting, use [`uniweb publish`](#uniweb-publish) instead; bare `uniweb deploy` with no host prompts you to pick a third-party adapter (or, when non-interactive, points you to `uniweb publish`).
 
 ```bash
-uniweb deploy [options]
+uniweb deploy --host=<adapter> [options]
 ```
 
 Run from a site directory or workspace root. If the workspace has multiple sites, you're prompted to choose one.
@@ -1149,32 +1150,18 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 
 | Option | Description |
 |--------|-------------|
-| `--host <adapter>` | Override `deploy.host:` in site.yml. Built-in adapters: `uniweb` (default), `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `generic-static`. |
+| `--host <adapter>` | The static host. Built-in adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `netlify`, `vercel`, `generic-static`. Overrides `deploy.host:` in site.yml. |
 | `--dry-run` | Show what would be deployed without deploying. |
-| `--no-auto-publish` | Don't auto-publish a workspace-local foundation as part of the deploy. (Default behavior is to auto-publish site-bound.) |
 
 ### What Happens
 
-The default flow (`uniweb` host):
-
-1. Reads `site.yml`. Validates the `foundation:` declaration.
-2. Detects whether the foundation is workspace-local or a registry ref. If local, prepares to auto-publish it site-bound.
-3. Authenticates with the platform (`uniweb login` if needed). First deploy of a new site opens a browser to confirm name, plan, and (if applicable) payment.
-4. Builds `dist/` (link mode — emits content + assets only, no JS bundle).
-5. Uploads content + assets + (if applicable) the local foundation, all addressed under the site's per-site storage.
-
-The static-host flow (`--host=<adapter>` other than `uniweb`):
-
-1. Reads `site.yml` and `deploy:` block; validates the adapter and its required config.
-2. Builds `dist/` in bundle mode (`uniweb build --bundle`) with the adapter's `postBuild` hook (e.g., `_redirects`, `.nojekyll`, `cloudfront-function.js`).
+1. Reads `site.yml` and the `deploy:` block; validates the adapter and its required config.
+2. Builds a self-contained `dist/` with the adapter's `postBuild` hook (e.g., `_redirects`, `.nojekyll`, `cloudfront-function.js`). The foundation is bundled into the site's `dist/` — there is no separate foundation step.
 3. Hands `dist/` to the adapter's `deploy` hook for upload + invalidation. Errors from the adapter (missing AWS CLI, expired credentials, missing config, etc.) surface as friendly messages with hints.
 
 ### Examples
 
 ```bash
-# Deploy to Uniweb hosting (default; requires `uniweb login`)
-uniweb deploy
-
 # Static-host deploy to S3 + CloudFront (configure deploy: in site.yml)
 uniweb deploy --host=s3-cloudfront
 
@@ -1182,10 +1169,7 @@ uniweb deploy --host=s3-cloudfront
 uniweb deploy --host=cloudflare-pages
 
 # Preview what would be deployed
-uniweb deploy --dry-run
-
-# Skip auto-publishing the workspace-local foundation
-uniweb deploy --no-auto-publish
+uniweb deploy --host=cloudflare-pages --dry-run
 ```
 
 ### Configuring the destination in `site.yml`
