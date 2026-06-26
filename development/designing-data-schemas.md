@@ -193,6 +193,56 @@ So the boundary is a feature, not a limitation. Keep your schemas about the doma
 
 ---
 
+## Who can see what — access lives on entities
+
+Once your project has a backend, **who may read or edit each record is decided at runtime, by grants — not declared in your schema.** There is no `private` field, no "hidden from this user" flag, no field- or type-level read gate. Access is a property of an **entity** (a stored record): its owner can see it, plus anyone granted `read` / `edit` on it.
+
+One consequence drives real modeling decisions: **a reference doesn't grant access to what it points to.** A record can link to another record its reader *can't* see — reading A never drags in B just because A references B; the backend re-checks access on B only when someone fetches B directly.
+
+So:
+
+> **To give one part of your data its own access, make it its own entity.** "This part must be seen by different people" is a first-class reason to split a type — right beside "this is its own object." You can't protect a *field*; you protect an *entity*.
+
+### The exam
+
+A student submits answers; an instructor grades them. Two things need protecting, two different ways:
+
+- The **submission** belongs to the student — they can read it, but must not rewrite answers after the fact. That's **integrity**: an `append_only` section lets answers be added, never edited or deleted.
+- The **grade** must be invisible to the student until the instructor releases it. That's **access** — and only an *entity* carries access, so the grade is its **own** record the student has no grant on.
+
+```yaml
+# submission — the student owns it; answers can't be rewritten once submitted
+name: submission
+sections:
+  identity:
+    brief: true
+    fields:
+      exam: { ref: '@/exam' }
+  answers:
+    many: true
+    append_only: true          # add answers; never edit or delete them
+    fields:
+      question: { ref: '@/question' }
+      response: { type: text }
+```
+
+```yaml
+# grade — its own record, the instructor's; access is the grant, not a flag
+name: grade
+fields:
+  submission: { ref: '@/submission' }   # what it grades
+  score:      { type: number }
+  comments:   { type: text, format: markdown }
+```
+
+The `grade` *references* the submission, yet the student — who owns the submission — has **no grant on the grade**, so it's invisible to them. "Release the grade" is simply the instructor granting the student `read` on that record. Notice what's *absent*: no `private` flag, no `released` boolean gating sight. **Access is the grant; the grade is a separate record so a grant has something to attach to.**
+
+A `grade` *field* on the submission wouldn't work — anyone who can read the submission reads the grade with it, the student included, before release. The entity split is what makes the grade hide-able, and then releasable.
+
+> **Isn't that what `secret` is for?** No. There's a `secret` field kind, but it's a machine credential the *system* uses and **no human ever reads back** — a Stripe key, an API token, hidden from *everyone*, the instructor too. If a person is meant to read it, it isn't a secret; it's an entity with a grant.
+
+---
+
 ## Worked example: the course-platform content graph
 
 Four content types and the references between them — and, set apart, the things the backend owns rather than your schemas:
@@ -295,6 +345,7 @@ The schema is the stable contract in the middle: design it once, and it drives v
 - **If the link has data, it's an edge** — a `many: true` section of `{ ref + fields }`, or a standalone relationship type.
 - **Mark the brief.** One single-record section, `brief: true` — the type's at-a-glance summary; keep it lean.
 - **Model what your project is *about*, not who *uses* it or what they've *done*.** People who log in are accounts; what they bought or completed are backend records — neither is a content schema.
+- **Access is per-entity, not per-field.** There's no `private` / `hidden` field and no "hide from this user" flag — to give one part its own access, split it into its own entity and reference it. A reference grants no access to its target.
 - **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework (and the backend) handle the rest.
 
 ---
