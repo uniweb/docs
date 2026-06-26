@@ -34,7 +34,7 @@ fields:
   featured:    { type: boolean }
 ```
 
-The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, plus structural `object`, `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `image` is a file, `number` is a decimal).
+The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object`, `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
 
 A section type binds the schema by naming it in `meta.js`:
 
@@ -109,7 +109,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `image` | `file` | A path or URL to a file |
 | `url`, `email` | `string` (+ `format`) | A validated string |
 | `markdown`, `html` | `text` (+ `format`) | A rich-content body (a source string) |
-| `prose` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
+| `richtext` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
 | `json` | `json` | An opaque structured value (see `format`) |
 | `object` | `object` | A nested record — declare its `fields:` |
 | `ref` | `ref` | A reference to another schema — write `{ ref: '@/person' }` |
@@ -132,10 +132,10 @@ A `format` marks a field as carrying rich content. It is **type-bound** — the 
 ```yaml
 fields:
   summary: { type: markdown }  # a source body (round-trips as markdown text)
-  body:    prose               # a rich document, edited in the visual app (json + prosemirror)
+  body:    richtext            # a rich document, edited in the visual app (json + prosemirror)
 ```
 
-The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: prose`** is exactly `type: json, format: prosemirror`. **Use `prose` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` / `html` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `prose`.
+The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: prosemirror`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` / `html` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
 
 ### Translatable fields: `localized`
 
