@@ -197,7 +197,7 @@ So the boundary is a feature, not a limitation. Keep your schemas about the doma
 
 Once your project has a backend, **who may read or edit each record is decided at runtime, by grants — not declared in your schema.** There is no `private` field, no "hidden from this user" flag, no field- or type-level read gate. Access is a property of an **entity** (a stored record): its owner can see it, plus anyone granted `read` / `edit` on it.
 
-One consequence drives real modeling decisions: **a reference doesn't pull in the *full* target — but it does expose the target's brief.** Reading A never returns B's full record (the backend re-checks access on B only when someone fetches B directly), yet resolving the reference embeds B's **brief** (its card) with no access check on B. So a reference leaks the *brief* of what it points to — and two rules follow: **keep anything sensitive out of briefs** (put it in a non-brief section, which returns only on a direct, authorized read), and **orient the reference so the sensitive side is the one doing the referencing, not the one referenced.**
+One consequence drives real modeling decisions, and it's about the **brief**. The brief is an entity's **public card** — it's exactly what you see when you *pick* an entity to link to (a reference dropdown, a search result). Choosing what to reference requires seeing that card, so **the brief is visible to anyone who can reference the entity** — it isn't gated, by design. The rest of the entity *is*: non-brief sections return only on a direct, authorized read of B itself. So a reference exposes B's **brief** (not its full record), and two rules follow: **keep anything sensitive out of briefs** — put it in a non-brief section — and **orient the reference so the sensitive entity is the one doing the referencing, not the one referenced** (reading A exposes B's brief, never the reverse).
 
 So:
 
@@ -350,7 +350,7 @@ The schema is the stable contract in the middle: design it once, and it drives v
 - **If the link has data, it's an edge** — a `many: true` section of `{ ref + fields }`, or a standalone relationship type.
 - **Mark the brief.** One single-record section, `brief: true` — the type's at-a-glance summary; keep it lean.
 - **Model what your project is *about*, not who *uses* it or what they've *done*.** People who log in are accounts; what they bought or completed are backend records — neither is a content schema.
-- **Access is per-entity, not per-field.** There's no `private` / `hidden` field — to give one part its own access, split it into its own entity. A reference doesn't expose the full target, **but it does expose the target's brief** — so keep sensitive data in non-brief sections, and point the reference from the sensitive entity to the public one.
+- **Access is per-entity, not per-field.** There's no `private` / `hidden` field — to give one part its own access, split it into its own entity. A reference exposes the target's **brief** (its public card — the thing you pick it by), never the full record — so keep sensitive data in non-brief sections, and point the reference from the sensitive entity to the public one.
 - **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework (and the backend) handle the rest.
 
 ---
