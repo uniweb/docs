@@ -197,7 +197,7 @@ So the boundary is a feature, not a limitation. Keep your schemas about the doma
 
 Once your project has a backend, **who may read or edit each record is decided at runtime, by grants — not declared in your schema.** There is no `private` field, no "hidden from this user" flag, no field- or type-level read gate. Access is a property of an **entity** (a stored record): its owner can see it, plus anyone granted `read` / `edit` on it.
 
-One consequence drives real modeling decisions: **a reference doesn't grant access to what it points to.** A record can link to another record its reader *can't* see — reading A never drags in B just because A references B; the backend re-checks access on B only when someone fetches B directly.
+One consequence drives real modeling decisions: **a reference doesn't pull in the *full* target — but it does expose the target's brief.** Reading A never returns B's full record (the backend re-checks access on B only when someone fetches B directly), yet resolving the reference embeds B's **brief** (its card) with no access check on B. So a reference leaks the *brief* of what it points to — and two rules follow: **keep anything sensitive out of briefs** (put it in a non-brief section, which returns only on a direct, authorized read), and **orient the reference so the sensitive side is the one doing the referencing, not the one referenced.**
 
 So:
 
@@ -227,15 +227,20 @@ sections:
 ```
 
 ```yaml
-# grade — its own record, the instructor's; access is the grant, not a flag
+# grade — its own record, the instructor's; the score stays OUT of the brief
 name: grade
-fields:
-  submission: { ref: '@/submission' }   # what it grades
-  score:      { type: number }
-  comments:   { type: text, format: markdown }
+sections:
+  identity:                       # the brief — leaks on any reference, so keep it harmless
+    brief: true
+    fields:
+      submission: { ref: '@/submission' }   # what it grades
+  result:                         # not the brief — returned only on an authorized read
+    fields:
+      score:    { type: number }
+      comments: { type: text, format: markdown }
 ```
 
-The `grade` *references* the submission, yet the student — who owns the submission — has **no grant on the grade**, so it's invisible to them. "Release the grade" is simply the instructor granting the student `read` on that record. Notice what's *absent*: no `private` flag, no `released` boolean gating sight. **Access is the grant; the grade is a separate record so a grant has something to attach to.**
+The `grade` *references* the submission, yet the student — who owns the submission — has **no grant on the grade**, so it's invisible to them. "Release the grade" is simply the instructor granting the student `read` on that record. Notice what's *absent*: no `private` flag, no `released` boolean gating sight. **Access is the grant; the grade is a separate record so a grant has something to attach to.** And two details keep it airtight: the grade references the submission (not the reverse), so a student reading their submission never hydrates the grade; and `score` sits in a **non-brief** section, so even a reference *to* the grade exposes only its harmless brief, never the score.
 
 A `grade` *field* on the submission wouldn't work — anyone who can read the submission reads the grade with it, the student included, before release. The entity split is what makes the grade hide-able, and then releasable.
 
@@ -345,7 +350,7 @@ The schema is the stable contract in the middle: design it once, and it drives v
 - **If the link has data, it's an edge** — a `many: true` section of `{ ref + fields }`, or a standalone relationship type.
 - **Mark the brief.** One single-record section, `brief: true` — the type's at-a-glance summary; keep it lean.
 - **Model what your project is *about*, not who *uses* it or what they've *done*.** People who log in are accounts; what they bought or completed are backend records — neither is a content schema.
-- **Access is per-entity, not per-field.** There's no `private` / `hidden` field and no "hide from this user" flag — to give one part its own access, split it into its own entity and reference it. A reference grants no access to its target.
+- **Access is per-entity, not per-field.** There's no `private` / `hidden` field — to give one part its own access, split it into its own entity. A reference doesn't expose the full target, **but it does expose the target's brief** — so keep sensitive data in non-brief sections, and point the reference from the sensitive entity to the public one.
 - **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework (and the backend) handle the rest.
 
 ---
