@@ -108,7 +108,8 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `date`, `datetime` | `date`, `datetime` | An ISO-8601 date / timestamp |
 | `image` | `file` | A path or URL to a file |
 | `url`, `email` | `string` (+ `format`) | A validated string |
-| `markdown`, `html` | `text` (+ `format`) | A rich-content body |
+| `markdown`, `html` | `text` (+ `format`) | A rich-content body (a source string) |
+| `prose` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
 | `json` | `json` | An opaque structured value (see `format`) |
 | `object` | `object` | A nested record — declare its `fields:` |
 | `ref` | `ref` | A reference to another schema — write `{ ref: '@/person' }` |
@@ -130,11 +131,11 @@ A `format` marks a field as carrying rich content. It is **type-bound** — the 
 
 ```yaml
 fields:
-  summary: { type: text, format: markdown }     # a markdown body
-  body:    { type: json, format: prosemirror }  # a structured rich document
+  summary: { type: markdown }  # a source body (round-trips as markdown text)
+  body:    prose               # a rich document, edited in the visual app (json + prosemirror)
 ```
 
-The friendly aliases set this for you — `type: markdown` is exactly `type: text, format: markdown`. Reach for `json` + `format: prosemirror` only when the content must round-trip through a structured editor; for a file-based body, `text` + `format: markdown` is simpler and stays readable as source.
+The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: prose`** is exactly `type: json, format: prosemirror`. **Use `prose` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` / `html` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `prose`.
 
 ### Translatable fields: `localized`
 

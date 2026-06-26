@@ -35,7 +35,7 @@ The simplest schema is a flat list of fields — one record's worth of data:
 name: lesson
 fields:
   title:   { type: string, required: true }
-  body:    { type: text, format: markdown }
+  body:    prose
   minutes: { type: int }
 ```
 
@@ -50,7 +50,7 @@ sections:
     brief: true
     fields:
       title:   { type: string, required: true }
-      summary: { type: text, format: markdown }
+      summary: prose
       level:   { type: string, enum: [intro, intermediate, advanced] }
   details:                  # a second section — a separate concern
     fields:
@@ -83,7 +83,7 @@ sections:
         many: true
         fields:
           title: { type: string }
-          body:  { type: text, format: markdown }
+          body:  prose
 ```
 
 (A section can hold both its own `fields` *and* child `sections`, as `modules` does here.) A record nests the same way: each module is a record with a `lessons` array inside it (see [Entity Content Structure](../reference/entity-content.md)). The hierarchy is **pure structure** — no IDs to wire up, no back-pointers; the data tree mirrors the schema tree.
@@ -237,7 +237,7 @@ sections:
   result:                         # not the brief — returned only on an authorized read
     fields:
       score:    { type: number }
-      comments: { type: text, format: markdown }
+      comments: prose
 ```
 
 The `grade` *references* the submission, yet the student — who owns the submission — has **no grant on the grade**, so it's invisible to them. "Release the grade" is simply the instructor granting the student `read` on that record. Notice what's *absent*: no `private` flag, no `released` boolean gating sight. **Access is the grant; the grade is a separate record so a grant has something to attach to.** And two details keep it airtight: the grade references the submission (not the reverse), so a student reading their submission never hydrates the grade; and `score` sits in a **non-brief** section, so even a reference *to* the grade exposes only its harmless brief, never the score.
@@ -281,7 +281,7 @@ name: person
 fields:
   name:  { type: string, required: true }
   email: { type: string, format: email }
-  bio:   { type: text, format: markdown }
+  bio:   prose
 ```
 
 ```yaml
@@ -292,7 +292,7 @@ sections:
     brief: true
     fields:
       title:   { type: string, required: true }
-      summary: { type: text, format: markdown }
+      summary: prose
       level:   { type: string, enum: [intro, intermediate, advanced] }
   details:                                                                     # a separate concern
     fields:
@@ -309,7 +309,7 @@ sections:
         many: true
         fields:
           title: { type: string }
-          body:  { type: text, format: markdown }
+          body:  prose
 ```
 
 ```yaml
