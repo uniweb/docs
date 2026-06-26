@@ -48,20 +48,19 @@ export default {
 
 Your component then reads `content.data.products` — an array of products, each with the schema's defaults already applied, so there's nothing to null-check. The binding is a declaration, not a gate: a component without it still receives the data, just without the defaults. (Full binding reference — inline field maps and the editor "rich form" — is in [Component Metadata → Data](../reference/component-metadata.md#data).)
 
-For content with more structure than a flat record — say a profile with a bio plus a list of publications — a schema declares named `sections:` instead of `fields:`. Each section is one record (`single`) or a repeating list (`multi`):
+For content with more structure than a flat record — say a profile with a bio plus a list of publications — a schema declares named `sections:` instead of `fields:`. Each section is one record by default, or a repeating list (`many: true`):
 
 ```yaml
 # foundation/schemas/person.yml
 name: person
 sections:
   identity:
-    kind: single
-    brief: true                      # the section shown when this entity is referenced
+    brief: true                      # single is the default; the card shown when referenced
     fields:
       name: { type: string, required: true }
       role: { type: string }
   publications:
-    kind: multi                      # a repeating list of records
+    many: true                       # a repeating list of records
     fields:
       title: { type: string }
       year:  { type: number }
@@ -78,12 +77,11 @@ A `multi` section can be marked **insert-only** with `append_only: true` — rec
 name: membership
 sections:
   identity:
-    kind: single
     brief: true
     fields:
       name: { type: string, required: true }
   activity:
-    kind: multi
+    many: true
     append_only: true              # records accumulate; existing ones are immutable
     fields:
       at:    { type: datetime }
@@ -92,7 +90,7 @@ sections:
 
 Once you [register](#registering-schemas) the schema, this rule is enforced wherever entities of the type are written — appends are accepted, but changing or removing an existing record is refused. There's no "replace the whole section" shortcut either: re-submitting records adds new ones rather than overwriting what's already there. Because the rule lives in the content type rather than in a form, it holds for every writer, not just the editor UI. That makes an append-only section **tamper-evident**: the accumulated history stands on its own. Reach for it for activity logs, submissions, audit trails — anything meant to accumulate and never be rewritten.
 
-`append_only` is only valid on a `multi` section (a single record has nothing to append to). For file-based collections there's no write step, so it has no effect until the type is registered.
+`append_only` is only valid on a `many: true` section (a single record has nothing to append to). For file-based collections there's no write step, so it has no effect until the type is registered.
 
 ---
 
@@ -113,10 +111,11 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `markdown`, `html` | `text` (+ `format`) | A rich-content body |
 | `json` | `json` | An opaque structured value (see `format`) |
 | `object` | `object` | A nested record — declare its `fields:` |
-| `array` | `array` | A list — declare the item type with `items:` |
-| `ref` | `ref` | A reference to another schema (`ref: '@/person'`) |
+| `ref` | `ref` | A reference to another schema — write `{ ref: '@/person' }` |
 
 You can always write the canonical kind directly; the friendly names just save you the folding.
+
+**Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). Collection-level flags like `required` ride on the list; the type describes each item.
 
 ### Rich content: `format`
 

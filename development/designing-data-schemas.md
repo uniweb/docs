@@ -39,31 +39,26 @@ fields:
   minutes: { type: int }
 ```
 
-When a type has **distinct groups** of fields, or **repeating** data, you organize them into named **sections**. A section is a namespace for a group of fields, with a *kind*:
+When a type has **distinct groups** of fields, or **repeating** data, you organize them into named **sections**. A section is a namespace for a group of fields. It holds **one record by default**; add **`many: true`** to make it a repeating list of records.
 
-- **`single`** — one record (an object).
-- **`multi`** — a repeating list of records (an array).
-
-A type can have **several** sections. Use multiple `single` sections to keep distinct concerns apart; use `multi` sections for "many of something." Mark one `single` section **`brief: true`** — the type's lean summary: its title and the few fields that identify it. The brief is the type's stand-in wherever it's shown in short form (in a reference from another type, a card, a search result), so keep it to the essentials.
+A type can have **several** sections. Use multiple single-record sections to keep distinct concerns apart; add `many: true` for "many of something." Mark one single-record section **`brief: true`** — the type's lean summary: its title and the few fields that identify it. The brief is the type's stand-in wherever it's shown in short form (in a reference from another type, a card, a search result), so keep it to the essentials.
 
 ```yaml
 name: course
 sections:
   identity:                 # the brief — what the course is
-    kind: single
     brief: true
     fields:
       title:   { type: string, required: true }
       summary: { type: text, format: markdown }
       level:   { type: string, enum: [intro, intermediate, advanced] }
-  details:                  # a second single section — a separate concern
-    kind: single
+  details:                  # a second section — a separate concern
     fields:
       credits: { type: int }
       weeks:   { type: int }
 ```
 
-> **Field or section?** A **field** holds one value, or a simple list (`{ type: array, items: { type: string } }`). A **section** holds a whole record, or many records. Reach for a section when the group has its own structure — multiple fields, repetition, or nesting; keep it a field when it's a single value or a flat list.
+> **Field or section?** A **field** holds one value, or a simple list (`{ type: string, many: true }`). A **section** holds a whole record, or many records. Reach for a section when the group has its own structure — multiple fields, repetition, or nesting; keep it a field when it's a single value or a flat list.
 
 ---
 
@@ -75,18 +70,17 @@ A section can contain **child sections** — a section nested inside another, wi
 name: course
 sections:
   identity:
-    kind: single
     brief: true
     fields:
       title: { type: string, required: true }
 
   modules:                  # many modules per course
-    kind: multi
+    many: true
     fields:
       title: { type: string }
     sections:
       lessons:              # many lessons per module
-        kind: multi
+        many: true
         fields:
           title: { type: string }
           body:  { type: text, format: markdown }
@@ -107,7 +101,7 @@ This is the central modeling decision. You have a second type — say `instructo
 **Reference** — store a pointer to a separate record with a **`ref`** field (a *relation*, in database terms):
 
 ```yaml
-instructor: { type: ref, ref: '@/person' }   # points at a separate person record
+instructor: { ref: '@/person' }   # points at a separate person record
 ```
 
 A `ref` field stores a pointer to a record of another type, by its slug — the two records stay separate. Choose between embed and reference by asking **"does this thing exist on its own?"**
@@ -127,21 +121,20 @@ A `ref` field stores a pointer to a record of another type, by its slug — the 
 
 Sometimes the **relationship itself** has data — facts that belong to neither end alone. A program includes a course *as required or elective, in a particular order*. "Required" isn't a property of the program, nor of the course — it's a property of **the link between them**.
 
-Model this as a **`multi` section whose items carry a `ref` plus sibling fields**. The reference names the other end; the sibling fields are the **edge attributes** — the relationship's own data (the columns you'd put on a join table, if you think in SQL):
+Model this as a **`many: true` section whose items carry a `ref` plus sibling fields**. The reference names the other end; the sibling fields are the **edge attributes** — the relationship's own data (the columns you'd put on a join table, if you think in SQL):
 
 ```yaml
 name: program
 sections:
   identity:
-    kind: single
     brief: true
     fields:
       title: { type: string, required: true }
 
   courses:                  # the program's courses, each link carrying its own data
-    kind: multi
+    many: true
     fields:
-      course:      { type: ref, ref: '@/course' }                 # the reference
+      course:      { ref: '@/course' }                 # the reference
       requirement: { type: string, enum: [required, elective] }   # edge attribute
       order:       { type: int }                                   # edge attribute
 ```
@@ -155,8 +148,8 @@ Sometimes a relationship is important enough to be a **type in its own right** �
 ```yaml
 name: enrollment
 fields:
-  student:     { type: ref, ref: '@/person' }   # one end
-  course:      { type: ref, ref: '@/course' }   # the other end
+  student:     { ref: '@/person' }   # one end
+  course:      { ref: '@/course' }   # the other end
   enrolled_on: { type: date }                    # edge attribute
   grade:       { type: string, enum: [A, B, C, D, F, incomplete] }
   status:      { type: string, enum: [active, completed, withdrawn] }
@@ -172,11 +165,11 @@ When one type relates to *many* of another, pick the shape by how much the **lin
 
 | Shape | Looks like | Use when |
 |---|---|---|
-| **Embedded subsection** | a `multi` section with full fields | the children are owned and local (a course's modules) |
-| **List of references** | `{ type: array, items: { type: ref, ref: '@/course' } }` | you only need pointers, no per-link data (a course's prerequisites) |
-| **References with edge attributes** | a `multi` section of `{ ref + sibling fields }` | the connection itself has data (a program's courses) |
+| **Embedded subsection** | a `many: true` section with full fields | the children are owned and local (a course's modules) |
+| **List of references** | `{ ref: '@/course', many: true }` | you only need pointers, no per-link data (a course's prerequisites) |
+| **References with edge attributes** | a `many: true` section of `{ ref + sibling fields }` | the connection itself has data (a program's courses) |
 
-The question is always *how much does the link carry* — nothing (a bare list of refs), its own attributes (a multi section of ref + fields), or it's really an owned child (embed it).
+The question is always *how much does the link carry* — nothing (a bare list of refs), its own attributes (a `many: true` section of ref + fields), or it's really an owned child (embed it).
 
 ---
 
@@ -241,26 +234,24 @@ fields:
 name: course
 sections:
   identity:                                                                    # the brief
-    kind: single
     brief: true
     fields:
       title:   { type: string, required: true }
       summary: { type: text, format: markdown }
       level:   { type: string, enum: [intro, intermediate, advanced] }
   details:                                                                     # a separate concern
-    kind: single
     fields:
       credits:       { type: int }
       weeks:         { type: int }
-      instructor:    { type: ref, ref: '@/person' }                          # one reference
-      prerequisites: { type: array, items: { type: ref, ref: '@/course' } }  # a list of references
+      instructor:    { ref: '@/person' }                          # one reference
+      prerequisites: { ref: '@/course', many: true }  # a list of references
   modules:                                                                     # embedded: owned by this course
-    kind: multi
+    many: true
     fields:
       title: { type: string }
     sections:
       lessons:
-        kind: multi
+        many: true
         fields:
           title: { type: string }
           body:  { type: text, format: markdown }
@@ -271,14 +262,13 @@ sections:
 name: program
 sections:
   identity:
-    kind: single
     brief: true
     fields:
       title: { type: string, required: true }
   courses:
-    kind: multi
+    many: true
     fields:
-      course:      { type: ref, ref: '@/course' }
+      course:      { ref: '@/course' }
       requirement: { type: string, enum: [required, elective] }
       order:       { type: int }
 ```
@@ -302,8 +292,8 @@ The schema is the stable contract in the middle: design it once, and it drives v
 
 - **Default to a flat `fields:` schema.** Reach for sections only when you have repeating groups, hierarchy, or genuinely distinct namespaces.
 - **Embed what's owned; reference what's independent.** "Does it exist on its own?" is the question.
-- **If the link has data, it's an edge** — a `multi` section of `{ ref + fields }`, or a standalone relationship type.
-- **Mark the brief.** One `single` section, `brief: true` — the type's at-a-glance summary; keep it lean.
+- **If the link has data, it's an edge** — a `many: true` section of `{ ref + fields }`, or a standalone relationship type.
+- **Mark the brief.** One single-record section, `brief: true` — the type's at-a-glance summary; keep it lean.
 - **Model what your project is *about*, not who *uses* it or what they've *done*.** People who log in are accounts; what they bought or completed are backend records — neither is a content schema.
 - **Model the domain, not the storage.** The schema mirrors how you think about the things; let the framework (and the backend) handle the rest.
 
