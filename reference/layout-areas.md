@@ -240,12 +240,13 @@ The directory name matches the layout name (case-insensitive, `Layout` suffix st
 
 ## Navigation Visibility
 
-Layout areas often build navigation from the page hierarchy. Pages can opt out:
+Layout areas often build navigation from the page hierarchy. Pages can opt out of nav
+while staying reachable:
 
 ```yaml
 # pages/admin/page.yml
 title: Admin Dashboard
-hidden: true           # Hide from all navigation
+hideIn: ['*']          # Reachable by URL, but shown in no nav menu
 ```
 
 ```yaml
@@ -253,6 +254,9 @@ hidden: true           # Hide from all navigation
 title: Privacy Policy
 hideIn: [header]       # Hide from the header nav (still shown in footer)
 ```
+
+> `hideIn` is nav-only — the page stays published and routed. To exclude a page (and its
+> subtree) from the published site entirely — e.g. a draft — use `hidden: true` instead.
 
 See [Page Configuration](./page-configuration.md) for all visibility options.
 

@@ -41,21 +41,24 @@ The `getPageHierarchy()` method returns pages with their nested children, respec
 
 ### Page Visibility Control
 
-Pages can opt out of automatic navigation via `page.yml`:
+Pages can opt out of automatic navigation via `page.yml` — while staying reachable:
 
 ```yaml
 # pages/admin/page.yml
 title: Admin Dashboard
-hideIn: [header, footer] # Don't show in the header or footer nav
+hideIn: ['*'] # Reachable by URL, but shown in no nav menu
 ```
 
-| Option             | Effect                                                       |
-| ------------------ | ------------------------------------------------------------ |
-| `hidden: true`     | Hide from all navigation (page still accessible via URL)     |
-| `hideIn: [header]` | Hide from named nav areas only (`header`, `footer`, `sidebar`, …) |
+| Option             | Effect                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| `hideIn: ['*']`    | Hide from every nav menu; page stays routed + reachable by URL         |
+| `hideIn: [header]` | Hide from named nav areas only (`header`, `footer`, `sidebar`, …)      |
+| `hidden: true`     | **Different axis** — exclude the page (and its subtree) from the published site (draft) |
 
-`hideIn` lists the nav areas to suppress the page from. (The legacy `hideInHeader` /
-`hideInFooter` booleans still work as shorthand for `hideIn: [header]` / `hideIn: [footer]`.)
+`hideIn` lists the nav areas to suppress the page from; `'*'` means every area. (The legacy
+`hideInHeader` / `hideInFooter` booleans still work as shorthand for `hideIn: [header]` /
+`hideIn: [footer]`.) For the full reachability-vs-nav distinction, see
+[Page Configuration → Page Visibility](./page-configuration.md).
 
 ## Manual Navigation
 

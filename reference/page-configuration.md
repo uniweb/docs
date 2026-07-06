@@ -31,9 +31,10 @@ order: 2                        # Sort position in navigation
 pages: [team, history, ...]     # Inclusive order (first is index, ... = rest)
 index: team                     # Or just set the index page
 
-# Navigation Visibility
-hidden: true                    # Hide from all navigation
-hideIn: [header]                # Hide from named nav areas only (header, footer, sidebar, …)
+# Page Visibility
+hidden: true                    # Draft: exclude from the published site (page + its subtree)
+hideIn: ['*']                   # Reachable, but hidden from every nav menu
+hideIn: [header]                # Hidden from named nav areas only (header, footer, sidebar, …)
 
 # Layout
 layout: DocsLayout              # Layout name (or use default)
@@ -190,29 +191,39 @@ Omit `pages` and `index` to auto-discover children. They're sorted by their `ord
 
 ---
 
-## Navigation Visibility
+## Page Visibility
 
-Control where the page appears in automatically-generated navigation.
+A page has two independent visibility controls. Keep them distinct:
+
+- **`hidden`** — *reachability*. `hidden: true` keeps a page out of the **published site
+  entirely** — it isn't built, routed, or reachable. Use it for drafts / work in progress.
+  It cascades: hiding a folder hides its whole subtree. The page still renders in
+  `uniweb dev` so you can preview it while you work.
+- **`hideIn`** — *nav placement*. The page stays routed and reachable; you only control
+  which navigation menus list it.
 
 ```yaml
-hidden: true          # Hide everywhere (page still accessible via URL)
-hideIn: [header]      # Hide from specific named nav areas (a list of area names)
+hidden: true          # Draft — excluded from the published site (and its subtree)
+hideIn: ['*']         # Reachable by URL, but shown in no nav menu
+hideIn: [header]      # Hidden from specific named nav areas (a list of area names)
 ```
 
 `hideIn` lists the nav areas to suppress the page from — `header`, `footer`, or any
-area a foundation's layout declares (e.g. `sidebar`). `hidden` removes it from all nav.
+area a foundation's layout declares (e.g. `sidebar`). The `'*'` wildcard means every area.
 
-| Option | Header Nav | Footer Nav | Direct URL |
-|--------|------------|------------|------------|
+| Option | Header Nav | Footer Nav | Reachable by URL |
+|--------|------------|------------|------------------|
 | (default) | ✓ | ✓ | ✓ |
 | `hideIn: [header]` | ✗ | ✓ | ✓ |
 | `hideIn: [footer]` | ✓ | ✗ | ✓ |
-| `hidden: true` | ✗ | ✗ | ✓ |
+| `hideIn: ['*']` | ✗ | ✗ | ✓ |
+| `hidden: true` | ✗ | ✗ | ✗ (not published) |
 
 Use cases:
-- **Admin pages**: `hidden: true`
+- **Draft / in-progress pages**: `hidden: true` (invisible on the live site; previewable in dev)
+- **Landing / thank-you pages** (reached only via a direct link): `hideIn: ['*']`
 - **Legal pages**: `hideIn: [header]` (show only in footer)
-- **Landing pages**: `hideIn: [footer]` (show only in header)
+- **Header-only pages**: `hideIn: [footer]` (show only in header)
 
 > The older `hideInHeader: true` / `hideInFooter: true` booleans still work as shorthand
 > for `hideIn: [header]` / `hideIn: [footer]`.
@@ -563,11 +574,11 @@ seo:
   changefreq: weekly
 ```
 
-### Admin Page (Hidden)
+### Admin Page (reachable, not in any menu)
 
 ```yaml
 title: Admin Dashboard
-hidden: true
+hideIn: ['*']         # reachable by URL, but shown in no nav menu
 
 layout:
   header: false
@@ -575,6 +586,9 @@ layout:
 seo:
   noindex: true
 ```
+
+> Use `hideIn: ['*']` (not `hidden: true`) when the page must stay reachable by direct
+> URL. `hidden: true` would exclude it from the published site entirely.
 
 ---
 

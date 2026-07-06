@@ -134,7 +134,7 @@ pages: [..., legal]
 pages: [home, about, docs]
 ```
 
-Without `...`, only listed pages appear in navigation. Unlisted pages are still built and accessible by URL, but they're hidden from navigation (`hidden: true`).
+Without `...`, only listed pages appear in navigation. Unlisted pages are still built and reachable by URL, but suppressed from every nav menu (equivalent to `hideIn: ['*']` — a nav-only exclusion, not `hidden`, which would drop them from the published site).
 
 Use this when you want precise control over what appears in the nav — for example, a landing page with only a few pages in the header.
 
