@@ -23,6 +23,50 @@ That's it. Your site now has a complete color palette with 11 shades for each co
 
 The key insight: **components don't manage their own colors**. They use semantic tokens (`text-heading`, `bg-section`, `border-border`) that resolve differently depending on the section's context. A content author writes `theme: dark` on a hero section, and every component inside it automatically gets light text on a dark background — no conditional logic in the component.
 
+## What You Author vs What the Build Derives
+
+`theme.yml` holds only **authored** values — your inputs. Everything else (the 11-shade
+palettes, the full semantic-token set per context, the generated CSS) is **derived** by the
+build from those inputs. You never write shade ramps or CSS variables by hand, and you never
+need to store them anywhere — they're recomputed on every build.
+
+This distinction matters if you ever read or generate a theme programmatically (a theme editor,
+a migration script, a preview tool): **persist only the authored keys; recompute the rest.**
+Storing derived shades or CSS variables alongside the authored values is redundant and drifts
+the moment a color changes.
+
+### Authored keys (what lives in `theme.yml`)
+
+Every key is optional — an empty `theme.yml` (or none) yields an all-defaults theme.
+
+| Key | Shape | Notes |
+|-----|-------|-------|
+| `colors` | **Flat** — `{ primary, secondary, accent, neutral }` | **One set for the whole site**, not per-context. A hex string, a `{ base, mode }` object, a full shade object, or (for `neutral`) a preset name. |
+| `contexts` | **Sparse** — `{ light?, medium?, dark? }` | Semantic-**token** overrides only (e.g. `link: primary-500`), never base colors. Omit entirely to accept all defaults; list only the tokens you change. |
+| `fonts` | `{ body?, heading?, mono?, import? }` | Font-family strings + optional `import` list. |
+| `appearance` | string or `{ default, allowToggle, respectSystemPreference, schemes? }` | Site-wide light/dark scheme. |
+| `inline` | `{ accent?, callout?, muted?, … }` | Inline text-style definitions; merged over framework defaults. |
+| `vars` | `{ <name>: value \| { light, dark } }` | **Foundation** variable overrides (e.g. `header-height`) — a separate concept from color palettes. |
+| `code` | `{ background, foreground, keyword, … }` | Syntax-highlighting colors. |
+| `background` | CSS value string | Site-level page background. |
+
+### Derived at build time (never authored, never stored)
+
+| Derived output | Computed from | Where it appears |
+|----------------|---------------|------------------|
+| **Palette shades** — `--primary-50 … --primary-950` (× every color) | `colors` (11-shade OKLCH generation) | CSS variables + Tailwind classes |
+| **Full context token set** — every semantic token per `light`/`medium`/`dark` | framework defaults ⊕ your sparse `contexts` overrides | `.context-*` CSS classes |
+| **The theme CSS string** | all of the above | injected into `<head>` at runtime |
+
+So base `colors` are **flat and global**; `contexts` sit **on top** as token overrides that
+reference the palettes (`link: primary-600` → `var(--primary-600)`). There is no per-context
+base-color layer, and the palette/CSS variables are outputs, not inputs.
+
+> **Reading a theme in code?** Import the same derivation the build uses from `@uniweb/theming`
+> (`generatePalettes(colors)` for shade ramps, `buildTheme(themeYml)` for the fully-merged
+> config + CSS) rather than re-implementing shade math. That keeps any tool you build in lockstep
+> with what the site actually renders.
+
 ## Color Palettes
 
 Define brand colors with a single hex value — shades are auto-generated:
