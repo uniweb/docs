@@ -105,6 +105,20 @@ The foundation build looks for `@uniweb/runtime` in two places:
 - **You can override by adding `@uniweb/runtime` directly to your foundation's `dependencies`** — but this is rarely needed and creates a source of confusion (now there are two places that know about the runtime version). Don't do this unless you have a specific reason.
 - **Whatever runtime version is pinned, your foundation's `runtimePolicy` controls how sites of this foundation can move forward beyond it.** Pinning `0.8.9` with `auto-minor` lets sites pick up `0.9.0` or higher (within the same major); pinning `0.8.9` with `exact` locks them at `0.8.9` until you rebuild your foundation.
 
+### Build outputs
+
+`uniweb build` (or `vite build`) writes your foundation's `dist/`:
+
+| Path | What it is |
+|---|---|
+| `dist/entry.js` | The foundation module the browser loads (code-split — kit's optional features like syntax highlighting and search lazy-load as separate chunks). |
+| `dist/entry-ssr.js` | A **single-file server-render build** of the same foundation, for hosts that render your foundation on the server (SSR). Same components as `entry.js` in one module, with React, the runtime, and the browser-only lazy libraries left external — so it stays foundation-sized and those libraries (which only run in the browser) are never pulled in. Emitted automatically; you don't reference it directly. |
+| `dist/assets/style.css` | The foundation's compiled stylesheet (carries your theme-var defaults). |
+| `dist/meta/schema.json` | The compiled component + theme schema (params, defaults, layouts) the runtime reads. |
+| `dist/runtime-pin.json` | The `@uniweb/runtime` version this build resolved (see above). |
+
+You normally don't touch these — the CLI's deploy/export flow ships the right ones for the target.
+
 ---
 
 ## CSS Variables (vars)
@@ -185,7 +199,7 @@ The `main.js` declaration is metadata — descriptions, types, and editor UI hin
 
 This is best practice for two reasons:
 
-1. **Guarantees defaults are available.** The `@theme inline` block compiles into the foundation's CSS, which ships with `foundation.js`. The defaults are present regardless of whether the site's `theme.yml` sets them — important for runtime-loaded foundations where the site build doesn't have access to `schema.json`.
+1. **Guarantees defaults are available.** The `@theme inline` block compiles into the foundation's CSS (`dist/assets/style.css`, shipped alongside `entry.js`). The defaults are present regardless of whether the site's `theme.yml` sets them — important for runtime-loaded foundations where the site build doesn't have access to `schema.json`.
 
 2. **Enables Tailwind shorthand.** With registration, you can use `py-(--section-padding-y)` instead of `py-[var(--section-padding-y)]`.
 
