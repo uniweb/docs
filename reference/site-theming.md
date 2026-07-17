@@ -415,6 +415,21 @@ fonts:
 
 The build emits one `@font-face` rule per face plus a `<link rel="preload">` hint, and **filters out any face whose family no slot references** — an unused face costs nothing. Consequently a `faces:` block with no matching `body`/`heading`/`mono` slot produces no CSS at all.
 
+### Fonts beyond the three roles
+
+A design sometimes needs a typeface beyond `body`/`heading`/`mono` — an editorial serif for pull-quotes, a display face for a hero. The foundation declares it as a `font-*` variable (see [Foundation Variables](#foundation-variables)); the site sets the family under `vars:` and loads it exactly like a role:
+
+```yaml
+# site/theme.yml
+vars:
+  font-serif: "Fraunces, Georgia, serif"   # the foundation's editorial slot
+fonts:
+  import:
+    - url: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600"
+```
+
+The family loads even though it isn't one of the three role slots. When the variable is named after a Tailwind font slot (`font-sans`, `font-serif`, `font-mono`), that utility resolves to it; a custom name (`font-display`) is referenced directly with `var(--font-display)`.
+
 ## Code Block Syntax Highlighting
 
 Code blocks in markdown content are automatically syntax-highlighted using [Shiki](https://shiki.style). Customize the colors via the `code` section:
