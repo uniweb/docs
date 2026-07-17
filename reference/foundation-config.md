@@ -185,7 +185,7 @@ Color-type vars are stored separately from non-color vars. The processor routes 
 
 ### Font family vars
 
-A foundation var can hold a **typeface** the site retunes — an editorial serif, or, for a Tailwind foundation, its whole `font-sans` / `font-serif` / `font-mono` type system. Name the var after the Tailwind font slot it should drive:
+A foundation var can hold a **typeface** the site retunes — an editorial serif, or a whole `font-sans` / `font-serif` / `font-mono` type system when a design manages fonts itself rather than deferring to the `body`/`heading`/`mono` element convention. Name the var after the Tailwind font slot it should drive:
 
 ```js
 // src/main.js
