@@ -679,8 +679,8 @@ See [Data Fetching](./data-fetching.md#collection-references) for details.
 During development (`pnpm dev`):
 
 - Collection folders are watched for changes
-- JSON files regenerate automatically when content changes
-- Hot reload triggers when collections update
+- `/data/*.json` regenerates automatically when a record is added, edited, or removed
+- The browser reloads and the change appears — no dev-server restart needed. In dev the runtime fetches local collections live, exactly like a remote data source, so what you see matches production behavior
 
 ---
 
