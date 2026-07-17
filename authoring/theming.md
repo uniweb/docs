@@ -163,6 +163,23 @@ Only load the font weights you actually use. Each weight adds to your page load 
 
 > **Automatic optimization:** When you use Google Fonts (or any external font provider), the build automatically adds preconnect hints so the browser starts connecting to the font server earlier. You don't need to do anything extra — just list your imports and the optimization happens for you.
 
+### Self-hosting fonts
+
+Prefer not to depend on a font CDN — for privacy, offline use, or load consistency? Put the font files in your site's `public/fonts/` folder and declare them with `faces:`:
+
+```yaml
+fonts:
+  heading: "Söhne, sans-serif"
+  body: "Inter, sans-serif"
+
+  faces:
+    - { family: "Söhne", src: /fonts/soehne-bold.woff2, weight: 700 }
+    - { family: "Söhne", src: /fonts/soehne-regular.woff2, weight: 400 }
+    - { family: "Inter", src: /fonts/inter.woff2, weight: 400 }
+```
+
+Each face needs a `family` (matching the name you use in `body`/`heading`/`mono`), a `src` path (from your site root — a file at `public/fonts/x.woff2` is referenced as `/fonts/x.woff2`), and a `weight`. The build writes the `@font-face` rules for you and preloads the files so text doesn't flash while they load. A face whose family none of your fonts use is skipped automatically, so it's fine to keep a shared list.
+
 ### Using system fonts
 
 If you don't specify fonts, the site uses the visitor's system fonts — which load instantly and look native to each operating system. This is a perfectly good choice:

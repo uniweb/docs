@@ -392,6 +392,29 @@ Generated CSS variables:
 }
 ```
 
+### Self-hosted fonts
+
+To serve fonts from your own origin instead of a CDN, place the files under `site/public/fonts/` and declare `@font-face` faces:
+
+```yaml
+fonts:
+  heading: "Söhne, sans-serif"
+
+  faces:
+    - { family: "Söhne", src: /fonts/soehne-bold.woff2, weight: 700, style: normal }
+    - { family: "Söhne", src: /fonts/soehne-regular.woff2, weight: 400, style: normal }
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `family` | yes | Must match the name referenced by a `body`/`heading`/`mono` slot |
+| `src` | yes | Path from the site root (`public/fonts/x.woff2` → `/fonts/x.woff2`) |
+| `weight` | no | Defaults to `400` |
+| `style` | no | Defaults to `normal` |
+| `format` | no | Inferred from the file extension (`.woff2` → `woff2`) |
+
+The build emits one `@font-face` rule per face plus a `<link rel="preload">` hint, and **filters out any face whose family no slot references** — an unused face costs nothing. Consequently a `faces:` block with no matching `body`/`heading`/`mono` slot produces no CSS at all.
+
 ## Code Block Syntax Highlighting
 
 Code blocks in markdown content are automatically syntax-highlighted using [Shiki](https://shiki.style). Customize the colors via the `code` section:
