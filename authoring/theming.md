@@ -145,6 +145,8 @@ fonts:
 | `heading` | Titles, subtitles, headings |
 | `mono` | Code blocks, technical text |
 
+> **Foundations can differ.** The `body` / `heading` / `mono` settings above work with most foundations. Some offer their own named font settings instead (you'll see them among your theme settings) — check what your foundation exposes. Whichever way you name the family, you load the font files the same way, shown below.
+
 ### Loading web fonts
 
 If you're using fonts from Google Fonts (or another provider), tell the site where to load them:

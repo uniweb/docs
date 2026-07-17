@@ -125,7 +125,7 @@ You normally don't touch these — the CLI's deploy/export flow ships the right 
 
 Most customization is handled by component params. Both section components and layout components declare their own params in `meta.js` — layouts are full components with params, not just structural wrappers. A header height, for example, is typically a layout param, not a foundation var.
 
-Foundation-level CSS variables are for values that must stay consistent **across** multiple components — shared radii, spacing scales, or additional font roles beyond the three the theming system already provides (body, heading, mono). Don't reach for foundation vars when a component or layout param would do.
+Foundation-level CSS variables are for values that must stay consistent **across** multiple components — shared radii, spacing scales, or a **typeface** the site retunes (beyond the three roles the theming system already provides as `body`/`heading`/`mono`; see [Font family vars](#font-family-vars)). Don't reach for foundation vars when a component or layout param would do.
 
 ### Defining Variables
 
@@ -182,6 +182,24 @@ When `label` is omitted, the editor generates one from the var name: `radius-lg`
 Color-type vars are stored separately from non-color vars. The processor routes them to `colorVars` (per-context) rather than `foundationVars` (flat). This means color vars can have different values for light and dark schemes.
 
 > **Foundation vars vs component vars:** Foundation vars are global — they emit on `:root` and apply site-wide. Component vars (declared in `meta.js`) are scoped to `#section-{id}`. See [Component Metadata](./component-metadata.md#vars) for component-level vars.
+
+### Font family vars
+
+A foundation var can hold a **typeface** the site retunes — an editorial serif, or, for a Tailwind foundation, its whole `font-sans` / `font-serif` / `font-mono` type system. Name the var after the Tailwind font slot it should drive:
+
+```js
+// src/main.js
+export const vars = {
+  'font-serif': {
+    default: 'ui-serif, Georgia, serif',
+    description: 'Editorial serif for pull-quotes and taglines',
+  },
+}
+```
+
+The var emits `--font-serif`, so the `font-serif` utility (or `var(--font-serif)`) resolves to it. The site sets the family in `theme.yml` under `vars:` and loads the file with `fonts.import` / `fonts.faces` — **the family loads even though it isn't one of the three `body`/`heading`/`mono` role slots.** A non-Tailwind name (`font-display`) works too; reference it with `var(--font-display)`.
+
+Defaults should be OS stacks (`ui-serif, Georgia, serif`) so the foundation renders natively before a site opts into brand faces. See [Site Theming → Fonts beyond the three roles](./site-theming.md#fonts-beyond-the-three-roles) for the site side.
 
 ### Registering Defaults in `styles.css`
 
