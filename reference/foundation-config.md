@@ -185,13 +185,13 @@ Color-type vars are stored separately from non-color vars. The processor routes 
 
 ### Font family vars
 
-The theming system provides three **font roles** — `body`, `heading`, `code` — that the framework paints onto elements (`body`, `h1–h3`, `code/pre/kbd/samp`) and the site sets in `theme.yml`. A foundation can go further: declare a `type: 'font'` var to **add** a role (an editorial serif, a display face) or **redefine** a built-in one. Mark the var `type: 'font'` so the family loads and the schema tags it as a typeface:
+The theming system provides three **font roles** — `body`, `heading`, `code` — that the framework paints onto elements (`body`, `h1–h3`, `code/pre/kbd/samp`) and the site sets in `theme.yml`. A foundation can go further: declare a **font var** to **add** a role (an editorial serif, a display face) or **redefine** a built-in one. A `font-*`-named var is recognized as a typeface automatically — no `type` needed; a bare-named one takes `type: 'font'`. Either way the family loads and the schema tags it as a font:
 
 ```js
 // src/main.js
 export const vars = {
-  serif: {
-    type: 'font',
+  // `font-*` name → recognized as a font automatically (no `type` needed)
+  'font-serif': {
     default: 'ui-serif, Georgia, serif',
     description: 'Editorial serif for pull-quotes and taglines',
     applyTo: ['blockquote', '.tagline'],   // framework paints it here, like a built-in role
@@ -200,7 +200,7 @@ export const vars = {
 ```
 
 - **`applyTo: [selectors]`** — the framework emits the `font-family` rule for you, exactly like a built-in role. Omit it and the component wires the typeface itself (a Tailwind `font-*` utility, or `var(--font-…)`).
-- **Naming** — a font var's canonical name is bare (`serif`); it emits `--font-serif`. Naming it `font-serif` is the same role, and that spelling is what Tailwind's `font-serif` utility reads. A custom name (`display`) with no built-in utility is referenced with `var(--font-display)`.
+- **Naming & inferred type** — `serif` and `font-serif` are the same role (both emit `--font-serif`); the `font-serif` spelling is what Tailwind's `font-serif` utility reads **and** infers `type: 'font'` for you. So a `font-*` name needs no `type`; a bare name (`serif`, `display`) takes an explicit `type: 'font'`. A custom name with no built-in utility is referenced with `var(--font-display)`. (CSS longhands like `font-weight` are never inferred as typefaces.)
 - **Redefining a built-in role** — declare `heading` / `body` / `code` as a `type: 'font'` var with your own `applyTo` to retarget it (e.g. include `<h4>` in the heading font). The site still owns the family.
 
 The site sets any role — built-in or foundation-added — by name in `theme.yml` under `fonts:` (or `vars:`), and loads the file with `fonts.import` / `fonts.faces`. Defaults should be OS stacks (`ui-serif, Georgia, serif`) so the foundation renders natively before a site opts into brand faces. See [Site Theming → Fonts beyond the three roles](./site-theming.md#fonts-beyond-the-three-roles) for the site side.
