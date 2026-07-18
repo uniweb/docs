@@ -373,12 +373,14 @@ Configure font families and imports:
 fonts:
   body: "Inter, system-ui, sans-serif"
   heading: "Poppins, system-ui, sans-serif"
-  mono: "Fira Code, monospace"
+  code: "Fira Code, monospace"
 
   import:
     - url: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700"
     - url: "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700"
 ```
+
+The framework wires these three roles onto elements for you: `body` → `body`, `heading` → `h1, h2, h3`, `code` → `code, pre, kbd, samp`. (`code` was formerly `mono`; `mono` is still accepted as a deprecated alias.)
 
 When font imports are present, the build automatically injects `<link rel="preconnect">` tags for each import origin. For Google Fonts specifically, it also preconnects to `fonts.gstatic.com` (where font files are served from, separate from the CSS endpoint). This eliminates the DNS/TLS round-trip delay that would otherwise occur when the browser first encounters the `@import` in the theme CSS.
 
@@ -388,9 +390,11 @@ Generated CSS variables:
 :root {
   --font-body: Inter, system-ui, sans-serif;
   --font-heading: Poppins, system-ui, sans-serif;
-  --font-mono: Fira Code, monospace;
+  --font-code: Fira Code, monospace;
 }
 ```
+
+Foundations may also expose additional typefaces of their own (an editorial `font-serif`, a display face) as font variables. Set those under `vars:` and load the family with `import` / `faces` exactly as above — see the foundation's theme settings for the names it offers.
 
 ### Self-hosted fonts
 

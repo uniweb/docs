@@ -136,16 +136,16 @@ Set the fonts your site uses:
 fonts:
   body: "Inter, system-ui, sans-serif"
   heading: "Poppins, system-ui, sans-serif"
-  mono: "Fira Code, monospace"
+  code: "Fira Code, monospace"
 ```
 
 | Font type | Where it's used |
 |-----------|----------------|
 | `body` | Paragraphs, general text |
 | `heading` | Titles, subtitles, headings |
-| `mono` | Code blocks, technical text |
+| `code` | Code blocks, technical text |
 
-> **Foundations can differ.** The `body` / `heading` / `mono` settings above work with most foundations. Some offer their own named font settings instead (you'll see them among your theme settings) — check what your foundation exposes. Whichever way you name the family, you load the font files the same way, shown below.
+> **Foundations can differ.** The `body` / `heading` / `code` settings above work with most foundations. A foundation designed around a richer type system may also expose its **own named font settings** (an editorial `font-serif`, a display face) — you'll see them among your theme settings, alongside a description of each. Set those under `vars:` and load the family the same way, shown below. (`mono` still works as an old alias of `code`.)
 
 ### Loading web fonts
 
