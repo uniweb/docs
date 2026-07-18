@@ -125,7 +125,7 @@ You normally don't touch these — the CLI's deploy/export flow ships the right 
 
 Most customization is handled by component params. Both section components and layout components declare their own params in `meta.js` — layouts are full components with params, not just structural wrappers. A header height, for example, is typically a layout param, not a foundation var.
 
-Foundation-level CSS variables are for values that must stay consistent **across** multiple components — shared radii, spacing scales, or a **typeface** the site retunes (beyond the three roles the theming system already provides as `body`/`heading`/`mono`; see [Font family vars](#font-family-vars)). Don't reach for foundation vars when a component or layout param would do.
+Foundation-level CSS variables are for values that must stay consistent **across** multiple components — shared radii, spacing scales, or a **typeface** the site retunes (beyond the three roles the theming system already provides as `body`/`heading`/`code`; see [Font family vars](#font-family-vars)). Don't reach for foundation vars when a component or layout param would do.
 
 ### Defining Variables
 
@@ -185,21 +185,25 @@ Color-type vars are stored separately from non-color vars. The processor routes 
 
 ### Font family vars
 
-A foundation var can hold a **typeface** the site retunes — an editorial serif, or a whole `font-sans` / `font-serif` / `font-mono` type system when a design manages fonts itself rather than deferring to the `body`/`heading`/`mono` element convention. Name the var after the Tailwind font slot it should drive:
+The theming system provides three **font roles** — `body`, `heading`, `code` — that the framework paints onto elements (`body`, `h1–h3`, `code/pre/kbd/samp`) and the site sets in `theme.yml`. A foundation can go further: declare a `type: 'font'` var to **add** a role (an editorial serif, a display face) or **redefine** a built-in one. Mark the var `type: 'font'` so the family loads and the schema tags it as a typeface:
 
 ```js
 // src/main.js
 export const vars = {
-  'font-serif': {
+  serif: {
+    type: 'font',
     default: 'ui-serif, Georgia, serif',
     description: 'Editorial serif for pull-quotes and taglines',
+    applyTo: ['blockquote', '.tagline'],   // framework paints it here, like a built-in role
   },
 }
 ```
 
-The var emits `--font-serif`, so the `font-serif` utility (or `var(--font-serif)`) resolves to it. The site sets the family in `theme.yml` under `vars:` and loads the file with `fonts.import` / `fonts.faces` — **the family loads even though it isn't one of the three `body`/`heading`/`mono` role slots.** A non-Tailwind name (`font-display`) works too; reference it with `var(--font-display)`.
+- **`applyTo: [selectors]`** — the framework emits the `font-family` rule for you, exactly like a built-in role. Omit it and the component wires the typeface itself (a Tailwind `font-*` utility, or `var(--font-…)`).
+- **Naming** — a font var's canonical name is bare (`serif`); it emits `--font-serif`. Naming it `font-serif` is the same role, and that spelling is what Tailwind's `font-serif` utility reads. A custom name (`display`) with no built-in utility is referenced with `var(--font-display)`.
+- **Redefining a built-in role** — declare `heading` / `body` / `code` as a `type: 'font'` var with your own `applyTo` to retarget it (e.g. include `<h4>` in the heading font). The site still owns the family.
 
-Defaults should be OS stacks (`ui-serif, Georgia, serif`) so the foundation renders natively before a site opts into brand faces. See [Site Theming → Fonts beyond the three roles](./site-theming.md#fonts-beyond-the-three-roles) for the site side.
+The site sets any role — built-in or foundation-added — by name in `theme.yml` under `fonts:` (or `vars:`), and loads the file with `fonts.import` / `fonts.faces`. Defaults should be OS stacks (`ui-serif, Georgia, serif`) so the foundation renders natively before a site opts into brand faces. See [Site Theming → Fonts beyond the three roles](./site-theming.md#fonts-beyond-the-three-roles) for the site side.
 
 ### Registering Defaults in `styles.css`
 

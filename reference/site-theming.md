@@ -43,7 +43,7 @@ Every key is optional — an empty `theme.yml` (or none) yields an all-defaults 
 |-----|-------|-------|
 | `colors` | **Flat** — `{ primary, secondary, accent, neutral }` | **One set for the whole site**, not per-context. A hex string, a `{ base, mode }` object, a full shade object, or (for `neutral`) a preset name. |
 | `contexts` | **Sparse** — `{ light?, medium?, dark? }` | Semantic-**token** overrides only (e.g. `link: primary-500`), never base colors. Omit entirely to accept all defaults; list only the tokens you change. |
-| `fonts` | `{ body?, heading?, mono?, import? }` | Font-family strings + optional `import` list. |
+| `fonts` | `{ body?, heading?, code?, import?, faces? }` | Font-family strings by role + optional `import`/`faces`. Also takes foundation-declared roles by name. |
 | `appearance` | string or `{ default, allowToggle, respectSystemPreference, schemes? }` | Site-wide light/dark scheme. |
 | `inline` | `{ accent?, callout?, muted?, … }` | Inline text-style definitions; merged over framework defaults. |
 | `vars` | `{ <name>: value \| { light, dark } }` | **Foundation** variable overrides (e.g. `header-height`) — a separate concept from color palettes. |
@@ -411,28 +411,29 @@ fonts:
 
 | Field | Required | Notes |
 |---|---|---|
-| `family` | yes | Must match the name referenced by a `body`/`heading`/`mono` slot |
+| `family` | yes | Must match the name referenced by a font role (`body`/`heading`/`code`, or a foundation font var) |
 | `src` | yes | Path from the site root (`public/fonts/x.woff2` → `/fonts/x.woff2`) |
 | `weight` | no | Defaults to `400` |
 | `style` | no | Defaults to `normal` |
 | `format` | no | Inferred from the file extension (`.woff2` → `woff2`) |
 
-The build emits one `@font-face` rule per face plus a `<link rel="preload">` hint, and **filters out any face whose family no slot references** — an unused face costs nothing. Consequently a `faces:` block with no matching `body`/`heading`/`mono` slot produces no CSS at all.
+The build emits one `@font-face` rule per face plus a `<link rel="preload">` hint, and **filters out any face whose family no font role references** — an unused face costs nothing. Consequently a `faces:` block with no matching role (`body`/`heading`/`code`, or a foundation font var) produces no CSS at all.
 
 ### Fonts beyond the three roles
 
-A design sometimes needs a typeface beyond `body`/`heading`/`mono` — an editorial serif for pull-quotes, a display face for a hero. The foundation declares it as a `font-*` variable (see [Foundation Variables](#foundation-variables)); the site sets the family under `vars:` and loads it exactly like a role:
+A design sometimes needs a typeface beyond `body`/`heading`/`code` — an editorial serif for pull-quotes, a display face for a hero. A foundation declares these as **font roles** of its own (a `type: 'font'` variable; see [Foundation Variables](#foundation-variables)). You set them exactly like the built-in roles — by name in the `fonts:` block:
 
 ```yaml
 # site/theme.yml
-vars:
-  font-serif: "Fraunces, Georgia, serif"   # the foundation's editorial slot
 fonts:
+  serif: "Fraunces, Georgia, serif"   # a foundation-declared role, set by name
   import:
     - url: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600"
 ```
 
-The family loads even though it isn't one of the three role slots. When the variable is named after a Tailwind font slot (`font-sans`, `font-serif`, `font-mono`), that utility resolves to it; a custom name (`font-display`) is referenced directly with `var(--font-display)`.
+The family loads and applies wherever the foundation wired it. (`vars: { font-serif: … }` sets the same role — `serif` and `font-serif` are one font var; the `font-` spelling is the one Tailwind's `font-serif` utility reads. A custom name like `font-display` with no built-in utility is referenced by the foundation with `var(--font-display)`.)
+
+The three built-in roles are themselves just **defaults** — a foundation can retarget which elements a role paints (its `applyTo`) or add roles — so the fonts a given foundation exposes are part of its theme surface. Set whatever roles it offers in `fonts:` by name.
 
 ## Code Block Syntax Highlighting
 

@@ -145,7 +145,7 @@ fonts:
 | `heading` | Titles, subtitles, headings |
 | `code` | Code blocks, technical text |
 
-> **Foundations can differ.** The `body` / `heading` / `code` settings above work with most foundations. A foundation designed around a richer type system may also expose its **own named font settings** (an editorial `font-serif`, a display face) — you'll see them among your theme settings, alongside a description of each. Set those under `vars:` and load the family the same way, shown below. (`mono` still works as an old alias of `code`.)
+> **Foundations can differ.** The `body` / `heading` / `code` settings above work with most foundations. A foundation designed around a richer type system may also expose its **own named font settings** (an editorial `serif`, a display face) — you'll see them among your theme settings, alongside a description of each. Set those by name in the `fonts:` block, the same as the built-in roles, and load the family the same way, shown below. (`mono` still works as an old alias of `code`.)
 
 ### Loading web fonts
 
@@ -180,7 +180,7 @@ fonts:
     - { family: "Inter", src: /fonts/inter.woff2, weight: 400 }
 ```
 
-Each face needs a `family` (matching the name you use in `body`/`heading`/`mono`), a `src` path (from your site root — a file at `public/fonts/x.woff2` is referenced as `/fonts/x.woff2`), and a `weight`. The build writes the `@font-face` rules for you and preloads the files so text doesn't flash while they load. A face whose family none of your fonts use is skipped automatically, so it's fine to keep a shared list.
+Each face needs a `family` (matching the name you use in `body`/`heading`/`code` or any font your foundation offers), a `src` path (from your site root — a file at `public/fonts/x.woff2` is referenced as `/fonts/x.woff2`), and a `weight`. The build writes the `@font-face` rules for you and preloads the files so text doesn't flash while they load. A face whose family none of your fonts use is skipped automatically, so it's fine to keep a shared list.
 
 ### Using system fonts
 
