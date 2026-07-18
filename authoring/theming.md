@@ -145,7 +145,7 @@ fonts:
 | `heading` | Titles, subtitles, headings |
 | `code` | Code blocks, technical text |
 
-> **Foundations can differ.** The `body` / `heading` / `code` settings above work with most foundations. A foundation designed around a richer type system may also expose its **own named font settings** (an editorial `serif`, a display face) — you'll see them among your theme settings, alongside a description of each. Set those by name in the `fonts:` block, the same as the built-in roles, and load the family the same way, shown below. (`mono` still works as an old alias of `code`.)
+> **Foundations can differ.** The `body` / `heading` / `code` settings above work with most foundations. A foundation designed around a richer type system may also expose its **own named font settings** (an editorial `serif`, a display face) — you'll see them among your theme settings, alongside a description of each. Set those by name in the `fonts:` block, the same as the built-in roles, and load the family the same way, shown below. (If you have `mono` from an older setup, rename it to `code`.)
 
 ### Loading web fonts
 

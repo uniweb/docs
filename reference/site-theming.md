@@ -380,7 +380,7 @@ fonts:
     - url: "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700"
 ```
 
-The framework wires these three roles onto elements for you: `body` → `body`, `heading` → `h1, h2, h3`, `code` → `code, pre, kbd, samp`. (`code` was formerly `mono`; `mono` is still accepted as a deprecated alias.)
+The framework wires these three roles onto elements for you: `body` → `body`, `heading` → `h1, h2, h3`, `code` → `code, pre, kbd, samp`. (`code` was formerly named `mono`; rename any `fonts.mono` to `fonts.code` — it is no longer an alias.)
 
 When font imports are present, the build automatically injects `<link rel="preconnect">` tags for each import origin. For Google Fonts specifically, it also preconnects to `fonts.gstatic.com` (where font files are served from, separate from the CSS endpoint). This eliminates the DNS/TLS round-trip delay that would otherwise occur when the browser first encounters the `@import` in the theme CSS.
 
