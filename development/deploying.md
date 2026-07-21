@@ -50,6 +50,8 @@ Enable Pages on the repo at *Settings → Pages → Source: "GitHub Actions"*. E
 
 `uniweb add ci` scaffolds a GitHub Actions workflow and host-specific helper files (e.g., `.nojekyll` to keep GH Pages from stripping `_`-prefixed directories like `_pages/`).
 
+**Your package manager is detected, not assumed.** The workflow installs the way your project installs — read from the lockfile in your repo, not from how you happened to invoke the CLI. A `pnpm-lock.yaml` gets `pnpm/action-setup` plus `pnpm install --frozen-lockfile`; a `package-lock.json` gets `npm ci`; a `yarn.lock` gets `yarn install --frozen-lockfile`. npm, pnpm, and yarn are all supported, and the Node version follows your `engines.node` (raised if the pinned pnpm needs more).
+
 **Custom domain.** Add a `CNAME` file at the site's root with your domain (e.g., `mysite.com`), or pass `--domain=<host>` to `uniweb add ci`, which writes the `CNAME` and switches `UNIWEB_BASE` to root for you. GitHub Pages serves custom domains over HTTPS for free.
 
 **Collaboration.** Branches, PRs, reviewers, comments — same as any code project. Treat the site like code: review changes before they ship.
