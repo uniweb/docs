@@ -18,7 +18,8 @@ uniweb register                # Register a foundation + its data schemas
 uniweb invite <email>          # Invite a client to use your foundation
 uniweb handoff <email>         # Create a site and transfer to a client
 uniweb publish                 # Publish a site to Uniweb hosting (brings the foundation along)
-uniweb deploy --host=<adapter> # Deploy a built site to a third-party static host
+uniweb deploy                  # Ship a site to a host (asks where, if not yet configured)
+uniweb add ci --host=<adapter>  # Set up CI so every push deploys (+ PR previews)
 uniweb push                    # Push local site content to the Uniweb backend
 uniweb pull                    # Pull backend site content to local files
 uniweb clone <site-uuid>       # Start a local project from a backend site
@@ -1138,10 +1139,23 @@ uniweb handoff client@example.com --web
 
 ## uniweb deploy
 
-Ship a site to its resolved target. For a **third-party static host** (named by `--host=<adapter>` or `deploy.host:` in `site.yml`), `deploy` builds a self-contained site bundle and hands it to the adapter. For a **Uniweb target** (`--host=uniweb`, or a `uniweb` target in deploy.yml), `deploy` delegates to [`uniweb publish`](#uniweb-publish) — the canonical direct verb for Uniweb hosting (so deploy.yml stays one actionable "where this site deploys" record). Bare `uniweb deploy` with no host prompts you to pick a third-party adapter (or, when non-interactive, points you at `uniweb publish` / `--host`).
+Ship a site to a host. Run it with no destination configured and it asks:
+
+```
+? Where should this site go?
+❯   GitHub Pages · free, CI on push
+    Cloudflare Pages · free, CI on push
+    Netlify · free, CI on push
+    Vercel · free tier, CI on push
+    S3 + CloudFront · your AWS account
+    Uniweb Cloud · paid, dynamic + visual editing
+    Somewhere else · export a folder
+```
+
+Pick a host and it asks *how* — set up a workflow so every push deploys, or upload from this machine now. **Uniweb Cloud** runs [`uniweb publish`](#uniweb-publish); **Somewhere else** runs [`uniweb export`](#uniweb-export). Your answer is recorded in `deploy.yml`, so later runs go straight there.
 
 ```bash
-uniweb deploy --host=<adapter> [options]
+uniweb deploy [options]
 ```
 
 Run from a site directory or workspace root. If the workspace has multiple sites, you're prompted to choose one.
@@ -1150,41 +1164,69 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 
 | Option | Description |
 |--------|-------------|
-| `--host <adapter>` | The host to ship to. Third-party adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `netlify`, `vercel`, `generic-static`. `--host=uniweb` delegates to [`uniweb publish`](#uniweb-publish). Overrides `deploy.host:` in site.yml. |
+| `--host <adapter>` | The host to ship to: `github-pages`, `cloudflare-pages`, `netlify`, `vercel`, `s3-cloudfront`. `--host=uniweb` delegates to [`uniweb publish`](#uniweb-publish). Overrides the target in `deploy.yml`. |
+| `--host` (no value) | Open the wizard, even when `deploy.yml` records a target. |
+| `--target <name>` | Pick a named target from `deploy.yml` (default: its `default:` field). |
 | `--dry-run` | Show what would be deployed without deploying. |
+| `--no-save` | Skip the auto-save of `lastDeploy` in `deploy.yml`. |
+
+### How the destination is resolved
+
+First match wins, and nothing is assumed when they all miss:
+
+1. `--host <name>` — explicit.
+2. `--host` with no value — an explicit "ask me"; opens the wizard even if `deploy.yml` has a target.
+3. `--target <name>` — a named target from `deploy.yml`.
+4. `deploy.yml`'s `default:` target.
+5. Nothing configured — the wizard asks. Non-interactively, `deploy` exits with the list of real options rather than picking one for you.
 
 ### What Happens
 
-1. Reads `site.yml` and the `deploy:` block; validates the adapter and its required config.
-2. Builds a self-contained `dist/` with the adapter's `postBuild` hook (e.g., `_redirects`, `.nojekyll`, `cloudfront-function.js`). The foundation is bundled into the site's `dist/` — there is no separate foundation step.
-3. Hands `dist/` to the adapter's `deploy` hook for upload + invalidation. Errors from the adapter (missing AWS CLI, expired credentials, missing config, etc.) surface as friendly messages with hints.
+1. Resolves the destination (above) and validates the adapter and its required config.
+2. Builds a self-contained `dist/` with the adapter's `postBuild` hook (e.g. `_redirects`, `.nojekyll`, `cloudfront-function.js`). The foundation is bundled into the site's `dist/` — there is no separate foundation step.
+3. Hands `dist/` to the adapter's `deploy` hook, which drives that host's own CLI — `wrangler`, `netlify`, `vercel`, `aws`, or `git` for GitHub Pages. A missing tool or credential surfaces as a message naming exactly what to install or export.
 
 ### Examples
 
 ```bash
-# Static-host deploy to S3 + CloudFront (configure deploy: in site.yml)
-uniweb deploy --host=s3-cloudfront
+# Ask where this site should go
+uniweb deploy
 
-# Static-host deploy to Cloudflare Pages
+# Push straight to a host
 uniweb deploy --host=cloudflare-pages
+uniweb deploy --host=s3-cloudfront
 
 # Preview what would be deployed
 uniweb deploy --host=cloudflare-pages --dry-run
+
+# Set it up to deploy on every push instead
+uniweb add ci --host=cloudflare-pages
 ```
 
-### Configuring the destination in `site.yml`
+### Configuring the destination in `deploy.yml`
+
+Destination config lives in **`deploy.yml`, a sibling of `site.yml`** — not in `site.yml` itself. Safe to commit.
 
 ```yaml
-# site.yml
-deploy:
-  host: s3-cloudfront
-  bucket: my-bucket
-  distributionId: E1ABC...
-  region: us-east-1
-  profile: my-aws-profile    # optional; sets AWS_PROFILE for the subprocess
+# site/deploy.yml
+default: production
+targets:
+  production:
+    host: s3-cloudfront
+    bucket: my-bucket
+    distributionId: E1ABC...
+    region: us-east-1
+    profile: my-aws-profile    # optional; sets AWS_PROFILE for the subprocess
+  preview:
+    host: cloudflare-pages
+    projectName: my-site-preview
 ```
 
-The `--host=<adapter>` flag on the command line overrides `deploy.host:`. Adapter-specific fields (`bucket`, `distributionId`, etc.) live under `deploy:` in `site.yml`.
+Each adapter reads its own keys: `bucket` / `distributionId` / `region` for `s3-cloudfront`, `projectName` for `cloudflare-pages`, `siteId` for `netlify`, `branch` for `github-pages`.
+
+**Credentials are never read from `deploy.yml`** — it's a committed file. Host tokens come from the environment (`CLOUDFLARE_API_TOKEN`, `NETLIFY_AUTH_TOKEN`, `VERCEL_TOKEN`, the AWS credential chain) or from that host's own login session.
+
+`deploy` also maintains a `lastDeploy:` block recording when each target was last shipped to, and its URL where the host reports one. Turn that off per-run with `--no-save`, or permanently with `autoSave: off`.
 
 ### Static Hosting Alternative
 

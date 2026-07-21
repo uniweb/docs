@@ -66,7 +66,9 @@ Most sites should enable pre-rendering.
 | Command | What it does |
 |---|---|
 | `uniweb publish` | Publishes to Uniweb hosting — brings the foundation along, syncs content, goes live (edge SSR, locale-aware routing, foundation propagation). Requires `uniweb login`. See [Publishing to Uniweb hosting](#publishing-to-uniweb-hosting). |
-| `uniweb deploy --host=<adapter>` | Builds and uploads to a third-party static host via a built-in adapter. Adapters: `cloudflare-pages`, `github-pages`, `s3-cloudfront`, `vercel`, `netlify`, `generic-static`. The adapter handles host-specific quirks (URI rewrites, redirect helpers, cache headers, invalidation). |
+| `uniweb deploy` | Ships a site to a host. With nothing configured it asks where, listing only destinations it can act on, and records the answer in `deploy.yml`. |
+| `uniweb deploy --host=<adapter>` | Builds and uploads to a third-party static host via a built-in adapter. Adapters: `github-pages`, `cloudflare-pages`, `netlify`, `vercel`, `s3-cloudfront`. Each drives that host's own CLI and handles its quirks (URI rewrites, redirect helpers, cache headers, invalidation). `generic-static` is an `export` artifact shape, not a deploy target. |
+| `uniweb add ci --host=<adapter>` | Commits a GitHub Actions workflow so every push deploys, plus a per-PR preview workflow where the host supports one. |
 | `uniweb deploy --target=<name>` | Picks a target by name from `deploy.yml` (a sibling of `site.yml`). |
 | `uniweb export` | Builds `dist/` for a static host but doesn't upload. Use with hosts that aren't covered by a built-in adapter, or when you let the host (Vercel, Cloudflare Pages, Netlify, etc.) run the build itself via Git integration. |
 | `pnpm build` | Equivalent to `uniweb build` from the site directory. Produces `dist/` only — no upload, no host-specific helpers. Useful for inspecting build output during development. |
@@ -98,22 +100,25 @@ lastDeploy:
     runtime: 0.8.9
 ```
 
-The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off deploys (no save). `--target=<name>` selects a target other than `default:`. `uniweb deploy` always targets a third-party host — `--host=<adapter>` or a `deploy.yml` target is required; to go live on Uniweb hosting, use `uniweb publish`.
+The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off deploys (no save). `--target=<name>` selects a target other than `default:`. A bare `--host` (no value) forces the picker even when `deploy.yml` has a target. With no destination configured at all, `uniweb deploy` asks rather than assuming one; non-interactively it exits with the list of options. To go live on Uniweb hosting, `uniweb publish` is the direct verb (the picker's **Uniweb Cloud** entry delegates to it).
 
-### Two deploy lifecycles
+### Three deploy lifecycles
 
-Static hosts come in two flavors. Both are first-class:
+Static hosts come in three flavors. All are first-class, and most hosts support more than one — pick by who you want doing the building:
 
-- **CLI-push.** You run `uniweb deploy` locally; the CLI builds, uploads, and invalidates. State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. The adapter with this lifecycle today: `s3-cloudfront`.
-- **Git-driven.** You wire up your host's GitHub integration (Vercel, Cloudflare Pages, Netlify, GitHub Pages via Actions). The host runs `npx uniweb build` in CI on each push and serves the resulting `dist/`. State of record: the host's dashboard. Auth: the host's GitHub integration. The CLI's `deploy` step never runs.
+- **CLI-push.** You run `uniweb deploy --host=<adapter>` locally; the CLI builds, then drives that host's own tool to upload (`wrangler`, `netlify`, `vercel`, `aws`, or `git` for GitHub Pages). State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. **Every adapter except `generic-static` supports this.**
+- **Scaffolded CI.** `uniweb add ci --host=<adapter>` commits a GitHub Actions workflow that builds and deploys on each push, plus a per-PR preview workflow where the host has a preview concept. State of record: your repo. Auth: repository secrets. Available for `github-pages`, `cloudflare-pages`, `netlify`, `vercel`.
+- **Git-driven (dashboard).** You connect the repo through the host's UI; the host runs `npx uniweb build` itself on each push. State of record: the host's dashboard. Auth: the host's GitHub integration. No workflow file, no secrets. Available for Vercel, Cloudflare Pages, and Netlify.
 
-For Git-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `lastDeploy:` block stays empty for Git-driven targets — the host's dashboard is the truth.
+For dashboard-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `lastDeploy:` block stays empty for dashboard-driven targets — the host's dashboard is the truth.
+
+If you don't know which you want, run `uniweb deploy` with nothing configured; it lists the destinations and asks.
 
 ---
 
 ## Vercel
 
-Lifecycle: **Git-driven**. You connect your repo to Vercel; Vercel runs `npx uniweb build` in CI on each push and serves `dist/`. The CLI's `deploy` step never runs (the `vercel` adapter is intentionally postBuild-only).
+Lifecycle: **any of the three.** Connecting the repo in Vercel's dashboard is the zero-config route (Vercel builds and gives you native preview deployments). `uniweb deploy --host=vercel` uploads a locally-built `dist/` via the `vercel` CLI. `uniweb add ci --host=vercel` commits workflows that do it from Actions instead — useful when you want the build pinned to your own toolchain versions. Don't run the dashboard integration and the scaffolded workflows at the same time; pick one and delete the other.
 
 ### Recommended setup
 
@@ -175,14 +180,30 @@ targets:
     host: netlify
 ```
 
-`netlify` is registered as an alias of `cloudflare-pages` because both consume the same `_redirects` format — one tested code path, two discoverable names. The deploy manifest still records `host: netlify` (what you picked), not the canonical implementation behind it. The build auto-detects `NETLIFY=true` and picks this adapter without needing `--host` in CI.
+`netlify` shares Cloudflare Pages' `_redirects` output — both consume the same format — but is its own adapter, because the two deploy with different CLIs and different credentials. The build auto-detects `NETLIFY=true` and picks this adapter without needing `--host` in CI.
 
-### Via Netlify CLI (one-off uploads)
+Add `siteId:` to the target (Site settings → General → Site ID) if you want to deploy from the CLI; it's not needed for the Git-driven path.
+
+### Via the CLI
 
 ```bash
 cd site
+uniweb deploy --host=netlify        # builds, then uploads via the netlify CLI
+```
+
+Set `NETLIFY_AUTH_TOKEN`, or authenticate once with `netlify login`. Equivalent by hand:
+
+```bash
 npx netlify deploy --prod --dir=dist
 ```
+
+### Via a scaffolded workflow
+
+```bash
+uniweb add ci --host=netlify
+```
+
+Writes a deploy workflow plus a per-PR preview workflow that deploys to a `pr-<number>` alias and comments the URL. Needs `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` as repository secrets.
 
 ### Via Git Integration
 
@@ -219,7 +240,7 @@ If the site declares `redirect:` or `rewrite:` directives in `page.yml`, the bui
 
 ## Cloudflare Pages
 
-Lifecycle: **Git-driven** (typical) or one-off Wrangler uploads. CF Pages auto-resolves directory indexes, so no URI-rewrite worker is needed. The adapter's job is to emit `_redirects` from any `redirect:` / `rewrite:` directives in `page.yml`.
+Lifecycle: **any of the three.** CF Pages auto-resolves directory indexes, so no URI-rewrite worker is needed; the adapter's job is to emit `_redirects` from any `redirect:` / `rewrite:` directives in `page.yml`. `uniweb deploy --host=cloudflare-pages` uploads via `wrangler` (needs `projectName` on the target, plus `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` or a `wrangler login` session). `uniweb add ci --host=cloudflare-pages` commits a deploy workflow and a per-PR preview workflow.
 
 ```yaml
 # site/deploy.yml
@@ -287,7 +308,7 @@ The `--dotfiles` flag is required so `gh-pages` doesn't drop the `.nojekyll` fil
 
 ## AWS S3 + CloudFront
 
-Lifecycle: **CLI-push.** This is the only built-in adapter today that runs the upload step itself — `uniweb deploy` builds, syncs to S3, and invalidates CloudFront in one command.
+Lifecycle: **CLI-push only.** Unlike the other adapters, S3 + CloudFront has no Git-driven or scaffolded-CI route — `uniweb deploy` builds, syncs to S3, and invalidates CloudFront in one command, and that's the path.
 
 > **First-time setup** (S3 bucket, CloudFront distribution, OAC, IAM user, directory-index Function, custom error responses) is documented in [AWS S3 + CloudFront — one-time setup](aws-s3-cloudfront-setup.md). Do that walkthrough once per site, then come back here for the per-deploy reference.
 
