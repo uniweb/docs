@@ -23,11 +23,13 @@ Five sub-options under this path. They differ in *who builds*, *who uploads*, an
 
 | | Builds | Uploads | When to use |
 |---|---|---|---|
-| **GitHub Pages via `uniweb add ci`** | The host (GH Actions) | The host | Free, one-line scaffold for an Actions workflow |
-| **CF Pages, Netlify, Vercel** | The host | The host | Same outcome, dashboard connect instead of a workflow file |
-| **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy to a static host from the CLI; required for S3 + CloudFront |
+| **CI via `uniweb add ci --host=<adapter>`** | GitHub Actions | The host | Free, one-line scaffold. Set up once, every push deploys. Adds PR previews on CF Pages / Netlify / Vercel |
+| **Dashboard connect (CF Pages, Netlify, Vercel)** | The host | The host | Same outcome, no workflow file and no secrets |
+| **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy from the CLI; the only path for S3 + CloudFront |
 | **Manual export (`uniweb export`)** | Your machine | You, by hand | Any host the framework doesn't have an adapter for |
-| **Uniweb hosting (`uniweb publish`)** | Your machine | The platform | Dynamic-page prerender, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
+| **Uniweb Cloud (`uniweb publish`)** | Your machine | The platform | Dynamic-page prerender, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
+
+Not sure? Run **`uniweb deploy`** with nothing configured and it walks you through the choice.
 
 ### The 3-line recipe — GitHub Pages
 
@@ -54,9 +56,17 @@ Enable Pages on the repo at *Settings → Pages → Source: "GitHub Actions"*. E
 
 ### Other free static hosts — Cloudflare Pages, Netlify, Vercel
 
-These hosts auto-detect Uniweb projects and run the build themselves when you connect the repo through their dashboard. No scaffolded workflow file. The framework reads the host's environment variables and emits the right helper files automatically.
+Three ways to ship to these, and they all work:
 
-**Setup.** Push your project to a GitHub/GitLab/Bitbucket repo. In the host's dashboard, click *New project → Import from Git* → pick the repo. The host detects the build command (`pnpm build`) and the output directory (`dist/`) automatically.
+| | Command | Who builds | Notes |
+|---|---|---|---|
+| Scaffold a workflow | `uniweb add ci --host=<name>` | GitHub Actions | Reproducible — same toolchain versions as your machine. Adds PR previews. |
+| Connect the repo | (dashboard) | The host | Zero config, zero secrets. No workflow file. |
+| Push from your machine | `uniweb deploy --host=<name>` | You | One-shot, no Git trigger. |
+
+**Scaffolded workflow.** `uniweb add ci --host=cloudflare-pages` (or `netlify` / `vercel`) writes two workflows: a production deploy on every push to the default branch, and a **per-PR preview deploy** that comments the preview URL on the pull request. Each needs host credentials as repository secrets — the command prints exactly which ones. Skip the preview workflow with `--no-previews`.
+
+**Dashboard connect.** Push your project to a GitHub/GitLab/Bitbucket repo. In the host's dashboard, click *New project → Import from Git* → pick the repo. The host detects the build command (`pnpm build`) and the output directory (`dist/`) automatically. Nothing to scaffold, no secrets to manage — and Vercel/Netlify give you previews natively. If you connect the repo, delete the scaffolded workflows rather than running both.
 
 **CI auto-detection.** When `uniweb build` runs in a known CI environment, the build picks the matching adapter automatically:
 
@@ -69,14 +79,41 @@ These hosts auto-detect Uniweb projects and run the build themselves when you co
 
 GitHub Actions is treated as a *runner*, not a host: a GHA workflow can deploy anywhere — to GH Pages, to S3, to Uniweb. The framework records the runner metadata but won't default `--host` from `GITHUB_ACTIONS=true`. For GH Pages specifically, `uniweb add ci --host=github-pages` writes the right workflow with `host: github-pages` in `deploy.yml`.
 
+### The deploy wizard — `uniweb deploy`
+
+Run `uniweb deploy` with no destination configured and it asks:
+
+```
+? Where should this site go?
+❯   GitHub Pages · free, CI on push
+    Cloudflare Pages · free, CI on push
+    Netlify · free, CI on push
+    Vercel · free tier, CI on push
+    S3 + CloudFront · your AWS account
+    Uniweb Cloud · paid, dynamic + visual editing
+    Somewhere else · export a folder
+```
+
+Pick a host and it asks *how* — set up a workflow so every push deploys (recommended for the free hosts), or upload from this machine now. Picking **Uniweb Cloud** runs `uniweb publish`; picking **Somewhere else** runs `uniweb export`.
+
+Your answer is recorded in `deploy.yml`, so later runs of `uniweb deploy` go straight there without asking again.
+
 ### CLI-push to a static host — `uniweb deploy --host=<adapter>`
 
 For one-shot deploys from your machine (no Git-driven build), `uniweb deploy --host=<adapter>` builds, uploads, and (for adapters that support it) invalidates the CDN — all in one command.
 
 ```bash
 cd site
-uniweb deploy --host=s3-cloudfront
+uniweb deploy --host=s3-cloudfront      # aws s3 sync + CloudFront invalidation
+uniweb deploy --host=cloudflare-pages   # wrangler pages deploy
+uniweb deploy --host=netlify            # netlify deploy --prod
+uniweb deploy --host=vercel             # vercel deploy --prod
+uniweb deploy --host=github-pages       # commits dist/ to the gh-pages branch
 ```
+
+Each adapter drives that host's own CLI, so you authenticate the way that host expects (`wrangler login`, `netlify login`, `vercel login`, `aws configure`) or via environment variables. If a required tool or credential is missing, the command says which one and how to get it — nothing is attempted half-way.
+
+`github-pages` is the odd one: there is no upload API, so the deploy commits `dist/` to the `gh-pages` branch using a detached worktree (your working tree is never touched) and a normal non-force commit (so a bad deploy is one `git revert` away). The CI path is still the better default for GitHub Pages.
 
 The most common case is **AWS S3 + CloudFront**, which has no Git-driven workflow built in. The `s3-cloudfront` adapter emits a CloudFront Function (URI rewrite for directory-index), runs `aws s3 sync`, and creates a CloudFront invalidation. Requires the `aws` CLI on PATH and standard AWS credentials.
 
@@ -93,9 +130,7 @@ targets:
     region: us-east-1
 ```
 
-`--host=<adapter>` on the command line overrides the resolved target's host for one-off experiments without saving. `--target=<name>` selects a non-default target.
-
-CLI-push works for `cloudflare-pages` too — useful if you'd rather push from your machine than connect a repo.
+`--host=<adapter>` on the command line overrides the resolved target's host for one-off experiments without saving. `--target=<name>` selects a non-default target. Each adapter reads its own keys from the target — `bucket` / `distributionId` / `region` for `s3-cloudfront`, `projectName` for `cloudflare-pages`, `siteId` for `netlify`, `branch` for `github-pages`. Credentials are read from the environment, never from `deploy.yml`, which is committed.
 
 ### Manual export — any static host
 
@@ -213,56 +248,28 @@ Sites reference the foundation by URL in `site.yml`:
 foundation: 'https://cdn.example.com/foundation/1.4.7/entry.js'
 ```
 
-**The unipress pattern.** The unipress project ships its open-source foundations on GitHub Pages. Each push to `main` builds and publishes; the result lives at:
+**Publishing a foundation to GitHub Pages — one command.**
+
+```bash
+uniweb add ci --target foundation
+```
+
+This scaffolds `.github/workflows/publish-foundations.yml`. On every push to the default branch it builds each foundation in the workspace and publishes it at a permanent versioned URL:
 
 ```
-https://uniweb.github.io/unipress/foundations/<name>/<version>/entry.js
+https://<user>.github.io/<repo>/foundations/<name>/<version>/entry.js
 ```
 
-A consuming site references the URL:
+A consuming site references that URL:
 
 ```yaml
 # site/site.yml
-foundation: 'https://uniweb.github.io/your-org/your-repo/foundations/marketing/1.4.7/entry.js'
+foundation: 'https://your-org.github.io/your-repo/foundations/marketing/1.4.7/entry.js'
 ```
 
-The CI workflow that any GH-Pages-served foundation needs to follow:
+Bump the foundation's `package.json` version and push — the new version appears alongside the old ones, which keep resolving. Use `--foundation <name>` to publish just one foundation from a workspace that holds several.
 
-```yaml
-# .github/workflows/deploy-foundation.yml
-name: Deploy Foundation
-
-on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: write   # writes to gh-pages
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { version: 10 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-
-      - run: pnpm install
-      - run: pnpm --filter src build
-
-      - name: Stage under foundations/<name>/<version>/
-        shell: bash
-        run: |
-          version=$(jq -r '.version' src/package.json)
-          mkdir -p _staging/foundations/marketing/$version
-          cp -R src/dist/. _staging/foundations/marketing/$version/
-
-      - name: Publish to gh-pages
-        # Layer staging onto the gh-pages branch and push.
-        # See unipress's .github/workflows/deploy-foundations.yml for a complete working example.
-```
+The command prints the exact URLs it will produce, so you can paste one into `site.yml` before the first run completes.
 
 A few things worth knowing:
 
@@ -336,26 +343,34 @@ This is available today; `push`/`pull` are last-write-wins. What's still evolvin
 
 | Command | What it does |
 | --- | --- |
-| `uniweb add ci --host=<adapter>` | Scaffold a CI workflow in your repo (today: `github-pages`). The host runs `uniweb build` on each push. |
-| `uniweb publish` | Go live on Uniweb hosting — brings the foundation along, syncs content, publishes. The paid path. |
+| `uniweb deploy` | The wizard — asks where the site should go, then does it. Remembers your answer in `deploy.yml`. |
+| `uniweb add ci --host=<adapter>` | Scaffold a CI workflow (+ PR previews) in your repo. The host runs `uniweb build` on each push. |
+| `uniweb add ci --target foundation` | Scaffold the workflow that publishes foundations at permanent versioned GitHub Pages URLs. |
+| `uniweb publish` | Go live on Uniweb Cloud — brings the foundation along, syncs content, publishes. The paid path. |
 | `uniweb deploy --host=<adapter>` | Push to a third-party static host — builds, uploads, invalidates in one step. |
 | `uniweb export` | Produce a self-contained `dist/` for any static host. You upload it yourself. `--host=<adapter>` adds host-specific helper files. |
 | `uniweb register --scope @org` | Register a foundation + its data schemas to the registry (path 2). |
 | `uniweb push` / `uniweb pull` / `uniweb clone` | Git-style content sync with the Uniweb backend. |
-| `uniweb build` | Inspect a build locally. For shipping, use `publish`, `deploy`, or `export`. |
+| `uniweb build` | Inspect a build locally. For shipping, use `deploy`, `publish`, or `export`. |
 
-`--host=<adapter>` is the same option across `deploy`, `export`, and `add ci`. Each adapter implements only the operations it supports — `add ci` is `github-pages`-only today because it's the only host that needs a workflow file in the repo. Cloudflare Pages, Netlify, and Vercel are dashboard-driven; their adapters power the auto-detection used by `build`/`export`/`deploy`.
+`--host=<adapter>` is the same option across `deploy`, `export`, and `add ci`. Each adapter implements only the operations it supports, and the CLI only ever offers you the ones that will work — see the adapter table below for who does what.
+
+**`add ci` options:** `--host=<adapter>`, `--target=<site|foundation>`, `--domain=<host>` (GitHub Pages custom domain), `--project-name=<name>` (the name to register under on the host), `--no-previews` (skip the PR-preview workflow), `--site=<name>` / `--foundation=<name>` (pick one from a multi-package workspace), `--force` (overwrite an existing workflow).
 
 ### Built-in adapters
 
-| Adapter | `add ci` | `deploy --host` | `export --host` | What it does |
-|---|:---:|:---:|:---:|---|
-| `github-pages` | ✓ | ✓ | ✓ | Emits `.nojekyll` and a GH Actions workflow |
-| `cloudflare-pages` | — | ✓ | ✓ | Emits `_redirects` for `redirect:` / `rewrite:` directives |
-| `netlify` | — | ✓ | ✓ | Alias of `cloudflare-pages` (same `_redirects` format) |
-| `vercel` | — | ✓ | ✓ | No helper files; Vercel handles directory-index natively |
-| `s3-cloudfront` | — | ✓ | ✓ | Emits CloudFront Function + deploy manifest; runs `aws s3 sync` and `aws cloudfront create-invalidation` |
-| `generic-static` | — | ✓ | ✓ | No host-specific output |
+| Adapter | `add ci` | PR previews | `deploy --host` | `export --host` | Uploads with | What it does |
+|---|:---:|:---:|:---:|:---:|---|---|
+| `github-pages` | ✓ | — | ✓ | ✓ | `git` | Emits `.nojekyll`; CLI-push commits `dist/` to the `gh-pages` branch |
+| `cloudflare-pages` | ✓ | ✓ | ✓ | ✓ | `wrangler` | Emits `_redirects` for `redirect:` / `rewrite:` directives |
+| `netlify` | ✓ | ✓ | ✓ | ✓ | `netlify` | Same `_redirects` format as Cloudflare Pages; own deploy + CI |
+| `vercel` | ✓ | ✓ | ✓ | ✓ | `vercel` | No helper files; Vercel handles directory-index natively |
+| `s3-cloudfront` | — | — | ✓ | ✓ | `aws` | Emits CloudFront Function + deploy manifest; runs `aws s3 sync` and `aws cloudfront create-invalidation` |
+| `generic-static` | — | — | — | ✓ | — | No host-specific output. An artifact *shape* for `export`, not a destination |
+
+Each adapter implements only the operations it supports, and the CLI never offers one it can't perform: `uniweb deploy`'s wizard lists only destinations that have a deploy hook or a CI scaffold, and `uniweb add ci` lists only hosts that can scaffold a workflow.
+
+**GitHub Pages has no PR previews** because the platform has no preview environment — a repo has one Pages site. Use Cloudflare Pages, Netlify, or Vercel if per-PR preview URLs matter.
 
 ### `deploy.yml` configuration
 
