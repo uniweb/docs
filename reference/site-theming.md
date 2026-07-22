@@ -382,7 +382,9 @@ fonts:
 
 The framework wires these three roles onto elements for you: `body` → `body`, `heading` → `h1, h2, h3`, `code` → `code, pre, kbd, samp`. (`code` was formerly named `mono`; rename any `fonts.mono` to `fonts.code` — it is no longer an alias.)
 
-When font imports are present, the build automatically injects `<link rel="preconnect">` tags for each import origin. For Google Fonts specifically, it also preconnects to `fonts.gstatic.com` (where font files are served from, separate from the CSS endpoint). This eliminates the DNS/TLS round-trip delay that would otherwise occur when the browser first encounters the `@import` in the theme CSS.
+When font imports are present, the build injects the stylesheet `<link>` for each import into `<head>`, preceded by a `<link rel="preconnect">` for its origin so the DNS/TLS handshake overlaps the stylesheet request rather than following it. Multiple Google Fonts imports are merged into a single `css2` request, and Google gets a second preconnect for `fonts.gstatic.com` (where the font files themselves are served, separate from the CSS endpoint).
+
+Only families you actually reference in `fonts:` are requested — an import for a family no unused role points at is dropped rather than downloaded.
 
 Generated CSS variables:
 
@@ -418,6 +420,8 @@ fonts:
 | `format` | no | Inferred from the file extension (`.woff2` → `woff2`) |
 
 The build emits one `@font-face` rule per face plus a `<link rel="preload">` hint, and **filters out any face whose family no font role references** — an unused face costs nothing. Consequently a `faces:` block with no matching role (`body`/`heading`/`code`, or a foundation font var) produces no CSS at all.
+
+Write `src` as a path from the site root even when the site is deployed under a subdirectory (`base: /docs/`, a GitHub Pages project site). The build prefixes the base for you, so the same `theme.yml` works at the root and under a prefix. A `src` that is already absolute (`https://…`, `//…`) is left alone.
 
 ### Fonts beyond the three roles
 
