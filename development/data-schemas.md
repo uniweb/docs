@@ -92,6 +92,48 @@ Once you [register](#registering-schemas) the schema, this rule is enforced wher
 
 `append_only` is only valid on a `many: true` section (a single record has nothing to append to). For file-based collections there's no write step, so it has no effect until the type is registered.
 
+### Tree sections
+
+A `many: true` section can be marked `tree: true`, letting its records nest **under each other** — a chapter tree, a category hierarchy, a threaded discussion:
+
+```yaml
+# foundation/schemas/handbook.yml
+name: handbook
+sections:
+  identity:
+    brief: true
+    fields:
+      title: { type: string, required: true }
+  chapters:
+    many: true
+    tree: true                     # a chapter can sit under another chapter
+    fields:
+      title: { type: string }
+      body:  richtext
+```
+
+The parent/child link is managed for you — there's **no field to declare** for it and no ID to wire up.
+
+This is what separates `tree:` from a [subsection](./designing-data-schemas.md#subsections-model-hierarchy). A subsection nests one *named* section inside another — a course has modules, a module has lessons, a fixed shape you spell out in the schema. `tree:` instead lets records of a **single** section nest under one another, so the shape is decided by the author as they write, not by you as you model.
+
+`tree: true` is only valid on a `many: true` section (a single record has nothing to nest under). `nestable: true` is accepted as a lower-level spelling of the same flag.
+
+### The sort axis: `sort_date`
+
+A schema can name **which date field its records sort by** — the axis a feed, an archive, or a "latest first" listing orders on:
+
+```yaml
+# foundation/schemas/post.yml
+name: post
+sort_date: published_on          # names a date field below
+fields:
+  title:        { type: string, required: true }
+  published_on: { type: date }
+  body:         richtext
+```
+
+`sort_date` is a **schema-level** key, and its value is the **name of a date field** — not `true`/`false`, and not something you put on the field itself. With the flat `fields:` form the whole field set is the record's card, so any date field there can be the axis. With the `sections:` form, name a field in the **brief** section; a schema with no brief has no sort axis. It takes effect once the schema is [registered](#registering-schemas). (`sortDate` is accepted as an alias.)
+
 ---
 
 ## Field types and formats
@@ -137,7 +179,7 @@ fields:
 
 The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: prosemirror`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` / `html` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
 
-### Translatable fields: `localized`
+### Translatable fields: `translatable`
 
 Text and rich-content fields are **translatable by default** — the framework keeps one value per locale. Set `translatable: false` to opt a field out (an ID, a slug, a machine code that's the same in every language):
 
@@ -173,7 +215,7 @@ A schema reference is a name in one of three namespaces. The prefix says where t
 
 | Ref | Means | Lives in |
 |---|---|---|
-| `@/product` | **Your own** — a schema this foundation defines | `foundation/schemas/product.{yml,js,json}` |
+| `@/product` | **Your own** — a schema this foundation defines | `foundation/schemas/product.{yml,yaml,js,json}` |
 | `@std/person` | A **shared standard** — common types anyone can use | the `@uniweb/schemas` package |
 | `@acme/product` | **An org's** shared schema | that org's `@acme/schemas` package |
 
