@@ -446,9 +446,20 @@ export default {
 
 This is how a team reuses one set of schemas across many foundations, or across many workspaces, without publishing a package: keep the schemas in one folder and point each foundation's `schemas.config.js` at it.
 
-- A routed scope takes precedence over the `@org/schemas` package convention.
+A key can also name a **single schema** and point it at an exact file, overriding just that one while the rest of the scope stays routed to the shared folder:
+
+```js
+export default {
+  '@acme':        '../shared/acme-schemas',      // the whole scope → a folder
+  '@acme/person': './schemas/acme-person.yml',   // …but this one → a specific file
+}
+```
+
+- Precedence is most-specific first: a per-schema **file** beats a scope **directory**, which beats the `@org/schemas` **package**.
+- A routed scope does **not** fall back to the package for a *missing* schema — it errors, rather than silently load a different definition. Fill a gap with a per-schema key, not a fallback.
+- A scope value is a directory (the schema name is appended); a per-schema value is a file (the extension is optional).
 - `@/` (self) and `@uniweb` (reserved) are never routable.
-- A scope whose value is empty — for example, an unset environment variable — is skipped, and that scope falls back to the package convention.
+- A key whose value is empty — for example, an unset environment variable — is skipped, and it falls back to the next source.
 - Foundations without a `schemas.config.js` resolve exactly as before.
 
 #### Example: Event Listing

@@ -97,11 +97,26 @@ workspace/
     └── schemas.config.js  # { '@acme': '../acme-schemas' }
 ```
 
-Three constraints we've hit in practice, none of them obvious from the config shape:
+Two things worth knowing, neither obvious from the config shape:
 
-- **Keys are scopes only.** `'@acme'` is valid; `'@acme/person'` is rejected — you can't route a single schema. One bad key fails the whole config, not just that entry.
-- **Values are directories, never files.** The schema name is appended to whatever you give it.
-- **A routed scope has no fallback.** If `@acme` is routed and `person.yml` isn't in that directory, the build fails — it will not then try the `@acme/schemas` package.
+- **A routed scope has no fallback.** If `@acme` is routed and `person.yml` isn't in that directory, the build fails — it will not then try the `@acme/schemas` package. That's deliberate: silently loading a *different* definition of `person` is worse than a clear error. To fill one gap, use a per-schema override (below) rather than relying on a fallback.
+- **A scope value is a directory; the schema name is appended to it.** For a single file, use a per-schema key instead.
+
+#### Overriding one schema — a per-schema key
+
+A key can also name a **single schema** and point it at an exact file. This wins over the scope directory for that one name, so you can keep a whole scope routed to a shared catalog while swapping in one local definition:
+
+```js
+// foundation/schemas.config.js
+export default {
+  '@acme': '../shared/acme-schemas',        // the catalog, for every @acme/*
+  '@acme/person': './schemas/acme-person.yml', // …except person, which is local here
+}
+```
+
+`@acme/person` resolves to the local file; `@acme/project`, `@acme/event`, and the rest still come from the shared folder. This is the clean alternative to the workarounds it replaces — symlinking a file into the shared folder, or forking the whole scope to change one schema. Precedence is most-specific-first: a per-schema file beats the scope directory, which beats the `@acme/schemas` package.
+
+A per-schema value is a **file** (the extension is optional — `./schemas/acme-person` finds the `.yml`). `@/` and `@uniweb` are never routable — put your own schemas in the foundation's `schemas/`, and use `@std` for the standards.
 
 ### 3. An installed package — `@acme/schemas`
 
@@ -223,9 +238,10 @@ Set `"uniweb": { "scope": "@acme" }` in `package.json` to drop the flag on later
 | Message | Cause | Fix |
 |---|---|---|
 | `'@acme/schemas' is not installed in this foundation` | ref resolves by the package rule; nothing routed, nothing installed | install the package, or route `@acme` in `schemas.config.js` |
-| `Data schema '@acme/person' not found in the directory '@acme' is aliased to (…)` | scope routed, file missing there | add the file, or fix the path — routing has no package fallback |
-| `alias key '@acme/person' must be a scope like '@agency'` | per-schema key in `schemas.config.js` | route the scope; per-schema routing isn't supported |
-| `'@uniweb' is the reserved platform system namespace` | used `@uniweb/person` for a standard | use `@std/person` |
+| `Data schema '@acme/person' not found in the directory '@acme' is aliased to (…)` | scope routed, file missing there | add the file, fix the path, or override just that one with a `'@acme/person'` key |
+| `Data schema '@acme/person' is aliased to '…', but no schema file exists there` | per-schema key points at a missing file | fix the path; the value is a file, not a directory |
+| `'@uniweb' is reserved and cannot be aliased` | tried to route `@uniweb` in `schemas.config.js` | use `@std` for the standards |
+| `'@uniweb' is the reserved platform system namespace` | used `@uniweb/person` as a ref for a standard | use `@std/person` |
 | `Data schema '@/product' not found. Expected one of: schemas/product.js, …` | `@/` ref with no matching file | add `schemas/product.yml` at the foundation root |
 
 ---
