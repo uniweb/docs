@@ -438,6 +438,8 @@ Build more than one foundation — a few brands, a client's product line — and
 
 Either way the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. Reference: [Component Metadata → Routing a scope](../reference/component-metadata.md#routing-a-scope-with-schemasconfigjs).
 
+A schema ref's `@acme` names an organization in the Uniweb registry, not an npm scope — the two look alike and aren't connected. For which delivery to pick, how a git repo works as a source, and when registering is required, see [Schemas in Practice](./schemas-in-practice.md).
+
 ---
 
 ## See also
