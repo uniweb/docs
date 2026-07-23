@@ -111,6 +111,36 @@ i18n:
   localesDir: translations   # Default: locales
 ```
 
+### Draft Languages
+
+Adding a language to `languages` makes it part of your working set — but a
+half-translated language shouldn't ship. `publishLanguages` declares which
+declared languages a published build includes:
+
+```yaml
+defaultLanguage: en
+languages: [en, es, fr]      # working set — all previewable in dev
+publishLanguages: [en, es]   # fr is a draft: built in dev, excluded from production
+```
+
+When the field is absent, every declared language is published — existing
+sites are unaffected. With the field present:
+
+- Production builds skip draft locales entirely: no `dist/fr/` output, no
+  language-switcher entry, no sitemap or `hreflang` references.
+- `uniweb dev` renders drafts normally — the list only affects published
+  output.
+- The default language must be in the list; an empty or contradictory list
+  fails the build.
+- All `uniweb i18n` commands (extract, generate, status) keep covering the
+  full declared set, so translation work on drafts proceeds as usual.
+- A code left in `publishLanguages` after its language is removed from
+  `languages` is harmless — it warns at build and re-activates if the
+  language is declared again.
+
+When the translation is ready, add the language to `publishLanguages` and
+rebuild.
+
 ---
 
 ## How Content Arrives to Components

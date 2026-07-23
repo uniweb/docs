@@ -246,8 +246,9 @@ languages: [en, es, fr]
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `defaultLanguage` | string | Primary language (no URL prefix) |
-| `languages` | array | Supported languages |
+| `defaultLanguage` | string | Primary language (no URL prefix). Defaults to the first entry in `languages`, or `en` |
+| `languages` | array | Supported languages — the working set you author in |
+| `publishLanguages` | array | Which declared languages ship in a published build. Absent = all of them |
 
 ### Language Formats
 
@@ -267,6 +268,41 @@ languages:
 # Auto-discover from locales/ folder
 languages: '*'
 ```
+
+Plain string codes are the canonical form; the object form is legacy and only
+affects switcher labels (`@uniweb/kit` provides display names for plain codes).
+
+### Draft Languages (`publishLanguages`)
+
+`languages` is your working set; `publishLanguages` declares which of them a
+published build actually ships. A declared language you're still translating
+stays fully previewable in `uniweb dev` but is excluded from production
+output until you add it to the list:
+
+```yaml
+languages: [en, fr, de]        # working on all three
+publishLanguages: [en, fr]     # de is still a draft — dev-only
+```
+
+Rules:
+
+- **Absent field** — every declared language is published (the default, and
+  the behavior of all existing sites).
+- **Published builds** exclude unlisted languages everywhere a visitor could
+  see them: no `dist/{locale}/` output, no locale-switcher entry, no sitemap
+  or `hreflang` references. To visitors, a draft language is indistinguishable
+  from an undeclared one.
+- **`uniweb dev` ignores the list** — drafts render normally so you can work
+  on them, the same way `hidden` pages stay previewable in dev.
+- **The default language must be published.** A `publishLanguages` that
+  excludes the effective default (or an empty list) fails the build with a
+  clear error.
+- **Codes not in `languages` are kept but inert.** If you remove a language
+  from `languages` while it's listed in `publishLanguages`, the entry stays
+  (with a build warning) — re-declaring the language later restores it as
+  published without touching the list again.
+- `uniweb i18n` commands keep operating on the full declared set — drafts are
+  exactly what you're translating.
 
 ### Translation Workflow
 
