@@ -193,18 +193,30 @@ function Hero({ content, params, block, website }) {
 |-------|------|-------------|
 | `title` | string | Display name in the editor. If omitted, inferred from component name (`TeamRoster` → "Team Roster") |
 | `description` | string | What the component does |
-| `category` | string | Grouping: `impact`, `showcase`, or `structure` |
-| `purpose` | string | Single verb: Introduce, Express, Explain, etc. |
+| `category` | string | Free-form grouping label for the editor. A suggested vocabulary is below — nothing validates the value |
+| `purpose` | string | Free-form; a single verb reads well (Introduce, Express, Explain, …) |
 | `hidden` | boolean | If true, component is excluded from export entirely (internal helpers, not-yet-ready components) |
 | `inset` | boolean | If true, available for `@ComponentName` references in markdown |
 
 #### Categories
+
+`category` is a free-form string. The build neither validates it nor derives
+behaviour from it — it exists so an editor can group a foundation's section
+types into something more navigable than one long list.
+
+The three below are a **suggested** vocabulary rather than a fixed set, offered
+so foundations that want a shared grouping can converge on one. Use them if they
+fit; use your own if they don't.
 
 | Category | Description | Examples |
 |----------|-------------|----------|
 | `impact` | High-impact elements to introduce and express ideas | Hero, CTA, Statement |
 | `showcase` | Explain value, provide evidence, answer questions | Features, Pricing, FAQ, Testimonials |
 | `structure` | Flexible functional elements for layouts | Header, Footer, Grid, Section, Gallery |
+
+Whatever you choose, it describes the **kind of component** — not the kind of
+site it suits. A genre like `marketing` or `docs` belongs to a template, not to
+a section type.
 
 ---
 

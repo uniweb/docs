@@ -149,7 +149,8 @@ The `meta.js` file defines your component's interface.
 ```js
 export default {
   title: 'Feature Card',        // Display name
-  category: 'showcase',         // Grouping: impact, showcase, structure
+  category: 'showcase',         // Free-form editor grouping. impact / showcase /
+                                // structure is a suggested set, not a fixed one
 }
 ```
 
