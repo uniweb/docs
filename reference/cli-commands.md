@@ -7,7 +7,11 @@ The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, gene
 ```bash
 uniweb create [name]           # Create a new project (default: starter)
 uniweb add <type> [name]       # Add a project, foundation, site, or extension
+uniweb dev                     # Start a dev server for a site
 uniweb build                   # Build the current project
+uniweb export                  # Build dist/ for any static host (no Uniweb account)
+uniweb inspect <path>          # Show the parsed content shape of a section or page
+uniweb rename <type> <old> <new>  # Rename a foundation, site, or extension workspace-wide
 uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
 uniweb validate                # Check content against the data schemas your foundation declares
@@ -258,6 +262,52 @@ uniweb add site --project docs
 ### Workspace Config
 
 The `add` command automatically updates `pnpm-workspace.yaml` with appropriate globs and updates root `package.json` scripts (`dev`, `build`, `preview`). You don't need to manage these manually.
+
+---
+
+## uniweb dev
+
+Start a development server for a site.
+
+```bash
+uniweb dev                  # the workspace's single site
+uniweb dev <site>           # a specific site by package name
+uniweb dev --site <name>    # same, explicit flag form
+```
+
+A thin wrapper around the package manager's workspace-filtered `dev` script
+(`pnpm --filter <site> dev`, or `npm -w <site> run dev`). It picks the single
+site automatically. In a multi-site workspace the first site runs by default,
+with a notice pointing at `--site` for explicit selection.
+
+Markdown, `theme.yml`, and component edits hot-reload. New section types are
+picked up without restarting.
+
+---
+
+## uniweb inspect
+
+Print the parsed content shape of a markdown file or folder — the
+`{ content, params, … }` object components actually receive. This is the fastest
+way to answer "why isn't my section getting X?" without reasoning through the
+parsing rules.
+
+```bash
+uniweb inspect pages/home/hero.md              # one section
+uniweb inspect pages/home/                     # every section on the page
+uniweb inspect pages/home/hero.md --full       # include empty fields (matches runtime)
+uniweb inspect pages/home/hero.md --sequence   # include the sequence array
+uniweb inspect pages/home/hero.md --raw        # the ProseMirror AST instead
+```
+
+| Option | Description |
+|--------|-------------|
+| `--full` | Include empty fields, matching exactly what the runtime hands the component |
+| `--sequence` | Include the `sequence` array (all elements in document order) |
+| `--raw` | Print the ProseMirror AST rather than the flat shape |
+
+Paths resolve against the current working directory, so run it from the site
+package (the one containing `pages/`).
 
 ---
 
@@ -724,8 +774,6 @@ The CLI uses a browser-based login flow:
 5. The CLI stores the token at `~/.uniweb/auth.json`
 
 If the browser can't open, falls back to manual token paste. Tokens are valid for 30 days.
-
-See [CLI Authentication Architecture](../architecture/cli-auth.md) for the full technical flow.
 
 ### Examples
 
@@ -1321,6 +1369,6 @@ Workspace builds discover foundations, extensions, and sites by scanning the glo
 - [Site Configuration](./site-configuration.md) — `site.yml` reference
 - [Page Configuration](./page-configuration.md) — `page.yml` reference
 - [Component Metadata](./component-metadata.md) — `meta.js` reference
-- [Internationalization](./internationalization.md) — Translation workflow
+- [Internationalization](../development/internationalization.md) — Translation workflow
 - [Publishing and Clients](../development/publishing-and-clients.md) — Full developer-to-client workflow
 - [Deployment](./deployment.md) — Static hosting and platform deployment
