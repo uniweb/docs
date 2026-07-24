@@ -52,6 +52,8 @@ You only need to provide one hex color per palette. A good starting point:
 - **neutral** — a gray tone for text, borders, and backgrounds
 - **secondary** or **accent** — optional supporting colors
 
+If you leave **accent** out, it becomes your primary color. Set it only when your brand genuinely has a second voice — a highlight color distinct from the main one.
+
 If you're not sure what hex codes to use, tools like [Coolors](https://coolors.co/) or [Realtime Colors](https://www.realtimecolors.com/) can help you explore palettes.
 
 ### How your color becomes a palette
@@ -378,7 +380,7 @@ The [key finding]{highlight} was confirmed by three studies.
 
 Each name you define becomes available as an inline style. Because the values can reference theme variables (like `var(--accent)`, `var(--link)`), the styles adapt automatically when you change your brand colors or when text appears inside a dark section.
 
-Three inline styles are provided by default: `accent` (link-colored emphasis), `callout` (accent-colored emphasis), and `muted` (de-emphasized text). You can override them or add your own.
+Three inline styles are provided by default: `accent` and `callout` (both accent-colored emphasis) and `muted` (de-emphasized text). You can override them or add your own.
 
 ---
 
