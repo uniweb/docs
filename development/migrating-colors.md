@@ -214,7 +214,7 @@ fonts:
   heading: "'Instrument Sans', system-ui, sans-serif"
   body: "'Source Sans 3', system-ui, sans-serif"
 
-scheme: system                # light | dark | system
+appearance: system            # light | dark | system
 
 background: "#faf9f7"         # Page background (body element)
 

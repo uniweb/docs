@@ -45,7 +45,7 @@ This is the traditional light/dark mode — a global preference that affects the
 
 ```yaml
 # theme.yml
-scheme: system  # Follows OS preference
+appearance: system  # Follows OS preference
 ```
 
 When the scheme is dark, the defaults shift. Sections that don't declare an explicit context get dark tokens instead of light ones. The page background darkens. Browser controls and scrollbars adapt.
