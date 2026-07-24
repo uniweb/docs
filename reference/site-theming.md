@@ -45,7 +45,7 @@ Every key is optional — an empty `theme.yml` (or none) yields an all-defaults 
 | `contexts` | **Sparse** — `{ light?, medium?, dark? }` | Semantic-**token** overrides only (e.g. `link: primary-500`), never base colors. Omit entirely to accept all defaults; list only the tokens you change. |
 | `fonts` | `{ body?, heading?, code?, import?, faces? }` | Font-family strings by role + optional `import`/`faces`. Also takes foundation-declared roles by name. |
 | `appearance` | string or `{ default, allowToggle, respectSystemPreference, schemes? }` | Site-wide light/dark scheme. |
-| `inline` | `{ accent?, callout?, muted?, … }` | Inline text-style definitions; merged over framework defaults. |
+| `inline` | `{ accent?, callout?, muted?, … }` | Inline text-style definitions; merged over framework defaults property by property. |
 | `vars` | `{ <name>: value \| { light, dark } }` | **Foundation** variable overrides (e.g. `header-height`) — a separate concept from color palettes. |
 | `code` | `{ background, foreground, keyword, … }` | Syntax-highlighting colors. |
 | `background` | CSS value string | Site-level page background. |

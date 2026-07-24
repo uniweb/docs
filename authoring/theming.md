@@ -355,17 +355,12 @@ You can define named styles for inline text — accent colors, highlights, callo
 
 ```yaml
 inline:
-  accent:
-    color: var(--link)
-    font-weight: 600
-  callout:
-    color: var(--accent)
-    font-weight: 600
-  muted:
-    color: var(--subtle)
   highlight:
     background: var(--primary-100)
     color: var(--primary-900)
+  legal:
+    font-size: 0.85em
+    color: var(--subtle)
 ```
 
 Content authors use them with bracket syntax:
@@ -380,7 +375,26 @@ The [key finding]{highlight} was confirmed by three studies.
 
 Each name you define becomes available as an inline style. Because the values can reference theme variables (like `var(--accent)`, `var(--link)`), the styles adapt automatically when you change your brand colors or when text appears inside a dark section.
 
-Three inline styles are provided by default: `accent` and `callout` (both accent-colored emphasis) and `muted` (de-emphasized text). You can override them or add your own.
+Three inline styles are provided by default: `accent` and `callout` (both accent-colored emphasis) and `muted` (de-emphasized text). You can add your own, or adjust a built-in one.
+
+### Adjusting a built-in style
+
+Overrides merge **property by property**, like everything else in `theme.yml`. Declare only what differs — the rest of the default stays:
+
+```yaml
+inline:
+  accent:
+    font-weight: inherit   # keeps the default accent color
+```
+
+To *remove* a property the default sets rather than change it, give it a neutral CSS value — `inherit` to follow the surrounding text, or `initial` / `unset`:
+
+```yaml
+inline:
+  accent:
+    color: var(--code)
+    font-weight: initial   # this style is not bold
+```
 
 ---
 
