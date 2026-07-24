@@ -271,9 +271,9 @@ appearance:
 
 | Setting | What it does |
 |---------|-------------|
-| `default` | The initial appearance (`light`, `dark`, or `system`) |
+| `default` | The fallback appearance (`light`, `dark`, or `system`) |
 | `allowToggle` | Whether visitors can switch between light and dark |
-| `respectSystemPreference` | Follow the visitor's operating system setting |
+| `respectSystemPreference` | Follow the visitor's operating system setting (defaults to on) |
 | `schemes` | Which appearances are available |
 
 ### Simple options
@@ -286,11 +286,39 @@ appearance: dark      # Always dark, no toggle
 appearance: system    # Follow the visitor's system setting
 ```
 
+### Which appearance a visitor actually gets
+
+Your site **has dark mode** whenever it offers a toggle, defaults to `dark` or `system`, or lists `dark` in `schemes:`. Any one of those is enough — you don't have to set all four.
+
+Once it does, the appearance is chosen in this order:
+
+1. **A choice the visitor made before** on your site — remembered across visits.
+2. **Their operating system setting** — unless you set `respectSystemPreference: false`.
+3. **Your `default:`**.
+
+So `default: light` is a *fallback*, not a guarantee: a visitor whose computer is set to dark still gets dark on their first visit. If you want the site to always open light regardless, say so explicitly:
+
+```yaml
+appearance:
+  default: light
+  allowToggle: true
+  respectSystemPreference: false   # ignore the OS; always start light
+```
+
+| Goal | `theme.yml` |
+|---|---|
+| Always light, no switch | `appearance: light` |
+| Always dark, no switch | `appearance: dark` |
+| Toggle, follow the OS on first visit | `appearance: { default: system, allowToggle: true }` |
+| Toggle, but always start light | `appearance: { default: light, allowToggle: true, respectSystemPreference: false }` |
+
 ### How dark mode works
 
 When dark mode is active, all the section themes (`light`, `medium`, `dark`) adjust their colors automatically. You don't need to create separate content for dark mode — the same sections look appropriate in both appearances.
 
-Your template handles the dark mode toggle UI. Most templates show a sun/moon button in the header when `allowToggle` is enabled.
+A section that leaves `theme:` unset follows the visitor's choice. A section that pins `theme: dark` stays dark in either appearance — which is how a light site can carry one dramatic dark band without fighting the toggle.
+
+Your foundation supplies the toggle button itself. Most show a sun/moon button in the header when `allowToggle` is enabled — see [rendering a toggle](../reference/site-theming.md#rendering-a-toggle) if you're building one.
 
 ---
 

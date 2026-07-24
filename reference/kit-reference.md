@@ -269,6 +269,10 @@ function DarkModeToggle() {
 | `canToggle` | boolean | Is toggling enabled? |
 | `setScheme(s)` | function | Set a specific scheme |
 
+The runtime applies the scheme class to `<html>` before the page paints, and this hook reads it back — so `scheme` is correct on the very first render, with no flash. `toggle` and `setScheme` persist the visitor's choice.
+
+**Don't also write the class or touch `localStorage` from your component.** That makes a second writer racing the runtime's, which is how a toggle ends up needing two clicks. `canToggle` is false unless the site's `theme.yml` enables toggling — if your button never appears, that's the config to check. See [site theming](./site-theming.md#rendering-a-toggle).
+
 ### useThemeColor / useThemeColorVar
 
 Convenience hooks for accessing theme colors.
@@ -663,6 +667,33 @@ Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those 
 ---
 
 ## Utilities
+
+### cn
+
+Merge Tailwind classes, resolving conflicts so a later class wins over an earlier one. Falsy values are dropped, which makes conditional classes read cleanly.
+
+```jsx
+import { cn } from '@uniweb/kit'
+
+cn('px-4 py-2', isActive && 'bg-primary', className)
+```
+
+**Order matters, and one pair is surprising.** A font-size class overrides a preceding `leading-*`, because in Tailwind a size class like `text-lg` sets *both* font size and line height. So `cn()` treats a later `text-*` as replacing an earlier `leading-*` — and silently drops it:
+
+```jsx
+cn('leading-[1.1] text-[clamp(2rem,5vw,4rem)]')  // → 'text-[clamp(2rem,5vw,4rem)]'  ⚠️ leading gone
+cn('leading-tight text-4xl')                     // → 'text-4xl'                      ⚠️ leading gone
+cn('text-4xl leading-tight')                     // → 'text-4xl leading-tight'        ✅
+```
+
+This bites hardest when the size comes from a lookup and the leading is in a shared base string, because the base is written first. Two ways out — put the size before the leading, or fold the leading into the size with Tailwind's slash syntax:
+
+```jsx
+const TITLE_SIZE = { hero: 'text-[clamp(2.8rem,6.5vw,4.5rem)]/[1.1]' }   // size and leading in one class
+<H1 className={cn('font-bold tracking-tight', TITLE_SIZE[params.layout])} />
+```
+
+The same rule applies to any pair Tailwind fuses into one utility. When a class you passed doesn't show up in the DOM, check whether a later class in the same `cn()` owns that property too.
 
 ### getLocaleLabel
 

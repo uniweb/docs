@@ -487,17 +487,36 @@ appearance: dark     # Fixed dark mode, no toggle
 appearance: system   # Follow system preference
 ```
 
-Components use the `useAppearance()` hook if they need to render a toggle:
+### Which scheme a visitor gets
+
+A site **has a dark scheme** whenever it offers a toggle, defaults to `dark` or `system`, or lists `dark` in `schemes:` — any one is sufficient. The dark CSS is generated on the same condition, so a scheme is never applied without matching rules.
+
+Resolution order, on every page load:
+
+1. A scheme the visitor chose previously (persisted in `localStorage`).
+2. Their OS preference, unless `respectSystemPreference: false`.
+3. `default:`.
+
+`respectSystemPreference` defaults to **true**. That makes `default:` a fallback rather than a guarantee — a dark-OS visitor gets dark on first visit even under `default: light`. Set `respectSystemPreference: false` to pin the default.
+
+<a id="rendering-a-toggle"></a>
+### Rendering a toggle
+
+The runtime resolves the scheme and writes `scheme-dark` / `scheme-light` onto `<html>` **before the page paints** — on prerendered pages via an inline script in `<head>`, and in the SPA before the first render. There is no flash of the wrong scheme, and no work for you to do.
+
+A component only renders the button:
 
 ```jsx
 import { useAppearance } from '@uniweb/kit'
 
 function DarkModeToggle() {
   const { scheme, toggle, canToggle } = useAppearance()
-  if (!canToggle) return null
+  if (!canToggle) return null           // hidden unless the site enables toggling
   return <button onClick={toggle}>{scheme === 'dark' ? 'Light' : 'Dark'}</button>
 }
 ```
+
+**Don't write the scheme class or read `localStorage` yourself.** `useAppearance()` already reads the applied scheme and persists the visitor's choice. A component that also writes to `document.documentElement` becomes a second writer racing the runtime's — which is exactly the class of bug that produces a toggle needing two clicks, or a site stuck in one scheme. If a toggle isn't behaving, the cause is in the theme config (usually the site has no dark scheme, so `canToggle` is false), not something to patch around in the component.
 
 ## Foundation Variables
 
