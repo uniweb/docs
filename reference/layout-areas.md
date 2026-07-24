@@ -304,7 +304,7 @@ export default function Header({ content }) {
 
 ```jsx
 // src/sections/Footer/index.jsx
-import { useWebsite, getLocaleLabel } from '@uniweb/kit'
+import { useWebsite, Link, getLocaleLabel } from '@uniweb/kit'
 
 export default function Footer({ content }) {
   const { website } = useWebsite()
@@ -316,13 +316,16 @@ export default function Footer({ content }) {
       {website.hasMultipleLocales() && (
         <div className="locale-switcher">
           {website.getLocales().map(locale => (
-            <a
+            // `reload` is required: getLocaleUrl() omits the deployment base
+            // path, and switching language needs a full page load.
+            <Link
+              reload
               key={locale.code}
               href={website.getLocaleUrl(locale.code)}
               className={locale.code === website.getActiveLocale() ? 'active' : ''}
             >
               {getLocaleLabel(locale)}
-            </a>
+            </Link>
           ))}
         </div>
       )}

@@ -206,7 +206,7 @@ See [Page Configuration → Localized URLs](../reference/page-configuration.md#l
 ### Building a Switcher
 
 ```jsx
-import { useWebsite, getLocaleLabel } from '@uniweb/kit'
+import { useWebsite, Link, getLocaleLabel } from '@uniweb/kit'
 
 function LanguageSwitcher() {
   const { website } = useWebsite()
@@ -216,26 +216,35 @@ function LanguageSwitcher() {
     return null
   }
 
-  const locales = website.getLocales()
   const active = website.getActiveLocale()
 
   return (
-    <select
-      value={active}
-      onChange={(e) => {
-        // Navigate triggers full page reload with new language content
-        window.location.href = website.getLocaleUrl(e.target.value)
-      }}
-    >
-      {locales.map(locale => (
-        <option key={locale.code} value={locale.code}>
+    <nav>
+      {website.getLocales().map(locale => (
+        <Link
+          reload
+          key={locale.code}
+          href={website.getLocaleUrl(locale.code)}
+          className={locale.code === active ? 'active' : ''}
+        >
           {getLocaleLabel(locale)}
-        </option>
+        </Link>
       ))}
-    </select>
+    </nav>
   )
 }
 ```
+
+> **Use `<Link reload>` rather than a plain `<a>` or `window.location.href`.**
+> `getLocaleUrl()` returns a **root-relative path that does not include the
+> deployment base path**. On a site deployed under a subdirectory (`base: /docs/`
+> in `site.yml`), assigning it directly to an `href` or to `window.location`
+> navigates outside the site. `<Link reload>` prepends `website.basePath` and
+> renders a plain `<a>`, giving the full page load a language switch needs — a
+> normal SPA `<Link>` would not, because the other language is a separate build.
+>
+> If you need a `<select>` instead of links, prepend the base path yourself:
+> `window.location.href = website.basePath.replace(/\/$/, '') + website.getLocaleUrl(code)`.
 
 ### Website Locale API
 
