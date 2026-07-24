@@ -208,7 +208,7 @@ Params force you to ask "what actually varies in this component?" — and that q
 
 ### Content-driven components
 
-The progression from hardcoded to content-driven is natural. You start with a component that has its text in JSX. When that text needs to change without a code deploy, you move it to markdown and read from `content`. The [Converting Existing Designs](./converting-existing-designs.md) guide walks through this step by step.
+The progression from hardcoded to content-driven is natural. You start with a component that has its text in JSX. When that text needs to change without a code deploy, you move it to markdown and read from `content`. The [Converting Existing Designs](./converting-existing.md) guide walks through this step by step.
 
 ### Theme
 
@@ -277,7 +277,7 @@ When one section type needs multiple layouts (a homepage hero vs. a pricing hero
 - **[Quickstart](../getting-started/quickstart.md)** — Step-by-step project creation (`uniweb create`)
 - **[Content Structure](../reference/content-structure.md)** — How markdown becomes `content.title`, `content.items`, etc.
 - **[Component Metadata](../reference/component-metadata.md)** — Full `meta.js` reference (params, content expectations, presets)
-- **[Converting Existing Designs](./converting-existing-designs.md)** — Bringing existing React code into a foundation
+- **[Converting Existing Designs](./converting-existing.md)** — Bringing existing React code into a foundation
 - **[Component Patterns](./component-patterns.md)** — Front Desk, Building Blocks, and other design patterns
 - **[Thinking in Contexts](./thinking-in-contexts.md)** — Semantic theming and how components adapt to any brand
 - **[Project Structures](./project-structures.md)** — Workspace layouts for multi-site, extension, and co-located projects

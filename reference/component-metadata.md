@@ -1113,5 +1113,5 @@ Use `initialState` when the capability depends on runtime conditions — a Hero 
 
 - [Content Structure](./content-structure.md) — How content is parsed and structured
 - [Kit Reference](./kit-reference.md) — Hooks, components, and utilities from @uniweb/kit
-- [Foundation Configuration](./foundation-configuration.md) — CSS variables and custom Layout
+- [Foundation Configuration](./foundation-config.md) — CSS variables and custom Layout
 - [Data Fetching](./data-fetching.md) — Loading external data into components

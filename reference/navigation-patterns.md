@@ -466,5 +466,5 @@ const renderNavItem = (item) => {
 
 - [Content Structure](./content-structure.md) — Full content parsing reference
 - [Page Configuration](./page-configuration.md) — Navigation visibility options (hidden, hideIn)
-- [Linking](./linking.md) — The `page:` protocol for stable internal links
+- [Linking](../authoring/linking.md) — The `page:` protocol for stable internal links
 - [Component Metadata](./component-metadata.md) — Documenting nav expectations in meta.js

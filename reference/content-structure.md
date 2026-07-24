@@ -297,7 +297,7 @@ Supported icon library prefixes (browse icons visually at [react-icons.github.io
 | `size` | Icon size in pixels (default: 24) |
 | `color` | Icon color (CSS color value) |
 
-**Important:** Named icons require foundation support. The foundation must include the icon library to render named icons. See [Foundation Configuration](./foundation-configuration.md#icon-libraries) for setup instructions.
+**Important:** Named icons require foundation support. The foundation must include the icon library to render named icons. See [Foundation Configuration](./foundation-config.md#icon-libraries) for setup instructions.
 
 If your foundation doesn't include an icon library, use URL-based icons instead:
 
@@ -1175,5 +1175,5 @@ This is an advanced technique — most foundations won't need it. But it's avail
 
 - [Page Configuration](./page-configuration.md) — page.yml options for sections and ordering
 - [Navigation Patterns](./navigation-patterns.md) — Building navbars, menus, and sidebars
-- [Linking](./linking.md) — The `page:` protocol for stable internal links
+- [Linking](../authoring/linking.md) — The `page:` protocol for stable internal links
 - [Component Metadata](./component-metadata.md) — Documenting what content your component expects

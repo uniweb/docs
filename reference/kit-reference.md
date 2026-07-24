@@ -864,5 +864,5 @@ function MyComponent({ block }) {
 - [Component Metadata](./component-metadata.md) — Defining component interfaces
 - [Content Structure](./content-structure.md) — Content shape and guarantees
 - [Site Theming](./site-theming.md) — Theme API and hooks
-- [Internationalization](./internationalization.md) — Locale switching and build-time translation
+- [Internationalization](../development/internationalization.md) — Locale switching and build-time translation
 - [Versioning](./versioning.md) — Version hooks and API

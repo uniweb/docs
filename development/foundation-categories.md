@@ -114,5 +114,5 @@ When a guide describes a CCA convention (like declaring data sources in `page.ym
 - [Building with Uniweb](./building-with-uniweb.md) — What a Uniweb project looks like, start to finish
 - [Working with Data](./working-with-data.md) — The portable data layer: fetch configs, auto-wiring, detail queries
 - [Thinking in Contexts](./thinking-in-contexts.md) — Semantic theming and how components adapt to any brand
-- [Converting Existing Designs](./converting-existing-designs.md) — Bringing existing React components into a foundation (the gradual migration from bundled to portable)
+- [Converting Existing Designs](./converting-existing.md) — Bringing existing React components into a foundation (the gradual migration from bundled to portable)
 - [Template Tour](./template-tour.md) — What each official template demonstrates and where it sits on the portability spectrum

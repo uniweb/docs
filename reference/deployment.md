@@ -540,5 +540,5 @@ See [CLI Commands](./cli-commands.md) and [Deploying](../development/deploying.m
 
 - [CLI Commands](./cli-commands.md) — Build and deploy command options
 - [Site Configuration](./site-configuration.md) — Pre-render settings
-- [Templates](./templates.md) — Project templates
+- [Templates](../getting-started/templates.md) — Project templates
 - [Publishing and Clients](../development/publishing-and-clients.md) — Full developer-to-client workflow

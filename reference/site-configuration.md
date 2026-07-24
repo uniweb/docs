@@ -323,7 +323,7 @@ This generates `locales/manifest.json` with all translatable content, and you pr
 | Home | `/` | `/es/`, `/fr/` |
 | About | `/about` | `/es/about`, `/fr/about` |
 
-See [Internationalization](./internationalization.md) for the full guide.
+See [Internationalization](../development/internationalization.md) for the full guide.
 
 ### Advanced i18n Options
 
@@ -361,7 +361,7 @@ search:
     components: [CodeBlock]
 ```
 
-See [Site Search](./search.md) for details.
+See [Site Search](../authoring/search.md) for details.
 
 ---
 
@@ -609,5 +609,5 @@ collections:
 - [Page Configuration](./page-configuration.md) — page.yml reference
 - [Content Collections](./content-collections.md) — Markdown-based data
 - [Data Fetching](./data-fetching.md) — Loading external data
-- [Site Search](./search.md) — Full-text search setup
-- [Internationalization](./internationalization.md) — Multi-language support
+- [Site Search](../authoring/search.md) — Full-text search setup
+- [Internationalization](../development/internationalization.md) — Multi-language support

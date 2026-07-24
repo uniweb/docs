@@ -4,7 +4,7 @@ CCA components tend to be shorter, more reusable, and more composable than their
 
 But the separation also introduces a design question that doesn't come up in traditional React: how do you shape a component's interface when the people using it aren't developers? The params you expose, the content structure you expect, the variants you support — these form a vocabulary that content authors compose with. Getting that vocabulary right produces tighter components and fewer edge cases. The patterns in this guide are what's emerged from that work so far. More will surface as foundations get more ambitious.
 
-If you're coming from a traditional React project — especially one with multiple pages that have similar-but-different sections — you'll want to read [Converting Existing Designs](./converting-existing-designs.md) first. That guide shows how to decompose pages into CCA components. This guide picks up where it leaves off: once you've identified the components, how do you design their interfaces?
+If you're coming from a traditional React project — especially one with multiple pages that have similar-but-different sections — you'll want to read [Converting Existing Designs](./converting-existing.md) first. That guide shows how to decompose pages into CCA components. This guide picks up where it leaves off: once you've identified the components, how do you design their interfaces?
 
 ---
 
@@ -297,7 +297,7 @@ Those names came from where the variants were found. That's fine — "I want the
 
 The win is consolidation: one component name, one meta.js, one place to add future variants. Not five components with five names in the content author's palette. The variant vocabulary can evolve later — start with names that are meaningful now.
 
-(If you're consolidating variants from an existing site or AI-generated pages, see [Converting Existing Designs](./converting-existing-designs.md) for the staged migration approach — including how to keep legacy implementations untouched in `components/` while the section type delegates to them.)
+(If you're consolidating variants from an existing site or AI-generated pages, see [Converting Existing Designs](./converting-existing.md) for the staged migration approach — including how to keep legacy implementations untouched in `components/` while the section type delegates to them.)
 
 ---
 
@@ -653,7 +653,7 @@ One `theme` param, four coordinated maps. Every value scannable. Every combinati
 
 ## Parameters as Intent
 
-This has been covered elsewhere (see [Thinking in Contexts](./thinking-in-contexts.md) and [Converting Existing Designs](./converting-existing-designs.md)), but it's worth reinforcing here because the component patterns above depend on it.
+This has been covered elsewhere (see [Thinking in Contexts](./thinking-in-contexts.md) and [Converting Existing Designs](./converting-existing.md)), but it's worth reinforcing here because the component patterns above depend on it.
 
 Params describe purpose, not CSS. A `spacing: comfortable` param isn't a CSS shortcut; it's a semantic choice that the foundation designer maps to whatever values serve the design. `layout: masonry` isn't `columns: 3` with extra steps; it's a named rendering strategy that encapsulates responsive behavior, gap logic, and break-inside rules.
 
@@ -903,7 +903,7 @@ This guide will grow as those patterns become clear. If you discover something t
 ## See Also
 
 - [Thinking in Contexts](./thinking-in-contexts.md) — Semantic theming and when to break the rules
-- [Converting Existing Designs](./converting-existing-designs.md) — Bringing existing React code into CCA
+- [Converting Existing Designs](./converting-existing.md) — Bringing existing React code into CCA
 - [Content Structure](../reference/content-structure.md) — How markdown becomes `content.items`, `content.data`, and `content.sequence` (includes how attributes flow to components and the foundation's role as gatekeeper)
 - [Component Metadata](../reference/component-metadata.md) — The full `meta.js` API
 - [Kit Reference](../reference/kit-reference.md) — Hooks, data classes, and utilities from @uniweb/kit

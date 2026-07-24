@@ -194,7 +194,7 @@ i18n:
 
 The site handles the mapping — navigation links, language switcher, and internal links all use the correct translated URL automatically.
 
-For the full translation workflow (extracting strings, providing translations, checking coverage), see the [Translation guide](./translating-your-site.md).
+For the full translation workflow (extracting strings, providing translations, checking coverage), see the [Translation guide](./translating.md).
 
 ---
 
@@ -220,7 +220,7 @@ search:
     routes: [/admin, /drafts]
 ```
 
-For more search options, see the [Search guide](../search.md).
+For more search options, see the [Search guide](./search.md).
 
 ---
 
@@ -399,7 +399,7 @@ If adding translations, get one additional language working before adding more. 
 
 - **[Writing Content](./writing-content.md)** — How to write sections in markdown
 - **[Theming](./theming.md)** — Customize colors, fonts, and dark mode
-- **[Translating Your Site](./translating-your-site.md)** — Full translation workflow
+- **[Translating Your Site](./translating.md)** — Full translation workflow
 - **[Collections](./collections.md)** — Blog posts, team members, products, and other repeating content
 - **[Recipes](./recipes.md)** — Copy-paste solutions for common patterns
 - **[Deployment](../reference/deployment.md)** — Deploy to Vercel, Netlify, GitHub Pages, and more

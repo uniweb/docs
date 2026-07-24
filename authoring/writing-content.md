@@ -162,7 +162,7 @@ Use the `page:` protocol for links that survive reorganization:
 [Contact Section](page:about#contact)
 ```
 
-These resolve to the correct URL even if pages get moved around. See the [Linking guide](../linking.md) for details.
+These resolve to the correct URL even if pages get moved around. See the [Linking guide](./linking.md) for details.
 
 ---
 
@@ -599,6 +599,6 @@ If your section doesn't have images, that's fine. If it doesn't have links, that
 
 - **[Recipes](./recipes.md)** — Copy-paste solutions for common content patterns
 - **[Collections](./collections.md)** — Manage repeating content like blog posts or team members
-- **[Translating Your Site](./translating-your-site.md)** — Add multiple languages
-- **[Linking](../linking.md)** — Stable internal links with the `page:` protocol
-- **[Search](../search.md)** — Adding search to your site
+- **[Translating Your Site](./translating.md)** — Add multiple languages
+- **[Linking](./linking.md)** — Stable internal links with the `page:` protocol
+- **[Search](./search.md)** — Adding search to your site

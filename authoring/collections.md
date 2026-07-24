@@ -600,6 +600,6 @@ collections:
 - **[Writing Content](./writing-content.md)** — How to write sections in markdown
 - **[Recipes](./recipes.md)** — Copy-paste patterns including a full blog setup
 - **[Site Setup](./site-setup.md)** — Site configuration, pages, locales, and more
-- **[Translating Your Site](./translating-your-site.md)** — Add multiple languages
+- **[Translating Your Site](./translating.md)** — Add multiple languages
 
 For technical details on collection processing, see [Content Collections](../reference/content-collections.md).

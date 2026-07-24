@@ -84,7 +84,7 @@ id: about-page
 | `title` | string | Page title (browser tab, navigation) |
 | `description` | string | Meta description for SEO |
 | `label` | string | Short label for navigation (defaults to title) |
-| `id` | string | Stable ID for `page:` links (see [Linking](./linking.md)) |
+| `id` | string | Stable ID for `page:` links (see [Linking](../authoring/linking.md)) |
 
 ### Why Use Labels?
 
@@ -597,6 +597,6 @@ seo:
 - [Site Configuration](./site-configuration.md) — site.yml reference
 - [Internationalization](../development/internationalization.md) — Multilingual content and localized URLs
 - [Content Structure](./content-structure.md) — Section content format
-- [Linking](./linking.md) — Stable page references with IDs
+- [Linking](../authoring/linking.md) — Stable page references with IDs
 - [Dynamic Routes](./dynamic-routes.md) — Data-driven pages
 - [Versioning](./versioning.md) — Multi-version documentation

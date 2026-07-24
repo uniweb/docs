@@ -644,7 +644,7 @@ search:
       - /draft
 ```
 
-See the [Search guide](../search.md) for full configuration options.
+See the [Search guide](./search.md) for full configuration options.
 
 ---
 
@@ -875,6 +875,6 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
 - **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
-- **[Linking](../linking.md)** — Stable `page:` links
+- **[Linking](./linking.md)** — Stable `page:` links
 - **[Collections](./collections.md)** — How collections work, the collections/ folder, and detail pages
-- **[Search](../search.md)** — Search configuration
+- **[Search](./search.md)** — Search configuration
