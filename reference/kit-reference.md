@@ -328,6 +328,47 @@ function LazyImage({ src, alt }) {
 | `triggerOnce` | boolean | `false` | Only trigger once |
 | `rootMargin` | string | `'0px'` | Margin around root |
 
+### useHeadings
+
+The headings of the page being read, and which one the reader is level with. What a table of contents needs, with no opinion about how it looks.
+
+```jsx
+import { useHeadings } from '@uniweb/kit'
+
+function PageContents() {
+  const { headings, activeId, scrollTo } = useHeadings()
+  if (!headings.length) return null
+
+  return (
+    <nav aria-label="On this page">
+      {headings.map((heading) => (
+        <button
+          key={heading.id}
+          onClick={() => scrollTo(heading.id)}
+          className={heading.id === activeId ? 'text-primary' : 'text-subtle'}
+        >
+          {heading.text}
+        </button>
+      ))}
+    </nav>
+  )
+}
+```
+
+Headings come back nested — each carries `{ id, text, level, children }`. The list is derived from the page's own content, so it is present in prerendered HTML rather than appearing after hydration; only `activeId` needs the browser, because only scroll position does. A DOM scan is the fallback for content the hook cannot see.
+
+The anchor ids match what `<Render>` and `<Prose>` stamp — same generator — so `scrollTo` always finds its target.
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `levels` | number[] | `[2, 3]` | Heading levels to collect |
+| `root` | string | `'main'` | Selector to scan, for the DOM fallback |
+| `offset` | number | header height | Scroll offset in px; defaults to `--header-height` plus a little room |
+
+Pair it with `website.getBranchHierarchy({ route, for: 'left' })` for the other half of a documentation shell — the navigation rail. See [Website](#website).
+
 ### block.dataLoading
 
 Check whether a block's runtime data fetch is in progress. This is a boolean property on the `block` instance, set by the runtime's `BlockRenderer`.
@@ -394,6 +435,7 @@ function Header({ block }) {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `getPageHierarchy(opts)` | array | Get pages for navigation |
+| `getBranchHierarchy(opts)` | array | Get pages for one branch of the site |
 | `getLocales()` | array | Get all locale objects |
 | `getActiveLocale()` | string | Get current locale code |
 | `getLocaleUrl(code)` | string | Get URL for a locale |
@@ -407,11 +449,13 @@ function Header({ block }) {
 
 ```js
 website.getPageHierarchy({
-  for: 'header',        // 'header' or 'footer' (respects hide flags)
+  for: 'header',        // layout area name — checked against each page's hideIn
   nested: true,         // Include children (default: true)
   includeHidden: false  // Include hidden pages (default: false)
 })
 ```
+
+`for:` names the **layout area** the menu is being built for, and it is tested against each page's `hideIn:` list. Pass the area you are actually filling — `'header'` for the site menu, `'left'` for a sidebar — so an author can keep a page in one and out of the other. Any area name works, including ones a foundation invents.
 
 Returns:
 ```js
@@ -428,6 +472,22 @@ Returns:
   }
 ]
 ```
+
+#### getBranchHierarchy Options
+
+A sidebar shows one branch of a site, not all of it. Give it the active route and it answers that branch's pages.
+
+```js
+website.getBranchHierarchy({
+  route: location.pathname,  // the active route
+  for: 'left',               // layout area, as above
+  includeHidden: false
+})
+```
+
+Under `/docs/reference/cli` it returns the documentation tree; under `/blog/a-post` it returns the blog's. When the route matches no branch — the site root, usually — it returns the whole hierarchy. Pages come back in the order the build settled on, so there is nothing to sort.
+
+Pair it with [`useHeadings`](#useheadings) for the two halves of a documentation shell.
 
 ### Page
 
@@ -663,6 +723,48 @@ function SplitContent({ content, block }) {
 **Resolution order:** inset > video > image. Only tries candidates you pass.
 
 Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
+
+### Render vs Prose
+
+Kit has two renderers. They look interchangeable and are not — they read different inputs and handle different things.
+
+| | `<Render>` | `<Prose>` |
+|---|---|---|
+| **Reads** | Raw ProseMirror nodes (`block.rawContent`) | The parsed sequence (`content.sequence`) |
+| **Use for** | A whole document: a markdown file rendered as written | Section content the parser has split into title, items, paragraphs |
+| **Tables** | Yes | **No** |
+| **Also handles** | Lists, callouts (`alert`/`warning`), `details`, inline insets | Icons, math, data blocks |
+
+**Pick `<Render>` when the markdown file *is* the page.** Documentation, articles, anything mounted from a content repository. It covers the full node set, so a reference table or a callout survives.
+
+```jsx
+// A section type that renders whatever the author wrote, whole
+import { Render } from '@uniweb/kit'
+
+export default function Section({ block }) {
+  return <Render block={block} />
+}
+```
+
+**Pick `<Prose>` when you have already taken the content apart** and want the narrative remainder rendered with typography.
+
+```jsx
+import { Prose } from '@uniweb/kit'
+
+export default function Lesson({ content, block }) {
+  return (
+    <>
+      <h2>{content.title}</h2>
+      <Prose content={content} block={block} />
+      {content.data.quiz && <Quiz data={content.data.quiz} />}
+    </>
+  )
+}
+```
+
+Reaching for `<Prose>` to render a document is the mistake worth naming: it renders, it looks right, and every table in the file is gone.
+
+Both stamp an `id` on each heading, from the same generator, so `useHeadings` and any anchor link agree with whichever one rendered.
 
 ---
 
