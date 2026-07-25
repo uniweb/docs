@@ -324,6 +324,21 @@ The overrides are applied as inline CSS custom properties on the section wrapper
 
 For simple string usage, `theme: dark` is equivalent to `theme: { mode: dark }`.
 
+### Page Background
+
+The page behind your sections. It defaults to `var(--section)` — the same token the sections use — so the canvas matches what sits on it and follows the visitor's light/dark choice without you doing anything.
+
+You only need to set it when you want the page to differ from its sections:
+
+```yaml
+# theme.yml
+background: linear-gradient(180deg, var(--section), var(--muted))
+```
+
+Any CSS `background` value works, including an image. Note that a literal colour will not change with the scheme — use a token, or a `light-dark()` value, if the page should follow it.
+
+**Why this exists as its own setting.** Sections paint themselves, so a page whose sections run the full width has no visible canvas at all. A layout with columns does: a documentation shell paints its rails and its article, and the space between them is the page.
+
 ### Section Backgrounds
 
 Sections can also declare a background in frontmatter, independent of the theme context:
