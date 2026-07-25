@@ -248,7 +248,7 @@ collections:
 What this changes:
 
 - The blog list page (`data: articles`) ships every article *without* the body. Cards stay light.
-- A `[slug]/` detail page automatically receives the *full* article (body included) on `content.data.article`. The framework knows where the per-record file lives; you don't configure anything else.
+- A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the collection key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
 - Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useEntityDetail` kit hook to fetch the full record on demand.
 
 Skip `deferred:` for collections without heavy fields — the entire record ships, like always.
