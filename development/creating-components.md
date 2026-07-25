@@ -465,7 +465,7 @@ pnpm build
 ```
 
 This generates:
-- `dist/foundation.js` — Bundled components
+- `dist/entry.js` — Bundled components
 - `dist/schema.json` — Component metadata for the runtime
 
 ---

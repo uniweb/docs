@@ -238,8 +238,8 @@ Some theme concepts are site-level configuration, not tokens:
 | Concept | Configured in | Why not a variable |
 |---|---|---|
 | Page background | `theme.yml` → `background:` | No component references it — it's the outermost canvas |
-| Color scheme | `theme.yml` → `scheme:` | Browser-level hint for form controls and scrollbars |
-| Selection colors | `theme.yml` → `selection:` | Text selection highlight — decorative, never referenced |
+| Light/dark behaviour | `theme.yml` → `appearance:` | Which schemes exist, the default, and whether visitors can switch |
+| Code block colours | `theme.yml` → `code:` | A syntax theme by name, or a named theme adjusted — see [Site Theming](../reference/site-theming.md#code-block-syntax-highlighting) |
 | Favicon / meta | `site.yml` | Site metadata, not visual theming |
 
 **The design test:** "Would a section component ever write a Tailwind class that references this?" If yes → CSS variable. If no → configuration.

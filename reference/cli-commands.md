@@ -514,7 +514,8 @@ The doctor command checks your workspace and reports errors and warnings. Run it
 **For each site:**
 - `site.yml` exists and references a valid foundation
 - Foundation dependency in `package.json` (correct `file:` path)
-- Foundation is built (`dist/foundation.js` exists)
+- The installed foundation is the one in your workspace, and resolves the `@uniweb/*` versions it declares — a `file:` dependency satisfied by a copy rather than a link leaves the dev server serving code your builds never see
+- Foundation is built (`dist/entry.js` exists)
 
 **For each extension:**
 - Declares `extension: true` in `main.js`

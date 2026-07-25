@@ -23,7 +23,7 @@ A theming environment applied per-section. The runtime wraps each section in a c
 A secondary foundation loaded at runtime via URL. Contributes section types but doesn't provide layouts or theme variables. Declared in `site.yml` under `extensions:`. See [Extending Your Site](../development/extending-your-site).
 
 **Foundation**
-A Vite library project containing React components — the site's source code. Lives in `src/` (single-foundation case), or `foundations/*/`, `*/src/` for multi-foundation layouts. Builds to `dist/foundation.js` + `dist/meta/schema.json`. Provides section types, layouts, and theme variable declarations. See [Building with Uniweb](../development/building-with-uniweb).
+A Vite library project containing React components — the site's source code. Lives in `src/` (single-foundation case), or `foundations/*/`, `*/src/` for multi-foundation layouts. Builds to `dist/entry.js` + `dist/meta/schema.json`. Provides section types, layouts, and theme variable declarations. See [Building with Uniweb](../development/building-with-uniweb).
 
 **Frontmatter**
 The YAML block between `---` markers at the top of a markdown file. Contains `type:` (which component renders this section), `theme:`, params, and other configuration. This is the binding mechanism between content and code.

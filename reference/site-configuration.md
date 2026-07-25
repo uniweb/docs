@@ -502,6 +502,28 @@ paths:
   pages/blog: ../../../blog-content
 ```
 
+#### Giving a mounted route a layout or a title
+
+Add a local folder for the route holding a `folder.yml` — `folder.yml` rather than `page.yml`, because what is mounted is a folder of pages, and that filename is also what tells the build how to read the mounted tree:
+
+```
+site/
+├── site.yml              # paths: { pages/docs: ../../../docs }
+└── pages/
+    └── docs/
+        └── folder.yml    # layout, title, SEO for the branch
+```
+
+```yaml
+# pages/docs/folder.yml
+title: Documentation
+layout: DocsLayout        # cascades to every page under /docs
+```
+
+**The two configs layer.** The mounted directory's own `folder.yml` supplies what your stub leaves out — its ordering, its title — and anything the stub declares wins. So a docs repository that orders its own sections keeps that order, and your site only states what it wants to differ.
+
+If the mounted directory is empty — an unfetched git submodule, most often — the build says so rather than quietly producing a route with no pages under it. In a production build it fails outright.
+
 ### Use Cases
 
 - **Separate content repo** — Content in a git submodule, maintained by a different team

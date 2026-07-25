@@ -227,7 +227,7 @@ The build writes `role: "extension"` to the extension's `schema.json` and warns 
 
 ### Foundation npm dependencies — libraries used by components
 
-Components in your foundation can use any npm package. Charting libraries, animation frameworks, date utilities — install them in the foundation and import them in your components. They're bundled into `dist/foundation.js` by Vite and tree-shaken per foundation.
+Components in your foundation can use any npm package. Charting libraries, animation frameworks, date utilities — install them in the foundation and import them in your components. They're bundled into `dist/entry.js` by Vite and tree-shaken per foundation.
 
 ```bash
 cd src

@@ -25,7 +25,7 @@ cd foundation
 uniweb build
 ```
 
-This produces `dist/foundation.js` and `dist/meta/schema.json`. If you skip this step, `uniweb register` will build automatically.
+This produces `dist/entry.js` and `dist/meta/schema.json`. If you skip this step, `uniweb register` will build automatically.
 
 ## Registering
 
