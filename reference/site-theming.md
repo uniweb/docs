@@ -441,29 +441,66 @@ The three built-in roles are themselves just **defaults** — a foundation can r
 
 ## Code Block Syntax Highlighting
 
-Code blocks in markdown content are automatically syntax-highlighted using [Shiki](https://shiki.style). Customize the colors via the `code` section:
+Code blocks in markdown are syntax-highlighted with [Shiki](https://shiki.style). Sixty-five themes ship in the box, so the usual answer is to name one:
+
+```yaml
+code: dracula
+```
+
+That is the whole setting. Some of what is available: `github-light`, `github-dark`, `dracula`, `nord`, `catppuccin-latte`, `catppuccin-mocha`, `tokyo-night`, `one-dark-pro`, `ayu-dark`, `vitesse-light`, `vitesse-dark`, `solarized-light`, `solarized-dark`, `monokai`, `min-light`, `min-dark`. The full list is [Shiki's theme catalogue](https://shiki.style/themes).
+
+### Following light and dark
+
+Name a theme per scheme and listings switch with the visitor's choice:
 
 ```yaml
 code:
-  background: "#1e1e2e"     # Code block background
-  foreground: "#cdd6f4"     # Default text color
-
-  # Syntax highlighting colors
-  keyword: "#cba6f7"        # Keywords (if, else, function)
-  string: "#a6e3a1"         # String literals
-  number: "#fab387"         # Numbers
-  comment: "#6c7086"        # Comments
-  function: "#89b4fa"       # Function names
-  variable: "#f5e0dc"       # Variables
-  operator: "#89dceb"       # Operators
-  type: "#f9e2af"           # Type names
-  constant: "#f38ba8"       # Constants
-  property: "#94e2d5"       # Object properties
-  tag: "#89b4fa"            # HTML/JSX tags
-  attribute: "#f9e2af"      # HTML attributes
+  light: github-light
+  dark: github-dark
 ```
 
-If you don't customize `code`, Uniweb uses a dark theme inspired by Catppuccin Mocha. Shiki is lazy-loaded — only downloaded when a page contains code blocks.
+Give only one side and both use it — which is what you want when code should stay dark on a light page, the way a terminal does.
+
+### Adjusting a theme
+
+Any of the colours below, set alongside `theme:`, override that part of it. "That theme, on my own surface" is the common case:
+
+```yaml
+code:
+  theme: github-dark
+  background: '#0D0D0D'    # the site's own terminal surface
+```
+
+Omit `theme:` and the overrides apply to the default (`github-dark`).
+
+### Naming every colour
+
+The full set, for a site that wants to hand-pick. Anything left out keeps the base theme's value — you never have to specify all of them:
+
+```yaml
+code:
+  theme: github-dark        # optional base; omit for the default
+  background: '#1e1e2e'     # the block's surface
+  foreground: '#cdd6f4'     # text with no more specific colour
+
+  comment: '#6c7086'
+  string: '#a6e3a1'
+  keyword: '#cba6f7'        # if, else, function, return
+  operator: '#89dceb'
+  function: '#89b4fa'
+  variable: '#f5e0dc'
+  number: '#fab387'
+  constant: '#f38ba8'       # true, null, named constants
+  type: '#f9e2af'
+  property: '#94e2d5'       # object keys
+  tag: '#89b4fa'            # HTML/JSX element names
+  attribute: '#f9e2af'
+  punctuation: '#9399b2'
+```
+
+Reach for this last. Picking a dozen syntax colours that stay legible together is a real design job, and the bundled themes have already done it.
+
+Shiki is lazy-loaded — nothing is downloaded until a page actually contains a code block.
 
 ## Appearance (Light/Dark Mode)
 
