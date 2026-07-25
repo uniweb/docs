@@ -741,21 +741,28 @@ This lets `sticky` work naturally — the `<header>` itself becomes the sticky e
 
 ### Custom Layouts
 
-The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, the foundation provides a custom Layout via `src/main.js`:
+The default header/body/footer stack works for most sites. When you need sidebars, panels, or a non-standard page structure, write a layout in `src/layouts/` — the build discovers it there, the same way it discovers section types in `src/sections/`:
 
-```jsx
-// src/main.js
-import { SidebarLayout } from '@uniweb/kit'
+```
+src/layouts/
+└── DocsLayout/
+    ├── index.jsx    ← the layout component
+    └── meta.js      ← declares which areas it renders
+```
 
+```js
+// src/layouts/DocsLayout/meta.js
 export default {
-  Layout: SidebarLayout,
+  title: 'Documentation',
+  areas: ['header', 'footer', 'left', 'right'],
 }
 ```
 
-A Layout component receives pre-rendered areas as props:
+A layout receives its areas pre-rendered, as props:
 
 ```jsx
-function CustomLayout({ page, website, header, body, footer, left, right }) {
+// src/layouts/DocsLayout/index.jsx
+export default function DocsLayout({ page, website, header, body, footer, left, right }) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-30">{header}</header>
@@ -770,26 +777,19 @@ function CustomLayout({ page, website, header, body, footer, left, right }) {
 }
 ```
 
-Kit provides `SidebarLayout` — a ready-made layout with responsive left/right panels, a mobile slide-out drawer for the left panel, sticky header support, and configurable breakpoints. Use it directly or wrap it with custom props:
+A page opts in with `layout: DocsLayout` in its `page.yml` or `folder.yml`, which cascades to everything beneath it. A foundation can name a `defaultLayout` in `src/main.js` to apply one everywhere.
 
-```jsx
-import { SidebarLayout } from '@uniweb/kit'
+Area content comes from the layout folder — `layout/left.md`, `layout/right.md`, alongside `layout/header.md` and `layout/footer.md`.
 
-function DocsLayout(props) {
-  return (
-    <SidebarLayout
-      {...props}
-      leftBreakpoint="lg"
-      rightBreakpoint="xl"
-      leftWidth="w-72"
-    />
-  )
-}
+**Kit ships no ready-made layout, deliberately.** A layout is your design, and a pre-styled one is unusable by anyone whose design differs — which is what happened to the one kit used to export. What kit does provide is the *behaviour* a documentation shell needs, unstyled, so you write the markup and keep the hard parts:
 
-export default { Layout: DocsLayout }
-```
+| | |
+|---|---|
+| [`useHeadings()`](../reference/kit-reference.md#useheadings) | The page's headings and the one being read — a contents rail. Derived from content, so it is in the prerendered HTML. |
+| [`website.getBranchHierarchy()`](../reference/kit-reference.md#getbranchhierarchy-options) | The page tree for the branch being visited — a navigation rail. |
+| [`useMobileMenu()`](../reference/kit-reference.md) | Open/closed state for a drawer, closing itself on navigation. |
 
-Panel content comes from the layout folders — `layout/left/` and `layout/right/` — following the same pattern as `layout/header/` and `layout/footer/`.
+The `docs` template is a worked example of all three: `uniweb create my-docs --template docs`.
 
 ---
 
