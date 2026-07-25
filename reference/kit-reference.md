@@ -764,6 +764,22 @@ export default function Lesson({ content, block }) {
 
 Reaching for `<Prose>` to render a document is the mistake worth naming: it renders, it looks right, and every table in the file is gone.
 
+#### Both need the typography plugin
+
+`<Prose>` emits Tailwind Typography's `prose` classes, and `<Render>` output is normally placed inside a container that carries them. Those classes come from a plugin your **foundation** installs — kit cannot supply them, since it ships no stylesheet of its own. Without it the markup is right and completely unstyled.
+
+```css
+/* your foundation's styles.css */
+@plugin "@tailwindcss/typography";
+@import "@uniweb/kit/prose-tokens.css";
+```
+
+Add `@tailwindcss/typography` to the foundation's dependencies too.
+
+The second line is what makes body copy answer to the site's `theme.yml`. Typography ships its own greys, so without it long-form content is the one part of the page a site cannot restyle. After the import there is nothing more to do — and specifically, do not add `prose-invert`, a `dark:` variant, or a palette modifier like `prose-gray`. Each re-declares the variables the bridge just pointed at the theme, and the tokens already flip with the visitor's scheme.
+
+**Use exactly one prose container per subtree.** The `--tw-prose-*` variables are inherited, so a `prose` container nested inside another silently resets all of them for everything inside it — the outer looks correctly themed and its contents do not. The section that renders the document is usually the better owner, since it then renders correctly under any layout; a layout should supply column width and padding only.
+
 Both stamp an `id` on each heading, from the same generator, so `useHeadings` and any anchor link agree with whichever one rendered.
 
 ---
