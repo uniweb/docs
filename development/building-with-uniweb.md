@@ -22,7 +22,7 @@ my-project/
 └── pnpm-workspace.yaml
 ```
 
-**Foundation** is a standard Vite library project, living in `src/` (the *site's source code* — that's the framing). It builds to a single `foundation.js` bundle plus a `schema.json` that describes what's inside. Your React code lives here — components, hooks, styles, whatever you need.
+**Foundation** is a standard Vite library project, living in `src/` (the *site's source code* — that's the framing). It builds to a single `entry.js` bundle plus a `meta/schema.json` that describes what's inside. Your React code lives here — components, hooks, styles, whatever you need.
 
 **Site** is a standard Vite app with file-based routing. Each folder in `pages/` is a route. Markdown files inside a folder define the sections on that page. The runtime loads the foundation and renders the right component for each section.
 

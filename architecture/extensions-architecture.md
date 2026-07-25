@@ -60,8 +60,8 @@ Extensions close this gap. The site author adds a URL to `site.yml`, and new sec
 # site.yml
 foundation: '@starter/marketing'
 extensions:
-  - https://cdn.example.com/effects/foundation.js
-  - https://cdn.example.com/data-viz/foundation.js
+  - https://cdn.example.com/effects/entry.js
+  - https://cdn.example.com/data-viz/entry.js
 ```
 
 No local foundation build. No component development environment. The workspace stays content-only, and the content author has access to Hero, Features, and Grid from the primary foundation alongside ParticleEffect, AnimatedCounter, Chart, and Dashboard from extensions — all resolved, themed, and composed through the same system.
@@ -79,7 +79,7 @@ A specialized section type often needs specialized data transport — a stats wi
 ```yaml
 # site.yml
 extensions:
-  - https://cdn.example.com/stats/foundation.js
+  - https://cdn.example.com/stats/entry.js
 
 fetcher:
   transports:

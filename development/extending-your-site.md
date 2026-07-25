@@ -206,7 +206,7 @@ Extensions are secondary foundations loaded at runtime. They contribute section 
 ```yaml
 # site/site.yml
 extensions:
-  - https://cdn.example.com/charts/foundation.js
+  - https://cdn.example.com/charts/entry.js
 ```
 
 Extensions can only add section types. They don't provide layouts, theme variables, or site-level behavior. They're structurally identical to foundations — same build, same output — but loaded as supplements.

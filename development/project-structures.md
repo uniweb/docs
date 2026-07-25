@@ -147,7 +147,7 @@ The `file:` path goes up two levels from `sites/main/` to the workspace root, th
 
 **Root scripts with build order:**
 
-Foundations must build before sites (prerender needs the built `foundation.js`). Root scripts enforce this:
+Foundations must build before sites (prerender needs the built `entry.js`). Root scripts enforce this:
 
 ```json
 {
@@ -232,10 +232,10 @@ The extension isn't a `file:` dependency of the site — it's loaded by URL at r
 foundation: src
 
 extensions:
-  - /effects/foundation.js
+  - /effects/entry.js
 ```
 
-The URL `/effects/foundation.js` works in both dev and production:
+The URL `/effects/entry.js` works in both dev and production:
 
 - **Dev:** A custom Vite plugin in `site/vite.config.js` serves `/effects/*` from `../effects/dist/`
 - **Production:** The root build script copies `effects/dist/` into `site/dist/effects/`
@@ -286,9 +286,9 @@ my-project/
 │       └── package.json      ← name: "data-viz"
 ├── sites/
 │   ├── marketing/
-│   │   └── site.yml          ← extensions: [/effects/foundation.js]
+│   │   └── site.yml          ← extensions: [/effects/entry.js]
 │   └── analytics/
-│       └── site.yml          ← extensions: [/effects/foundation.js, /data-viz/foundation.js]
+│       └── site.yml          ← extensions: [/effects/entry.js, /data-viz/entry.js]
 ├── pnpm-workspace.yaml
 └── package.json
 ```

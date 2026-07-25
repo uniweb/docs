@@ -348,19 +348,21 @@ When run in a foundation directory:
 2. Generates entry point (`_entry.generated.js`)
 3. Runs Vite build
 4. Processes preview images (converts to WebP)
-5. Generates `schema.json` with full metadata
+5. Generates `meta/schema.json` with full metadata
 
 **Output:**
 
 ```
 dist/
-├── foundation.js       # Bundled components
-├── foundation.js.map   # Source map
-├── schema.json         # Component metadata
+├── entry.js            # Bundled components
+├── entry.js.map        # Source map
+├── meta/
+│   ├── schema.json     # Component metadata
+│   └── previews/       # Preview images
+│       └── [Component]/
+│           └── [preset].webp
 └── assets/
-    ├── style.css       # Compiled CSS
-    └── [Component]/    # Preview images
-        └── [preset].webp
+    └── style.css       # Compiled CSS
 ```
 
 ```bash
