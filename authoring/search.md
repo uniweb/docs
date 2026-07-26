@@ -1,6 +1,8 @@
 # Site Search
 
-Uniweb includes built-in full-text search powered by [Fuse.js](https://fusejs.io/). Search indexes are generated at build time and loaded on-demand for instant client-side search.
+Uniweb sites have built-in full-text search. By default it runs entirely in the browser against an index generated at build time — no server, no service, no crawler.
+
+Which *provider* serves results is a site setting, not something the foundation decides. A search UI written against the framework works unchanged whether results come from a downloaded index or from a server. That is the same arrangement [data fetching](../reference/data-fetching.md) uses: the site declares the source, components read the results.
 
 ## Quick Start
 
@@ -18,9 +20,72 @@ search:
 1. **Build time**: Content is extracted from all pages and sections
 2. **Index generation**: A `search-index.json` file is created in your build output
 3. **Runtime**: The search client loads the index on first use and caches it
-4. **Search**: Fuse.js performs fuzzy matching against the index
+4. **Search**: [Fuse.js](https://fusejs.io/) performs fuzzy matching against the index
 
 The index is typically small (tens of KB) and cached in localStorage, so subsequent searches are instant.
+
+## Providers
+
+A provider is what actually answers a query.
+
+```yaml
+# site.yml
+search:
+  provider: index        # default — download an index, match in the browser
+```
+
+| Provider | What it does | Trade-off |
+|---|---|---|
+| `index` (default) | Downloads `search-index.json` and matches locally with Fuse.js | Free and works on **any** host, including a plain static one. Fuzzy — tolerates typos. Can only contain what existed at build time. |
+| `endpoint` | Queries a server-side search API | Can index content that isn't in your files — records fetched from an API — and can be re-indexed without rebuilding the site. Needs a host that serves one. |
+| *any other name* | A search transport supplied by your foundation | Fully open — Typesense, Meilisearch, Pagefind, a vendor API |
+
+### Using a server endpoint
+
+```yaml
+search:
+  provider: endpoint
+  endpoint: _search      # optional; this is the default
+```
+
+**`endpoint` is resolved relative to your site's base path**, which is what makes one spelling work everywhere. On a site at the root it resolves to `/_search`; under `base: /docs/` it becomes `/docs/_search`; on a site served from a subpath it follows that subpath. Give an absolute `https://…` URL to point at a search service on another origin.
+
+The response envelope is read leniently — `{ results: [...] }`, `{ hits: [...] }`, `{ items: [...] }`, or a bare array all work — so a self-hosted search backend usually needs no adapter.
+
+### Graceful degradation
+
+If a declared provider fails — the endpoint is unreachable, or the site moved to a host that doesn't serve one — the client falls back to the local index when one exists, and otherwise returns no results with a console warning. A search box never throws at a visitor.
+
+This means moving a site between hosts is safe: search quietly returns to the built-in index.
+
+## Search results
+
+Every provider returns the same result shape, so a search UI is written once.
+
+**Always present** — safe to render without checking:
+
+| Field | Meaning |
+|---|---|
+| `id` | Stable identifier for the hit |
+| `type` | `page`, `section`, or `collection` |
+| `route` | Page route the hit belongs to |
+| `href` | Where to navigate — includes the `#anchor` when there is one |
+| `title` | The hit's own title |
+| `pageTitle` | Title of the containing page |
+| `excerpt` | Short plain-text summary |
+| `snippetHtml` | Matching text with `<mark>` around the query terms |
+
+**Present when the provider can supply it** — `null` otherwise:
+
+`sectionId`, `anchor`, `description`, `component`, `snippetText`, `matches`, `collection`, `item`
+
+Whether one of these arrives is a *deployment* fact, not a content fact — the same site yields `item` (a collection record's fields) from a server provider and `null` from the local index, while `matches` goes the other way. Render them defensively:
+
+```jsx
+{result.item?.image && <img src={result.item.image} alt="" />}
+```
+
+`snippetHtml` is HTML. Render it through kit's `SafeHtml`, never as plain text.
 
 ## Configuration
 
@@ -72,7 +137,7 @@ Or simply omit the `search` configuration—search is enabled by default.
 
 To use search, your foundation needs:
 
-1. **Fuse.js dependency** in the foundation's `package.json` (i.e. `src/package.json` for the default layout):
+1. **Fuse.js dependency** in the foundation's `package.json` (i.e. `src/package.json` for the default layout) — required by the `index` provider:
    ```json
    {
      "dependencies": {
@@ -81,9 +146,13 @@ To use search, your foundation needs:
    }
    ```
 
+   Providers are loaded on demand, so a site using `provider: endpoint` never loads Fuse.js at runtime. Keep the dependency declared anyway unless you are certain no site using your foundation will fall back to the local index.
+
 2. **A search UI component** that uses the search client from `@uniweb/kit`
 
 The academic template includes both of these ready to use.
+
+Nothing in a search UI needs to know which provider is active. If you want to show it — a "live results" badge, say — the client exposes `getProviderName()`, which reports the *active* provider (so it reads `index` after a fallback, not what was declared).
 
 ## What Gets Indexed
 
