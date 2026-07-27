@@ -93,15 +93,40 @@ Both links and media (images, videos, icons) support attributes using curly brac
 | `key=value`   | Named attribute              | `width=800`      |
 | `key:value`   | Same — `:` is an alias for `=` | `width:800`    |
 | `key="value"` | Quoted value (allows spaces) | `alt="My image"` |
-| `.className`  | CSS class                    | `.featured`      |
-| `#idName`     | Element ID                   | `#hero-image`    |
+| `#idName`     | Cross-reference / anchor id   | `#fig-cells`     |
 | `booleanKey`  | Boolean true                 | `autoplay`       |
 
 ```markdown
-![Hero](./hero.jpg){role=banner width=1200 .featured #main-hero loading=lazy}
+![Hero](./hero.jpg){role=banner width=1200 #main-hero loading=lazy}
 ```
 
 Attributes can appear in any order.
+
+### There is no CSS-class syntax
+
+A leading dot is an ordinary **name** character, not a class marker:
+`{.featured}` is the boolean attribute `".featured"`, and `{.one.two}` is the
+boolean attribute `".one.two"`.
+
+Author-supplied CSS classes were the one place markdown was taken *literally*.
+Everywhere else the foundation interprets what you write — `#` is not `<h1>`,
+`**bold**` is not `font-weight: 700`, `{accent}` is not a color. `class="featured"`
+was the exception, and it let content dictate presentation.
+
+Nothing is lost, because the better spelling already existed. **A bare name is an
+open, multi-valued label set**, and it renders as a semantic attribute rather than
+a class:
+
+```markdown
+[Ships today]{accent}          <!-- <span accent="true">   -->
+[Ships today]{accent urgent}   <!-- two labels, both applied -->
+```
+
+Sites declare what those names mean under `theme.yml`'s `inline:` key. Write
+`{featured}` where you would once have written `{.featured}`.
+
+`#idName` is unaffected — it is *identity*, not presentation, and it is how a
+figure becomes a cross-reference target (see Cross-references).
 
 ### Separators
 
@@ -901,7 +926,7 @@ $9/month
 
 Perfect for individuals.
 
-[Get Started](/signup?plan=starter){.button}
+[Get Started](/signup?plan=starter){button}
 
 ### Pro
 
