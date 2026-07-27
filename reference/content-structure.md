@@ -68,7 +68,7 @@ All content fields are available at the top level:
 | `images`       | `![alt](url)`          | Array of image objects                     |
 | `icons`      | `![](icon:url)`        | Array of icon objects                      |
 | `videos`     | `![](url){role=video}` | Array of video objects                     |
-| `insets`     | `![](@Component)`      | Inline component references                |
+| `insets`     | `![](@Component)` or a ` ```@Component ` fence | Component references — inline, or wrapping a body |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
@@ -91,6 +91,7 @@ Both links and media (images, videos, icons) support attributes using curly brac
 | Syntax        | Result                       | Example          |
 | ------------- | ---------------------------- | ---------------- |
 | `key=value`   | Named attribute              | `width=800`      |
+| `key:value`   | Same — `:` is an alias for `=` | `width:800`    |
 | `key="value"` | Quoted value (allows spaces) | `alt="My image"` |
 | `.className`  | CSS class                    | `.featured`      |
 | `#idName`     | Element ID                   | `#hero-image`    |
@@ -101,6 +102,31 @@ Both links and media (images, videos, icons) support attributes using curly brac
 ```
 
 Attributes can appear in any order.
+
+### Separators
+
+Pairs are separated by whitespace, a comma, or both. These are the same:
+
+```markdown
+{role=banner width=1200}
+{role=banner, width=1200}
+{role:banner, width:1200}
+```
+
+`:` and `,` are accepted because they are what most people reach for out of
+habit, and getting them wrong used to fail quietly rather than loudly. They add
+no capability — `=` and spaces remain the canonical form, and that is what the
+editor writes back when it saves a file.
+
+Two rules keep the syntax unambiguous:
+
+- **The separator must touch the key.** `{note:warning}` is one pair;
+  `{note : warning}` is two boolean flags. Spaces around `:` or `=` are never
+  part of an assignment.
+- **A value containing a comma must be quoted** — `{style="a, b"}`. An unquoted
+  comma always ends the value. A value containing a *colon* needs no quoting;
+  only the first colon separates, so `{href:https://example.com}` and
+  `{style=color:red}` work as written.
 
 ## Asset Paths
 
@@ -364,6 +390,57 @@ Insets appear in `content.insets[]` as `{ refId }` entries (parallel to `content
 At runtime, inset Block instances are available via `block.insets` (separate from `block.childBlocks`). Kit's `Render` component handles `inset_placeholder` nodes in the content flow automatically, rendering the corresponding component at the author's chosen position.
 
 Components that need a visual slot (image, video, or inset) can use `<Visual>` from `@uniweb/kit` — pass the candidates you want considered (`inset`, `video`, `image`) and it renders the first non-empty one.
+
+## Block Insets (Component Containers)
+
+An inset written with image syntax is a **leaf** — it takes params but no body.
+When the component should wrap authored content, use the fenced form: a code
+fence whose info string is `@ComponentName` plus optional params.
+
+```markdown
+```@Alert{type=warning}
+Back up your database **before** running this.
+
+- The migration is not reversible
+- Allow ten minutes of downtime
+```
+```
+
+The two forms are the same mechanism at different scales:
+
+| | Leaf inset | Block inset |
+|---|---|---|
+| Written | `![alt](@Name){params}` | ` ```@Name{params} ` … ` ``` ` |
+| Position | Anywhere, including mid-sentence | Block level only |
+| Body | None — `alt` becomes the title | Markdown, parsed as blocks |
+
+**The body is ordinary content, not text.** It is parsed exactly like the rest of
+the page, so everything works inside a container: headings, lists, tables, links,
+icons, inline styling, leaf insets, and other containers. Params use the same
+attribute syntax as everywhere else.
+
+**Nesting needs a wider fence.** To put a code block — or another container —
+inside one, open the outer fence with more backticks than the inner one:
+
+````markdown
+````@Details
+How do I undo this?
+
+```bash
+uniweb rollback --to previous
+```
+````
+````
+
+**The component comes from your foundation.** `@Alert` names a component the
+foundation provides, the same way `![](@NetworkDiagram)` does. A name the
+foundation does not define renders as a plain bordered container that still
+shows its body — content is never dropped for the sake of an unknown component.
+
+> **Status.** The syntax is stable and round-trips through the editor without
+> loss. Resolving the component name against the foundation is still landing —
+> until it does, every container renders as the plain bordered fallback. Track
+> this before building a foundation component that depends on it.
 
 ## Inline Text Styling
 
@@ -983,6 +1060,7 @@ There are four ways to create nested content, each for a different purpose:
 | --------------- | ---------------------------------------------- | ----------------------------------------------------------- |
 | **Items**       | Headings in one markdown file                  | Repeating content within a single section (cards, features) |
 | **Insets**      | `@Component` references in markdown            | Illustrations, charts, widgets placed inline in content     |
+| **Block insets** | ` ```@Component ` fences wrapping markdown     | A component that wraps authored content: callouts, disclosures |
 | **Subsections** | Separate section files in the same page folder | Complex sections needing their own component type           |
 | **Child pages** | Subfolders in `pages/`                         | Separate pages with their own routes                        |
 
