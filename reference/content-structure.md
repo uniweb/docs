@@ -433,14 +433,27 @@ uniweb rollback --to previous
 ````
 
 **The component comes from your foundation.** `@Alert` names a component the
-foundation provides, the same way `![](@NetworkDiagram)` does. A name the
-foundation does not define renders as a plain bordered container that still
-shows its body — content is never dropped for the sake of an unknown component.
+foundation provides, exactly as `![](@NetworkDiagram)` does — both resolve
+through the same lookup. A name the foundation does not define renders as a
+plain bordered container that still shows its body; content is never dropped for
+the sake of an unknown component.
 
-> **Status.** The syntax is stable and round-trips through the editor without
-> loss. Resolving the component name against the foundation is still landing —
-> until it does, every container renders as the plain bordered fallback. Track
-> this before building a foundation component that depends on it.
+The component receives `{ content, params, block }` like any section type, and
+its `content` is the parsed body — `title`, `paragraphs`, `items`, `sequence`.
+Render it with kit's `<Prose content={content} block={block} />`, or reach into
+the parsed fields directly:
+
+```jsx
+export default function Alert({ content, params }) {
+  return (
+    <aside className={`alert alert-${params.type || 'info'}`}>
+      <Prose content={content} />
+    </aside>
+  )
+}
+```
+
+Declare it with `inset: true` in `meta.js`, the same as a leaf inset.
 
 ## Inline Text Styling
 
