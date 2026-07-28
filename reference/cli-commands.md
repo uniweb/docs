@@ -596,17 +596,34 @@ uniweb validate --site blog
 
 ## uniweb update
 
-Reconcile a workspace's state with the running CLI. Three convergence steps:
+Reconcile a workspace's state with the running CLI. Two convergence steps:
 
-1. **Self-update** the global CLI install via the package manager that owns it (auto-detected: npm, pnpm, yarn).
-2. **Align workspace deps** — edit every `package.json` so `@uniweb/*` and `uniweb` versions match the CLI's bundled matrix, then run the workspace's package manager (auto-detected from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm).
-3. **Refresh `AGENTS.md`** from the CLI's bundled partial.
+1. **Align workspace deps** — edit every `package.json` so `@uniweb/*` and `uniweb` versions match the CLI's bundled matrix, then run the workspace's package manager (auto-detected from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm).
+2. **Refresh `AGENTS.md`** from the CLI's bundled partial.
 
 ```bash
 uniweb update [options]
 ```
 
-### Why all three together
+### It does not update the CLI itself
+
+This is the part worth reading twice, because the name suggests otherwise.
+
+`uniweb update` reconciles a project against **the version matrix of the CLI that runs it**. It never upgrades that CLI. So if the CLI is out of date, the command is a no-op that reports everything aligned — correctly, because the project matches the matrix it was asked about.
+
+That matters most when the CLI is project-local, which is the usual case: `pnpm uniweb update` runs the copy in your `node_modules`, pinned by your own `package.json`, and that copy has no way to know a newer release exists.
+
+To move forward:
+
+```bash
+npx uniweb@latest update    # fetch the latest CLI, align the project, and bump the pin
+```
+
+npx runs the newest published CLI, which carries its own matrix — and because the project's `uniweb` dependency is one of the deps it aligns, the pin moves too. A globally installed CLI is upgraded through its package manager instead (`npm i -g uniweb@latest`, `pnpm add -g uniweb@latest`).
+
+When a newer CLI exists, `update` says so at the end of the run and names the command for your situation.
+
+### Why both steps together
 
 `AGENTS.md` is regenerated from the CLI's current partials and stamped with the CLI version. Refreshing it while the workspace's declared `@uniweb/*` deps lag the CLI silently produces a doc that documents features the installed code doesn't have. The verb's drift gate refuses that combination unless you pass `--allow-mismatch`.
 
@@ -614,11 +631,12 @@ uniweb update [options]
 
 | Option | Description |
 |--------|-------------|
-| `--deps-only` | Skip self-update and `AGENTS.md`; only align deps. |
-| `--agents-only` | Skip self-update and deps; only refresh `AGENTS.md`. |
+| `--deps-only` | Only align deps; skip `AGENTS.md`. |
+| `--agents-only` | Only refresh `AGENTS.md`; skip deps. |
 | `--no-deps` | Skip the deps-alignment step. |
 | `--no-agents` | Skip the `AGENTS.md` step. |
 | `--dry-run` | Print the survey and would-be writes; make no changes. |
+| `--verbose` | List every surveyed dep. By default only those needing attention are listed, with the aligned ones collapsed to a count. |
 | `--allow-mismatch` | Allow `AGENTS.md` to refresh even when declared deps lag. |
 | `--yes` | Skip confirmation prompts. |
 | `--non-interactive` | Auto-detected; never auto-installs from a script. |
@@ -643,7 +661,7 @@ Workspace deps (declared):
     ✗ @uniweb/build    ^0.9.4     → ^0.14.3     behind
 ```
 
-Each row is one declared dep in one workspace `package.json`, marked `aligned`, `behind` (the CLI ships a newer version), or `ahead of CLI` (left untouched — `update` never downgrades).
+Each row is one declared dep in one workspace `package.json` that needs attention — `behind` (the CLI ships a newer version) or `ahead of CLI` (left untouched, since `update` never downgrades). Deps already aligned are collapsed to a count rather than listed, because on the command's most common outcome — a no-op — every row would otherwise read `0.9.11 → 0.9.11 aligned` and bury the lines that matter. `--verbose` lists them all.
 
 After the survey, each step prompts in TTY; `--yes` accepts the defaults; non-interactive prints the plan without mutating.
 
@@ -653,13 +671,16 @@ If the package manager's install step fails after `package.json` edits succeed, 
 
 ### Project-local installs
 
-When the running CLI lives in `node_modules` (project-local), self-update is a no-op — the version is pinned by your project's `package.json`. The deps and `AGENTS.md` steps still run.
+When the running CLI lives in `node_modules` (project-local), its version is pinned by your project's `package.json` — so it aligns the project to whatever matrix that pinned version carries, which may be an old one. Both steps still run; they just answer about the pinned release. `npx uniweb@latest update` is how you move off it.
 
 ### Examples
 
 ```bash
-# Full reconcile (typical TTY use)
+# Reconcile against the CLI you already have
 uniweb update
+
+# Reconcile against the LATEST release, and move the project's pin with it
+npx uniweb@latest update
 
 # Just align workspace deps and run install
 uniweb update --deps-only

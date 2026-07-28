@@ -20,9 +20,21 @@ search:
 1. **Build time**: Content is extracted from all pages and sections
 2. **Index generation**: A `search-index.json` file is created in your build output
 3. **Runtime**: The search client loads the index on first use and caches it
-4. **Search**: [Fuse.js](https://fusejs.io/) performs fuzzy matching against the index
+4. **Search**: [Fuse.js](https://fusejs.io/) performs fuzzy matching against the index, and results are ordered as described below
 
-The index is typically small (tens of KB) and cached in localStorage, so subsequent searches are instant.
+The index is cached in localStorage and revalidated against the server on each load, so a rebuilt site never answers from the copy a visitor cached earlier. When the index is unchanged the check costs a few hundred bytes rather than a re-download.
+
+### How results are ordered
+
+Fuzzy matching is what lets a misspelled query still find the right page, but on its own it will rank a near-miss above an exact hit — on page-sized text, "inset" matches "insert" and "instead" about as well as it matches "inset". Left alone, a page that genuinely covers the subject can fall below ten pages that never mention it.
+
+So results are ordered in three tiers, with the fuzzy match kept as the fallback it should be:
+
+1. Every word of the query appears in the **title**
+2. Every word appears in the **body**
+3. Everything else — the fuzzy tail
+
+Fuse's own relevance ordering decides within each tier. Multi-word queries require *all* words, so "Inset Components" is not satisfied by a page that only says "components". Nothing is discarded: a query that matches nothing literally still returns fuzzy hits, which is what answers a typo.
 
 ## Providers
 

@@ -369,6 +369,52 @@ The anchor ids match what `<Render>` and `<Prose>` stamp — same generator — 
 
 Pair it with `website.getBranchHierarchy({ route, for: 'left' })` for the other half of a documentation shell — the navigation rail. See [Website](#website).
 
+### useShortcut / useShortcuts / useShortcutLabel
+
+Bind a keyboard shortcut, and render it the way the visitor's platform writes it.
+
+```jsx
+import { useShortcut, useShortcutLabel } from '@uniweb/kit'
+
+function Header() {
+  const [open, setOpen] = useState(false)
+  useShortcut('mod+k', () => setOpen(true))
+
+  return (
+    <button onClick={() => setOpen(true)}>
+      Search <kbd>{useShortcutLabel('mod+k')}</kbd>
+    </button>
+  )
+}
+```
+
+`mod` is the portable modifier: it matches **Meta or Control on every platform**, so a binding cannot silently fail to fire on somebody's machine. Platform detection happens only in the label, where a wrong guess is cosmetic rather than a dead shortcut. `useShortcutLabel('mod+k')` returns `⌘K` on Apple platforms and `Ctrl+K` elsewhere — which is the point: a hardcoded `⌘` names a key that Windows and Linux visitors do not have.
+
+Kit ships **no default binding and knows no action names**. Which key opens what is your foundation's decision, the same way the site owns its theme values.
+
+```jsx
+useShortcut('/', focusSearch)                    // bare key
+useShortcut('escape', close, { whileTyping: true })
+useShortcuts({ 'mod+k': open, escape: close })   // one listener for several
+```
+
+Binding syntax: modifiers `mod`, `ctrl`, `alt`/`option`, `shift`, `meta`/`cmd`, joined with `+`; keys are a single character or a name (`escape`, `enter`, `space`, `tab`, `up`/`down`/`left`/`right`). Case-insensitive.
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | boolean | `true` | Bind only while true |
+| `whileTyping` | boolean | *derived* | Fire while an input, textarea or contenteditable has focus |
+| `preventDefault` | boolean | `true` | Call `preventDefault()` when it fires |
+| `target` | EventTarget | `window` | Listen somewhere other than `window` |
+
+`whileTyping` defaults from the binding rather than a fixed value: a modifier combo fires while a field has focus — including the field it opens — and a bare key does not, since it would otherwise hijack typing. Pass it explicitly to override; `escape` usually wants `true`.
+
+SSR-safe: everything touching the DOM runs inside an effect, so these are inert during prerender. In development, binding one combo twice logs a warning — both handlers fire and both call `preventDefault()`, which otherwise produces no visible symptom.
+
+`useSearchShortcut` still exists as an alias for `useShortcut('mod+k', …)`, kept so existing foundations keep working. Prefer `useShortcut` in new code: it says the same thing without implying the framework chose the key.
+
 ### block.dataLoading
 
 Check whether a block's runtime data fetch is in progress. This is a boolean property on the `block` instance, set by the runtime's `BlockRenderer`.
@@ -916,6 +962,46 @@ parseIconRef('not-an-icon')    // null (prefix not a known library)
 ```
 
 Useful when you receive icon strings from structured data (`content.data`) and need to pass them to components that expect separate library/name props.
+
+### Overlay Component
+
+Render a modal, command palette or drawer above the page, from anywhere in the tree.
+
+```jsx
+import { Overlay } from '@uniweb/kit'
+
+function SearchDialog({ isOpen, onClose }) {
+  if (!isOpen) return null
+
+  return (
+    <Overlay onClose={onClose} className="bg-black/50 px-4 pt-[12vh] backdrop-blur-sm">
+      <div role="dialog" aria-modal="true" className="w-full max-w-2xl rounded-2xl bg-card">
+        …
+      </div>
+    </Overlay>
+  )
+}
+```
+
+**Reach for this instead of a bare `fixed inset-0 z-…` div, because that does not work and the reason is invisible.** The runtime gives each layout area its own `view-transition-name` so the header, rails and body animate independently. That makes every area a stacking context *and* a containing block for fixed children — so a dialog rendered from inside your Header is sealed into the header's context and paints **under** the page body no matter what z-index it carries. Raising the number looks like it should help and never does, because the two elements are not competing in the same stacking context.
+
+`Overlay` renders into `document.body`, outside every area wrapper, where the z-index means what you expect.
+
+It owns only what every overlay needs — the portal, the scrim, Escape, a click outside, and the page-scroll lock. How the dialog looks is your foundation's design, the same way kit ships no layout.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | node | — | The overlay content (your dialog) |
+| `onClose` | function | — | Called on Escape and on a scrim click. Omit for a non-dismissible overlay |
+| `className` | string | — | Classes for the scrim/positioning layer |
+| `zIndex` | number \| string | `100` | |
+| `lockScroll` | boolean | `true` | Prevent the page behind from scrolling |
+| `closeOnEscape` | boolean | `true` | |
+| `closeOnScrimClick` | boolean | `true` | |
+
+Escape is handled on the capture phase, so it still closes while an input inside the dialog has focus. Only a click on the scrim itself closes — one that bubbled out of the dialog does not, so selecting text and releasing outside is safe. The component renders nothing when server-rendered, so a prerendered page carries no scrim.
 
 ### Link Component
 
