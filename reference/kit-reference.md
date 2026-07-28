@@ -965,7 +965,7 @@ Useful when you receive icon strings from structured data (`content.data`) and n
 
 ### Overlay Component
 
-Render a modal, command palette or drawer above the page, from anywhere in the tree.
+Render a modal, command palette, drawer or toast above the page, from anywhere in the tree.
 
 ```jsx
 import { Overlay } from '@uniweb/kit'
@@ -974,8 +974,8 @@ function SearchDialog({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <Overlay onClose={onClose} className="bg-black/50 px-4 pt-[12vh] backdrop-blur-sm">
-      <div role="dialog" aria-modal="true" className="w-full max-w-2xl rounded-2xl bg-card">
+    <Overlay onClose={onClose} className="items-center">
+      <div role="dialog" aria-modal="true" aria-label="Search" className="w-full max-w-2xl rounded-2xl bg-card">
         …
       </div>
     </Overlay>
@@ -983,25 +983,76 @@ function SearchDialog({ isOpen, onClose }) {
 }
 ```
 
-**Reach for this instead of a bare `fixed inset-0 z-…` div, because that does not work and the reason is invisible.** The runtime gives each layout area its own `view-transition-name` so the header, rails and body animate independently. That makes every area a stacking context *and* a containing block for fixed children — so a dialog rendered from inside your Header is sealed into the header's context and paints **under** the page body no matter what z-index it carries. Raising the number looks like it should help and never does, because the two elements are not competing in the same stacking context.
+#### Why not a `fixed inset-0 z-…` div
+
+Because that does not work, and the reason is invisible.
+
+The runtime gives each layout area its own `view-transition-name` so the header, rails and body animate independently. That makes every area a stacking context **and** a containing block for fixed children — so a dialog rendered from inside your Header is sealed into the header's context and paints **under** the page body no matter what z-index it carries. Raising the number looks like it should help and never does, because the two elements are not competing in the same stacking context.
 
 `Overlay` renders into `document.body`, outside every area wrapper, where the z-index means what you expect.
 
-It owns only what every overlay needs — the portal, the scrim, Escape, a click outside, and the page-scroll lock. How the dialog looks is your foundation's design, the same way kit ships no layout.
+#### It contains focus, so `aria-modal` is true
+
+A modal overlay moves focus in on open, cycles Tab within it, pulls focus back if it escapes, marks the rest of the page `inert`, and restores focus to whatever opened it when it closes. **On by default.**
+
+This matters more than it sounds. `aria-modal="true"` tells assistive technology that everything outside the dialog is unreachable. Without containment that is false in the most literal way: a keyboard user Tabs straight out into the page behind and lands on controls a screen-reader user has been told do not exist. Nothing errors, and the people it fails are the least likely to be in the room when it ships.
+
+You still write `role="dialog" aria-modal="true"` on your own box — it is your element — but the promise is now backed.
+
+#### Modal and non-modal
+
+`modal` (default `true`) is the master switch, because the cluster it governs only makes sense together: scrim, focus trap, scroll lock, inert background. A dialog, palette, drawer or lightbox wants all of it.
+
+`modal={false}` is the other real case — a toast or notification. It escapes the stacking context and does nothing else: no scrim, no trap, no scroll lock, and pointer events pass through so the page stays usable. Content opts back in with `pointer-events-auto`.
+
+```jsx
+<Overlay modal={false} className="items-end justify-end p-6">
+  <div className="pointer-events-auto rounded bg-card p-4">Saved</div>
+</Overlay>
+```
+
+#### The scrim is a default, not a constraint
+
+A modal overlay dims the page for you. `className` is applied last and Tailwind conflicts resolve in your favour, so every adjustment is a plain override:
+
+| You write | Result |
+|---|---|
+| *nothing* | the default dimmed scrim |
+| `bg-primary/10` | your colour — a theme token works as readily as a fixed one |
+| `bg-transparent` | no scrim |
+| `backdrop-blur-sm` | kept **alongside** the default |
+| `items-center` | content centred instead of top-aligned |
+
+The layer is a flex container, so `items-*` and `justify-*` place your content. The box itself — its width, radius, background, animation — is your foundation's design, the same way kit ships no layout.
 
 #### Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `children` | node | — | The overlay content (your dialog) |
-| `onClose` | function | — | Called on Escape and on a scrim click. Omit for a non-dismissible overlay |
-| `className` | string | — | Classes for the scrim/positioning layer |
-| `zIndex` | number \| string | `100` | |
-| `lockScroll` | boolean | `true` | Prevent the page behind from scrolling |
+| `children` | node | — | The overlay content |
+| `onClose` | function | — | Called on Escape and on a scrim click. Omit for an overlay that dismisses some other way |
+| `modal` | boolean | `true` | Blocks the page: scrim, focus trap, scroll lock, inert background |
+| `className` | string | — | Classes for the scrim / positioning layer, applied last |
+| `zIndex` | number \| string | `100` | Stacking order of the layer |
+| `initialFocus` | ref \| string \| `false` | first focusable | What to focus on open; `false` leaves focus alone |
+| `returnFocus` | boolean | `true` | Restore focus to whatever opened it |
+| `trapFocus` | boolean | = `modal` | Turning this off on a modal overlay makes `aria-modal` a false claim — prefer `modal={false}` |
+| `lockScroll` | boolean | = `modal` | Prevent the page behind from scrolling |
 | `closeOnEscape` | boolean | `true` | |
 | `closeOnScrimClick` | boolean | `true` | |
 
-Escape is handled on the capture phase, so it still closes while an input inside the dialog has focus. Only a click on the scrim itself closes — one that bubbled out of the dialog does not, so selecting text and releasing outside is safe. The component renders nothing when server-rendered, so a prerendered page carries no scrim.
+Anything else is spread onto the layer.
+
+#### Details worth knowing
+
+- **Escape is handled on the capture phase**, so it still closes while an input inside the dialog has focus.
+- **Only a click on the scrim itself closes.** A click that bubbled out of your content does not, so a text selection ending outside the box is safe.
+- **Nesting works.** A confirm dialog over a settings dialog: only the topmost closes on Escape and traps focus, and the inner one closing does not unlock scrolling or restore the page underneath the outer one.
+- **Nothing is emitted when server-rendered**, so a prerendered page carries no scrim.
+
+#### When not to use it
+
+An anchored popover, dropdown menu or tooltip wants to be positioned relative to its trigger and to leave the page interactive. A full-screen layer with a scrim and a scroll lock is the wrong shape for those — build them in your foundation, positioned normally.
 
 ### Link Component
 
