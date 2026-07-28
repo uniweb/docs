@@ -705,4 +705,12 @@ const themes = {...}                   →  DELETE (context system replaces)
 | `buildSectionOverrides()` | `theming/src/section-overrides.js` | Build page-level section override CSS |
 | `Theme.hasSchemeToggle()` | `core/src/theme.js` | Check if toggle enabled |
 | `Theme.getAppearance()` | `core/src/theme.js` | Get appearance config |
-| `Theme.getContextTokens()` | `core/src/theme.js` | Get token values for a context |
+| `getComputedStyle(el).getPropertyValue('--heading')` | the browser | A token's **actual** value at an element |
+
+> `Theme.getContextTokens()` was removed in 2026-07-28. It reported what a
+> `.context-*` class sets by default, which is not what a component needs to
+> know: the value in force at an element also depends on that section's own
+> `theme:` overrides and on the active light/dark scheme, neither of which a
+> context lookup can see. Read the CSS variable instead — it resolves all three.
+> For the defaults table itself (tooling, a theme editor), use
+> `getDefaultContextTokens()` from `@uniweb/theming`, which owns it.
