@@ -512,7 +512,7 @@ Co-located assets work for all media types:
 ![Demo](./demo.mp4){role=video poster=./demo-poster.jpg}
 
 <!-- Documents -->
-![Download](./whitepaper.pdf){role=document preview=./whitepaper-preview.png}
+![Download](./whitepaper.pdf){role=pdf preview=./whitepaper-preview.png}
 ```
 
 ### Path Resolution

@@ -246,6 +246,11 @@ Media uses the standard image syntax `![alt](url)` but the `role` attribute dete
 | `background`      | `images`       | Background images        |
 | `icon`            | `icons`      | Icons and small graphics |
 | `video`           | `videos`     | Video content            |
+| `pdf`             | `images`       | Documents — adds `preview`, `author`, `description` |
+
+The roles above are **conventions, not a fixed set.** `role` rides through verbatim, so
+`{role=wibble}` reaches your component as `role: "wibble"`; it simply lands in `images`
+like any role that isn't `icon` or `video`. Only those two select a different array.
 
 ### Setting the Role
 
