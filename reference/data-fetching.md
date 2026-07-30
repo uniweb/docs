@@ -266,16 +266,16 @@ Useful for combining data from multiple sources.
 
 See [Content Collections](./content-collections.md) for the recommended approach.
 
-### Manual JSON files (power users)
+### `public/data/` is generated — don't write to it
 
-For configuration data, companion schemas, or integration with external tools that generate JSON, you can place files directly in `public/data/`. Most users should use `collections/` instead.
+`public/data/` is where the build writes compiled collections. It is output, not a
+place to author. Files you put there are overwritten without warning the moment a
+collection takes the same name, and they get none of what a collection provides —
+no i18n extraction, no schema validation, no per-record files, no editor support.
 
-```yaml
-# Reference a manual JSON file
-fetch: /data/config.json
-```
-
-Both JSON and YAML are supported.
+Data that comes out of another tool goes in a collection too: a `.json` or `.yml`
+file holding a top-level array becomes one record per entry, so exporting into
+`collections/<name>/` works the same as authoring there by hand.
 
 ---
 
@@ -357,7 +357,6 @@ fetch:
 | `data: articles` | Collection reference — the recommended default |
 | `fetch: { collection: articles, ... }` | Collection with limit, sort, filter, or other options |
 | `fetch: { url: https://... }` | Remote data sources |
-| `fetch: { path: /data/file.json }` | Manual JSON files (power-user pattern) |
 
 The `data:` shorthand is equivalent to `fetch: { collection: name }` but more compact.
 

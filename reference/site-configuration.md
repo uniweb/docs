@@ -327,7 +327,7 @@ See [Internationalization](../development/internationalization.md) for the full 
 
 ### Advanced i18n Options
 
-Power-user settings remain under the `i18n:` key:
+Less common settings remain under the `i18n:` key:
 
 ```yaml
 i18n:

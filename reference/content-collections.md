@@ -6,17 +6,15 @@ Author content in markdown, YAML, or JSON and automatically generate data files.
 
 Collections are authored in `collections/` folders and referenced from pages with `data: collection-name`. The build converts them to JSON in `public/data/`, which is an output directory — you don't need to interact with it directly.
 
-There are three ways to provide data to components:
+There are two ways to provide data to components:
 
 **Collections** (`collections/` folders) — Author content as `.md`, `.yml`, or `.json` files. The build converts them to JSON. Markdown items get ProseMirror content bodies, excerpts, and co-located assets automatically. YAML and JSON items pass through as-is. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structural data (schedules, pricing tiers).
 
 **Runtime data** (API fetch) — For production sites where a CMS or backend manages content and serves pre-localized data. Components receive it the same way as static data (via `content.data`).
 
-**Hand-written JSON** (`public/data/` directly) — Power-user pattern for template demo data, configuration-like data, or external tool integration. Provide a companion `.schema.js` for precise control over which fields the i18n system extracts; otherwise it uses heuristics.
+**Rule of thumb:** If authors maintain the content, use collections in `collections/`. If it comes from an external system at request time, use runtime fetch.
 
-Both collections and hand-written JSON get the same i18n treatment — `uniweb i18n extract` processes all JSON files in `public/data/` by default.
-
-**Rule of thumb:** If authors maintain the content and it needs translation, use collections in `collections/`. If it's structural or comes from an external system, use runtime fetch.
+> **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a collection takes the same name, and it gets none of what a collection provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in a collection as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
 
 ---
 
@@ -716,12 +714,13 @@ The i18n extraction pipeline identifies translatable strings in collection data 
 
 ### Schema-guided extraction
 
-Provide a companion schema file alongside your JSON data. The schema tells the extractor exactly which fields contain translatable text:
+Provide a companion schema file beside the collection it describes. The schema tells the extractor exactly which fields contain translatable text:
 
 ```
-public/data/
-├── events.json
-└── events.schema.js    # Companion schema
+collections/
+├── events/
+│   └── events.json
+└── events.schema.js    # Companion schema, named for the collection
 ```
 
 ```js
@@ -763,7 +762,7 @@ export default {
 
 **Schema discovery order:**
 
-1. Companion file: `public/data/<name>.schema.js`
+1. Companion file: `collections/<name>.schema.js`
 2. Standard schema: matching name in `@uniweb/schemas` (with automatic singularization — `events` matches the `event` schema)
 3. No schema found → heuristic fallback
 
