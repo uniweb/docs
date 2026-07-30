@@ -72,7 +72,8 @@ All content fields are available at the top level:
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
-| `data`       | Tagged data blocks     | Structured data (see below)                |
+| `data`       | Tagged blocks          | `yaml:`/`json:` give the parsed value; `md:` gives `{ items, sequence }` (see below) |
+| `tables`     | Markdown tables        | Present only when the content has one — `[{ rows }]` |
 | `headings`   | Additional headings    | Headings after subtitle, in document order |
 | `items`      | Subsequent headings    | Child content groups                       |
 | `sequence`   | All elements           | Ordered array for document-order rendering |
@@ -998,7 +999,13 @@ lists: [                           // Array of lists in the content
 
 ## Fenced Code in Content
 
-Fenced code in markdown serves two distinct purposes depending on whether it has a **tag** (a name after the language, separated by `:`).
+Fenced code in markdown serves three distinct purposes, decided by its info string:
+
+| Info string | What it is |
+|---|---|
+| ` ```yaml:tag ` / ` ```json:tag ` | **Data** — parsed into a value at `content.data[tag]` |
+| ` ```md:tag ` | **A concept block** — prose under a name, at `content.data[tag]` |
+| ` ```js `, ` ```sh `, … | **A code sample**, in `content.snippets` |
 
 ### Tagged Data Blocks
 
@@ -1055,6 +1062,43 @@ The `language` attribute is a display hint for syntax highlighting renderers, no
 Both also appear in `content.sequence` for document-order rendering.
 
 For structured data served as JSON collections (blog posts, team members, events), see [Content Collections](./content-collections.md). That guide covers markdown collections (`.md` for rich content, `.yml` for pure data), static JSON files, and runtime data — including how to choose the right approach for i18n.
+
+### Concept Blocks
+
+A ` ```md:<tag> ` fence marks a run of prose as a named *kind* of content. The author writes ordinary markdown; the tag says what it is.
+
+````markdown
+```md:faq
+# What plans do you have?
+Three — Starter, Team and Enterprise.
+
+# Can I change later?
+Any time, and we prorate the difference.
+```
+````
+
+Each `#` heading starts an item, so this reaches a component as `content.data.faq`:
+
+```js
+{
+  items:    [{ title, paragraphs, links, ... }, ...],  // one per heading
+  sequence: [...]                                      // the same content, in document order
+}
+```
+
+**The shape comes from the fence, not the tag.** Any tag works and none is special — no schema is consulted, and nothing in the framework learns what `faq` means. A body with no headings is the same block holding one titleless item, which is what a callout is:
+
+````markdown
+```md:warning
+Back up your database **before** running this. It is not reversible.
+```
+````
+
+**Why not a component reference.** ` ```@Alert ` names *which component renders this* — a rendering decision living in content. `md:warning` names *what the content is* and leaves rendering to the foundation, so the same content survives a change of foundation, and an editor can recognize the concept and offer a surface suited to it.
+
+Read `items` for anything row-shaped, and `sequence` when you do not recognize the tag and want to render it faithfully in order. Both are derived on demand; what gets stored is the prose.
+
+A warning and a note are different concepts, so they are `md:warning` and `md:note` — the fence takes no parameters.
 
 ## Dividers as Separators
 
