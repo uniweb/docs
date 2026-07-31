@@ -1130,6 +1130,27 @@ Read `items` for anything row-shaped, and `sequence` when you do not recognize t
 
 A warning and a note are different concepts, so they are `md:warning` and `md:note` — the fence takes no parameters.
 
+### GitHub alert syntax
+
+The five GitHub alert kinds are a second spelling of the same thing. Authors already know it, so it is accepted as written:
+
+````markdown
+> [!NOTE]
+> Useful information a reader should notice even when skimming.
+````
+
+`NOTE`, `TIP`, `IMPORTANT`, `WARNING` and `CAUTION` become `content.data.note`, `.tip`, `.important`, `.warning` and `.caution` — the same node a ` ```md:<tag> ` fence produces, with the same `{ items, sequence }`. A marker outside that set is left alone and stays an ordinary blockquote.
+
+**Whichever spelling you write is the one you get back.** The two are interchangeable going in and preserved going out, so an editor round trip never rewrites your file into the other form.
+
+Live, so you can see what a foundation does with them:
+
+> [!NOTE]
+> This block is authored as a GitHub alert in this page's markdown.
+
+> [!WARNING]
+> Rendering is the foundation's decision. Out of the box a concept block is a plain bordered box carrying `data-concept="warning"`; importing `@uniweb/kit/callout-tokens.css` gives the five standard kinds the look above, coloured from the site's own `theme.yml`.
+
 ## Dividers as Separators
 
 You can also use horizontal rules (`---`) to separate items instead of headings:

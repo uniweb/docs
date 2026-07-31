@@ -533,7 +533,11 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 
 When `paths.collections` is set, per-collection `path` values in `collections:` are resolved relative to it instead of the site root.
 
-**Note:** Changing these paths during dev mode requires restarting the dev server — file watchers are configured at startup.
+### Editing external content in dev
+
+Every directory reached through `paths:` is watched, mounts included — editing a file in a mounted docs repository rebuilds and reloads exactly as editing a local page does. Nothing to configure. Files that arrive in bulk count too, so fetching a git submodule while the server is running brings its pages in without a restart.
+
+**Changing the paths themselves still needs a restart.** Watchers are set up once, from the `paths:` in effect at startup, so pointing a mount somewhere new — or adding one — takes hold on the next `uniweb dev`.
 
 ---
 
