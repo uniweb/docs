@@ -635,6 +635,8 @@ As shown in [#eq-energy], mass and energy are equivalent.
 
 Figures, equations and tables are counted straight through the page; only sections nest. One marker can point at several targets — `[#eq-energy;#fig-cell]` — and the label is written once for the group.
 
+**A reference links to what it names.** The label is a link to the labelled element, and the id becomes an anchor on the element itself — so `/reference/content-structure#eq-binomial` lands on the equation, and an EPUB or PDF built from the same content gets real internal links. A marker naming several targets stays plain text, since one link cannot lead to both.
+
 **Ids are content, not presentation.** `#eq-energy` says *what this is*, never how it looks — which is why it is the one thing curly braces carry that isn't a parameter (see [There is no CSS-class syntax](#there-is-no-css-class-syntax)).
 
 ### Live
