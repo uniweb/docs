@@ -425,6 +425,29 @@ data: {
 }
 ```
 
+**Nested shapes.** An `array` declares its element type with `items`; an `object` declares its known keys with `fields`:
+
+```javascript
+data: {
+  page: {
+    seo:   { type: 'object', fields: { title: { type: 'string' } } },
+    tags:  { type: 'array',  items:  { type: 'string' } },
+  },
+}
+```
+
+When the keys are the author's rather than yours — a map of arbitrary names — declare `values` instead of `fields`. It is to an object what `items` is to an array:
+
+```javascript
+// A map keyed by whatever the author calls each entry; every value the same shape.
+rates: {
+  type: 'object',
+  values: { type: 'object', fields: { label: { type: 'string' }, amount: { type: 'number' } } },
+}
+```
+
+Validation then checks every entry and names the offending key (`rates.overnight.amount`). Keys the value shape doesn't declare are left alone rather than rejected, so data can carry more than you described without failing a build. Declare `fields` or `values`, not both.
+
 **3. Inline rich-form** — an editor form, distinguished by a `fields` **array**. See [Structured Author Data](#structured-author-data) below for the full rich-form reference.
 
 #### Standard schema refs
