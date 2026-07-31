@@ -127,7 +127,7 @@ Sites declare what those names mean under `theme.yml`'s `inline:` key. Write
 `{featured}` where you would once have written `{.featured}`.
 
 `#idName` is unaffected — it is *identity*, not presentation, and it is how a
-figure becomes a cross-reference target (see Cross-references).
+figure becomes a cross-reference target (see [Cross-references](#cross-references)).
 
 ### Separators
 
@@ -610,6 +610,45 @@ $$
 **Disambiguating `$...$`.** Dollar-delimited inline math requires (1) no whitespace next to either delimiter and (2) no digit immediately after the closing `$`. Currency sentences therefore stay prose without any escaping, and this one is live: it costs $5 and $10 total, with a budget of $200.
 
 For a literal dollar the rules cannot save — a lone `$` that happens to pair with another one later in the same paragraph — escape it as `\$`. That is worth knowing precisely because it is easy to trip: an earlier draft of the paragraph above ran on past its last figure and picked up a `$` further down the line, turning the sentence that claims currency stays prose into rendered math.
+
+## Cross-references
+
+Label a figure, equation, table or heading with `{#id}`, then refer to it with `[#id]`. The number is worked out at render time, so inserting a figure ahead of another renumbers every reference to it.
+
+```markdown
+$$
+E = mc^2
+$$
+{#eq-energy}
+
+As shown in [#eq-energy], mass and energy are equivalent.
+```
+
+`{#id}` goes on the element itself — after a display-math block, or in the attribute braces of an image or heading. Four kinds are recognized without any configuration:
+
+| You label | It becomes | A reference reads |
+|---|---|---|
+| A heading | a section | `§1.2` |
+| An image | a figure | `Figure 1` |
+| Display math | an equation | `Equation 1` |
+| A table | a table | `Table 1` |
+
+Figures, equations and tables are counted straight through the page; only sections nest. One marker can point at several targets — `[#eq-energy;#fig-cell]` — and the label is written once for the group.
+
+**Ids are content, not presentation.** `#eq-energy` says *what this is*, never how it looks — which is why it is the one thing curly braces carry that isn't a parameter (see [There is no CSS-class syntax](#there-is-no-css-class-syntax)).
+
+### Live
+
+The equation below is labelled `{#eq-binomial}` in this page's markdown:
+
+$$
+(a + b)^2 = a^2 + 2ab + b^2
+$$
+{#eq-binomial}
+
+Expanding a square of a sum gives [#eq-binomial], which is the identity the derivation above works through step by step.
+
+**A foundation decides whether references resolve.** They are not automatic: a foundation opts in by declaring `xref` and registering a `Ref` component, and one that never labels anything pays nothing for the machinery. Where nothing has opted in, a marker renders as its own literal text — `[#eq-binomial]` — so an unresolved reference is visible rather than silently blank.
 
 Math flows through the same pipeline as the rest of content — it appears in prerendered HTML, survives EPUB and Paged.js compilation, and roundtrips cleanly through the editor. Malformed LaTeX renders as an inline `<span class="temml-error">` containing the source, so authors see that something is wrong without breaking the page. Foundations can style `.temml-error` in their theme CSS if they want visible error feedback.
 
