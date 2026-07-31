@@ -1149,7 +1149,7 @@ Live, so you can see what a foundation does with them:
 > This block is authored as a GitHub alert in this page's markdown.
 
 > [!WARNING]
-> Rendering is the foundation's decision. Out of the box a concept block is a plain bordered box carrying `data-concept="warning"`; importing `@uniweb/kit/callout-tokens.css` gives the five standard kinds the look above, coloured from the site's own `theme.yml`.
+> Rendering is the foundation's decision. A concept block arrives as a bare `<div data-concept="warning">` with no styling at all, so on its own it reads as ordinary prose. Importing `@uniweb/kit/callout-tokens.css` gives the five standard kinds the look above, coloured from the site's own `theme.yml`.
 
 ## Dividers as Separators
 
