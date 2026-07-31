@@ -648,7 +648,9 @@ $$
 
 Expanding a square of a sum gives [#eq-binomial], which is the identity the derivation above works through step by step.
 
-**A foundation decides whether references resolve.** They are not automatic: a foundation opts in by declaring `xref` and registering a `Ref` component, and one that never labels anything pays nothing for the machinery. Where nothing has opted in, a marker renders as its own literal text — `[#eq-binomial]` — so an unresolved reference is visible rather than silently blank.
+That sentence is written as `gives [#eq-binomial],` in the source. What you are reading is the resolved label — the number came from the registry, not from the markdown.
+
+**A foundation decides whether references resolve.** They are not automatic: a foundation opts in by declaring `xref` and registering a `Ref` component, and one that never labels anything pays nothing for the machinery. Where nothing has opted in — or where a marker points at an id that was never declared — the reference renders as its own literal text, brackets and all, so a broken one is visible rather than silently blank.
 
 Math flows through the same pipeline as the rest of content — it appears in prerendered HTML, survives EPUB and Paged.js compilation, and roundtrips cleanly through the editor. Malformed LaTeX renders as an inline `<span class="temml-error">` containing the source, so authors see that something is wrong without breaking the page. Foundations can style `.temml-error` in their theme CSS if they want visible error feedback.
 
