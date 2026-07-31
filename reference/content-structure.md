@@ -579,7 +579,37 @@ Multi-line display math is easier to read with a fence:
 ```
 ````
 
-**Disambiguating `$...$`.** Dollar-delimited inline math requires (1) no whitespace next to either delimiter and (2) no digit immediately after the closing `$`. This means currency sentences like `It costs $5 and $10 total` and `Budget: $200` stay as prose without escaping. Use `\$` for a literal dollar when the surrounding context would otherwise trip the rules.
+### What it looks like
+
+Everything below this line is live — it is authored in this page's markdown exactly as shown above, so what you see is what the pipeline produces.
+
+**Inline, in running prose.** A sentence can carry math without breaking its line: the Gaussian integral $\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$ sits in the paragraph, and so does a rate like $O(n \log n)$ or a threshold of $p < 0.05$. Symbols work the same way — $\alpha$, $\beta$, $\sigma^2$ — as do fractions such as $\tfrac{3}{4}$.
+
+**Display, on its own line.** A formula the reader is meant to stop at goes on its own:
+
+$$\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$$
+
+**Fenced, for anything multi-line.** Alignment survives, which is what makes derivations readable:
+
+```math
+\begin{aligned}
+  (a + b)^2 &= (a + b)(a + b) \\
+            &= a^2 + ab + ba + b^2 \\
+            &= a^2 + 2ab + b^2
+\end{aligned}
+```
+
+Matrices and cases work too:
+
+$$
+A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}
+\qquad
+|x| = \begin{cases} x & x \ge 0 \\ -x & x < 0 \end{cases}
+$$
+
+**Disambiguating `$...$`.** Dollar-delimited inline math requires (1) no whitespace next to either delimiter and (2) no digit immediately after the closing `$`. Currency sentences therefore stay prose without any escaping, and this one is live: it costs $5 and $10 total, with a budget of $200.
+
+For a literal dollar the rules cannot save — a lone `$` that happens to pair with another one later in the same paragraph — escape it as `\$`. That is worth knowing precisely because it is easy to trip: an earlier draft of the paragraph above ran on past its last figure and picked up a `$` further down the line, turning the sentence that claims currency stays prose into rendered math.
 
 Math flows through the same pipeline as the rest of content — it appears in prerendered HTML, survives EPUB and Paged.js compilation, and roundtrips cleanly through the editor. Malformed LaTeX renders as an inline `<span class="temml-error">` containing the source, so authors see that something is wrong without breaking the page. Foundations can style `.temml-error` in their theme CSS if they want visible error feedback.
 
