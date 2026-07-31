@@ -94,6 +94,36 @@ This is a foundation-level setting, not site-level, because the foundation is th
 
 ---
 
+## Stacking: which area paints on top
+
+Naming a region has a second consequence that is easy to miss: **`view-transition-name` makes an element a stacking context.** Each area wrapper becomes its own stacking world, and a `z-index` set on something *inside* an area cannot lift it past a different area — no matter how large the number.
+
+That matters most for the most ordinary thing a layout has: a sticky or fixed header. Without an order, area wrappers all sit at `auto` and paint in DOM order, so a body rendered after the header paints over it — including over its clicks.
+
+**You get a sane order by default.** Every area is stacked above the page body, so chrome sits over content and a fixed header behaves the way you expect. Nothing to declare.
+
+What the framework does *not* do is rank one piece of chrome against another. Area names are yours — `header` and `left` are conventions, but `topbar`, `rail` and `statusbar` are equally valid — so guessing that one outranks another from its name would be wrong as often as right. Areas are equal by default; where two genuinely overlap, say so:
+
+```js
+// layouts/Docs/meta.js
+export default {
+  areas: ['header', 'left', 'right'],
+  layers: {
+    header: 2,   // the top bar spans full width and covers the rail
+    left: 1,
+  },
+}
+```
+
+`layers` mirrors `transitions`: an object overrides per region, and `layers: false` opts the layout out entirely so you can own the stacking in your own markup.
+
+Two details worth knowing:
+
+- **The body is unstacked by default, not set to `0`.** A layer implies `position: relative`, and a positioned body wrapper would become the containing block for every absolutely-positioned element on the page. Lifting the chrome achieves the order without that. You can still set `body` explicitly if your design needs it.
+- **A modal is a different problem.** Stacking orders areas against each other; it cannot lift a dialog opened from the header above the page, because the dialog is still inside the header's context. That is what `<Overlay>` in `@uniweb/kit` is for — it renders out of the area entirely.
+
+---
+
 ## Interaction with Split Content
 
 When [split content](../reference/site-configuration.md#split-content) is enabled, navigating to an unvisited page requires fetching its content from a `_pages/*.json` file. Without view transitions, there's a brief moment where the content hasn't loaded yet.
