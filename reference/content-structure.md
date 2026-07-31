@@ -599,6 +599,28 @@ $$\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$$
 \end{aligned}
 ```
 
+### Numbered equations
+
+Which equations carry a number is decided in the LaTeX, the same way it is in a paper: `equation` and `align` number their rows, while `aligned` and the starred forms `equation*` / `align*` do not. Nothing to configure — write the environment you mean.
+
+````markdown
+```math
+\begin{equation}
+\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}
+\end{equation}
+```
+````
+
+That renders live below, tag and all:
+
+```math
+\begin{equation}
+\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}
+\end{equation}
+```
+
+**These tags are not cross-reference numbers.** They are LaTeX's own counter, running over every auto-numbered environment on the page. A `[#id]` reference counts something different — the elements you labelled — so on a page that uses both, an equation's printed tag and the "Equation 1" in a sentence are answering two different questions and need not match. Pick one convention per document and the ambiguity disappears.
+
 Matrices and cases work too:
 
 $$
