@@ -441,6 +441,48 @@ This hook watches `block.dataLoading` and triggers a re-render when the fetch co
 
 ---
 
+### useFormSubmit
+
+Submit a form, with the `idle → submitting → success | error` lifecycle. The
+destination comes from the site's `submit:` declaration or from its host, so a
+component never names an endpoint.
+
+```jsx
+import { useFormSubmit } from '@uniweb/kit'
+
+const { submit, status, error, canSubmit, unavailableReason } = useFormSubmit({
+  block,
+  context: { formId: 'contact' },
+  summary: (v) => ({ title: v.name, subtitle: v.email }),
+})
+```
+
+| Returns | |
+|---|---|
+| `status` | `'idle'` · `'submitting'` · `'success'` · `'error'` |
+| `error` | the `Error` from a failed submission, or `null` |
+| `response` | the endpoint's reply on success, or `null` |
+| `canSubmit` | whether this site declares a destination |
+| `unavailableReason` | why not, when `canSubmit` is false |
+| `submit(values, overrides?)` | send; rejects on failure |
+| `reset()` | back to `idle` |
+
+| Option | |
+|---|---|
+| `block` | supplies section type / id and page id / label as submission context |
+| `context` | your own identifiers (`formId`, …); wins over what `block` supplies |
+| `summary` | `{ title, subtitle, tag? }` or `(values) => that` — a readable digest |
+
+**The framework never invents an endpoint, but a host may supply one** — a site
+on Uniweb Cloud typically needs no `submit:`. `canSubmit` is false only when
+neither a declaration nor a host provides a destination; render the control
+disabled rather than posting a visitor's answers nowhere. Companion utilities
+`submitForm()` and `resolveSubmitTarget(website)` do the same thing without React.
+
+See [Receiving Form Submissions](../development/receiving-form-submissions.md).
+
+---
+
 ## Data Classes (from @uniweb/core)
 
 You typically access these through `useWebsite()` or the `block` prop. Direct import from `@uniweb/core` is rarely needed.

@@ -9,6 +9,7 @@ pages:
   - data-schemas
   - schemas-in-practice
   - connecting-a-backend
+  - receiving-form-submissions
   - content-handlers
   - data-driven-sections
   - custom-layouts

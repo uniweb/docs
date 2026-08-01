@@ -365,6 +365,47 @@ See [Site Search](../authoring/search.md) for details.
 
 ---
 
+## Form Submissions
+
+Declare where this site's forms send their submissions.
+
+```yaml
+submit: /forms
+```
+
+**Optional, and often unnecessary.** A form's destination comes from the first
+of these that applies:
+
+1. `submit:` here, if you set it.
+2. One the host supplies — a site published to Uniweb Cloud gets submission
+   handling from the platform and normally needs no `submit:`.
+3. Neither, in which case forms render disabled rather than posting a visitor's
+   answers to an endpoint that may not exist.
+
+So set this when *you* are providing the endpoint — `uniweb export`, or a
+`deploy --host` target with its own form handling. Setting it on Uniweb Cloud
+overrides what the platform would have supplied.
+
+### Full Options
+
+```yaml
+submit: /forms                              # shorthand
+
+submit:
+  endpoint: /forms                          # object form
+
+submit: https://forms.example.com/intake    # another origin
+```
+
+A relative endpoint resolves against the site's `base:`, so one spelling works
+whether the site is served from the root or from a subdirectory. An absolute
+URL is used as written.
+
+See [Receiving Form Submissions](../development/receiving-form-submissions.md)
+for the component side.
+
+---
+
 ## Build Options
 
 Configure the production build.
