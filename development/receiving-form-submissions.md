@@ -219,34 +219,32 @@ rules.
 
 ## Uploads
 
-> ### ⚠️ Not finished — do not ship a form that accepts files
->
-> **The framework declares uploads but does not perform them.** `submitForm` sends
-> a `fileSlots` manifest and returns whatever the endpoint replies with, and
-> **that is where it stops** — it never sends the bytes.
->
-> So a visitor attaches a file, the submission succeeds, and the attachment is
-> silently discarded. The text fields land; the file does not; nothing reports a
-> problem. **A form with a file field is not usable today**, and until this is
-> finished the honest thing is to leave file fields out.
->
-> Tracked, and the missing half is the client's, not the endpoint's.
-
-A form with a file field declares its uploads up front via `fileSlots`, and the
-endpoint is expected to reply with somewhere to put the bytes:
+A form with a file field sends the answers and the attachments separately, so
+bytes never ride inside the JSON. Pass the `File` objects and the rest is
+handled:
 
 ```js
 await submitForm({
   formData: values,
   target: url,
-  fileSlots: [{ name: 'cv.pdf', size: file.size, mime: file.type }],
+  files: [{ file, field: 'photos' }],   // or a bare File
 })
-// → { submissionId, uploadUrls: [...] }   ← returned to you; NOT acted on by kit
+// → { submissionId, filesUploaded: 1 }
 ```
 
-Two phases by design, so bytes never ride inside the JSON — and what the URLs
-are and how long they last is the endpoint's business. The second phase is the
-part that has not been built.
+Three requests: the manifest (derived from the files, so it cannot disagree with
+them), then each file's bytes, then a finalize. `useFormSubmit` exposes
+`canUploadFiles` for the render-time decision — check it where you decide
+whether to show a file input, not after someone has attached something.
+
+**Passing `fileSlots` instead of `files` sends a manifest with no bytes.** It is
+still accepted, and it warns, because a declared attachment nobody receives is a
+submission that looks complete and is not.
+
+**A failure after the first request says what landed.** By then the submission
+exists, so the error names it — *"submission sub-3 was recorded, but uploading
+'big.pdf' failed"* — and a form can tell the visitor their message arrived and
+their file did not, instead of reporting a flat failure or a false success.
 
 ---
 
