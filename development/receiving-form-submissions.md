@@ -219,8 +219,21 @@ rules.
 
 ## Uploads
 
+> ### ⚠️ Not finished — do not ship a form that accepts files
+>
+> **The framework declares uploads but does not perform them.** `submitForm` sends
+> a `fileSlots` manifest and returns whatever the endpoint replies with, and
+> **that is where it stops** — it never sends the bytes.
+>
+> So a visitor attaches a file, the submission succeeds, and the attachment is
+> silently discarded. The text fields land; the file does not; nothing reports a
+> problem. **A form with a file field is not usable today**, and until this is
+> finished the honest thing is to leave file fields out.
+>
+> Tracked, and the missing half is the client's, not the endpoint's.
+
 A form with a file field declares its uploads up front via `fileSlots`, and the
-endpoint replies with somewhere to put the bytes:
+endpoint is expected to reply with somewhere to put the bytes:
 
 ```js
 await submitForm({
@@ -228,11 +241,12 @@ await submitForm({
   target: url,
   fileSlots: [{ name: 'cv.pdf', size: file.size, mime: file.type }],
 })
-// → { submissionId, uploadUrls: [...] }
+// → { submissionId, uploadUrls: [...] }   ← returned to you; NOT acted on by kit
 ```
 
-Two phases, so the bytes never ride inside the JSON. What the URLs are and how
-long they last is the endpoint's business.
+Two phases by design, so bytes never ride inside the JSON — and what the URLs
+are and how long they last is the endpoint's business. The second phase is the
+part that has not been built.
 
 ---
 
