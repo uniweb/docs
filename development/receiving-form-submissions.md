@@ -65,9 +65,9 @@ a subpath. An absolute URL is used as written.
 never names one — that's what lets the same foundation serve a site posting to
 its own API and a site whose host handles it, with no code change.
 
-> **Status:** the host-supplied tier is not wired up yet — today a destination
-> comes from `submit:` or nowhere, on every host. Declare one explicitly until
-> this note goes away.
+> **Status:** the framework reads a host-supplied destination, but no host emits
+> one yet — so in practice a destination comes from `submit:` or nowhere.
+> Declare one explicitly until this note goes away.
 
 ---
 
