@@ -489,8 +489,12 @@ withdraw.
 
 ```jsx
 await submit(values, { files: [{ file, field: 'photos' }] })
-// → { submissionId, filesUploaded: 1 }
+// → { submissionId, filesUploaded: 1, filesRecorded: 1, totalSizeBytes: 4096 }
 ```
+
+`filesRecorded` is the endpoint's own count of what reached storage. When it is
+lower than what was sent, the call throws instead of resolving — every upload
+can return 2xx and one can still be absent.
 
 A failure after the first request names what landed — *"submission sub-3 was
 recorded, but uploading 'big.pdf' failed"* — so a form can tell a visitor their

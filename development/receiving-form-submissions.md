@@ -66,10 +66,11 @@ implements (search, form submission) and *resolution* for anything, so a
 foundation can define a service the framework has never heard of and a host can
 fill it without a framework change.
 
-**On Uniweb Cloud you normally configure nothing.** The platform handles
-submissions, so a site published with `uniweb publish` gets a destination
-without a `submit:` key — and setting one there overrides what the platform
-would have supplied.
+**On a host that handles submissions you configure nothing.** The host answers
+for itself in the served payload: an endpoint when it will accept submissions
+for this site, or a `reason` when it will not. Either way the form renders
+honestly — live, or disabled with an explanation — and a `submit:` of your own
+overrides whatever the host would have said.
 
 **Elsewhere, you provide it.** `uniweb export` produces a plain static site, and
 most `deploy --host` targets have no opinion about forms, so those are the cases
@@ -237,6 +238,17 @@ Three requests: the manifest (derived from the files, so it cannot disagree with
 them), then each file's bytes, then a finalize. `useFormSubmit` exposes
 `canUploadFiles` for the render-time decision — check it where you decide
 whether to show a file input, not after someone has attached something.
+
+**The finalize step is checked, not assumed.** An endpoint reports what it
+actually found in storage, and every upload can return 2xx with one still
+missing — so a count lower than what was sent throws rather than resolving. When
+the endpoint reports its own figures they come back to you:
+
+```js
+// → { submissionId, filesUploaded: 2, filesRecorded: 2, totalSizeBytes: 8213 }
+```
+
+An endpoint that reports nothing is not claiming a loss, and none is invented.
 
 **Passing `fileSlots` instead of `files` sends a manifest with no bytes.** It is
 still accepted, and it warns, because a declared attachment nobody receives is a
