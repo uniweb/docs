@@ -92,9 +92,9 @@ a subpath. An absolute URL is used as written.
 never names one — that's what lets the same foundation serve a site posting to
 its own API and a site whose host handles it, with no code change.
 
-> **Status:** the framework reads a host-supplied destination, but no host emits
-> one yet — so in practice a destination comes from `submit:` or nowhere.
-> Declare one explicitly until this note goes away.
+> **Status:** host-supplied destinations are live on Uniweb Cloud — a site
+> published there gets one without declaring anything. Anywhere else, `submit:`
+> is how you provide it.
 
 ---
 
@@ -147,6 +147,7 @@ What the hook returns:
 | `response` | the endpoint's reply on success, or `null` |
 | `canSubmit` | whether this site has a destination at all |
 | `unavailableReason` | why not, when `canSubmit` is false |
+| `canUploadFiles` | whether attachments can be delivered — check before rendering a file input |
 | `submit(values, overrides?)` | send; resolves with the response, rejects on failure |
 | `reset()` | back to `idle` |
 
