@@ -479,6 +479,35 @@ neither a declaration nor a host provides a destination; render the control
 disabled rather than posting a visitor's answers nowhere. Companion utilities
 `submitForm()` and `resolveSubmitTarget(website)` do the same thing without React.
 
+---
+
+### resolveService
+
+Where a named service lives for this site — search, form submission, an
+assistant, or anything a foundation defines.
+
+```js
+import { resolveService } from '@uniweb/kit'
+
+const { url, reason, source } = resolveService(website, 'assistant')
+if (!url) return renderUnavailable(reason)
+```
+
+Resolution is the same for every service: the site's own declaration
+(`assistant:` in `site.yml`), then what the host offers
+(`config.services.assistant` in the served payload), then neither. `source` is
+`'site'`, `'host'` or `null` — the thing to check when a host's value appears
+not to be taking effect.
+
+A declaration is a string or `{ endpoint }`; a host that declines may send
+`{ reason }`, which reaches the UI verbatim. Bare endpoints (`_search`) are
+rooted, absolute URLs pass through, and the base path is applied once.
+
+**The name is open.** The framework ships clients for the services it implements
+and resolution for anything, so a foundation can define its own and a host can
+fill it with no framework change. `resolveServiceUrl(endpoint, basePath)` is the
+join on its own.
+
 See [Receiving Form Submissions](../development/receiving-form-submissions.md).
 
 ---

@@ -36,8 +36,35 @@ Three possibilities, in precedence order:
 | | Source | When |
 |---|---|---|
 | 1 | `submit:` in `site.yml` | you named an endpoint yourself |
-| 2 | the host | it provides submission handling for this site |
+| 2 | `services.submit` in the served payload | the host provides submission handling for this site |
 | 3 | nothing | forms render disabled, with a reason |
+
+That second row is not specific to forms. A host declares everything it offers
+in one block, keyed by service name:
+
+```js
+// what the host serves in the payload — not something you author
+config.services = {
+  submit:    { endpoint: '/_submit' },
+  search:    { endpoint: '/_search' },
+  assistant: { endpoint: '/_ask', reason: null },
+  // absent = not offered; `reason` explains a decline, and reaches the UI as written
+}
+```
+
+Every service resolves the same way — your declaration, then the host's, then
+neither — through one function, so a foundation reads them alike:
+
+```js
+import { resolveService } from '@uniweb/kit'
+
+const { url, reason } = resolveService(website, 'assistant')
+```
+
+**The service name is open.** The framework ships *clients* for what it
+implements (search, form submission) and *resolution* for anything, so a
+foundation can define a service the framework has never heard of and a host can
+fill it without a framework change.
 
 **On Uniweb Cloud you normally configure nothing.** The platform handles
 submissions, so a site published with `uniweb publish` gets a destination
