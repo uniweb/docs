@@ -93,6 +93,22 @@ a subpath. An absolute URL is used as written.
 never names one — that's what lets the same foundation serve a site posting to
 its own API and a site whose host handles it, with no code change.
 
+> **Your declaration outranks the host's, including when the host declined.**
+> That's deliberate: a site posting to its own API, or to a form service, is
+> nobody's business but the site's, and a host that could overrule it would have
+> silent veto over where your visitors' data goes.
+>
+> The footgun is the narrow case where you point `submit:` at *the host's own*
+> endpoint after the host declined to accept submissions for this site. The form
+> then renders **live** — the framework has a destination and no way to know the
+> host won't honour it — and the POST is rejected when it arrives. A visitor
+> types an answer and loses it.
+>
+> So: declare `submit:` when you are providing the destination. If a host
+> supplies one, let it, and leave `submit:` unset — that way a decline reaches
+> the visitor as a disabled form with an explanation, which is the honest
+> outcome, instead of a rejection after they have typed.
+
 > **Status:** host-supplied destinations are live on Uniweb Cloud — a site
 > published there gets one without declaring anything. Anywhere else, `submit:`
 > is how you provide it.
