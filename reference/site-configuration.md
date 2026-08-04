@@ -32,6 +32,12 @@ index: home                          # Or just name the homepage
 defaultLanguage: en
 languages: [en, es, fr]              # Or '*' to auto-discover from locales/
 
+# Code — the foundation, its extensions, and the runtime
+foundation: '@acme/marketing@1.2.3'  # Or a workspace package name, or a full URL
+extensions:                          # Secondary foundations (optional)
+  - '@acme/effects@0.3.1'
+runtime: 0.9.6                       # Pin the runtime version (optional)
+
 # Features
 search:
   enabled: true
@@ -71,6 +77,71 @@ description: Build modern websites with components
 |-------|------|-------------|
 | `name` | string | Site name (used in `<title>`, metadata) |
 | `description` | string | Default meta description |
+
+---
+
+## Code: Foundation, Extensions, Runtime
+
+A site is content; the code that renders it comes from three declarations. All three
+take the same kinds of value, because **an extension is a foundation** and the runtime
+is versioned like one.
+
+```yaml
+foundation: '@acme/marketing@1.2.3'   # the primary — required
+extensions:                            # secondary foundations — optional
+  - '@acme/effects@0.3.1'
+runtime: 0.9.6                         # optional; the host chooses when omitted
+```
+
+### `foundation`
+
+The component system your pages are composed from. Four accepted shapes:
+
+| Shape | Example | Meaning |
+|---|---|---|
+| workspace package name | `src` | a foundation in this repo (follow the `file:` dep to its folder) |
+| versioned catalog ref | `@acme/marketing@1.2.3` | published; loaded by the host |
+| full URL | `https://cdn.example.com/entry.js` | loaded from that URL |
+| object form | `{ url: 'https://…' }` | same, with an explicit CSS URL if needed |
+
+A **versionless** `@org/name` is an error rather than a shorthand — the build asks for
+a version. Foundations are never npm packages; don't `npm install` one.
+
+### `extensions`
+
+Secondary foundations that contribute additional section types. Each entry accepts the
+**same shapes** as `foundation:`, and the primary wins on a name collision.
+
+```yaml
+extensions:
+  - '@acme/effects@0.3.1'              # catalog ref  — recommended
+  - effects                            # a workspace package name (local development)
+  - https://cdn.example.com/e/entry.js # an absolute URL
+```
+
+> **A site-relative URL (`/effects/entry.js`) only works where the site serves its own
+> files** — `uniweb export` and `uniweb deploy --host=<adapter>`. A site published to
+> Uniweb hosting ships no JS, so nothing serves that path; `uniweb publish` rejects it
+> and points you at the catalog-ref form. Register the extension
+> (`uniweb register` in its directory) and reference it like any other foundation.
+
+When you reference a **workspace-local** extension, `uniweb publish` brings it along the
+same way it does the primary: it releases the extension if its code changed or isn't
+registered yet, and pins the released `@scope/name@version` on the published site.
+
+### `runtime`
+
+The `@uniweb/runtime` version the site is served with. Optional — omit it and the host
+picks. Pin it to hold a site on a known version:
+
+```yaml
+runtime: 0.9.6
+```
+
+`uniweb publish` validates a pin against the versions the backend reports installed and
+fails with the list if it can't be satisfied, rather than publishing a site that can't
+render. This field applies to Uniweb hosting; `export` and `deploy --host` bake the
+runtime at build time instead.
 
 ---
 
