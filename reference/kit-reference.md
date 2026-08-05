@@ -415,6 +415,65 @@ SSR-safe: everything touching the DOM runs inside an effect, so these are inert 
 
 `useSearchShortcut` still exists as an alias for `useShortcut('mod+k', …)`, kept so existing foundations keep working. Prefer `useShortcut` in new code: it says the same thing without implying the framework chose the key.
 
+### useSearch
+
+Search the site. Which engine answers is a **deployment** choice — a local index the browser
+downloads, or an endpoint the host serves — and a component is written once against both.
+
+```jsx
+import { useSearch } from '@uniweb/kit'
+
+function SearchBox({ website }) {
+  const { query, results, total, isLoading, isEnabled } = useSearch(website)
+
+  if (!isEnabled) return null
+
+  return (
+    <div>
+      <input onChange={(e) => query(e.target.value)} />
+      {isLoading && <span>Searching…</span>}
+      {total !== null && <span>Showing {results.length} of {total}</span>}
+      {results.map((r) => (
+        <a key={r.id} href={r.href}>{r.title}</a>
+      ))}
+    </div>
+  )
+}
+```
+
+| Returns | |
+|---|---|
+| `results` | matches, capped at `limit` (default 10) |
+| `total` | how many matched **before** the cap — the 47 in "showing 10 of 47". `null` when the active provider cannot say |
+| `isLoading` | a query is in flight |
+| `error` | the `Error` from a failed search, or `null` |
+| `lastQuery` | the text of the most recent query |
+| `isEnabled` | whether this site declares search at all |
+| `query(text, options?)` | run a search (debounced); resolves with the results array |
+| `clear()` | drop results and reset |
+| `preload()` | warm the index ahead of first use — a no-op for providers with nothing to warm |
+
+**`total` is `null` when unknown, and that is a normal state rather than an error.** A local index
+always knows the count; an endpoint knows it only if it reports one. Whether a count arrives is a
+property of how the site is deployed, not of its content — so render the count conditionally and the
+results unconditionally.
+
+⚠️ `total` is also `null` when a `type:` or `route:` filter narrowed the results locally. A server
+that does not apply those filters counted a different set, and reporting its number beside a
+narrowed list would read as "showing 1 of 47" next to a filter that produced the 1 — consistent and
+wrong.
+
+Every result carries a guaranteed core — `id`, `type`, `route`, `href`, `title`, `pageTitle`,
+`excerpt`, `snippetHtml` — so a component may render those unconditionally. Everything else
+(`matches`, `item`, `collection`, `sectionId`, …) is provider-optional and `null` where unavailable,
+for the same reason `total` is. `snippetHtml` contains `<mark>` elements: render it through kit's
+`SafeHtml`, never as text.
+
+For a count outside React, `createSearchClient(website).queryWithTotal(text, options)` returns
+`{ results, total }`; plain `query()` returns the results array.
+
+---
+
 ### block.dataLoading
 
 Check whether a block's runtime data fetch is in progress. This is a boolean property on the `block` instance, set by the runtime's `BlockRenderer`.
