@@ -559,6 +559,14 @@ const { submit, canSubmit } = useFormSubmit({ block })
 | `formData` | what you submit: JSON-safe, file controls omitted |
 | `files` | `[{ file, field }]` for `submitForm`, each tagged with its control |
 
+**`valueAt(values, path)` reads a value back out** — the companion of `setValue`,
+exported because every control-rendering loop needs it. ⚠️ **`values` is nested, so
+`values[c.path]` does not work**: a control at `address.street` lives at
+`values.address.street`, and indexing by the dotted path returns `undefined` for
+every nested control — inputs render blank and their answers submit empty, with
+nothing failing. Top-level controls happen to work either way, which is what makes
+the mistake survive a first test.
+
 **Submit `formData`, not `values`.** They differ for one reason that would otherwise be a silent, success-shaped failure: submissions are sent as JSON, and a `File` inside them serializes to `{}` — an attachment that looks sent and arrives empty. File controls are therefore omitted from `formData` and ride in `files`, each tagged with the control it came from so an endpoint can tell two file inputs apart.
 
 **`missing` is computed, not enforced** — the same line `canSubmit` draws. Whether an incomplete form disables the button, shows a message, or submits anyway is your design. Empty means `undefined`, `null`, `''` or `[]`; a `false` boolean is a *value*, so a required checkbox left unticked isn't "missing" — "must be ticked" is a stronger rule that belongs to the component that knows it's a consent box.
