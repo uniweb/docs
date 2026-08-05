@@ -468,6 +468,44 @@ const { submit, status, error, canSubmit, unavailableReason } = useFormSubmit({
 | `submit(values, overrides?)` | send; rejects on failure |
 | `reset()` | back to `idle` |
 
+---
+
+### useFormValues
+
+Hold the state of a form an **author** designed — a `yaml:form` block at `content.data.form`. A form-rendering component is the inverse of every other one: it doesn't declare the fields, it receives them and draws whatever it's given. This owns the part that is identical in every such component, so a foundation writes only the controls.
+
+```jsx
+import { useFormValues, useFormSubmit, valueAt } from '@uniweb/kit'
+
+const { controls, values, setValue, missing, formData, files } =
+  useFormValues(content.data.form)
+const { submit, canSubmit } = useFormSubmit({ block })
+
+{controls.map((c) => (
+  <MyControl key={c.path} control={c}          // branch on c.type — your design
+             value={valueAt(values, c.path)}
+             onChange={(v) => setValue(c.path, v)} />
+))}
+<button disabled={!canSubmit || missing.length > 0}
+        onClick={() => submit(formData, { files })}>Send</button>
+```
+
+| Returns | |
+|---|---|
+| `controls` | every control, depth-first, each with the dotted `path` its value lives at |
+| `values` | what your inputs bind to — holds `File` objects so a file input can show its selection |
+| `setValue(path, v)` | set by dotted path (`'email'`, `'address.street'`) |
+| `reset()` | back to the declared defaults |
+| `missing` | paths of `required` controls still empty — computed, **not** enforced |
+| `formData` | what you submit: JSON-safe, file controls omitted |
+| `files` | `[{ file, field }]` for `submitForm`, each tagged with its control |
+
+**Submit `formData`, not `values`.** They differ for one reason that would otherwise be a silent, success-shaped failure: submissions are sent as JSON, and a `File` inside them serializes to `{}` — an attachment that looks sent and arrives empty. File controls are therefore omitted from `formData` and ride in `files`, each tagged with the control it came from so an endpoint can tell two file inputs apart.
+
+**`missing` is computed, not enforced** — the same line `canSubmit` draws. Whether an incomplete form disables the button, shows a message, or submits anyway is your design. Empty means `undefined`, `null`, `''` or `[]`; a `false` boolean is a *value*, so a required checkbox left unticked isn't "missing" — "must be ticked" is a stronger rule that belongs to the component that knows it's a consent box.
+
+A container control (`type: group` with `children`) nests: its answers appear under its own key in `values` and `formData`, and paths are dotted throughout.
+
 | Option | |
 |---|---|
 | `block` | supplies section type / id and page id / label as submission context |
