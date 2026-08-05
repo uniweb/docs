@@ -103,7 +103,7 @@ The foundation build looks for `@uniweb/runtime` in two places:
 - **You don't need to add `@uniweb/runtime` to your foundation's dependencies.** This is by design — runtime is the host environment, not a foundation import.
 - **To bump the runtime version your foundation pins, bump your `@uniweb/build` dep.** When `@uniweb/build@0.13.0` ships pulling in a newer runtime, updating your devDependency is how you adopt it.
 - **You can override by adding `@uniweb/runtime` directly to your foundation's `dependencies`** — but this is rarely needed and creates a source of confusion (now there are two places that know about the runtime version). Don't do this unless you have a specific reason.
-- **Whatever runtime version is pinned, your foundation's `runtimePolicy` controls how sites of this foundation can move forward beyond it.** Pinning `0.8.9` with `auto-minor` lets sites pick up `0.9.0` or higher (within the same major); pinning `0.8.9` with `exact` locks them at `0.8.9` until you rebuild your foundation.
+- **`runtimePolicy` declares how far past the pinned version a host may move a site — it does not move anything itself.** The pin is a compatibility *floor*, not a selector: a site loads a primary foundation plus any extensions, each emitting its own pin, while a site runs exactly one runtime, so the choice cannot come from a pin. It comes from `site.yml::runtime`. The pin's designed use is validating that choice against every loaded foundation's range, and that check isn't implemented yet — so today the pin is recorded and not consumed. See [runtimePolicy in the CLI reference](./cli-commands.md#the-pin-is-a-compatibility-floor-not-a-selector).
 
 ### Build outputs
 

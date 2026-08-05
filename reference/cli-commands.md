@@ -890,7 +890,7 @@ Foundations can declare a `runtimePolicy` field in `package.json` that controls 
 | `auto-patch` | Sites auto-update within the same `MAJOR.MINOR.x` (e.g. `0.8.9` → `0.8.10`). Conservative; matches typical npm patch semantics. |
 | `auto-minor` | Sites auto-update within the same `MAJOR.x.y` (e.g. `0.8.9` → `0.9.0`). |
 
-**Default when unset:** `auto-minor`. Most foundations don't need to set this field — the platform's runtime is internally backwards-compatible at the minor level by convention, and `auto-minor` lets sites pick up bug fixes and additive features without rebuilding the foundation.
+**Leaving it unset is the normal case** — the runtime is backwards-compatible at the minor level by convention, so most foundations have nothing to declare.
 
 Set `exact` if your foundation depends on undocumented runtime internals or has been audited against one specific runtime release and you don't want to allow drift.
 
@@ -901,27 +901,35 @@ The field is read at build time and emitted into `dist/runtime-pin.json` alongsi
 { "runtime": "0.8.9", "policy": "auto-minor" }
 ```
 
-Sites cannot override this policy — it's the foundation author's contract with the platform.
+`policy` appears only when you set it. Sites cannot override your choice.
+
+#### The pin is a compatibility floor, not a selector
+
+This is the part that is easy to read backwards, so it is worth stating plainly.
+
+`runtime-pin.json` **records what your build binds to**. It does not choose the runtime a site runs, and structurally it cannot: a site loads a primary foundation **plus any extensions**, and each of those emits its own pin — while a site has exactly **one** runtime. **Pins are plural; the choice is singular.** The runtime a site runs is selected by `site.yml::runtime`.
+
+The pin's designed use is **validation**: checking that a selected runtime falls inside the compatible range of every foundation a site loads. That check is producer-side and **not implemented yet**.
+
+⚠️ **So today the pin is recorded and not consumed.** Nothing in the toolchain reads it. Declare `runtimePolicy` to state your intent for when the validation lands — but don't design around it having an effect now, and don't read a version in that file as evidence that something acted on it.
 
 #### What happens when fields aren't set
 
-The system has multi-layer fallbacks so missing or partial information is always handled gracefully:
-
 | Scenario | What happens |
 |----------|--------------|
-| `uniweb.runtimePolicy` not set in `package.json` | `dist/runtime-pin.json` is emitted with the runtime version but no `policy` field. At serve time the platform applies `auto-minor` as the implicit default. Most foundations don't need to set `runtimePolicy` — leaving it unset is the correct choice when you want default behavior. |
-| `@uniweb/runtime` not resolvable at build time | The build silently skips emitting `runtime-pin.json`. New foundations created with `npx uniweb create` always have `@uniweb/runtime` as a dependency, so this only affects unusual workspace setups. |
-| `runtime-pin.json` is missing or malformed | The platform's serving infrastructure detects the absence and serves the foundation through the legacy bundling path. Sites still work; they just don't participate in runtime propagation. |
-| `runtime-pin.json` has a `runtime` version that's not actually deployed | The site publish flow rejects the publish with a clear error asking you to deploy the pinned runtime version first. This is caught at publish time, not at serve time. |
-| Policy permits a newer version but none is published | The site stays on the version it pinned. The resolver only moves forward when a newer version satisfying the policy is actually available. |
+| `uniweb.runtimePolicy` not set in `package.json` | `dist/runtime-pin.json` is emitted with the runtime version and no `policy` field. This is the normal case. |
+| `@uniweb/runtime` not resolvable at build time | The build skips emitting `runtime-pin.json` and succeeds. The runtime arrives transitively through `@uniweb/build`, so this only affects unusual workspace setups — and nothing in the toolchain requires the pin. |
+| `runtime-pin.json` missing from a built foundation | Nothing in the toolchain reads it, so nothing here changes. What a given host makes of its absence is that host's behaviour to document, not the framework's to promise. |
 
-Bottom line: a foundation that doesn't set `runtimePolicy` gets `auto-minor` behavior automatically. A foundation that doesn't ship `runtime-pin.json` at all (e.g. a legacy build) still serves correctly through the platform's compatibility path — you just don't get the propagation benefits. Set `runtimePolicy` explicitly only when you want to override the default (typically to `exact` for stability-critical builds).
+*(An earlier version of this page described a resolver that applied `runtimePolicy` at serve time, a publish step that rejected a foundation whose pinned runtime wasn't deployed, and a legacy fallback path for a missing pin. None of those existed. They were removed on 2026-08-06 after the pin's consumers were checked directly and found to be none.)*
 
 ### Propagation (currently silent)
 
 Today every `register` is **silent**: the version is uploaded and stored, sites that pin it exactly resolve to it, but sites on earlier versions don't move until they re-pin.
 
-Automatic **propagation** — a gated rollout that moves consenting sites forward (canary → a percentage → the full population, with health gates between waves) — is a registry capability being brought to `register`; the explicit opt-in control (the legacy `--propagate`) isn't wired yet. Until it lands, sites move forward by re-pinning their `foundation:` version, or through the runtime policy below.
+Automatic **propagation** — a gated rollout that moves consenting sites forward (canary → a percentage → the full population, with health gates between waves) — is a registry capability being brought to `register`; the explicit opt-in control (the legacy `--propagate`) isn't wired yet. Until it lands, sites move forward by re-pinning their `foundation:` version.
+
+*(Not via `runtimePolicy` — that governs the **runtime**, not the foundation, and as noted above it is recorded rather than consumed today. Two different artifacts, two different versions.)*
 
 ### What Happens
 
