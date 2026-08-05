@@ -160,7 +160,29 @@ You can always write the canonical kind directly; the friendly names just save y
 
 **Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). Collection-level flags like `required` ride on the list; the type describes each item.
 
-`required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and a section carries no `required`. Put the flag on a field inside the record instead.
+`required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and `required` binds the record that is *written*; it cannot force a record to *exist*. Put the flag on a field inside the record, and see [Constraints](#constraints) for "don't let this become empty".
+
+### Constraints
+
+A nested record and a list of records become **sections** when a schema is registered, and a section can carry rules a single field can't express. Declare them with `constraints:` — on the section in the `sections:` form, or on the field itself:
+
+```yaml
+fields:
+  authors:
+    type: object
+    many: true
+    constraints:
+      - { kind: min_items, value: 1 }
+    fields:
+      name: { type: string, required: true }
+```
+
+`min_items` is the common one, and its scope is narrower than the name suggests:
+
+- **A delete floor, not a fill requirement.** It refuses a delete that would take the section below N. Nothing forces an author to populate it in the first place. On a single-record section, read it as *"undeletable once created"*.
+- **A write guarantee, never a render guarantee.** Your component still handles an empty list — the same schema can be rendered by a foundation that never saw the constraint, so content and code stay independent axes.
+
+Constraints on a plain leaf field are ignored; a leaf narrows with `enum` and `format` instead. They take effect once the schema is [registered](#registering-schemas) — file-based collections have no write step.
 
 ### Rich content: `format`
 
