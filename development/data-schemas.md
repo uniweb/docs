@@ -140,7 +140,16 @@ sections:
       body:  richtext
 ```
 
-The parent/child link is managed for you — there's **no field to declare** for it and no ID to wire up.
+Authors nest records under a reserved **`children:`** key — you declare one record's fields, and `children` holds more of the same:
+
+```yaml
+- title: Getting started
+  children:
+    - title: Installing
+    - title: Your first page
+```
+
+The parent/child link is managed for you — there's **no field to declare** for it and no ID to wire up. `uniweb validate` descends into `children` to any depth and names the full path (`[1].children[0].title`), so a bad entry deep in a tree is findable.
 
 This is what separates `tree:` from a [subsection](./designing-data-schemas.md#subsections-model-hierarchy). A subsection nests one *named* section inside another — a course has modules, a module has lessons, a fixed shape you spell out in the schema. `tree:` instead lets records of a **single** section nest under one another, so the shape is decided by the author as they write, not by you as you model.
 
@@ -187,6 +196,8 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 You can always write the canonical kind directly; the friendly names just save you the folding.
 
 **Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). Collection-level flags like `required` ride on the list; the type describes each item.
+
+Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
 
 `required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and `required` binds the record that is *written*; it cannot force a record to *exist*. Put the flag on a field inside the record, and see [Constraints](#constraints) for "don't let this become empty".
 
@@ -258,6 +269,29 @@ fields:
 - **`options:`** — a **`@/<name>` ref** to a curated options schema. Best when the choices are a managed list reused across fields or foundations.
 
 An inline array always belongs on `enum:`; `options:` always takes a ref.
+
+---
+
+## What `uniweb validate` checks
+
+A schema only earns its keep where something runs it, so it's worth knowing exactly where that happens. `uniweb validate` walks your site and checks every data input it can pair with a schema:
+
+| Where the data lives | Checked against |
+|---|---|
+| A **file-based collection** (`data: articles`) | The schema the section's `meta.js` binds to that key — each record |
+| A **tagged data block** (```` ```yaml:form ````) | The schema bound to that *tag*, whether the value is a record or a list |
+| A **concept block** (```` ```md:faq ````) | `@std/faq`, if such a standard exists — resolved by name, never by a registry |
+
+Findings are **warnings by default**; `uniweb validate --strict` exits non-zero for CI.
+
+Two things are reported as **deferred** rather than checked, and both for the same honest reason — the data isn't there to look at:
+
+- a **remote `url:` source**, which isn't fetched at build time;
+- a **`sections:`-form schema describing a multi-section entity**, which no single flat file reproduces. (A `sections:` schema whose root is *a list* — see [When the content is a list](#when-the-content-is-a-list) — is checked normally, records and all.)
+
+An inline schema on a binding is reported too, rather than guessed at.
+
+**What is never checked, by design:** a visitor's answers to a form, an API response shape, or anything else that only exists at runtime. `validate` is a pre-ship gate over content you can see, not a runtime guard — the runtime stays tolerant, applying defaults and ignoring the rest.
 
 ---
 
