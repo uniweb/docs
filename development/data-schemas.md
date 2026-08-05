@@ -160,6 +160,8 @@ You can always write the canonical kind directly; the friendly names just save y
 
 **Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). Collection-level flags like `required` ride on the list; the type describes each item.
 
+`required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and a section carries no `required`. Put the flag on a field inside the record instead.
+
 ### Rich content: `format`
 
 A `format` marks a field as carrying rich content. It is **type-bound** — the framework rejects a mismatch at build time:
