@@ -90,7 +90,7 @@ sections:
 
 Once you [register](#registering-schemas) the schema, this rule is enforced wherever entities of the type are written — appends are accepted, but changing or removing an existing record is refused. There's no "replace the whole section" shortcut either: re-submitting records adds new ones rather than overwriting what's already there. Because the rule lives in the content type rather than in a form, it holds for every writer, not just the editor UI. That makes an append-only section **tamper-evident**: the accumulated history stands on its own. Reach for it for activity logs, submissions, audit trails — anything meant to accumulate and never be rewritten.
 
-`append_only` is only valid on a `many: true` section (a single record has nothing to append to). For file-based collections there's no write step, so it has no effect until the type is registered.
+`append_only` is only valid where there are many records to append to — a `many: true` section, or a list of records authored as a field (`activity: { type: object, many: true, append_only: true }`). On a single record it's rejected rather than ignored. For file-based collections there's no write step, so it has no effect until the type is registered.
 
 ### Tree sections
 
@@ -116,7 +116,7 @@ The parent/child link is managed for you — there's **no field to declare** for
 
 This is what separates `tree:` from a [subsection](./designing-data-schemas.md#subsections-model-hierarchy). A subsection nests one *named* section inside another — a course has modules, a module has lessons, a fixed shape you spell out in the schema. `tree:` instead lets records of a **single** section nest under one another, so the shape is decided by the author as they write, not by you as you model.
 
-`tree: true` is only valid on a `many: true` section (a single record has nothing to nest under). `nestable: true` is accepted as a lower-level spelling of the same flag.
+`tree: true` is only valid where there are many records to nest — a `many: true` section, **nested sections included**, or a list of records authored as a field (`chapters: { type: object, many: true, tree: true }`). On a single record, or on a list of plain values, it's rejected rather than ignored. `nestable: true` is accepted as a lower-level spelling of the same flag.
 
 ### The sort axis: `sort_date`
 
