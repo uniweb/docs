@@ -120,6 +120,10 @@ sections:
 
 One limit: it must be *exactly one* section. Two `many` sections with no single one leaves "which one is the value?" unanswerable, so nothing is checked.
 
+**A list-shaped block carries no title of its own, and that's deliberate.** A heading and an intro are *content* — the author writes them as markdown in the section, and your component reads them from `content.title` and `content.paragraphs` exactly as it would for any other section. The block carries only the structured part.
+
+It's worth stating because the alternative is tempting and wrong: putting a `title:` inside the block gives the section two titles, one editable as ordinary content and one buried in a data block, with nothing to say which wins. Keep the prose in the prose.
+
 ### Tree sections
 
 A `many: true` section can be marked `tree: true`, letting its records nest **under each other** — a chapter tree, a category hierarchy, a threaded discussion:
