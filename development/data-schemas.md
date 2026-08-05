@@ -34,7 +34,7 @@ fields:
   featured:    { type: boolean }
 ```
 
-The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object`, `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
+The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object` (also spelled `group`), `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
 
 A section type binds the schema by naming it in `meta.js`:
 
@@ -181,7 +181,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `markdown`, `html` | `text` (+ `format`) | A rich-content body (a source string) |
 | `richtext` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
 | `json` | `json` | An opaque structured value (see `format`) |
-| `object` | `object` | A nested record — declare its `fields:` |
+| `object`, `group` | `object` | A nested record — declare its `fields:`. `group` is the friendlier spelling |
 | `ref` | `ref` | A reference to another schema — write `{ ref: '@/person' }` |
 
 You can always write the canonical kind directly; the friendly names just save you the folding.
