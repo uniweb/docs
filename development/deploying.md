@@ -320,7 +320,7 @@ foundation:
   pinned: false
 ```
 
-A foundation can also declare a policy *intent* in `package.json::uniweb.runtimePolicy` — how far past the runtime version it built against a host may move a site. It is a declaration recorded in `dist/runtime-pin.json`, not a mechanism: nothing reads it today, and the runtime a site runs is selected by `site.yml::runtime`. See [CLI Commands](../reference/cli-commands.md#the-pin-is-a-compatibility-floor-not-a-selector).
+A foundation can also declare a policy *intent* in `package.json::uniweb.runtimePolicy` — how far past the runtime version it built against a host may move a site. It is a declaration recorded in `dist/runtime-pin.json` and carried by `uniweb register`, not a mechanism: nothing enforces it yet, and the runtime a site runs is selected by `site.yml::runtime`. See [CLI Commands](../reference/cli-commands.md#the-pin-is-a-compatibility-floor-not-a-selector).
 
 This is one thing you give up when you don't deploy to the Uniweb platform: propagation is a property of the registry+hosting combination, not of the framework. Sites hosted elsewhere move forward only when you redeploy them.
 

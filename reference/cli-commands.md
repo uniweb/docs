@@ -909,17 +909,17 @@ This is the part that is easy to read backwards, so it is worth stating plainly.
 
 `runtime-pin.json` **records what your build binds to**. It does not choose the runtime a site runs, and structurally it cannot: a site loads a primary foundation **plus any extensions**, and each of those emits its own pin — while a site has exactly **one** runtime. **Pins are plural; the choice is singular.** The runtime a site runs is selected by `site.yml::runtime`.
 
-The pin's designed use is **validation**: checking that a selected runtime falls inside the compatible range of every foundation a site loads. That check is producer-side and **not implemented yet**.
+The pin's use is **validation**: checking that a site's chosen runtime satisfies the floor of *every* foundation that site loads. That is `max()` over the primary foundation's floor and each extension's — so only something holding all of them can compute it, which is why it is not done at build time.
 
-⚠️ **So today the pin is recorded and not consumed.** Nothing in the toolchain reads it. Declare `runtimePolicy` to state your intent for when the validation lands — but don't design around it having an effect now, and don't read a version in that file as evidence that something acted on it.
+`uniweb register` reads the pin and carries it with the foundation, so a floor stated at build time reaches whatever resolves the site later. ⚠️ **The check itself is not implemented anywhere yet** — today the floor is stated and carried, not enforced. Declare `runtimePolicy` for when it lands; don't design around it having an effect now.
 
 #### What happens when fields aren't set
 
 | Scenario | What happens |
 |----------|--------------|
 | `uniweb.runtimePolicy` not set in `package.json` | `dist/runtime-pin.json` is emitted with the runtime version and no `policy` field. This is the normal case. |
-| `@uniweb/runtime` not resolvable at build time | The build skips emitting `runtime-pin.json` and succeeds. The runtime arrives transitively through `@uniweb/build`, so this only affects unusual workspace setups — and nothing in the toolchain requires the pin. |
-| `runtime-pin.json` missing from a built foundation | Nothing in the toolchain reads it, so nothing here changes. What a given host makes of its absence is that host's behaviour to document, not the framework's to promise. |
+| `@uniweb/runtime` not resolvable at build time | The build skips emitting `runtime-pin.json` and succeeds. The runtime arrives transitively through `@uniweb/build`, so this only affects unusual workspace setups. |
+| `runtime-pin.json` missing from a built foundation | `register` sends no floor for it. ⚠️ That means **unknown, not unconstrained** — a foundation whose floor nobody stated cannot be shown compatible with any runtime, so a validator should treat it as blocking rather than skip it. |
 
 *(An earlier version of this page described a resolver that applied `runtimePolicy` at serve time, a publish step that rejected a foundation whose pinned runtime wasn't deployed, and a legacy fallback path for a missing pin. None of those existed. They were removed on 2026-08-06 after the pin's consumers were checked directly and found to be none.)*
 
