@@ -92,6 +92,34 @@ Once you [register](#registering-schemas) the schema, this rule is enforced wher
 
 `append_only` is only valid where there are many records to append to — a `many: true` section, or a list of records authored as a field (`activity: { type: object, many: true, append_only: true }`). On a single record it's rejected rather than ignored. For file-based collections there's no write step, so it has no effect until the type is registered.
 
+### When the content *is* a list
+
+Some content isn't a record with parts — it *is* a list. A navigation menu is a list of items; a form is a list of controls. Declare that as **one `many: true` section and nothing else**, and the content is a bare list with no wrapping key:
+
+```yaml
+# foundation/schemas/menu.yml
+name: menu
+sections:
+  items:
+    many: true
+    fields:
+      label: { type: string, required: true }
+      href:  { type: string, translatable: false }
+```
+
+````markdown
+```yaml:menu
+- label: Home
+  href: /
+- label: Docs
+  href: /docs
+```
+````
+
+**No `brief:` here, and that's right** — there's no single record to be the card, so the type just isn't referenceable from another schema. `uniweb validate` checks each record and names its index (`[1].label`), and defaults are applied per entry. This is how `@std/nav` is built.
+
+One limit: it must be *exactly one* section. Two `many` sections with no single one leaves "which one is the value?" unanswerable, so nothing is checked.
+
 ### Tree sections
 
 A `many: true` section can be marked `tree: true`, letting its records nest **under each other** — a chapter tree, a category hierarchy, a threaded discussion:
