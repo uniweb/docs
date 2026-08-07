@@ -217,8 +217,8 @@ A JSON POST:
 ```json
 {
   "formData": { "Name": "Ada", "Email": "ada@example.com" },
+  "formId": "contact",
   "metadata": {
-    "formId": "contact",
     "sectionType": "ContactForm",
     "sectionId": "contact",
     "pageId": "about",
@@ -227,6 +227,12 @@ A JSON POST:
   }
 }
 ```
+
+`formId` is a top-level field and the rest of the origin rides in `metadata`.
+The split is worth knowing if you are writing the endpoint: `formId` is what
+submissions are *grouped by*, so it is the one an endpoint typically stores as
+its own column, while `metadata` is an opaque blob it reads back for display.
+It is omitted entirely when nothing supplies one.
 
 Anything non-2xx becomes a thrown `Error`. If the response body carries an
 `error` string, that's the message — so an endpoint can explain a rejection
