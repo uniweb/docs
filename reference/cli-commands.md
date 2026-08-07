@@ -576,6 +576,14 @@ Inputs that can't be resolved from static files are reported as **deferred**, ne
 
 Exit codes: `0` clean (or warnings only), `1` violations under `--strict`, `2` setup error (e.g. not in a workspace).
 
+### It also runs when you ship
+
+`uniweb publish`, `uniweb push` and `uniweb deploy` run the same check and print a short summary if anything doesn't conform. **They warn and carry on** — the ship is never blocked, and the full report stays here.
+
+That split is deliberate. A schema can be newer than the content that was valid when it was authored, so a finding means the two disagree, not that your content is wrong; refusing to publish over that would make your site hostage to a schema release. The gate is `--strict`, and CI is where it belongs.
+
+The check is silent when everything conforms, and also when there's nothing to check against — a site whose `foundation:` is a registry ref or a URL has no schemas on disk. Pass `--no-validate` to any of those commands to skip it.
+
 ### Examples
 
 ```bash
@@ -992,6 +1000,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
 | `--registry <url>` | Override the backend origin |
 | `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
+| `--no-validate` | Skip the content-conformance check (it only warns; see below) |
 
 `uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward. (`uniweb publish` can also bring everything along itself — foundation, content, go-live — in one step.)
 
@@ -1249,6 +1258,7 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 | `--target <name>` | Pick a named target from `deploy.yml` (default: its `default:` field). |
 | `--dry-run` | Show what would be deployed without deploying. |
 | `--no-save` | Skip the auto-save of `lastDeploy` in `deploy.yml`. |
+| `--no-validate` | Skip the content-conformance check (it only warns; see [`uniweb validate`](#uniweb-validate)). |
 
 ### How the destination is resolved
 
