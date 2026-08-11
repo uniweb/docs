@@ -44,8 +44,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
   "name": "src",
   "version": "1.0.0",
   "uniweb": {
-    "id": "marketing",
-    "runtimePolicy": "auto-minor"
+    "id": "marketing"
   },
   "dependencies": {
     "@uniweb/core": "0.7.8",
@@ -62,7 +61,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 |-------|------|---------|---------|
 | `id` | string | (the bare segment of `package.json::name`, or an explicit `uniweb.id`) | The foundation's id on the registry — the bare name segment in `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
 | `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations set a scoped name (`@org/x`) directly. |
-| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. **While `@uniweb/*` is pre-1.0, set `"auto-patch"`** — in a `0.x` line the minor slot is the compatibility boundary, so `"auto-minor"` accepts breaking runtime updates. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
+| `runtimePolicy` | `"exact"` | (unset) | **Escape hatch, rarely needed.** Sites using this foundation are given a compatible runtime automatically; compatibility is the framework's determination, not a per-foundation setting. Set `"exact"` only if the foundation depends on undocumented runtime internals or was audited against exactly one runtime build — it freezes sites on the recorded version and they stop receiving runtime fixes. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy). |
 
 ### Identity (scope + id) resolution
 
@@ -103,7 +102,7 @@ The foundation build looks for `@uniweb/runtime` in two places:
 - **You don't need to add `@uniweb/runtime` to your foundation's dependencies.** This is by design — runtime is the host environment, not a foundation import.
 - **To bump the runtime version your foundation pins, bump your `@uniweb/build` dep.** When `@uniweb/build@0.13.0` ships pulling in a newer runtime, updating your devDependency is how you adopt it.
 - **You can override by adding `@uniweb/runtime` directly to your foundation's `dependencies`** — but this is rarely needed and creates a source of confusion (now there are two places that know about the runtime version). Don't do this unless you have a specific reason.
-- **`runtimePolicy` declares how far past the pinned version a host may move a site — it does not move anything itself.** The pin is a compatibility *floor*, not a selector: a site loads a primary foundation plus any extensions, each emitting its own pin, while a site runs exactly one runtime, so the choice cannot come from a pin. It comes from `site.yml::runtime`. `uniweb register` carries the pin with the foundation, so the floor reaches whatever resolves the site; the check itself — a site's runtime against `max()` of every loaded foundation's floor — isn't implemented anywhere yet, so the floor is stated and carried, not enforced. See [runtimePolicy in the CLI reference](./cli-commands.md#the-pin-is-a-compatibility-floor-not-a-selector).
+- **You don't declare a compatibility rule — the pin is enough.** `uniweb register` carries the recorded version with your foundation, and sites using it are given a compatible runtime. Whether two runtime versions are compatible is the framework's determination, not a per-foundation setting: you have no way to evaluate whether anything your code can reach changed between two releases, so you aren't asked to. The only knob is the `"exact"` escape hatch above, for a foundation that depends on undocumented internals or was audited against exactly one build.
 
 ### Build outputs
 

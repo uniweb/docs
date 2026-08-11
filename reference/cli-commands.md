@@ -878,40 +878,34 @@ A registered version is immutable, so there is **no registry-rename flag**. To r
 
 ### Foundation runtime policy
 
-Foundations can declare a `runtimePolicy` field in `package.json` that controls how the runtime version moves forward on already-published sites:
+A foundation's build records the `@uniweb/runtime` version it actually linked against — read from `node_modules`, not chosen — into `dist/runtime-pin.json`, and `uniweb register` sends it with the foundation, so the version it built against travels with it. (What consumes that is covered below: today it is carried, not enforced.)
+
+**There is nothing to declare for this.** Whether two runtime versions are compatible is determined by the framework, not by a per-foundation setting: a foundation author has no way to evaluate whether anything their code can reach has changed between two runtime releases.
+
+**The escape hatch.** For the one case only a foundation author can know — the foundation reaches into undocumented runtime internals, or has been audited against exactly one runtime build and must not move — declare:
 
 ```json
 {
-  "name": "src",
+  "name": "@myorg/foundation",
   "version": "1.0.0",
   "uniweb": {
-    "runtimePolicy": "auto-minor"
+    "runtimePolicy": "exact"
   }
 }
 ```
 
-(`name` here is the scaffold default. Cataloging a foundation needs an org scope — `"@myorg/foundation"`, or `--scope @myorg` — see [Identity](#identity-scope--id) above.)
+That freezes sites using the foundation on the recorded version. Use it only when one of those two things is true: a frozen foundation stops receiving runtime fixes, including security ones. Sites cannot override the choice.
 
-| Value | Meaning |
-|-------|---------|
-| `exact` | Sites stay on exactly the runtime version this foundation built against. Newer runtime versions are not auto-applied. |
-| `auto-patch` | Sites auto-update within the same `MAJOR.MINOR.x` (e.g. `0.8.9` → `0.8.10`). Conservative; matches typical npm patch semantics. |
-| `auto-minor` | Sites auto-update within the same `MAJOR.x.y` (e.g. `0.8.9` → `0.9.0`). ⚠️ On a `0.x` runtime this crosses the compatibility boundary — see below. |
-
-**`auto-patch` is the value to prefer while `@uniweb/*` is pre-1.0.** In a `0.x` version line npm's caret rule makes the minor slot the compatibility boundary — `^0.11.4` accepts `0.11.9` and refuses `0.12.0` — so that is where breaking changes go. Only a patch is guaranteed to leave the API your foundation links against untouched; `auto-minor` on a `0.x` runtime means *"accept breaking runtime updates"*.
-
-> ⚠️ **Corrected 2026-08-11.** This section previously said the runtime was "backwards-compatible at the minor level by convention" and recommended leaving the policy unset. That described an older versioning convention and is no longer true. If you set a policy on that basis, `auto-patch` is most likely the value you wanted.
-
-Set `exact` if your foundation depends on undocumented runtime internals or has been audited against one specific runtime release and you don't want to allow drift.
-
-The field is read at build time and emitted into `dist/runtime-pin.json` alongside the resolved runtime version:
+The field is emitted into `dist/runtime-pin.json` alongside the resolved runtime version:
 
 ```json
 // dist/runtime-pin.json (auto-generated)
-{ "runtime": "0.8.9", "policy": "auto-minor" }
+{ "runtime": "0.11.4", "policy": "exact" }
 ```
 
-`policy` appears only when you set it. Sites cannot override your choice.
+`policy` appears only when set.
+
+> **`auto-patch` and `auto-minor` are no longer recommended.** Earlier releases documented them here, which asked foundation authors to infer a compatibility rule from framework version numbers — not a judgement they are positioned to make, and not one the version numbers reliably carried. Both values are still accepted so existing foundations keep working; neither is worth setting on a new one.
 
 #### The pin is a compatibility floor, not a selector
 
