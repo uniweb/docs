@@ -36,7 +36,6 @@ languages: [en, es, fr]              # Or '*' to auto-discover from locales/
 foundation: '@acme/marketing@1.2.3'  # Or a workspace package name, or a full URL
 extensions:                          # Secondary foundations (optional)
   - '@acme/effects@0.3.1'
-runtime: 0.9.6                       # Pin the runtime version (optional)
 
 # Features
 search:
@@ -82,16 +81,20 @@ description: Build modern websites with components
 
 ## Code: Foundation, Extensions, Runtime
 
-A site is content; the code that renders it comes from three declarations. All three
-take the same kinds of value, because **an extension is a foundation** and the runtime
-is versioned like one.
+A site is content; the code that renders it comes from two declarations, which take
+the same kinds of value because **an extension is a foundation**.
 
 ```yaml
 foundation: '@acme/marketing@1.2.3'   # the primary — required
 extensions:                            # secondary foundations — optional
   - '@acme/effects@0.3.1'
-runtime: 0.9.6                         # optional; the host chooses when omitted
 ```
+
+You don't declare a runtime version. A site ships no JavaScript — content, config,
+data and assets only — so nothing in it links against the runtime and nothing in it
+breaks when the runtime moves. The host serves a runtime compatible with whatever
+foundation the site loads. (There is an operator-level override for the rare case
+where a site is held on a known version; see [`runtime`](#runtime) at the end.)
 
 ### `foundation`
 
@@ -131,8 +134,13 @@ registered yet, and pins the released `@scope/name@version` on the published sit
 
 ### `runtime`
 
-The `@uniweb/runtime` version the site is served with. Optional — omit it and the host
-picks. Pin it to hold a site on a known version:
+> **Not part of normal site authoring — skip this unless you were sent here by an error.**
+> Sites are code-less, so choosing a runtime version is not a decision a site is
+> positioned to make. Omit the key and the host resolves it. It is documented only
+> because `uniweb publish` names it when a pin cannot be satisfied.
+
+An operator-level override that holds a site on a known `@uniweb/runtime` version,
+for a deployment that tracks runtime versions itself:
 
 ```yaml
 runtime: 0.9.6
