@@ -896,9 +896,11 @@ Foundations can declare a `runtimePolicy` field in `package.json` that controls 
 |-------|---------|
 | `exact` | Sites stay on exactly the runtime version this foundation built against. Newer runtime versions are not auto-applied. |
 | `auto-patch` | Sites auto-update within the same `MAJOR.MINOR.x` (e.g. `0.8.9` → `0.8.10`). Conservative; matches typical npm patch semantics. |
-| `auto-minor` | Sites auto-update within the same `MAJOR.x.y` (e.g. `0.8.9` → `0.9.0`). |
+| `auto-minor` | Sites auto-update within the same `MAJOR.x.y` (e.g. `0.8.9` → `0.9.0`). ⚠️ On a `0.x` runtime this crosses the compatibility boundary — see below. |
 
-**Leaving it unset is the normal case** — the runtime is backwards-compatible at the minor level by convention, so most foundations have nothing to declare.
+**`auto-patch` is the value to prefer while `@uniweb/*` is pre-1.0.** In a `0.x` version line npm's caret rule makes the minor slot the compatibility boundary — `^0.11.4` accepts `0.11.9` and refuses `0.12.0` — so that is where breaking changes go. Only a patch is guaranteed to leave the API your foundation links against untouched; `auto-minor` on a `0.x` runtime means *"accept breaking runtime updates"*.
+
+> ⚠️ **Corrected 2026-08-11.** This section previously said the runtime was "backwards-compatible at the minor level by convention" and recommended leaving the policy unset. That described an older versioning convention and is no longer true. If you set a policy on that basis, `auto-patch` is most likely the value you wanted.
 
 Set `exact` if your foundation depends on undocumented runtime internals or has been audited against one specific runtime release and you don't want to allow drift.
 

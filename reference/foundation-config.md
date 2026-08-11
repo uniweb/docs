@@ -62,7 +62,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 |-------|------|---------|---------|
 | `id` | string | (the bare segment of `package.json::name`, or an explicit `uniweb.id`) | The foundation's id on the registry — the bare name segment in `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
 | `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations set a scoped name (`@org/x`) directly. |
-| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
+| `runtimePolicy` | `"exact"` \| `"auto-patch"` \| `"auto-minor"` | `"auto-minor"` | Controls how sites using this foundation receive runtime updates. **While `@uniweb/*` is pre-1.0, set `"auto-patch"`** — in a `0.x` line the minor slot is the compatibility boundary, so `"auto-minor"` accepts breaking runtime updates. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy) for full semantics. |
 
 ### Identity (scope + id) resolution
 
