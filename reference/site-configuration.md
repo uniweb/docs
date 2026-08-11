@@ -32,7 +32,7 @@ index: home                          # Or just name the homepage
 defaultLanguage: en
 languages: [en, es, fr]              # Or '*' to auto-discover from locales/
 
-# Code — the foundation, its extensions, and the runtime
+# Code — the foundation and its extensions
 foundation: '@acme/marketing@1.2.3'  # Or a workspace package name, or a full URL
 extensions:                          # Secondary foundations (optional)
   - '@acme/effects@0.3.1'
@@ -79,7 +79,7 @@ description: Build modern websites with components
 
 ---
 
-## Code: Foundation, Extensions, Runtime
+## Code: Foundation and Extensions
 
 A site is content; the code that renders it comes from two declarations, which take
 the same kinds of value because **an extension is a foundation**.
@@ -93,8 +93,7 @@ extensions:                            # secondary foundations — optional
 You don't declare a runtime version. A site ships no JavaScript — content, config,
 data and assets only — so nothing in it links against the runtime and nothing in it
 breaks when the runtime moves. The host serves a runtime compatible with whatever
-foundation the site loads. (There is an operator-level override for the rare case
-where a site is held on a known version; see [`runtime`](#runtime) at the end.)
+foundation the site loads.
 
 ### `foundation`
 
@@ -131,25 +130,6 @@ extensions:
 When you reference a **workspace-local** extension, `uniweb publish` brings it along the
 same way it does the primary: it releases the extension if its code changed or isn't
 registered yet, and pins the released `@scope/name@version` on the published site.
-
-### `runtime`
-
-> **Not part of normal site authoring — skip this unless you were sent here by an error.**
-> Sites are code-less, so choosing a runtime version is not a decision a site is
-> positioned to make. Omit the key and the host resolves it. It is documented only
-> because `uniweb publish` names it when a pin cannot be satisfied.
-
-An operator-level override that holds a site on a known `@uniweb/runtime` version,
-for a deployment that tracks runtime versions itself:
-
-```yaml
-runtime: 0.9.6
-```
-
-`uniweb publish` validates a pin against the versions the backend reports installed and
-fails with the list if it can't be satisfied, rather than publishing a site that can't
-render. This field applies to Uniweb hosting; `export` and `deploy --host` bake the
-runtime at build time instead.
 
 ---
 
