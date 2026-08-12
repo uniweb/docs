@@ -985,13 +985,34 @@ uniweb push
 
 Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` writes it into `site.yml::$uuid`); later pushes update it. Push is last-write-wins.
 
+### Who owns the site — asked once, on the first push
+
+The push that **creates** a site also decides which organization owns it, and that choice is not editable from the CLI afterwards. So when a site is about to be created and you have not said who owns it, you are asked:
+
+```
+? Create this site under which owner?
+❯ @acme
+  Personal — no organization
+  A new organization…
+```
+
+Answer once and it is recorded in `site.yml::$org`, committed, and reused — you are never asked again for that site, on any machine. Skip the question by naming the owner up front:
+
+```bash
+uniweb push --org @acme     # an organization
+uniweb push --personal      # your personal account, deliberately
+```
+
+**Without a terminal — CI, scripts, agents — the command refuses rather than choosing for you** (and `--yes` refuses too; it promises not to block, and guessing an owner is not an answer). Pass `--org` or `--personal`. Sites that already exist are never affected: their ownership is settled, so no prompt appears.
+
 ### Options
 
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Report what would be pushed; submit nothing |
 | `-o <file>` | Write the `.uwx` package(s) instead of submitting |
-| `--as-org @org` | Act as `@org` (membership-gated) |
+| `--org @org` | Own the new site under `@org` (membership-gated). Alias: `--as-org` |
+| `--personal` | Own the new site under your personal account, deliberately |
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
 | `--registry <url>` | Override the backend origin |
@@ -1058,14 +1079,20 @@ uniweb publish
 
 `publish` also promotes edits made through the Uniweb apps since your last sync. If you have unpushed local content, it warns and asks before going live; run `uniweb push` first if you want to be explicit about sending local edits. A site that was never synced has no `site.yml::$uuid`, and `publish` says so.
 
+The **first** publish of a site also creates it on the backend, which decides who owns it — see [Who owns the site](#who-owns-the-site--asked-once-on-the-first-push) under `uniweb push`. You are asked once, or you can answer up front with `--org` / `--personal`.
+
 ### Options
 
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Resolve everything (runtime, languages); POST nothing. |
 | `--no-verify` | Skip the unpushed-content pre-flight prompt (also `--yes` / `--force`). |
+| `--org @org` | Own the new site under `@org` (first publish only). Alias: `--as-org`. |
+| `--personal` | Own the new site under your personal account, deliberately. |
 | `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
+
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `clone`, `register`, and `status` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
 
 Interactively, if you have unpushed local content `publish` warns and asks before going live (since it publishes the *backend's* current state, not your local files).
 
