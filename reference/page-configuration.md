@@ -239,6 +239,12 @@ A **knowledge page** is content you write for an AI agent rather than for a visi
 reference material, background, house style, answers to questions people actually ask.
 It is **never rendered**: no route, no HTML, nothing a browser can navigate to.
 
+> ⚠️ **"Agent" here means one your host runs**, invoked against your content on request —
+> not agents in general. Knowledge pages are deliberately **not** a channel to crawlers or
+> to external agents browsing your site; those read `llms.txt` and the per-page `.md`
+> projections, and knowledge pages are kept out of both. If you want content readable by
+> any AI that visits, write an ordinary page — it is already published for them.
+
 ```yaml
 # pages/kb/page.yml   (or folder.yml — both carry it)
 title: Product Knowledge
