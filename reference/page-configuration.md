@@ -36,6 +36,9 @@ hidden: true                    # Draft: exclude from the published site (page +
 hideIn: ['*']                   # Reachable, but hidden from every nav menu
 hideIn: [header]                # Hidden from named nav areas only (header, footer, sidebar, …)
 
+# Agent Content
+knowledge: true                 # Written for an AI agent, not a visitor: never rendered (page + its subtree)
+
 # Layout
 layout: DocsLayout              # Layout name (or use default)
 layout:                         # Or expanded form:
@@ -227,6 +230,76 @@ Use cases:
 
 > The older `hideInHeader: true` / `hideInFooter: true` booleans still work as shorthand
 > for `hideIn: [header]` / `hideIn: [footer]`.
+
+---
+
+## Agent Content (`knowledge`)
+
+A **knowledge page** is content you write for an AI agent rather than for a visitor —
+reference material, background, house style, answers to questions people actually ask.
+It is **never rendered**: no route, no HTML, nothing a browser can navigate to.
+
+```yaml
+# pages/kb/page.yml   (or folder.yml — both carry it)
+title: Product Knowledge
+knowledge: true
+```
+
+**It cascades to the whole subtree, by route prefix.** One marker on a parent covers every
+page beneath it, and the children need no marker of their own. Prefix matching is by
+segment, so `/kb` claims `/kb/pricing` and does **not** claim `/kbase`.
+
+```
+pages/
+├── about/        # rendered normally
+└── kb/           # knowledge: true
+    ├── page.yml
+    ├── pricing/  # inherits — no marker needed
+    └── faq/      # inherits
+```
+
+A section `type:` in a knowledge page's frontmatter never selects a component, because
+nothing renders these pages. Write plain markdown.
+
+### What reaches an agent depends on your host
+
+`knowledge:` describes your *intent*; whether anything can act on it is a property of where
+the site is deployed.
+
+| Deployment | What happens |
+|---|---|
+| `uniweb deploy` — a backend-hosted site | The content travels with the site. A host that offers an agent endpoint can serve it to an agent, and controls who reaches it. |
+| `uniweb export`, `uniweb deploy --host <adapter>` — a static host | **The build drops these pages and tells you.** A static host has no agent endpoint to read them and no way to gate a request, so publishing them would expose agent-only content to any visitor with the URL. |
+
+The static-host build prints the routes it dropped:
+
+```
+[site-content] Dropped 2 knowledge page(s) from this build: /kb, /kb/pricing
+```
+
+That warning is the expected outcome, not an error — it means the flag was honoured. If you
+want that content readable by an agent, deploy to a host that provides an endpoint for it.
+
+### Knowledge pages stay out of the public artifacts
+
+On **both** paths above, the artifacts describing your public site never name a knowledge
+page: `llms.txt`, the per-page `.md` projections, and the search index. Those describe pages
+a visitor can reach, and a knowledge page is not one.
+
+Two exclusions **outrank** `knowledge:`, so a contradiction resolves toward less exposure:
+
+- `agents.exclude` in `site.yml` — the one setting that means "keep agents out"
+- an `_`-prefixed route segment — a draft is a draft
+
+### `knowledge` vs `hidden` vs `hideIn`
+
+Three ways a page is "not for a visitor", and they are not interchangeable:
+
+| | Built? | Reachable by URL? | In nav? | Intended reader |
+|---|---|---|---|---|
+| `knowledge: true` | never rendered | ✗ | ✗ | an AI agent |
+| `hidden: true` | ✗ (not published) | ✗ | ✗ | nobody yet — it's a draft |
+| `hideIn: ['*']` | ✓ | ✓ | ✗ | a visitor you send the link to |
 
 ---
 
