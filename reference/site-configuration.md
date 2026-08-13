@@ -424,6 +424,74 @@ See [Site Search](../authoring/search.md) for details.
 
 ---
 
+## Agent-Readable Artifacts
+
+Every build emits an index and per-page markdown that an AI agent can read directly. **Free
+and on by default** — this block only turns things off or narrows them.
+
+```yaml
+agents:
+  index: true            # /llms.txt — an annotated index of the site
+  markdown: true         # /{route}.md — each page as clean markdown
+  branchIndexes: true    # /docs/llms.txt for branches large enough to want one
+  branchMinPages: 5      # how large is large enough
+  exclude: [/internal]   # keep a branch out of both (cascades to its subtree)
+
+agents: false            # or turn the whole capability off in one word
+```
+
+`exclude` takes route path prefixes and excludes the whole branch. The leading slash is
+optional and a trailing one is ignored, so `/internal`, `internal` and `/internal/` are the
+same. Matching is by whole segment — `/internal` excludes `/internal/pay` and does **not**
+exclude `/internally-facing`. **Wildcards are not supported**: `/internal*` matches nothing
+and silently excludes nothing.
+
+`seo.noindex` pages, `hidden` pages, `_`-prefixed drafts, dynamic route templates and
+[knowledge pages](./page-configuration.md#agent-content-knowledge) are excluded already.
+
+### Expected origins
+
+If the site runs an agent, declare where its requests are expected to come from. This suits a
+site that exists to serve someone else's app — a chat endpoint your web app calls — rather
+than its own visitors.
+
+```yaml
+agents:
+  expectedOrigins:
+    - https://app.example.com
+    - https://partner.example.org
+```
+
+**It is a declaration, not a gate.** You are telling the host where you expect callers from; a
+host that offers an agent may then decline requests whose browser-sent `Origin` is not among
+them, before spending anything on an answer. Where it is honoured:
+
+| | |
+|---|---|
+| not declared | no check at all — nothing happens unless you ask for it |
+| your own site's origin | always accepted, without listing it |
+| a request with no `Origin` | **accepted** — see below |
+| matching | exact, per entry; no wildcards |
+
+> ⛔ **This is not a spend limit and cannot be made into one.** `Origin` is set by the browser
+> and enforced by the browser — anything that is not a browser sends whatever it likes, or
+> nothing at all. It stops **casual misuse and third-party embedding**, such as someone
+> dropping your endpoint into their own page. It does not stop anyone determined to run up
+> your bill. Do not size a budget on it.
+
+A request with no `Origin` is accepted deliberately, because there are two shapes of caller
+and this sees only one: your app's **JavaScript** sends `Origin` and is covered; your app's
+**server** never sends one, and refusing it would break the integration this partly exists
+for. Server-to-server callers are authenticated by arrangement with your host.
+
+> **Never put a shared secret in `site.yml`.** Everything in it is delivered to every visitor
+> as part of the site payload.
+
+Unknown keys in `agents:` are forwarded to your host as opaque data and simply never acted
+on, so a typo is silent. `uniweb doctor` flags them.
+
+---
+
 ## Form Submissions
 
 Declare where this site's forms send their submissions.
