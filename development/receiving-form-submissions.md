@@ -124,7 +124,7 @@ import { useFormSubmit } from '@uniweb/kit'
 
 export default function ContactForm({ content, block }) {
   const [values, setValues] = useState({})
-  const { submit, status, error, canSubmit, unavailableReason } = useFormSubmit({
+  const { submit, status, error, canSubmit } = useFormSubmit({
     block,
     context: { formId: 'contact' },
   })
@@ -143,7 +143,6 @@ export default function ContactForm({ content, block }) {
     <form onSubmit={handleSubmit}>
       {/* your fields */}
 
-      {!canSubmit && <p role="status">{unavailableReason}</p>}
       {status === 'error' && <p role="alert">{error?.message}</p>}
       {status === 'success' && <p role="status">Thanks — we'll be in touch.</p>}
 
@@ -163,15 +162,21 @@ What the hook returns:
 | `error` | the `Error` from a failed submission, or `null` |
 | `response` | the endpoint's reply on success, or `null` |
 | `canSubmit` | whether this site has a destination at all |
-| `unavailableReason` | why not, when `canSubmit` is false |
 | `canUploadFiles` | whether attachments can be delivered — check before rendering a file input |
 | `submit(values, overrides?)` | send; resolves with the response, rejects on failure |
 | `reset()` | back to `idle` |
 
 **Check `canSubmit` when you render, not only when you submit.** A form that
 only fails on the button press has already wasted someone's time filling it in.
-`unavailableReason` is an English default — ignore it and render your own copy
-if your site is localized.
+
+**And don't explain the absence to your visitors.** The hook gives you a
+boolean and no wording, deliberately: which services a site's operator bought
+is not a visitor's concern, "submissions are not enabled" reads like a breakage
+when nothing is broken, and any such sentence would be in one language on a site
+that may be multilingual — or unilingual in something other than English. Text a
+visitor reads belongs in your **content**, where it gets translated with
+everything else. Render nothing, or fall back to contact details the site
+already carries.
 
 ### Options
 

@@ -509,7 +509,7 @@ component never names an endpoint.
 ```jsx
 import { useFormSubmit } from '@uniweb/kit'
 
-const { submit, status, error, canSubmit, unavailableReason } = useFormSubmit({
+const { submit, status, error, canSubmit } = useFormSubmit({
   block,
   context: { formId: 'contact' },
   summary: (v) => ({ title: v.name, subtitle: v.email }),
@@ -522,7 +522,6 @@ const { submit, status, error, canSubmit, unavailableReason } = useFormSubmit({
 | `error` | the `Error` from a failed submission, or `null` |
 | `response` | the endpoint's reply on success, or `null` |
 | `canSubmit` | whether this site declares a destination |
-| `unavailableReason` | why not, when `canSubmit` is false |
 | `canUploadFiles` | whether attachments can be delivered — check before rendering a file input |
 | `submit(values, overrides?)` | send; rejects on failure |
 | `reset()` | back to `idle` |
