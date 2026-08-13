@@ -239,11 +239,21 @@ A **knowledge page** is content you write for an AI agent rather than for a visi
 reference material, background, house style, answers to questions people actually ask.
 It is **never rendered**: no route, no HTML, nothing a browser can navigate to.
 
-> ⚠️ **"Agent" here means one your host runs**, invoked against your content on request —
-> not agents in general. Knowledge pages are deliberately **not** a channel to crawlers or
-> to external agents browsing your site; those read `llms.txt` and the per-page `.md`
-> projections, and knowledge pages are kept out of both. If you want content readable by
-> any AI that visits, write an ordinary page — it is already published for them.
+> ⚠️ **It is not published to anyone — it powers a service the site offers.**
+>
+> What your site publishes, it publishes on equal terms: an AI visiting the site sees
+> exactly what a person sees. `llms.txt` and the per-page `.md` files are a convenience
+> for that reader, not a privileged tier; no visitor, human or machine, gets more than
+> another.
+>
+> A knowledge page is different **in kind, not in audience**. It is never a page anyone
+> reads — it is source material for an assistant the site offers *to its visitors*, who
+> ask a question and receive an answer while the material behind it stays unpublished.
+> That is why it is excluded from `llms.txt`, the `.md` projections and the search index:
+> not because some readers are trusted less, but because a knowledge page was never a page.
+>
+> If you want content readable by any AI that visits, write an ordinary page — it is
+> already published to them, on the same terms as to everyone else.
 
 ```yaml
 # pages/kb/page.yml   (or folder.yml — both carry it)
