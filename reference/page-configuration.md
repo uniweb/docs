@@ -282,9 +282,14 @@ want that content readable by an agent, deploy to a host that provides an endpoi
 
 ### Knowledge pages stay out of the public artifacts
 
-On **both** paths above, the artifacts describing your public site never name a knowledge
-page: `llms.txt`, the per-page `.md` projections, and the search index. Those describe pages
-a visitor can reach, and a knowledge page is not one.
+The artifacts **your build emits** to describe the public site never name a knowledge page:
+`llms.txt`, the per-page `.md` projections, and the search index. Those describe pages a
+visitor can reach, and a knowledge page is not one.
+
+> **Scoped deliberately.** This is a statement about what `uniweb build` produces. A host may
+> derive these artifacts itself from the content you deploy, rather than serving the copies
+> your build made — in which case its rules apply, not these. If that matters to you, ask your
+> host how it treats `knowledge:`.
 
 Two exclusions **outrank** `knowledge:`, so a contradiction resolves toward less exposure:
 
