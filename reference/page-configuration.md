@@ -362,11 +362,19 @@ The cascade does the rest. On that shape:
 for it to leak onto. You are not switching things off one at a time and hoping you got them
 all; the site simply has no public half.
 
-> ⛔ **This shape needs a host that runs an agent — deploy it with `uniweb deploy`.** On a
-> static host every page is dropped, because nothing there can read them, and you get an
-> empty SPA shell. The build still reports success: `Collected 0 pages`, zero pre-rendered.
-> Zero pages is not an error, so nothing will stop you. If you meant to build an agent
-> endpoint and got an empty site, that is what happened.
+> ⛔ **This shape needs a host that actually runs an agent — and deploying successfully is
+> not the same as having one.**
+>
+> On a **static host** every page is dropped, because nothing there can read them, and you
+> get an empty SPA shell. The build still reports success: `Collected 0 pages`, zero
+> pre-rendered. Zero pages is not an error, so nothing will stop you.
+>
+> On a **backend-hosted deployment**, whether an agent endpoint exists is the host's
+> decision, per site — some deployments do not offer the service at all. Nothing in your
+> build can tell you; `resolveService(website, 'assistant')` returns a `url` only where the
+> host declared one, and on a knowledge-only site there is no component around to ask.
+> **Confirm with your host that the agent is enabled for that site before building an
+> integration against it.**
 
 ---
 
