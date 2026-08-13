@@ -255,6 +255,18 @@ It is **never rendered**: no route, no HTML, nothing a browser can navigate to.
 > If you want content readable by any AI that visits, write an ordinary page — it is
 > already published to them, on the same terms as to everyone else.
 
+> ### ⛔ `knowledge:` is not a security control — do not put secrets there
+>
+> "Not published" is about **who the prose is written for**, not about confidentiality.
+> The assistant's whole job is to answer visitors using this material, and it can quote
+> it back to whoever asks. A visitor who prompts the assistant can therefore surface
+> what a knowledge page says — **by design, not by leak**.
+>
+> So the test for what belongs here is *"is this written for the assistant to reason
+> with?"* — explanations, background, house style, the answers to questions people
+> actually ask. Not *"do I want to keep this from people?"* Anything that genuinely must
+> not reach a visitor does not belong in your site's content at all.
+
 ```yaml
 # pages/kb/page.yml   (or folder.yml — both carry it)
 title: Product Knowledge
@@ -284,8 +296,8 @@ the site is deployed.
 
 | Deployment | What happens |
 |---|---|
-| `uniweb deploy` — a backend-hosted site | The content travels with the site. A host that offers an agent endpoint can serve it to an agent, and controls who reaches it. |
-| `uniweb export`, `uniweb deploy --host <adapter>` — a static host | **The build drops these pages and tells you.** A static host has no agent endpoint to read them and no way to gate a request, so publishing them would expose agent-only content to any visitor with the URL. |
+| `uniweb deploy` — a backend-hosted site | The content travels with the site, so an assistant running over it can grep and read the knowledge material alongside the public content when answering a visitor. |
+| `uniweb export`, `uniweb deploy --host <adapter>` — a static host | **The build drops these pages and tells you.** Files are served as files; there is no assistant here, so nothing would read them — and publishing them would turn prose written for a machine reader into pages for the only readers this host has. |
 
 The static-host build prints the routes it dropped:
 
