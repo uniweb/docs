@@ -334,6 +334,40 @@ Three ways a page is "not for a visitor", and they are not interchangeable:
 | `hidden: true` | ✗ (not published) | ✗ | ✗ | nobody yet — it's a draft |
 | `hideIn: ['*']` | ✓ | ✓ | ✗ | a visitor you send the link to |
 
+### A site that is nothing but knowledge
+
+A site is a set of routes. It does not have to have HTML pages at all — and marking the
+root `knowledge: true` gives you a site that renders nothing and exists to *be* an agent:
+a `/_agent/chat` URL that a web app, a mobile app, or another backend sends requests to.
+
+```
+site/pages/
+├── page.yml          # knowledge: true — cascades to everything below
+├── house-style.md
+├── pricing.md
+└── support.md
+```
+
+The cascade does the rest. On that shape:
+
+| | |
+|---|---|
+| agent corpus | every page, with its full text |
+| `llms.txt` | the site name, and no page list |
+| search index | 0 entries |
+| per-page `.md` | none emitted |
+| HTML routes | none |
+
+**Nothing leaks by construction rather than by configuration** — there is no public surface
+for it to leak onto. You are not switching things off one at a time and hoping you got them
+all; the site simply has no public half.
+
+> ⛔ **This shape needs a host that runs an agent — deploy it with `uniweb deploy`.** On a
+> static host every page is dropped, because nothing there can read them, and you get an
+> empty SPA shell. The build still reports success: `Collected 0 pages`, zero pre-rendered.
+> Zero pages is not an error, so nothing will stop you. If you meant to build an agent
+> endpoint and got an empty site, that is what happened.
+
 ---
 
 ## Localized URLs
