@@ -628,6 +628,7 @@ collections:
 | Option | Description |
 |--------|-------------|
 | `path` | Folder containing markdown files |
+| `route` | Base route for the collection's detail pages — see below |
 | `sort` | Sort expression (`field asc/desc`) |
 | `where` | Filter predicate (where-object) |
 | `limit` | Maximum items |
@@ -635,6 +636,26 @@ collections:
 | `excerpt.field` | Frontmatter field for excerpt |
 
 Collections generate JSON files in `public/data/`. Use `data: collection-name` in pages to fetch them.
+
+#### `route:` — where a record's detail page lives
+
+Set `route:` when the collection has a detail page behind a dynamic route, and every record gains a `route` field of `<route>/<slug>`:
+
+```yaml
+collections:
+  articles:
+    path: collections/articles
+    route: /blog          # pairs with a pages/blog/[slug]/ dynamic route
+```
+
+```jsonc
+// public/data/articles.json — each record now carries its own link
+[{ "slug": "my-post", "title": "My Post", "route": "/blog/my-post" }]
+```
+
+A component links a card with `item.route` instead of composing the URL itself, so the base route is declared once and every consumer agrees — including generated artifacts like the search index. Without `route:`, records carry no link and a card has nothing to point at.
+
+A trailing slash is normalized away: `route: /blog/` and `route: /blog` both produce `/blog/my-post`.
 
 See [Content Collections](./content-collections.md) for details.
 
