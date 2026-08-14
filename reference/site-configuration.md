@@ -533,6 +533,82 @@ for the component side.
 
 ---
 
+## Tracking
+
+Where this site's usage events go. One destination, one stream: page views and
+anything a component reports share it.
+
+```yaml
+tracking: https://plausible.io/api/event
+```
+
+Off unless you set it. With no destination configured, nothing is collected and
+nothing is sent — components that report events simply do nothing.
+
+### Full Options
+
+```yaml
+tracking: /_t                               # shorthand
+
+tracking:
+  endpoint: https://plausible.io/api/event  # object form
+  consent: required                         # hold everything until the visitor agrees
+```
+
+A relative endpoint resolves against the site's `base:`, the same way `submit:`
+and `search:` do. An absolute URL is used as written.
+
+A host may also provide a destination, in which case you need nothing here. Your
+own `tracking:` always wins over the host's.
+
+### What gets sent
+
+The runtime reports a `page_view` on every route change, including the first:
+
+```json
+{ "event": "page_view", "path": "/about", "referrer": "https://news.example/post" }
+```
+
+- **`path`** is site-relative — a site deployed at `/docs/` reports `/about`.
+- **`referrer`** is the external page the visitor arrived from, if any.
+  Same-site navigation is not a referral and is not reported.
+- **`utm_source`, `utm_medium`, `utm_campaign`** ride along when the visitor
+  arrived with them.
+
+Referrer and campaign values are read **once, when the page first loads**, and
+attached to each view of that visit — they exist in the URL only on arrival.
+
+Components add their own events (a video milestone, a download), which travel on
+the same stream. See the AGENTS.md guide in your project for the component side.
+
+Every event also carries a **`visit`** key — an opaque value generated when the
+page loads, so your collector can tell that a set of events came from the same
+visit and reconstruct what someone did in what order.
+
+> **Nothing is stored on the visitor's device.** No cookie, no local storage —
+> the `visit` key lives in memory and is gone on refresh, in a new tab, or
+> tomorrow. It identifies **one page load**, not a person: it cannot be linked to
+> another visit, another tab, or another site. There is no visitor id, no session
+> that spans days, and no fingerprint. Counting unique *people* is something your
+> collector would do with what it already receives; the framework never sends
+> anything that would let it.
+
+### Consent
+
+`consent: required` holds every event until a visitor answers. Nothing leaves
+the browser before then; agreeing sends what was held, declining discards it.
+
+Without it, tracking starts as soon as the page loads. Declaring a destination
+is treated as your decision to track — the framework does not assume which laws
+apply to your site.
+
+> **A consent banner is an ordinary component.** Because tracking now comes from
+> the site itself rather than a third-party script, browser blockers and consent
+> tools cannot intercept it — so if you need consent, use this option and a
+> component that sets it.
+
+---
+
 ## Build Options
 
 Configure the production build.
@@ -743,7 +819,9 @@ site/
 └── layout/
 ```
 
-**Common uses:** analytics (Google Analytics, Plausible), tag managers, error monitoring (Sentry), cookie consent scripts, custom meta tags, font preconnects.
+**Common uses:** tag managers, error monitoring (Sentry), third-party widgets, custom meta tags, font preconnects.
+
+> For **usage analytics**, prefer [`tracking:`](#tracking) — it needs no script, works the same on every host, and reports SPA navigation, which a page-load-based snippet misses. Reach for `head.html` when you need a specific vendor's own script.
 
 > For social/SEO meta (Open Graph image, title, description, canonical, robots), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`. Reserve `head.html` for everything else.
 
