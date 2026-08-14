@@ -653,7 +653,7 @@ collections:
 [{ "slug": "my-post", "title": "My Post", "route": "/blog/my-post" }]
 ```
 
-A component links a card with `item.route` instead of composing the URL itself, so the base route is declared once and every consumer agrees — including generated artifacts like the search index. Without `route:`, records carry no link and a card has nothing to point at.
+A component links a card with `item.route` rather than composing the URL itself, so the base route is declared once and read everywhere. Without `route:`, compiled records carry no link and a card has nothing to point at.
 
 A trailing slash is normalized away: `route: /blog/` and `route: /blog` both produce `/blog/my-post`.
 
