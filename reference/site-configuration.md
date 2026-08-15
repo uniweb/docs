@@ -553,7 +553,7 @@ tracking: /collect                              # shorthand — a path on your o
 tracking:
   endpoint: https://collector.example.com/events   # object form
   consent: required                             # hold everything until the visitor agrees
-  tags:                                         # a vendor's own script — see below
+  scripts:                                      # a vendor's own script — see below
     - https://vendor.example.com/tag.js
 ```
 
@@ -622,7 +622,7 @@ kit, so they are worth recognising if you build a dashboard:
 Any other event name is one a component chose; there is no list of permitted
 names. See the AGENTS.md guide in your project for the component side.
 
-### Third-party tags
+### Third-party scripts
 
 If you also use a vendor's own analytics or tag manager, name its script and the
 framework loads it:
@@ -630,13 +630,13 @@ framework loads it:
 ```yaml
 tracking:
   endpoint: /collect
-  tags:
+  scripts:
     - https://vendor.example.com/tag.js
 ```
 
 This is a **second, independent path**. The vendor's script measures with its own
 storage and reports to the vendor; nothing is shared or translated between it and
-the events above. You can declare `tags:` with no `endpoint:` at all, if the
+the events above. You can declare `scripts:` with no `endpoint:` at all, if the
 vendor's tool is the only one you want.
 
 What the framework guarantees about the load:
@@ -650,11 +650,14 @@ What the framework guarantees about the load:
 
 A relative path resolves against the site's `base:`, the same as the endpoint.
 
-> **A tag is a URL the browser fetches — there is no field for inline script.**
-> Check the vendor's own install instructions before relying on this: some are a
-> script tag and nothing else, which is exactly what this loads, while others
-> also run a few inline lines to configure themselves. For those, use
-> [`head.html`](#custom-head-injection) — noting which hosts apply it.
+Each entry is **a URL, and nothing else** — there is no field for inline script.
+Get it from your vendor's own install instructions.
+
+> **Check that install snippet before relying on this.** Some vendors give you a
+> single `<script src="…">` and nothing more, which is exactly what this loads.
+> Others also run a few inline lines to configure themselves, and those lines
+> have nowhere to go here — for that, use
+> [`head.html`](#custom-head-injection), noting which hosts apply it.
 
 ### What is and isn't stored
 
