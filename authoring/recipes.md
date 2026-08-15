@@ -841,6 +841,18 @@ To add Google Analytics, tracking pixels, or any other service that asks you to 
 
 That's it. The build injects it into every page automatically.
 
+> **This works where your site's pages are built from your files** — `uniweb export`, or
+> `uniweb deploy --host=<adapter>`. If you publish to **Uniweb Cloud** (`uniweb publish`), the host
+> builds your pages from your synced content and `head.html` is **not applied** — your file is kept
+> and synced, but a script in it will not run there.
+>
+> **For analytics on any host**, there is a second option that needs no `<script>` at all:
+> [`tracking:` in site.yml](../reference/site-configuration.md#tracking) reports page views to an
+> endpoint you name, and can load a vendor's script by URL. The two differ mechanically rather than
+> in quality — a vendor's snippet brings that vendor's own code and cookies, which is what lets it
+> report sessions and unique visitors; `tracking:` stores nothing on a visitor's device and so counts
+> page views and events but not people. Pick by which numbers you need.
+
 ### Google Analytics
 
 ```html
