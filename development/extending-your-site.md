@@ -199,6 +199,8 @@ A `head.html` file in your site root injects raw HTML into every page's `<head>`
 **Installed to:** nothing — just a file
 **Configured in:** `site/head.html`
 
+**Applies when the framework builds your pages** (`uniweb export`, `uniweb deploy --host=<adapter>`). On Uniweb Cloud (`uniweb publish`) the host generates the pages from your synced content, so `head.html` is not applied there — see [Custom Head Injection](../reference/site-configuration.md#custom-head-injection).
+
 ### Extensions — additional section types
 
 Extensions are secondary foundations loaded at runtime. They contribute section types that content authors can use in markdown, alongside the primary foundation's types. Use this when you want to add a pack of components (charts, effects, embeds) without modifying the primary foundation.
@@ -259,7 +261,7 @@ export default function AnimatedHero({ content }) {
 | Add offline support, generate sitemaps     | Vite plugin (site)            |
 | Optimize images at build time              | Vite plugin (site)            |
 | Report page views and usage events         | `tracking:` (site.yml)        |
-| Add a vendor's own script, or a chat widget | head.html                    |
+| Run a vendor's analytics, or a chat widget | head.html                     |
 | Add a verification meta tag                | head.html                     |
 | Use a third-party component pack           | Extension (site.yml)          |
 | Use an animation library in components     | npm package (foundation)      |

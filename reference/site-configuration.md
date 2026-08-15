@@ -539,7 +539,7 @@ Where this site's usage events go. One destination, one stream: page views and
 anything a component reports share it.
 
 ```yaml
-tracking: https://plausible.io/api/event
+tracking: https://collector.example.com/events
 ```
 
 Off unless you set it. With no destination configured, nothing is collected and
@@ -548,11 +548,11 @@ nothing is sent — components that report events simply do nothing.
 ### Full Options
 
 ```yaml
-tracking: /_t                               # shorthand
+tracking: /collect                              # shorthand — a path on your own site
 
 tracking:
-  endpoint: https://plausible.io/api/event  # object form
-  consent: required                         # hold everything until the visitor agrees
+  endpoint: https://collector.example.com/events   # object form
+  consent: required                             # hold everything until the visitor agrees
 ```
 
 A relative endpoint resolves against the site's `base:`, the same way `submit:`
@@ -561,13 +561,41 @@ and `search:` do. An absolute URL is used as written.
 A host may also provide a destination, in which case you need nothing here. Your
 own `tracking:` always wins over the host's.
 
-### What gets sent
+> **The endpoint is yours to provide.** Events are sent in the format below, so
+> the destination has to be something that accepts it — your own collector, a
+> function you deploy, or an endpoint your host offers. A third-party analytics
+> product's public API expects that product's own format and will not understand
+> these events. Some accept the request and discard the contents, which looks
+> exactly like success.
 
-The runtime reports a `page_view` on every route change, including the first:
+### What your collector receives
+
+One `POST` per flush, batched, with `Content-Type: application/json`:
 
 ```json
-{ "event": "page_view", "path": "/about", "referrer": "https://news.example/post" }
+{
+  "events": [
+    { "event": "page_view", "visit": "b3f1…", "path": "/about", "referrer": "https://news.example/post" },
+    { "event": "video_milestone", "visit": "b3f1…", "path": "/about", "section": "Hero", "milestone": 50 }
+  ]
+}
 ```
+
+Reply with any 2xx. The response body is ignored and a failed send is never
+retried — the last flush of a visit goes out as the page unloads, where there is
+nothing left to retry with.
+
+**Every event carries `event`, `visit` and `path`.** Components add their own
+fields beyond that, and the framework constrains none of them.
+
+**`visit`** is an opaque value generated when the page loads, so your collector
+can tell that a set of events came from the same page load and reconstruct what
+someone did in what order.
+
+### The events
+
+`page_view` is the only event sent automatically — on every route change,
+including the first:
 
 - **`path`** is site-relative — a site deployed at `/docs/` reports `/about`.
 - **`referrer`** is the external page the visitor arrived from, if any.
@@ -576,22 +604,35 @@ The runtime reports a `page_view` on every route change, including the first:
   arrived with them.
 
 Referrer and campaign values are read **once, when the page first loads**, and
-attached to each view of that visit — they exist in the URL only on arrival.
+attached to each view of that visit — they exist in the URL only on arrival. So
+a per-view count of `utm_source` tells you *views by visitors who **arrived** via
+X*, never *views that carried X*. Same numbers, different sentence.
 
-Components add their own events (a video milestone, a download), which travel on
-the same stream. See the AGENTS.md guide in your project for the component side.
+Everything else is sent by components. Two ship with the framework's component
+kit, so they are worth recognising if you build a dashboard:
 
-Every event also carries a **`visit`** key — an opaque value generated when the
-page loads, so your collector can tell that a set of events came from the same
-visit and reconstruct what someone did in what order.
+| event | sent by | fields |
+| --- | --- | --- |
+| `page_view` | the runtime, automatically | `path`, `referrer?`, `utm_*?` |
+| `scroll_depth` | `useScrollDepth()` in a component | `depth` — 25, 50, 75, 100 |
+| `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
+
+Any other event name is one a component chose; there is no list of permitted
+names. See the AGENTS.md guide in your project for the component side.
+
+### What is and isn't stored
 
 > **Nothing is stored on the visitor's device.** No cookie, no local storage —
 > the `visit` key lives in memory and is gone on refresh, in a new tab, or
 > tomorrow. It identifies **one page load**, not a person: it cannot be linked to
 > another visit, another tab, or another site. There is no visitor id, no session
-> that spans days, and no fingerprint. Counting unique *people* is something your
-> collector would do with what it already receives; the framework never sends
-> anything that would let it.
+> that spans days, and no fingerprint.
+
+That is a trade, not only a property, and it is worth knowing before you compare
+numbers with another tool. Counting **unique people**, **sessions**, returning
+visitors or bounce rate all require storing an identifier on the device that
+outlives the page — which is how analytics products reporting those numbers get
+them. This stores nothing, so it counts page views and events and stops there.
 
 ### Consent
 
@@ -600,7 +641,8 @@ the browser before then; agreeing sends what was held, declining discards it.
 
 Without it, tracking starts as soon as the page loads. Declaring a destination
 is treated as your decision to track — the framework does not assume which laws
-apply to your site.
+apply to your site. The section above states what is and isn't stored, by this
+and by the alternatives, so that the decision is yours to make on the facts.
 
 > **A consent banner is an ordinary component.** Because tracking now comes from
 > the site itself rather than a third-party script, browser blockers and consent
@@ -819,9 +861,11 @@ site/
 └── layout/
 ```
 
-**Common uses:** tag managers, error monitoring (Sentry), third-party widgets, custom meta tags, font preconnects.
+**Common uses:** analytics and tag managers, error monitoring (Sentry), third-party widgets, custom meta tags, font preconnects.
 
-> For **usage analytics**, prefer [`tracking:`](#tracking) — it needs no script, works the same on every host, and reports SPA navigation, which a page-load-based snippet misses. Reach for `head.html` when you need a specific vendor's own script.
+> **`head.html` applies when the framework builds your pages** — `uniweb export`, or `uniweb deploy --host=<adapter>`. On **Uniweb Cloud** (`uniweb publish`) the pages are generated by the host from your synced content, so `head.html` is **not applied there**. The file is still kept and synced, so nothing is lost — but a script placed in it will not run on that host.
+
+> **For usage analytics you have two options**, and they differ mechanically rather than in quality. A vendor's own snippet here loads that vendor's script and typically sets its cookies, which is what lets it report sessions and unique users; it counts page loads, so in-app navigation needs its own handling. [`tracking:`](#tracking) loads no script and stores nothing on the visitor's device, reports every route change, and sends to an endpoint you provide — so it counts page views and events but not users or sessions. Pick by which numbers you need, and note the lane limitation above if you deploy to Uniweb Cloud.
 
 > For social/SEO meta (Open Graph image, title, description, canonical, robots), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`. Reserve `head.html` for everything else.
 
