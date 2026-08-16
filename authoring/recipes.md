@@ -841,17 +841,33 @@ To add Google Analytics, tracking pixels, or any other service that asks you to 
 
 That's it. The build injects it into every page automatically.
 
-> **This works where your site's pages are built from your files** — `uniweb export`, or
+> ⚠️ **This works where your site's pages are built from your files** — `uniweb export`, or
 > `uniweb deploy --host=<adapter>`. If you publish to **Uniweb Cloud** (`uniweb publish`), the host
 > builds your pages from your synced content and `head.html` is **not applied** — your file is kept
 > and synced, but a script in it will not run there.
->
-> **For analytics on any host**, there is a second option that needs no `<script>` at all:
-> [`tracking:` in site.yml](../reference/site-configuration.md#tracking) reports page views to an
-> endpoint you name, and can load a vendor's script by URL. The two differ mechanically rather than
-> in quality — a vendor's snippet brings that vendor's own code and cookies, which is what lets it
-> report sessions and unique visitors; `tracking:` stores nothing on a visitor's device and so counts
-> page views and events but not people. Pick by which numbers you need.
+
+### ⭐ For a tracking script, there is a shorter way that works everywhere
+
+If the service gave you a single `<script src="…">` line and nothing else — most analytics tools
+and tag managers do — you can skip `head.html` and name the URL instead:
+
+```yaml
+# site.yml
+tracking:
+  scripts:
+    - https://www.example-analytics.com/tag.js?id=YOUR-ID
+```
+
+Same script, same service, same data. The difference is **who loads it**: the site's runtime does,
+so it works on every host — including Uniweb Cloud, where `head.html` does not apply.
+
+It also gets you two things a pasted snippet does not: it is loaded once per page even as visitors
+move around your site, and if you add `consent: required` the script is **never fetched at all**
+until a visitor agrees, rather than loaded and then asked to behave.
+
+**Use `head.html` instead when** the service's snippet has more than a `<script src>` in it — some
+add a few inline configuration lines, and those have nowhere to go in a URL. See
+[Tracking](../reference/site-configuration.md#third-party-scripts) for the full reference.
 
 ### Google Analytics
 

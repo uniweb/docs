@@ -261,7 +261,8 @@ export default function AnimatedHero({ content }) {
 | Add offline support, generate sitemaps     | Vite plugin (site)            |
 | Optimize images at build time              | Vite plugin (site)            |
 | Report page views and usage events         | `tracking:` (site.yml)        |
-| Run a vendor's analytics, or a chat widget | head.html                     |
+| Load a vendor's tracking script (a `<script src>`) | `tracking.scripts:` (site.yml) — works on every host |
+| Run a snippet with inline config, or a chat widget | head.html — only where the framework builds your pages |
 | Add a verification meta tag                | head.html                     |
 | Use a third-party component pack           | Extension (site.yml)          |
 | Use an animation library in components     | npm package (foundation)      |
