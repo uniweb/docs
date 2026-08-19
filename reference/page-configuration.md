@@ -60,6 +60,9 @@ fetch:                          # Advanced: full fetch config
   url: https://api.example.com/team
   schema: team
 
+# Analytics
+trackSections: true             # Override the site's `emit` for this page (true or false)
+
 # SEO
 seo:
   noindex: false
@@ -377,6 +380,31 @@ all; the site simply has no public half.
 > integration against it.**
 
 ---
+
+## Section Analytics (`trackSections`)
+
+Report which sections of this page visitors actually reach:
+
+```yaml
+trackSections: true
+```
+
+A `section_view` is sent the first time each section is at least half visible —
+once per section per page view, with no duration attached. Read as counts across
+a page (*seen by 80% / 40% / 15%*), it tells you where people stopped.
+
+**This is an override, not a switch.** Say nothing and the site's
+[`emit`](site-configuration.md#choosing-what-is-sent-emit) decides — which by
+default includes `section_view`. Set it explicitly to disagree with the site on
+this one page:
+
+```yaml
+trackSections: false    # exempt a page whose sections are noisy or uninteresting
+```
+
+It does nothing unless the site declares a [`tracking:`](site-configuration.md#tracking)
+destination. With none — the default — nothing is collected and nothing is sent.
+
 
 ## Localized URLs
 

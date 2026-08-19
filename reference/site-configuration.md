@@ -596,8 +596,9 @@ someone did in what order.
 
 ### The events
 
-`page_view` is the only event sent automatically — on every route change,
-including the first:
+Three events are sent automatically, with no component involvement.
+
+`page_view` goes out on every route change, including the first:
 
 - **`path`** is site-relative — a site deployed at `/docs/` reports `/about`.
 - **`referrer`** is the external page the visitor arrived from, if any.
@@ -610,17 +611,67 @@ attached to each view of that visit — they exist in the URL only on arrival. S
 a per-view count of `utm_source` tells you *views by visitors who **arrived** via
 X*, never *views that carried X*. Same numbers, different sentence.
 
+`outbound_click` goes out when a visitor follows a link that leaves your site.
+It carries **`hostname`** — the destination host and nothing else. The path and
+query string never leave the page, so a link someone shares with a search term
+or a token in it cannot deposit that into your analytics.
+
+`section_view` goes out the first time a section is at least half visible, once
+per section per page view. It is **off unless a page asks for it** with
+`trackSections: true` in that page's `page.yml`, because every section of every
+page is a volume of data most sites have no question for.
+
 Everything else is sent by components. Two ship with the framework's component
 kit, so they are worth recognising if you build a dashboard:
 
 | event | sent by | fields |
 | --- | --- | --- |
 | `page_view` | the runtime, automatically | `path`, `referrer?`, `utm_*?` |
-| `scroll_depth` | `useScrollDepth()` in a component | `depth` — 25, 50, 75, 100 |
+| `outbound_click` | the runtime, automatically | `hostname` |
+| `section_view` | the runtime, on pages with `trackSections` | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
+| `read_depth` | `useReadingDepth()` in a long section | `depth` — 25, 50, 75, 100 |
 
 Any other event name is one a component chose; there is no list of permitted
 names. See the AGENTS.md guide in your project for the component side.
+
+### Choosing what is sent (`emit`)
+
+A site sends `page_view`, `outbound_click` and `section_view` unless it says
+otherwise:
+
+```yaml
+tracking:
+  endpoint: https://collector.example.com/events
+  emit: standard
+```
+
+`emit` stands on its own. Where your host supplies the collector you declare
+only what to send, and the address comes from the host:
+
+```yaml
+tracking:
+  emit: minimal
+```
+
+The two are read key by key, so naming `emit` alone overrides nothing else the
+host declared. Declaring your own `endpoint:` always wins over the host's.
+
+| value | sends |
+| --- | --- |
+| `minimal` | `page_view` |
+| `standard` | `page_view`, `outbound_click`, `section_view` — the default |
+| `all` | everything the framework emits, **including events added in later releases** |
+| a list | exactly those event names, e.g. `[page_view, section_view]` |
+
+`standard` and `all` select the same events today. They differ the moment a new
+automatic event ships: `all` picks it up, `standard` does not, so a site that
+never changed never starts sending more than it did.
+
+**`emit` does not limit what components send.** `block.track()` and
+`useTracker()` are unaffected — it governs only the events the framework emits
+on its own. A host that supplies your collector may narrow the list further if
+it will not store an event; it can never widen it beyond what you asked for.
 
 ### Third-party scripts
 
