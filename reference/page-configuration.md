@@ -402,6 +402,13 @@ this one page:
 trackSections: false    # exempt a page whose sections are noisy or uninteresting
 ```
 
+**Why this one event has a per-page control and the others don't.** A page view
+is one event whatever the page; an outbound click is bounded by what a visitor
+does. A section view is **one event per section**, so a long page costs twenty
+times what a short one does. The control sits where the cost actually varies —
+which is why a site with five landing pages and four hundred documentation pages
+can instrument the five and leave the rest alone.
+
 It does nothing unless the site declares a [`tracking:`](site-configuration.md#tracking)
 destination. With none — the default — nothing is collected and nothing is sent.
 
