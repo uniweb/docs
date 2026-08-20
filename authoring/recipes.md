@@ -20,7 +20,7 @@ type: Hero
 theme: gradient
 ---
 
-### Welcome to
+#> Welcome to
 # Acme Corp
 ## Build something great
 
@@ -32,7 +32,7 @@ We help teams ship products faster with modern tools and beautiful design.
 ![Hero illustration](./hero.jpg)
 ```
 
-- The `### → #` pattern creates a pretitle ("Welcome to") above the title.
+- The `#>` label line creates a pretitle ("Welcome to") above the title. A smaller heading directly above the title (`### → #`) does the same.
 - Standalone links become CTA buttons. The section type decides how they look.
 - The image, links, and paragraphs are ingredients — the section type arranges them.
 
@@ -48,7 +48,7 @@ type: Hero
 theme: dark
 ---
 
-### Our Mission
+#> Our Mission
 # Build the future
 # [with confidence]{accent}
 
@@ -60,7 +60,7 @@ We help teams ship products faster with modern tools and beautiful design.
 
 - Two consecutive `#` headings merge into a multi-line title — one `<h1>` with visual line breaks.
 - `[with confidence]{accent}` highlights the second line with accent styling (color + bold).
-- The `### → #` pattern creates a pretitle ("Our Mission") above the title.
+- The `#>` label line creates a pretitle ("Our Mission") above the title. A smaller heading directly above the title (`### → #`) does the same.
 
 ---
 

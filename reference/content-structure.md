@@ -61,8 +61,8 @@ All content fields are available at the top level:
 | Field        | Source                 | Description                                |
 | ------------ | ---------------------- | ------------------------------------------ |
 | `title`      | First heading          | Main headline (`string` or `string[]` for multi-line) |
-| `pretitle`   | Heading before title   | Eyebrow/kicker text                        |
-| `subtitle`   | Heading after title    | Secondary headline (`string` or `string[]`) |
+| `pretitle`   | `#>` label line, or smaller headings above the title | Eyebrow/kicker text (`string` or `string[]`) |
+| `subtitle`   | Line(s) one step below the title | Secondary headline (`string` or `string[]`) |
 | `paragraphs` | Body text              | Array of paragraph strings                 |
 | `links`      | `[text](url)`          | Array of link objects (see below)          |
 | `images`       | `![alt](url)`          | Array of image objects                     |
@@ -74,7 +74,7 @@ All content fields are available at the top level:
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
 | `data`       | Tagged blocks          | `yaml:`/`json:` give the parsed value; `md:` gives `{ items, sequence }` (see below) |
 | `tables`     | Markdown tables        | Present only when the content has one — `[{ rows }]` |
-| `headings`   | Additional headings    | Headings after subtitle, in document order |
+| `headings`   | Nested content only    | Headings inside quote/list bodies — a section's headline never spills here |
 | `items`      | Subsequent headings    | Child content groups                       |
 | `sequence`   | All elements           | Ordered array for document-order rendering |
 
@@ -936,26 +936,45 @@ A heading groups with the previous heading only when it is **exactly one level d
 
 The level gap signals a structural tier change: `### Speed` is an item under `# Features`, not a subtitle of it. If you want a subtitle, use the adjacent level (`##`).
 
-### Pretitle Detection
+### Subtitle Lines
 
-Any heading followed by a _more important_ heading automatically becomes a pretitle:
+The headline can step down more than once. Each *further* one-step descent — and each same-level repeat — adds another subtitle line, so `subtitle` is a string for one line and an array for several:
 
 ```markdown
-### Welcome to ← pretitle (H3 before H1)
+# DevConf 2027    ← title
+## June 12 – 14   ← subtitle line 1
+### Lisbon        ← subtitle line 2
+```
+
+```js
+content.subtitle // ["June 12 – 14", "Lisbon"]
+```
+
+A CV header (name / role / affiliation), an event cover, or a book page all fit in one headline this way. Designs that use a single subtitle read the first line.
+
+### Pretitle Detection
+
+The explicit spelling is the `#>` label line — it names the block that starts next, with no level to choose:
+
+```markdown
+#> Welcome to ← pretitle (label line)
 
 # Acme Corp ← title
 
 ## Build faster ← subtitle
 ```
 
-This works at any level:
+Any number of leading `#`s spells the same label (`##>` and `#>` are identical); repeat label lines for a multi-line pretitle. A label directly above an item's heading becomes that item's pretitle, and a label opening an untitled block labels the block itself.
 
-- H3 → H1 = pretitle
-- H2 → H1 = pretitle
-- H4 → H2 = pretitle
-- H6 → H5 = pretitle
+A smaller ordinary heading directly above a more important one also becomes a pretitle — stacked smaller headings all join it:
 
-No special syntax needed—the parser detects it automatically.
+```markdown
+### Welcome to ← pretitle (H3 before H1)
+
+# Acme Corp ← title
+```
+
+This positional form works at any level: H3 → H1, H2 → H1, H4 → H2, H6 → H5.
 
 ### Multi-Line Headings
 
