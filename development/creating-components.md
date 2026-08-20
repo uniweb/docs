@@ -499,6 +499,7 @@ This creates documentation with each component's:
 
 ## See Also
 
+- [Receiving Content](./receiving-content.md) — Consuming the parsed structure well: guarantees, multi-line slots, items, the two views
 - [Component Metadata](../reference/component-metadata.md) — Full meta.js reference
 - [Content Structure](../reference/content-structure.md) — How content is parsed
 - [Kit Reference](../reference/kit-reference.md) — Hooks, components, and utilities
