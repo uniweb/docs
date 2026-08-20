@@ -578,6 +578,7 @@ One `POST` per flush, batched, with `Content-Type: application/json`:
 {
   "events": [
     { "event": "page_view", "visit": "b3f1…", "path": "/about", "referrer": "https://news.example/post" },
+    { "event": "page_view", "visit": "b3f1…", "path": "/es/sobre", "continues": true },
     { "event": "video_milestone", "visit": "b3f1…", "path": "/about", "section": "Hero", "milestone": 50 }
   ]
 }
@@ -606,6 +607,21 @@ Three events are sent automatically, with no component involvement.
 - **`utm_source`, `utm_medium`, `utm_campaign`** ride along when the visitor
   arrived with them.
 
+**`continues`** appears on a `page_view` when the visitor was already on your
+site and something loaded a fresh page rather than navigating within the app —
+switching language is the usual cause. It is sent **only when true**.
+
+It exists because that case and a genuine first arrival otherwise look
+identical: a visitor arriving from elsewhere carries a `referrer`, and a visitor
+coming from one of your own pages has that referrer dropped (your site should
+not appear as its own top referrer) — leaving both with nothing. Without this
+field, a "landing pages" report counts every language switch as somebody
+arriving on the translated page.
+
+⚠️ It says only *this page load continues a visit* — never which one, and
+nothing links the two. And a site that sends `no-referrer` suppresses the signal
+it is derived from, so the field will not appear there.
+
 Referrer and campaign values are read **once, when the page first loads**, and
 attached to each view of that visit — they exist in the URL only on arrival. So
 a per-view count of `utm_source` tells you *views by visitors who **arrived** via
@@ -626,7 +642,7 @@ kit, so they are worth recognising if you build a dashboard:
 
 | event | sent by | fields |
 | --- | --- | --- |
-| `page_view` | the runtime, automatically | `path`, `referrer?`, `utm_*?` |
+| `page_view` | the runtime, automatically | `path`, `referrer?`, `utm_*?`, `continues?` |
 | `outbound_click` | the runtime, automatically | `hostname` |
 | `section_view` | the runtime, on pages with `trackSections` | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
@@ -672,6 +688,31 @@ never changed never starts sending more than it did.
 `useTracker()` are unaffected — it governs only the events the framework emits
 on its own. A host that supplies your collector may narrow the list further if
 it will not store an event; it can never widen it beyond what you asked for.
+
+### Batching (`flushIntervalMs`)
+
+Events are batched and sent on a timer — every 5 seconds by default. A page view
+is sent immediately rather than waiting, and whatever is still queued is flushed
+when the page is hidden or closed.
+
+```yaml
+tracking:
+  endpoint: https://collector.example.com/events
+  flushIntervalMs: 30000        # milliseconds
+```
+
+Raising it means fewer, larger requests. The cost is **tail loss**: events from
+the last few seconds of a visit are more likely to be missed if the browser is
+closed abruptly, since the flush on hide is best-effort.
+
+A host that supplies your collector may set this for you, and your own value
+overrides theirs — so this is mainly for a site pointing at a collector it
+chose, where there is no host to set it.
+
+⚠️ **The unit is milliseconds, and the name says so on purpose.** `30` here is
+thirty *milliseconds*, not thirty seconds — which would flush about thirty times
+a second. A value that is not a positive number is ignored and the default is
+used.
 
 ### Third-party scripts
 
