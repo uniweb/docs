@@ -187,9 +187,12 @@ Don't straddle: reconstructing document order from grouped fields (interleaving 
 and `images` by guesswork) re-implements `sequence` badly. If you're doing that, switch
 views.
 
-A note on `headings`: it only ever fills from nested content (headings inside blockquotes or
-list items). A section's own headline never lands there, and for a table of contents you
-want the `useHeadings()` hook, which works during prerender — not this field.
+Two notes for generic queries over `sequence`: heading elements include `#>` label lines
+(they carry `attrs.role === "pretitle"` and a meaningless `level`), so a filter like
+`el.type === 'heading'` picks up pretitles unless it excludes the role. And the `headings`
+field only ever fills from nested content (headings inside blockquotes or list items) — a
+section's own headline never lands there, and for a table of contents you want the
+`useHeadings()` hook, which works during prerender, not this field.
 
 ---
 
