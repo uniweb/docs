@@ -622,6 +622,19 @@ arriving on the translated page.
 nothing links the two. And a site that sends `no-referrer` suppresses the signal
 it is derived from, so the field will not appear there.
 
+⛔ **`continues` describes the page load, not the individual view — so it is
+repeated on every `page_view` of that load.** A site is a single-page app: after
+the first load, moving between pages sends more `page_view` events without
+loading anything, and each one carries the same `continues` the load started
+with. Counting *every* view that lacks `continues` therefore counts one arrival
+again for every page the visitor then reads.
+
+To build a landing-pages report: **group the events by `visit`, take the first
+`page_view` in each group, and count it as an arrival only when it has no
+`continues`.** Three different situations leave the field absent and you cannot
+tell them apart — a genuine arrival, a site sending `no-referrer`, and a site
+still running a framework release from before the field existed.
+
 Referrer and campaign values are read **once, when the page first loads**, and
 attached to each view of that visit — they exist in the URL only on arrival. So
 a per-view count of `utm_source` tells you *views by visitors who **arrived** via
