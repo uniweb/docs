@@ -577,8 +577,8 @@ One `POST` per flush, batched, with `Content-Type: application/json`:
 ```json
 {
   "events": [
-    { "event": "page_view", "visit": "b3f1…", "path": "/about", "referrer": "https://news.example/post" },
-    { "event": "page_view", "visit": "b3f1…", "path": "/es/sobre", "continues": true },
+    { "event": "page_view", "visit": "b3f1…", "path": "/about", "first_of_load": true, "referrer": "https://news.example/post" },
+    { "event": "page_view", "visit": "b3f1…", "path": "/pricing", "referrer": "https://news.example/post" },
     { "event": "video_milestone", "visit": "b3f1…", "path": "/about", "section": "Hero", "milestone": 50 }
   ]
 }
@@ -607,6 +607,18 @@ Three events are sent automatically, with no component involvement.
 - **`utm_source`, `utm_medium`, `utm_campaign`** ride along when the visitor
   arrived with them.
 
+**`first_of_load`** appears on the one `page_view` that opened the document, and
+on no other. A site is a single-page app: after the first load, moving between
+pages sends more `page_view` events without loading anything, and those do not
+carry it. It is sent **only when true**.
+
+It exists so a collector that stores nothing per-event can still answer questions
+about the page load. With it, "which page did this load start on" is a single
+field on a single event — no need to remember which `visit` values you have
+already seen. ⚠️ It says *first view of this page load*, never *this visitor's
+first ever view*: nothing in this system survives the document, so that second
+question cannot be asked at all.
+
 **`continues`** appears on a `page_view` when the visitor was already on your
 site and something loaded a fresh page rather than navigating within the app —
 switching language is the usual cause. It is sent **only when true**.
@@ -629,11 +641,17 @@ loading anything, and each one carries the same `continues` the load started
 with. Counting *every* view that lacks `continues` therefore counts one arrival
 again for every page the visitor then reads.
 
-To build a landing-pages report: **group the events by `visit`, take the first
-`page_view` in each group, and count it as an arrival only when it has no
-`continues`.** Three different situations leave the field absent and you cannot
-tell them apart — a genuine arrival, a site sending `no-referrer`, and a site
-still running a framework release from before the field existed.
+To build a landing-pages report: **count a `page_view` that carries
+`first_of_load` and does not carry `continues`.** That needs no grouping and no
+stored state — the two fields on one event answer it.
+
+⚠️ Three different situations leave `continues` absent and you cannot tell them
+apart: a genuine arrival, a site sending `no-referrer`, and a site still running
+a framework release from before the field existed. Requiring `first_of_load`
+keeps the third one safe: a site too old to send it is left out of the report
+entirely, which undercounts, rather than counted as an arrival on every page —
+an undercount you can describe, instead of a number that grows on its own as
+sites update.
 
 Referrer and campaign values are read **once, when the page first loads**, and
 attached to each view of that visit — they exist in the URL only on arrival. So
@@ -655,7 +673,7 @@ kit, so they are worth recognising if you build a dashboard:
 
 | event | sent by | fields |
 | --- | --- | --- |
-| `page_view` | the runtime, automatically | `path`, `referrer?`, `utm_*?`, `continues?` |
+| `page_view` | the runtime, automatically | `path`, `first_of_load?`, `continues?`, `referrer?`, `utm_*?` |
 | `outbound_click` | the runtime, automatically | `hostname` |
 | `section_view` | the runtime, on pages with `trackSections` | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
