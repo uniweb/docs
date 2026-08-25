@@ -398,7 +398,17 @@ i18n:
 
 ## Search
 
-Enable built-in full-text search.
+Enable built-in full-text search. Search is **on by default** — you only need to write this to turn
+it off or to set an option.
+
+```yaml
+search: true       # shorthand
+search: false      # turn it off
+```
+
+The shorthand and the object form mean the same thing, so `search: false` and
+`search: { enabled: false }` are interchangeable. Use the object form when you want any of the other
+options below.
 
 ```yaml
 search:
