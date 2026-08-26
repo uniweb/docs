@@ -62,6 +62,52 @@ Format-specific niceties: markdown items get auto-generated excerpts and first-i
 
 ---
 
+## Organizing a Large Collection into Folders
+
+A collection can be flat, and most are. When one grows past comfortable browsing,
+you can group records into folders:
+
+```
+collections/news/
+├── announcement.md          # top level — path: ""
+├── 2024/
+│   ├── spring.md            # path: "2024"
+│   └── q1/
+│       └── report.md        # path: "2024/q1"
+└── 2023/
+    └── retrospective.md     # path: "2023"
+```
+
+Every record carries a `path` field naming the folder it lives in, and by default
+they all belong to the same collection — `data: news` still delivers all of them.
+Folders are for **your** organization; they do not split the collection or change
+any record's URL.
+
+To ask for one branch, query `path`:
+
+```yaml
+fetch:
+  collection: news
+  where: { path: { under: '2024' } }   # 2024 and everything inside it
+```
+
+```yaml
+fetch:
+  collection: news
+  where: { path: '2024' }              # only records directly in 2024/
+```
+
+See [Predicates](./predicates.md) for `under` and the rest of the query language.
+
+**Two things to know.**
+
+- **Slugs must stay unique across the whole collection.** A slug is what a detail
+  page matches on, so `2024/notes.md` and `2023/notes.md` both claim `/news/notes`
+  and only one of them can have it. The build warns and names both; rename one.
+- **Folders starting with `_` are skipped**, exactly like `_draft.md` files. Use
+  that for work in progress, or for a folder holding something that is not a
+  record.
+
 ## When to Use Collections
 
 Collections and items-in-a-section can both show repeating content. Here's how to choose:

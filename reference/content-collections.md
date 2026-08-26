@@ -181,6 +181,7 @@ Each `.md` file in a collection becomes a JSON object with the following fields.
 | Field | Source | Notes |
 |-------|--------|-------|
 | `slug` | Filename | `getting-started.md` → `"getting-started"` |
+| `path` | Folder | The record's folder inside the collection — `""` at the top level, `"2024"` for `2024/spring.md`. Query it with [`under`](../authoring/predicates.md) |
 | `title` | Frontmatter | Typically required |
 | `date` | Frontmatter | ISO date string |
 | `author` | Frontmatter | String or object |
