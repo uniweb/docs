@@ -695,7 +695,8 @@ names. See the AGENTS.md guide in your project for the component side.
 ### Choosing what is sent (`emit`)
 
 A site sends `page_view`, `outbound_click` and `section_view` unless it says
-otherwise:
+otherwise — or, where your host supplies the collector, whatever that host
+declares it collects (see *Where your host supplies the collector*, below):
 
 ```yaml
 tracking:
@@ -717,13 +718,34 @@ host declared. Declaring your own `endpoint:` always wins over the host's.
 | value | sends |
 | --- | --- |
 | `minimal` | `page_view` |
-| `standard` | `page_view`, `outbound_click`, `section_view` — the default |
+| `standard` | `page_view`, `outbound_click`, `section_view` — the default when you supply your own `endpoint:` |
 | `all` | everything the framework emits, **including events added in later releases** |
 | a list | exactly those event names, e.g. `[page_view, section_view]` |
 
 `standard` and `all` select the same events today. They differ the moment a new
-automatic event ships: `all` picks it up, `standard` does not, so a site that
-never changed never starts sending more than it did.
+automatic event ships: `all` picks it up, `standard` does not, so **a framework
+release never grows what a site sends**.
+
+### Where your host supplies the collector
+
+Naming `emit` is how you decide, and it always wins. **Saying nothing is
+different depending on who supplies the address:**
+
+| your site | saying nothing about `emit` means |
+| --- | --- |
+| declares its own `endpoint:` | `standard` — the curated set above. A later framework release never grows it |
+| uses a host-supplied collector | **whatever that host declares it collects** |
+
+The second case is the one to know about. A site on a host has no address of its
+own — the arrangement is that the host does analytics for it — so leaving `emit`
+unset means *whatever my host offers*, and the set grows if your host starts
+collecting something new. That is your host's decision, announced by them, and
+it is the same event that changes your bill or your quota.
+
+**If you would rather pin it, name it.** `emit: standard` gives you exactly the
+three events above and nothing a host adds later; `emit: minimal` gives you one;
+a list gives you precisely what you write. Any of those beats the host's default,
+including narrowing to less than the host offers.
 
 **`emit` does not limit what components send.** `block.track()` and
 `useTracker()` are unaffected — it governs only the events the framework emits
