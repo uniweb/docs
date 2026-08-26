@@ -50,6 +50,61 @@ Available operators:
 | `nin` | Value is *not* in the listed array | `{ status: { nin: [draft, archived] } }` |
 | `like` | Glob match (`*` any run, `?` one char) | `{ name: { like: 'Dr. *' } }` |
 | `exists` | Field is truthy (boolean toggle) | `{ author: { exists: true } }` |
+| `under` | Path containment, at segment boundaries | `{ path: { under: 'guides' } }` |
+
+### `under` — selecting a branch of a path
+
+Some fields hold a slash-separated location: where a record sits inside its
+collection, a category path, a docs section. `under` matches that value **and
+everything below it**, and it respects segment boundaries — so a sibling that
+merely starts with the same letters is not swept in:
+
+```yaml
+where:
+  path: { under: '2024' }     # matches '2024' and '2024/spring'
+                              # does NOT match '2024b'
+```
+
+Plain equality selects a single level, and `under` selects that level plus its
+descendants — so the pair covers both the "just here" and "everything below"
+cases with no extra setting:
+
+```yaml
+where: { path: '2024' }            # only records directly at 2024
+where: { path: { under: '2024' } } # 2024 and everything nested inside it
+where: { path: '' }                # only records at the top level
+```
+
+An empty value is the root and contains everything, so `{ under: '' }` matches
+every record — occasionally useful when the value comes from a variable.
+
+#### Why not `like` with a wildcard?
+
+`like` is a general string glob, not a path matcher — its `*` matches any run of
+characters, **including slashes**. That makes wildcard patterns misleading on a
+path field. Against records at `''`, `2024`, `2024/spring`, `2024/spring/may`,
+`2024b` and `2023`:
+
+| pattern | what it actually selects |
+| --- | --- |
+| `{ like: '2024/*' }` | `2024/spring`, `2024/spring/may` — misses `2024` itself |
+| `{ like: '2024*' }` | those two, `2024` — **and `2024b`**, a different branch |
+| `{ like: '2024/**/*' }` | **only** `2024/spring/may` — two levels or deeper |
+| `{ under: '2024' }` | `2024`, `2024/spring`, `2024/spring/may` |
+
+The one an author usually wants — a branch *and* everything inside it — is not a
+single glob at all. With `like` alone you would write:
+
+```yaml
+where:
+  or:
+    - path: '2024'
+    - path: { like: '2024/*' }
+```
+
+`under` says the same thing in one clause, and it stops at segment boundaries so
+a neighbour like `2024b` never sneaks in. **Use `like` for text — names, titles,
+codes. Use `under` for paths.**
 
 Strings use single or double quotes; numbers and booleans are bare. `null` matches missing or null fields.
 

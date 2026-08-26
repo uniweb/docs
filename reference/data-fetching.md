@@ -429,6 +429,7 @@ Operators (nested object form):
 | `nin` | Value is not in the listed array |
 | `like` | Glob match (`*` any run, `?` one char) |
 | `exists` | Field is present (truthy bool) |
+| `under` | Path containment at segment boundaries — `{ path: { under: '2024' } }` matches `2024` and `2024/spring`, not `2024b` |
 
 Composition keys (work at any nesting level):
 
