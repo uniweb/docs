@@ -475,7 +475,7 @@ What this does:
 How components consume the full record:
 
 - **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered as a **single-element array** under the collection key — `content.data.articles[0]`. The framework routes the detail fetch to the per-record file. No author config needed — the existing dynamic-route flow handles it.
-- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand:
+- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand. If the collection has no separate detail source — nothing was stripped from it — the hook returns the record you passed in, so a component can call it unconditionally without checking first:
 
   ```jsx
   import { useEntityDetail } from '@uniweb/kit'
