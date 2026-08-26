@@ -547,8 +547,14 @@ Set up a blog with a list page and individual article pages.
 collections:
   articles:
     path: collections/articles
+    route: /blog          # pairs with the pages/blog/[slug]/ route in step 4
     sort: date desc
 ```
+
+`route:` is what gives each record its own link. With it, every compiled article carries
+`route: /blog/<slug>`, which is what a list component uses for the card's href — without it there is
+nothing for the card to point at. See
+[Collection Options](../reference/site-configuration.md#collection-options).
 
 **2. Add article files** in `collections/articles/`:
 
