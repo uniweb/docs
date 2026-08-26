@@ -170,6 +170,16 @@ to a bundled standard schema.
 >     schema: "@/article"
 > ```
 
+**Lean lists come from the schema.** If a collection's schema marks a section
+`brief: true`, that section *is* the list shape — the card, the row, the summary.
+Every other field is loaded only when one record is the focus: the list payload
+carries the brief fields, and the full record is fetched on demand (automatically
+on a `[slug]` page, or via `useEntityDetail` elsewhere).
+
+You don't configure this. Declaring `deferred:` by hand still works and takes
+precedence, but with a schema you rarely need it — the brief already says what a
+summary is, and saying it twice invites the two to disagree.
+
 **2. Declare query/display config in one place.** The same `sort` / `where` / `limit` /
 `excerpt` options you can set in `site.yml::collections` can live here instead, co-located
 with the collection folders.
