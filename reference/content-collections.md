@@ -155,10 +155,20 @@ folders:                    # an organizational tree, independent of the on-disk
 
 **1. Map a collection to a data schema.** A data schema gives a collection's items a
 typed shape (used for validation and i18n extraction). By default each collection maps
-to the **singular of its folder name** — `articles/` → the `@/article` schema in your
-foundation's `schemas/`. Set `schema:` to override that default (or to point at a
+to **a schema of the same name** — `articles/` → the `@/articles` schema in your
+foundation's `schemas/`. Set `schema:` to point somewhere else (a different name, or a
 shared schema). `@/name` resolves to your foundation's own `schemas/name`; `@std/name`
 to a bundled standard schema.
+
+> **The default used to singularize the folder name**, which only worked for regular
+> English plurals — `news` looked for a `new` schema, `series` for `sery`. If you name
+> your schema files in the singular, say so explicitly:
+>
+> ```yaml
+> collections:
+>   articles:
+>     schema: "@/article"
+> ```
 
 **2. Declare query/display config in one place.** The same `sort` / `where` / `limit` /
 `excerpt` options you can set in `site.yml::collections` can live here instead, co-located
