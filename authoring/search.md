@@ -43,7 +43,8 @@ A provider is what actually answers a query.
 ```yaml
 # site.yml
 search:
-  provider: index        # default — download an index, match in the browser
+  provider: index        # the default; writing it changes nothing — omit it unless
+                         # you are switching AWAY from the local index
 ```
 
 | Provider | What it does | Trade-off |
