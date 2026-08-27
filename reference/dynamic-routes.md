@@ -592,6 +592,39 @@ fetch:
 | `query`        | `{url}?{param}={value}`  | `https://api.example.com/articles?id=my-post`                    |
 | Custom pattern | Replace `{param}` in URL | `https://api.example.com/article/{id}` → `.../article/my-post`   |
 
+### The list's query string carries over
+
+`rest` and `query` build the detail URL from the list URL, so a query string on the list survives
+onto the single-entity fetch:
+
+```yaml
+fetch:
+  url: https://api.example.com/articles?lang=en&api_key=abc
+  detail: rest
+# detail fetch → https://api.example.com/articles/my-post?lang=en&api_key=abc
+```
+
+This is usually what you want, because the params a list carries are typically the ones a
+single-record read still needs — locale, an API key, a tenancy id. Dropping them would return the
+wrong language, or nothing at all.
+
+Pagination params (`?_limit=12`, `?page=2`) come along too. They are meaningless for a single
+record, but harmless.
+
+⛔ **The one to check is a param that narrows the response**, such as `?fields=summary` or
+`?select=title`. Carried onto a detail request, it truncates the very record the detail fetch exists
+to get in full — and it fails quietly: the request succeeds, the record arrives, and only some
+fields are missing, so it reads as a bug in your component rather than in the URL.
+
+To send a different URL, write a custom pattern. It is used verbatim, so nothing carries over unless
+you put it there:
+
+```yaml
+fetch:
+  url: https://api.example.com/articles?fields=summary   # list: summaries are enough
+  detail: https://api.example.com/articles/{id}          # detail: the whole record
+```
+
 ### Resolution order
 
 1. Collection already cached? → extract item locally. No fetch needed.

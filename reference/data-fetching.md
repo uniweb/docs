@@ -99,7 +99,7 @@ fetch:
 | `schema` | *inferred from source* | Key under `content.data` where data is stored |
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
-| `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern |
+| `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
 | `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)) |
 | `sort` | — | Sort by field, e.g. `date desc` |
 | `limit` | — | Take first N records |
