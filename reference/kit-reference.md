@@ -615,8 +615,8 @@ assistant, or anything a foundation defines.
 ```js
 import { resolveService } from '@uniweb/kit'
 
-const { url, reason, source } = resolveService(website, 'assistant')
-if (!url) return renderUnavailable(reason)
+const { url, source } = resolveService(website, 'assistant')
+if (!url) return null // this site has no assistant — render nothing, or degrade
 ```
 
 Resolution is the same for every service: the site's own declaration
@@ -625,9 +625,19 @@ Resolution is the same for every service: the site's own declaration
 `'site'`, `'host'` or `null` — the thing to check when a host's value appears
 not to be taking effect.
 
-A declaration is a string or `{ endpoint }`; a host that declines may send
-`{ reason }`, which reaches the UI verbatim. Bare endpoints (`_search`) are
-rooted, absolute URLs pass through, and the base path is applied once.
+**`url` is the whole answer, and there is deliberately no explanatory string.**
+Absence is a rendering decision, not a message: no assistant endpoint → draw no
+Ask-AI affordance; no submit endpoint → draw no form, or degrade to something
+that still serves the visitor. A visitor has no stake in which services the
+operator provisioned, and any wording for that state would be ours to invent, in
+one language, bypassing the site's own localization. Text a visitor should read
+is *site content* — authored and localized — never a string a service layer
+supplies.
+
+A declaration is a string or `{ endpoint }`. A host that declines names the
+service with no address, which resolves to `{ url: null, source: 'host' }` — the
+host answered, and that is all a caller can act on. Bare endpoints (`_search`)
+are rooted, absolute URLs pass through, and the base path is applied once.
 
 **The name is open.** The framework ships clients for the services it implements
 and resolution for anything, so a foundation can define its own and a host can

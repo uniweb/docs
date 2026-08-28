@@ -37,7 +37,7 @@ Three possibilities, in precedence order:
 |---|---|---|
 | 1 | `submit:` in `site.yml` | you named an endpoint yourself |
 | 2 | `services.submit` in the served payload | the host provides submission handling for this site |
-| 3 | nothing | forms render disabled, with a reason |
+| 3 | nothing | the site has no submission endpoint — draw no form |
 
 That second row is not specific to forms. A host declares everything it offers
 in one block, keyed by service name:
@@ -47,8 +47,10 @@ in one block, keyed by service name:
 config.services = {
   submit:    { endpoint: '/_submit' },
   search:    { endpoint: '/_search' },
-  assistant: { endpoint: '/_ask', reason: null },
-  // absent = not offered; `reason` explains a decline, and reaches the UI as written
+  assistant: { endpoint: '/_agent/chat' },
+  // A name absent from this block is not offered. So is a name present with no
+  // `endpoint` — an explicit decline. Either way there is no address, which is
+  // the whole answer.
 }
 ```
 
@@ -58,7 +60,8 @@ neither — through one function, so a foundation reads them alike:
 ```js
 import { resolveService } from '@uniweb/kit'
 
-const { url, reason } = resolveService(website, 'assistant')
+const { url, source } = resolveService(website, 'assistant')
+if (!url) return null // this site has no assistant — render nothing, or degrade
 ```
 
 **The service name is open.** The framework ships *clients* for what it
@@ -68,9 +71,17 @@ fill it without a framework change.
 
 **On a host that handles submissions you configure nothing.** The host answers
 for itself in the served payload: an endpoint when it will accept submissions
-for this site, or a `reason` when it will not. Either way the form renders
-honestly — live, or disabled with an explanation — and a `submit:` of your own
+for this site, and no address when it will not. A `submit:` of your own
 overrides whatever the host would have said.
+
+⛔ **There is deliberately no explanatory string, and absence is not an error to
+report to a visitor.** No endpoint means draw no form — or degrade to something
+that still serves them, like a `mailto:` the site already carries in its
+content. A visitor has no stake in which services the operator provisioned, and
+"submissions are not enabled for this site" reports someone's billing state to
+the public while reading like a breakage. It is neither. Any text a visitor
+should read is *site content*, authored and localized — never a string the
+framework invents in one language.
 
 **Elsewhere, you provide it.** `uniweb export` produces a plain static site, and
 most `deploy --host` targets have no opinion about forms, so those are the cases
@@ -204,8 +215,8 @@ already-resolved `target`:
 ```js
 import { submitForm, resolveSubmitTarget } from '@uniweb/kit'
 
-const { url, reason } = resolveSubmitTarget(website)
-if (!url) return showUnavailable(reason)
+const { url } = resolveSubmitTarget(website)
+if (!url) return null // no submission endpoint — draw no form
 
 await submitForm({ formData: values, target: url })
 ```
