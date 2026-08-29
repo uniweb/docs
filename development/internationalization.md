@@ -319,7 +319,7 @@ Each unit is keyed by a hash of the source string. The `contexts` array shows wh
 
 **Options:**
 - `--verbose` — Show extracted strings in output
-- `--collections-only` — Extract only collection content (skip pages)
+- `--records-only` — Extract only record content (skip pages)
 - `--no-records` — Skip records (pages only)
 
 ### Initialize Language Files
@@ -526,7 +526,7 @@ Record data is translated alongside page content by default. The `extract` comma
 
 ```bash
 uniweb i18n extract                      # Pages + collections (default)
-uniweb i18n extract --collections-only   # Collections only
+uniweb i18n extract --records-only       # Records only
 uniweb i18n extract --no-records         # Pages only
 ```
 
@@ -621,7 +621,7 @@ The search client automatically uses the correct index for the active language.
 | `--by-page` | status --missing | Group by page |
 | `--freeform` | status, prune | Free-form translation mode |
 | `--json` | status | Machine-readable output |
-| `--collections-only` | extract | Collections only |
+| `--records-only` | extract | Records only |
 | `--no-records` | extract | Skip records (pages only) |
 | `--all-stale` | update-hash | Update all stale hashes |
 

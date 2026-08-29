@@ -305,7 +305,7 @@ Record strings get their own manifest at `locales/records/manifest.json` and fol
 To extract only collection strings (skipping pages):
 
 ```bash
-uniweb i18n extract --collections-only
+uniweb i18n extract --records-only
 ```
 
 ---

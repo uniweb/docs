@@ -291,7 +291,7 @@ For testing `supports:` end-to-end without standing up a real backend, the frame
 
 ```bash
 node scripts/framework/dev-backend.js \
-  --collections path/to/site/collections \
+  --entities path/to/site/entities \
   --port 8080
 ```
 
