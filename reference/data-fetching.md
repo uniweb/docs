@@ -475,7 +475,7 @@ What this does:
 How components consume the full record:
 
 - **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered as a **single-element array** under the collection key — `content.data.articles[0]`. The framework routes the detail fetch to the per-record file. No author config needed — the existing dynamic-route flow handles it.
-- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand. If the collection has no separate detail source — nothing was stripped from it — the hook returns the record you passed in, so a component can call it unconditionally without checking first:
+- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand. If the query has no separate detail source — nothing was stripped from it — the hook returns the record you passed in, so a component can call it unconditionally without checking first:
 
   ```jsx
   import { useEntityDetail } from '@uniweb/kit'
@@ -496,11 +496,11 @@ How components consume the full record:
   }
   ```
 
-Collections without `deferred:` declared behave exactly as before — every field ships in the cascade payload.
+A query without `deferred:` behaves exactly as before — every field ships in the cascade payload.
 
-### API-backed collections: `detailUrl:`
+### Remote sources: `detailUrl:`
 
-The above describes a file-based collection — the build emits per-record files at `/data/<name>/<slug>.json` for every item (markdown, YAML, or JSON) and the framework finds them automatically. For an **API-backed** collection (the source is a remote URL, no per-record files on disk), the author names the per-record endpoint pattern with `detailUrl:`:
+The above describes file-based records — the build emits per-record files at `/data/<name>/<slug>.json` for every one (markdown, YAML, or JSON) and the framework finds them automatically. For a **remote** source (a query declaring `url:`, with no per-record files on disk), the author names the per-record endpoint pattern with `detailUrl:`:
 
 ```yaml
 # site.yml
