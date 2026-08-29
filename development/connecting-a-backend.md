@@ -1,6 +1,6 @@
 # Connecting a Backend
 
-Most Uniweb sites start with data in `public/data/*.json` — collections of markdown that the build turns into static JSON. That's great for blogs, docs, and marketing sites. Sometimes you need more: a base URL that varies by deploy target, a response envelope to unwrap, or a backend that takes queries in a POST body (GraphQL, `POST /search`).
+Most Uniweb sites start with records in `entities/` that the build turns into static JSON at `public/data/*.json`. That's great for blogs, docs, and marketing sites. Sometimes you need more: a base URL that varies by deploy target, a response envelope to unwrap, or a backend that takes queries in a POST body (GraphQL, `POST /search`).
 
 You don't always need a custom foundation for this. The framework's **default fetcher** understands a small vocabulary in `site.yml fetcher:` and a couple of per-fetch extensions that cover most straightforward backends with zero code.
 
@@ -31,7 +31,7 @@ Every capability this guide describes is optional. Empty config → today's beha
 | --- | --- | --- |
 | `baseUrl` | `site.yml fetcher:` | Prepended to relative `url:` values |
 | `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
-| `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: collection / item / error |
+| `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: list / item / error |
 | `supports` | `site.yml fetcher:` | Query operators the source evaluates natively. See [`supports:`](#supports) |
 | `request.style` | `site.yml fetcher:` | How operators reshape for the wire. See [Request Styles](../authoring/fetcher-styles.md) |
 | `request.rename` | `site.yml fetcher:` | Operator name tweaks on top of a style |
@@ -86,7 +86,7 @@ Headers set here are visible to browsers (they ride on every outgoing request). 
 
 ### Response envelopes: `{ data: { items: [...] } }`
 
-Many APIs wrap collections. A per-fetch `transform:` handles one case; a site-level `envelope:` handles every case:
+Many APIs wrap their lists. A per-fetch `transform:` handles one case; a site-level `envelope:` handles every case:
 
 ```yaml
 # site.yml
@@ -98,7 +98,7 @@ fetcher:
     error: errors.0.message
 ```
 
-- `envelope.collection` — applied to collection responses. A per-fetch `transform:` still wins when both are set.
+- `envelope.list` — applied to list responses. A per-fetch `transform:` still wins when both are set.
 - `envelope.item` — applied to detail responses (single-entity fetches via `detail:`).
 - `envelope.error` — on non-2xx, extract a human error from the response body. Falls back to `HTTP <status>: <statusText>` if the path isn't in the body.
 

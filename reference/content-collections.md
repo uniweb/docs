@@ -536,7 +536,7 @@ The system consists of three main parts...
 At build time, the record processor:
 
 1. **Detects relative paths** — Any `./` or `../` path in the content
-2. **Copies assets** — Files are copied to `public/collections/<query>/`
+2. **Copies assets** — Files are copied to `public/records/<schema>/`
 3. **Updates paths** — References become site-root-relative (`/entities/article/diagram.svg`)
 
 This means your content stays portable—move an article and its assets together, and everything still works.
@@ -568,7 +568,7 @@ Co-located assets work for all media types:
 
 ### Output Location
 
-Co-located assets are copied to `public/collections/<query-name>/`:
+Co-located assets are copied to `public/records/<schema>/` — keyed by the record, so a record reachable by two queries has one copy at one URL:
 
 ```
 public/

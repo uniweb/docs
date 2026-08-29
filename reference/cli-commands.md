@@ -1039,7 +1039,7 @@ Pull is git-pull-like: it reconciles your working tree to the backend, **deletin
 | Option | Description |
 |--------|-------------|
 | `--no-delete` | Project, but keep local files that have no backend item |
-| `--no-collections` | Pull pages only; skip the collections lane |
+| `--no-records` | Pull pages only; skip the records lane |
 | `--dry-run` | Report what it would fetch; write nothing |
 | `--registry <url>` | Override the backend origin |
 | `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
@@ -1064,7 +1064,7 @@ uniweb clone <site-uuid> [name|.]
 | `<name>` / `.` | New workspace named `<name>`, or `.` for in-place / the current workspace |
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
 | `--project <dir>` | Co-locate as `<dir>/site` |
-| `--no-collections` | Pull pages only; skip collection records |
+| `--no-records` | Pull pages only; skip records |
 
 ---
 

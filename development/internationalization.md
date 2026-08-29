@@ -320,7 +320,7 @@ Each unit is keyed by a hash of the source string. The `contexts` array shows wh
 **Options:**
 - `--verbose` — Show extracted strings in output
 - `--collections-only` — Extract only collection content (skip pages)
-- `--no-collections` — Skip collections (pages only)
+- `--no-records` — Skip records (pages only)
 
 ### Initialize Language Files
 
@@ -527,7 +527,7 @@ Record data is translated alongside page content by default. The `extract` comma
 ```bash
 uniweb i18n extract                      # Pages + collections (default)
 uniweb i18n extract --collections-only   # Collections only
-uniweb i18n extract --no-collections     # Pages only
+uniweb i18n extract --no-records         # Pages only
 ```
 
 Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record rather than by any query that returns it. Extraction covers all record data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable.
@@ -622,7 +622,7 @@ The search client automatically uses the correct index for the active language.
 | `--freeform` | status, prune | Free-form translation mode |
 | `--json` | status | Machine-readable output |
 | `--collections-only` | extract | Collections only |
-| `--no-collections` | extract | Skip collections (pages only) |
+| `--no-records` | extract | Skip records (pages only) |
 | `--all-stale` | update-hash | Update all stale hashes |
 
 ---

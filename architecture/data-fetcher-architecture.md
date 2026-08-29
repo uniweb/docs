@@ -58,7 +58,7 @@ What the default handles (via `site.yml fetcher:` or per-fetch):
 
 - `baseUrl` for relative remote URLs.
 - `headers` — static headers merged into every remote request (tenant routing, content negotiation, custom Accept values).
-- `envelope` — response-unwrap dot-paths (collection / item / error).
+- `envelope` — response-unwrap dot-paths (list / item / error).
 - `method: POST` + `body` per-fetch, with placeholder substitution from `dynamicContext`.
 - Per-fetch `transform:` — unchanged from today.
 
