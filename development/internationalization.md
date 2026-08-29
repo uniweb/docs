@@ -530,7 +530,7 @@ uniweb i18n extract --collections-only   # Collections only
 uniweb i18n extract --no-collections     # Pages only
 ```
 
-Collection strings are stored in a separate manifest at `locales/collections/manifest.json`. Extraction covers all collection data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable.
+Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record rather than by any query that returns it. Extraction covers all record data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable.
 
 ---
 

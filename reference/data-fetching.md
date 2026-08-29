@@ -545,7 +545,7 @@ queries:
         max: 2025
 ```
 
-Foundations read this metadata via the `useCollectionQueryable` kit hook to render filter controls and compose where-objects from user interactions. The framework doesn't ship UI components — different foundations have different vocabularies; the kit exposes the metadata, foundations build the controls. See [Predicates → Saved views and queryable surfaces](../authoring/predicates.md) for the full pattern.
+Foundations read this metadata via the `useQueryable` kit hook to render filter controls and compose where-objects from user interactions. The framework doesn't ship UI components — different foundations have different vocabularies; the kit exposes the metadata, foundations build the controls. See [Predicates → Saved views and queryable surfaces](../authoring/predicates.md) for the full pattern.
 
 Field types in the starter set: `enum` (with `options:`), `boolean`, `range` (with `min`/`max`), `text`. Foundations may extend; the framework passes the metadata through as-is.
 

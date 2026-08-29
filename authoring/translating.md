@@ -300,7 +300,7 @@ If your site has collections (blog posts, team members, product listings), those
 uniweb i18n extract
 ```
 
-Collection strings get their own manifest at `locales/collections/manifest.json` and follow the same translate-and-build workflow.
+Record strings get their own manifest at `locales/records/manifest.json` and follow the same translate-and-build workflow.
 
 To extract only collection strings (skipping pages):
 
