@@ -76,7 +76,7 @@ fetch:
   # OR
   url: https://api.example.com/team  # Remote URL
   # OR
-  collection: team           # Built-collection shorthand (resolves to /data/team.json)
+  query: team           # Built-collection shorthand (resolves to /data/team.json)
 
   schema: person             # Key in content.data (default: inferred from source)
   merge: false               # Replace existing data (default: false)
@@ -275,7 +275,7 @@ no i18n extraction, no schema validation, no per-record files, no editor support
 
 Data that comes out of another tool goes in a collection too: a `.json` or `.yml`
 file holding a top-level array becomes one record per entry, so exporting into
-`collections/<name>/` works the same as authoring there by hand.
+`entities/<schema>/` works the same as authoring there by hand.
 
 ---
 
@@ -342,7 +342,7 @@ For more control, use the full fetch syntax with post-processing options:
 ---
 type: ArticleTeaser
 fetch:
-  collection: articles   # Fetches from /data/articles.json
+  query: articles   # Fetches from /data/articles.json
   limit: 3               # Show only 3 items
   sort: date desc        # Most recent first
 ---
@@ -355,10 +355,10 @@ fetch:
 | Syntax | Use case |
 |--------|----------|
 | `data: articles` | Collection reference — the recommended default |
-| `fetch: { collection: articles, ... }` | Collection with limit, sort, filter, or other options |
+| `fetch: { query: articles, ... }` | Collection with limit, sort, filter, or other options |
 | `fetch: { url: https://... }` | Remote data sources |
 
-The `data:` shorthand is equivalent to `fetch: { collection: name }` but more compact.
+The `data:` shorthand is equivalent to `fetch: { query: name }` but more compact.
 
 ### Query operators on collection references
 
@@ -366,7 +366,7 @@ The `data:` shorthand is equivalent to `fetch: { collection: name }` but more co
 
 ```yaml
 fetch:
-  collection: articles
+  query: articles
   where: { tags: featured }   # Only featured articles
   sort: date desc             # Newest first
   limit: 3                    # Take first 3
@@ -461,9 +461,9 @@ Some collections have heavy fields — article bodies, full nested arrays, large
 
 ```yaml
 # site.yml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     deferred: [body]           # heavy fields; not shipped in the cascade
 ```
 
@@ -483,7 +483,7 @@ How components consume the full record:
   function ArticleCard({ article }) {
     const [open, setOpen] = useState(false)
     const { data: full, loading } = useEntityDetail(open ? article : null, {
-      collection: 'articles',
+      query: 'articles',
     })
     return (
       <>
@@ -504,7 +504,7 @@ The above describes a file-based collection — the build emits per-record files
 
 ```yaml
 # site.yml
-collections:
+queries:
   articles:
     url: /api/articles                 # collection source (remote)
     deferred: [body]
@@ -523,9 +523,9 @@ For sites that build filter UIs (a population dropdown, a faceted search, a date
 
 ```yaml
 # site.yml
-collections:
+queries:
   members:
-    path: collections/members
+    schema: '@/member'
     queryable:
       department:
         type: enum
@@ -670,7 +670,7 @@ fetcher:
     X-Tenant: acme
     Accept: application/json
   envelope:
-    collection: data.items
+    query: data.items
     item: data.article
     error: errors.0.message
 

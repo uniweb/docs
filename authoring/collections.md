@@ -1,44 +1,82 @@
-# Working with Collections
+# Working with Records
 
-Collections let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each item in its own file (or, for BibTeX, drop in the file your reference manager already exports), tell the site where to find them, and the framework delivers them to your components as structured data.
+Records let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each one in its own file (or, for BibTeX, drop in the file your reference manager already exports), say which ones are published, and the framework delivers them to your components as structured data.
 
 This guide covers everything you need to know as a content author. No coding required.
 
 ---
 
-## What Collections Are
+## What Records Are
 
 Most of your content lives in `pages/` — one folder per page, with markdown files for each section. That's your site's **static content**: a fixed composition of sections on a fixed set of pages.
 
-Collections are different. They're **dynamically fetched data** — the framework loads them through the data-fetching pipeline and delivers them to components as `content.data`. The same pipeline handles remote APIs, so from a component's point of view a locally-authored collection and a backend-served collection look identical. Whether the data lives in files or behind an endpoint is a transport concern.
+Records are different. They're **a small database**. The framework loads them through the data-fetching pipeline and delivers them to components as `content.data`. The same pipeline handles remote APIs, so from a component's point of view a locally-authored record and a backend-served one look identical. Whether the data lives in files or behind an endpoint is a transport concern.
 
-File-based collections live in `collections/` and hold **items that share the same structure**. Think of it like a filing cabinet. Pages are the rooms of your site; the collections folder is where you keep organized sets of things — articles, team bios, products — that pages can pull from.
+**Three separate things**, and keeping them separate is what makes the rest simple:
 
 ```
 site/
-├── pages/             ← Your site's pages
+├── pages/               ← your site's pages
 │   ├── home/
 │   ├── about/
 │   └── blog/
-├── collections/           ← Your collections
-│   ├── articles/
+├── entities/            ← 1. THE POOL — everything this site has
+│   ├── article/
 │   │   ├── getting-started.md
 │   │   ├── design-tips.md
 │   │   └── our-roadmap.md
-│   └── team/
+│   └── person/
 │       ├── alice.md
 │       ├── bob.md
 │       └── carol.md
+├── records.yml          ← 2. WHAT IS PUBLISHED
+├── queries.yml          ← 3. HOW IT IS REACHED
 └── site.yml
 ```
 
-Each file in a collection folder becomes one item. The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice."
+**1. `entities/{schema}/` — the pool.** Each file is one entity, and the folder it sits in names its **data schema**:
+
+| on disk | schema |
+|---|---|
+| `entities/article/…` | `@/article` — your foundation's own |
+| `entities/std/person/…` | `@std/person` — the shared standard set |
+| `entities/acme/project/…` | `@acme/project` — an organization's |
+
+Keep those folders flat. `entities/article/design-tips.md` works; `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant.
+
+**2. `records.yml` — what is published.** A file in `entities/` exists; **listing it here is what makes it a record.** Anything you leave out is a draft, with no flag to set. The common case is two or three lines:
+
+```yaml
+# records.yml
+- article/*.md
+- person/*.md
+```
+
+A bare string is a path under `entities/`, naming one file or matching many.
+
+> ⚠️ **An empty `records.yml` is not the same as having none.** No file means "leave the published set alone." An empty file means "nothing is published", which **removes** what was. The CLI asks before it does that.
+
+**3. `queries.yml` — how content is reached.** A page never walks the pool; it asks a **named query** for a set of records. A query names a schema, and the published records of that schema are its rows:
+
+```yaml
+# queries.yml
+recent:
+  schema: '@/article'
+  sort: date desc
+  limit: 10
+
+team:
+  schema: '@/person'
+  sort: order asc
+```
+
+The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Neither is *published* until `records.yml` lists it, and neither reaches a page until a query asks for it.
 
 ---
 
 ## Choosing a File Format
 
-Collection items can be markdown, YAML, JSON, or BibTeX. Pick the format that matches the content:
+A record can be markdown, YAML, JSON, or BibTeX. Pick the format that matches the content:
 
 | Format | Best for | Why |
 |---|---|---|
@@ -47,7 +85,7 @@ Collection items can be markdown, YAML, JSON, or BibTeX. Pick the format that ma
 | **JSON** (`.json`) | Same as YAML | Pick it if the data is exported from another tool or you prefer JSON syntax |
 | **BibTeX** (`.bib`) | Bibliographic references — academic citations, reading lists, archival metadata | Drop the file your reference manager already exports; each `@entry{key, ...}` becomes one record, with the cite key as the lookup id |
 
-All four produce the same collection shape at runtime — the foundation components see records, not files.
+All four produce the same shape at runtime — the foundation components see records, not files.
 
 ### One file per record, or one file with many
 
@@ -56,63 +94,75 @@ For the three pure-data formats (YAML, JSON, BibTeX), the same authoring choice 
 - **One record per file** — write a single mapping at the top of the file. The framework uses the filename stem as `slug`. This is the typical pattern when authors hand-edit each entry: `team/alice.yml`, `team/bob.yml`, …
 - **Many records per file** — write a top-level array (YAML or JSON) or a `.bib` file with multiple `@entry{...}` blocks. Each record carries its own `slug` (the BibTeX cite key for `.bib`; an explicit `slug:` field for YAML/JSON arrays). This is the typical pattern when the data comes from another tool — a Zotero `.bib` export, a JSON dump from a backend, a YAML file your scripts emit.
 
-Within a single collection folder you can mix and match: array-form files contribute many records each, mapping-form files contribute one each, and the framework merges everything into one combined list. So a `bibliography/` folder can hold an exported `refs.bib` next to a hand-written `extras.yml`; a `team/` folder can hold a bulk `roster.yml` array alongside a single `alice.md` markdown bio for someone who needs a long prose introduction.
+Within a single schema folder you can mix and match: array-form files contribute many records each, mapping-form files contribute one each, and the framework merges everything into one combined list. So a `bibliography/` folder can hold an exported `refs.bib` next to a hand-written `extras.yml`; a `team/` folder can hold a bulk `roster.yml` array alongside a single `alice.md` markdown bio for someone who needs a long prose introduction.
 
-Format-specific niceties: markdown items get auto-generated excerpts and first-image extraction. BibTeX entries are normalized to CSL-JSON fields (`author`, `title`, `issued`, `container-title`, `DOI`, …); LaTeX accents (`\"u`, `\'e`) are converted to Unicode automatically. (Configuration files — `site.yml`, `page.yml`, `folder.yml` — are always single mappings; the array-form is a *collection-item* affordance, not a YAML-anywhere one.)
+Format-specific niceties: markdown items get auto-generated excerpts and first-image extraction. BibTeX entries are normalized to CSL-JSON fields (`author`, `title`, `issued`, `container-title`, `DOI`, …); LaTeX accents (`\"u`, `\'e`) are converted to Unicode automatically. (Configuration files — `site.yml`, `page.yml`, `folder.yml` — are always single mappings; the array-form is a *record* affordance, not a YAML-anywhere one.)
 
 ---
 
-## Organizing a Large Collection into Folders
+## Organizing Records into Folders
 
-A collection can be flat, and most are. When one grows past comfortable browsing,
-you can group records into folders:
+Most sites need none of this. The pool is usually flat, and **queries do the
+organizing** — a `sort:`, a `where:`, a `limit:` is how you show one slice of it.
 
+Folders exist for one thing: so a query can ask for a **slice of the published
+set** rather than all of it. They are declared in `records.yml`, not on disk:
+
+```yaml
+# records.yml
+- news/announcement.md          # at the root — path: ""
+
+- folder: 2024
+  label: 2024                   # a folder may carry a label; a record never does
+  records:
+    - news/spring.md            # path: "2024"
+    - folder: q1
+      records:
+        - news/report.md        # path: "2024/q1"
+
+- folder: 2023
+  records:
+    - news/retrospective.md     # path: "2023"
 ```
-collections/news/
-├── announcement.md          # top level — path: ""
-├── 2024/
-│   ├── spring.md            # path: "2024"
-│   └── q1/
-│       └── report.md        # path: "2024/q1"
-└── 2023/
-    └── retrospective.md     # path: "2023"
-```
 
-Every record carries a `path` field naming the folder it lives in, and by default
-they all belong to the same collection — `data: news` still delivers all of them.
-Folders are for **your** organization; they do not split the collection or change
-any record's URL.
+Every record carries a `path` naming the folder it sits in, and they all stay in
+the same pool — a query over `@/news` still reaches all of them. Folders do not
+split anything and do not change a record's URL.
 
 To ask for one branch, query `path`:
 
 ```yaml
 fetch:
-  collection: news
+  query: news
   where: { path: { under: '2024' } }   # 2024 and everything inside it
 ```
 
 ```yaml
 fetch:
-  collection: news
-  where: { path: '2024' }              # only records directly in 2024/
+  query: news
+  where: { path: '2024' }              # only records directly in 2024
 ```
 
 See [Predicates](./predicates.md) for `under` and the rest of the query language.
 
-**Two things to know.**
+**Three things to know.**
 
-- **Slugs must stay unique across the whole collection.** A slug is what a detail
-  page matches on, so `2024/notes.md` and `2023/notes.md` both claim `/news/notes`
-  and only one of them can have it. The build warns and names both; rename one.
-- **Folders starting with `_` are skipped**, exactly like `_draft.md` files. Use
-  that for work in progress, or for a folder holding something that is not a
-  record.
+- **The question is never "does this want sub-pages?"** It is "will a query ever
+  ask for a *slice*?" If none will, do not make the folder.
+- **A record belongs to one folder.** Listing the same file twice is an error, and
+  the build names both entries. If you want a computed subset — "everything from
+  this year", "the five most recent" — that is a **query**, not a second placement.
+- **Slugs must stay unique across the pool.** A slug is what a detail page matches
+  on, so two files named `notes.md` in one schema folder both claim `/news/notes`
+  and only one can have it. The build warns and names both; rename one.
 
-## When to Use Collections
+---
 
-Collections and items-in-a-section can both show repeating content. Here's how to choose:
+## When to Use Records
 
-| | Items in a section | Collection |
+Records and items-in-a-section can both show repeating content. Here's how to choose:
+
+| | Items in a section | Records |
 |---|---|---|
 | **Where content lives** | All in one `.md` file | Each item in its own file |
 | **Best for** | A few items that belong together (3–6 features, a short FAQ) | Many items that grow over time (blog posts, team members) |
@@ -120,11 +170,11 @@ Collections and items-in-a-section can both show repeating content. Here's how t
 | **Sorting and filtering** | No | Yes — by date, tags, or any field |
 | **Example** | Feature cards on a landing page | Blog articles with their own pages |
 
-**Rule of thumb:** If you'll keep adding items over weeks and months, use a collection. If it's a fixed set that belongs to one section, use items in a single markdown file.
+**Rule of thumb:** If you'll keep adding items over weeks and months, use records. If it's a fixed set that belongs to one section, use items in a single markdown file.
 
 ---
 
-## Writing Collection Items
+## Writing a Record
 
 A markdown item has two parts: **frontmatter** (the metadata at the top) and **body content** (the text below). A YAML or JSON item is a single structured record — no frontmatter/body split, just the fields.
 
@@ -199,7 +249,7 @@ Previously at Figma and Google. Speaker at Config and SmashingConf.
 For a team member, the bio is short and there's no long-form prose — YAML is often cleaner:
 
 ```yaml
-# collections/team/alice-park.yml
+# entities/person/alice-park.yml
 title: Alice Park
 role: Lead Designer
 image: ./alice.jpg
@@ -207,118 +257,131 @@ order: 1
 bio: Alice leads the design team. She specializes in design systems and accessibility. Previously at Figma and Google. Speaker at Config and SmashingConf.
 ```
 
-Notice the differences: the article has `date`, `tags`, and `author`; the team member has `role` and `order`. Each collection uses whatever fields make sense for its content.
+Notice the differences: the article has `date`, `tags`, and `author`; the team member has `role` and `order`. Each schema uses whatever fields make sense for its content.
 
 ---
 
-## Declaring Collections in site.yml
+## Publishing Records, and Declaring Queries
 
-Your site needs to know about your collections. You declare them in `site.yml`.
+Two files, two questions.
 
-### Simple form
-
-If you just need to point to a folder:
+### `records.yml` — which entities are published
 
 ```yaml
-collections:
-  articles: collections/articles
+- article/*.md
+- person/*.md
 ```
 
-That's it. Every file in `collections/articles/` (`.md`, `.yml`, `.yaml`, `.json`, or `.bib`) becomes an item in the `articles` collection.
+That's it. Each line is a path under `entities/`, naming one file or matching
+many. Listing an entity is what makes it a **record**; leave one out and it stays
+a draft that nothing can reach.
+
+### `queries.yml` — how pages ask for records
+
+A query names a schema, and the published records of that schema are its rows:
+
+```yaml
+recent:
+  schema: '@/article'
+```
+
+If the query's name matches the schema's, you can leave the schema out —
+`articles:` alone means `@/articles`. You can also write the whole map under
+`queries:` in `site.yml` instead of a separate file, if you prefer one file.
 
 ### With options
 
-For more control, use the extended form:
-
 ```yaml
-collections:
-  articles:
-    path: collections/articles
-    sort: date desc
-    where:
-      published: { ne: false }
-    limit: 100
+recent:
+  schema: '@/article'
+  sort: date desc
+  where:
+    published: { ne: false }
+  limit: 100
 ```
 
 | Option | What it does | Example |
 |--------|-------------|---------|
-| `path` | Folder containing the collection files | `collections/articles` |
-| `sort` | Order items by a field | `date desc` (newest first) |
-| `where` | Include only matching items (predicate) | `{ published: { ne: false } }` |
-| `limit` | Maximum number of items | `100` |
+| `schema` | Which records this query is over | `'@/article'`, `'@std/person'` |
+| `sort` | Order records by a field | `date desc` (newest first) |
+| `where` | Include only matching records (predicate) | `{ published: { ne: false } }` |
+| `limit` | Maximum number of records | `100` |
 | `deferred` | Heavy fields stripped from list payloads (see below) | `[body]` |
 | `queryable` | Fields a foundation can offer for filtering UI (see below) | (object) |
+| `url` | A remote source instead of the local pool | `/api/articles` |
 
 **Sorting:** Add `asc` (A→Z, oldest first) or `desc` (Z→A, newest first) after the field name. For example, `sort: date desc` shows newest articles first. `sort: title asc` sorts alphabetically.
 
-**Filtering:** Filter items with a `where:` predicate. Common shapes:
+**Filtering:** Narrow with a `where:` predicate. Common shapes:
 
 | Goal | `where:` |
 |---|---|
 | Only published (skip drafts) | `{ published: { ne: false } }` |
 | Tagged "featured" | `{ tags: featured }` |
 | From 2025 onward | `{ date: { gte: '2025-01-01' } }` |
+| Inside one folder | `{ path: { under: 'archive' } }` |
 
 See [Predicates](./predicates.md) for the full operator reference.
 
-### Multiple collections
+### Several queries, and several over one schema
 
-A site can have as many collections as it needs:
+A site can have as many queries as it needs — and **more than one over the same
+records**, which is the usual way to show the same set two ways:
 
 ```yaml
-collections:
-  articles:
-    path: collections/articles
-    sort: date desc
+recent:
+  schema: '@/article'
+  sort: date desc
+  limit: 5
 
-  team:
-    path: collections/team
-    sort: order asc
+everything:
+  schema: '@/article'
+  sort: date desc
 
-  products:
-    path: collections/products
-    sort: title asc
+team:
+  schema: '@/person'
+  sort: order asc
 ```
 
 ### Lean list payloads with `deferred:`
 
-If your collection items have heavy fields that bloat list pages — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. They're stripped from the cascade payload (`/data/<name>.json`) that list pages get, and emitted as per-record full files for on-demand fetching:
+If your records have heavy fields that bloat list pages — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. They're stripped from the cascade payload (`/data/<name>.json`) that list pages get, and emitted as per-record full files for on-demand fetching:
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     deferred: [body]
 ```
 
 What this changes:
 
 - The blog list page (`data: articles`) ships every article *without* the body. Cards stay light.
-- A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the collection key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
+- A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the query key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
 - Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useEntityDetail` kit hook to fetch the full record on demand.
 
-Skip `deferred:` for collections without heavy fields — the entire record ships, like always.
+Skip `deferred:` for records without heavy fields — the entire record ships, like always.
 
-**API-backed collections.** The above describes a file-based collection — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a collection sourced from a remote API (`url:` instead of `path:`), tell the framework where to find one full record by setting `detailUrl:`:
+**Remote sources.** The above describes file-based records — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a query over a remote API (`url:` instead of a local `schema:`), tell the framework where to find one full record by setting `detailUrl:`:
 
 ```yaml
-collections:
+queries:
   articles:
-    url: /api/articles                  # collection source (remote)
+    url: /api/articles                  # a remote source
     deferred: [body]
     detailUrl: /api/articles/{slug}     # how to fetch one full record
 ```
 
-Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; file-based collections leave it null and use the per-record file default.
+Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; file-based queries leave it null and use the per-record file default.
 
 ### Filterable surfaces with `queryable:`
 
 For sites where readers compose their own filtered views — a department dropdown, a "show only featured" toggle, a date-range slider — you declare which fields are filterable, with their type and any type-specific metadata:
 
 ```yaml
-collections:
+queries:
   members:
-    path: collections/members
+    schema: '@/member'
     queryable:
       department:
         type: enum
@@ -340,9 +403,9 @@ See [Predicates](./predicates.md) for the full pattern, including saved views.
 
 ---
 
-## Displaying Collections on Pages
+## Displaying Records on Pages
 
-Once you've declared a collection, you can show its items on any page.
+Once a query is declared, you can show its records on any page.
 
 ### The data shorthand
 
@@ -354,7 +417,7 @@ title: Blog
 data: articles
 ```
 
-This tells the page to load the `articles` collection. The page's section types then display those articles — as a grid of cards, a list, or however the site's design presents them.
+This tells the page to run the `articles` query. The page's section types then display those articles — as a grid of cards, a list, or however the site's design presents them.
 
 ### Showing a few items on another page
 
@@ -364,7 +427,7 @@ Want to show the latest three articles on your homepage? Use `fetch:` in a secti
 ---
 type: ArticleTeaser
 fetch:
-  collection: articles
+  query: articles
   limit: 3
   sort: date desc
 ---
@@ -376,9 +439,9 @@ This pulls just three articles, sorted newest first, for a teaser section. The f
 
 ---
 
-## Individual Pages for Collection Items
+## Individual Pages for Records
 
-Collections become even more useful when each item gets its own page — like `/blog/design-tips` for a blog article or `/team/alice` for a team member.
+Records become even more useful when each one gets its own page — like `/blog/design-tips` for a blog article or `/team/alice` for a team member.
 
 ### The [slug] folder
 
@@ -400,7 +463,7 @@ title: Blog
 data: articles
 ```
 
-The `[slug]` folder tells the site: "For each item in the collection, create a page." The article at `collections/articles/design-tips.md` becomes the page `/blog/design-tips`. The one at `collections/articles/getting-started.md` becomes `/blog/getting-started`.
+The `[slug]` folder tells the site: "For each record the query returns, create a page." The article at `entities/article/design-tips.md` becomes the page `/blog/design-tips`. The one at `entities/article/getting-started.md` becomes `/blog/getting-started`.
 
 The section inside `[slug]/` receives the individual item's content automatically. You don't need to do anything special in the markdown file — just set the section type:
 
@@ -448,7 +511,7 @@ When you're ready to publish, change `published: false` to `published: true` or 
 You can store images and other files right next to your markdown files. This keeps everything for one item in the same place.
 
 ```
-collections/articles/
+entities/article/
 ├── design-tips.md
 ├── design-tips-cover.jpg     ← Cover image for the article
 ├── spacing-diagram.svg       ← Diagram used in the article
@@ -469,18 +532,18 @@ image: ./design-tips-cover.jpg
 
 The `./` means "in the same folder as this file." The build processes these references automatically — you don't need to worry about where the files end up in the final site.
 
-**Tip:** Name your images to match the markdown file they belong to. `design-tips-cover.jpg` clearly belongs to `design-tips.md`. This keeps things organized as your collection grows.
+**Tip:** Name your images to match the markdown file they belong to. `design-tips-cover.jpg` clearly belongs to `design-tips.md`. This keeps things organized as your pool grows.
 
 ---
 
 ## Beyond Blogs
 
-Collections work for any repeating content, not just articles. Here are a few common patterns.
+Records work for any repeating content, not just articles. Here are a few common patterns.
 
 ### Team directory
 
 ```
-collections/team/
+entities/person/
 ├── alice-park.md
 ├── bob-silva.md
 └── carol-wu.md
@@ -499,16 +562,16 @@ Alice leads the design team with a focus on accessibility and design systems.
 
 ```yaml
 # site.yml
-collections:
+queries:
   team:
-    path: collections/team
+    schema: '@/person'
     sort: order asc
 ```
 
 ### Product catalog
 
 ```
-collections/products/
+entities/product/
 ├── starter-plan.md
 ├── pro-plan.md
 └── enterprise-plan.md
@@ -528,16 +591,16 @@ Everything you need to grow. Includes all Starter features plus priority support
 
 ```yaml
 # site.yml
-collections:
+queries:
   products:
-    path: collections/products
+    schema: '@/product'
     sort: order asc
 ```
 
 ### Case studies
 
 ```
-collections/cases/
+entities/case/
 ├── acme-corp.md
 ├── globex.md
 └── initech.md
@@ -568,9 +631,9 @@ We built a multilingual site with dynamic routing for each region.
 
 ```yaml
 # site.yml
-collections:
+queries:
   cases:
-    path: collections/cases
+    schema: '@/case'
     sort: date desc
 ```
 
@@ -578,7 +641,7 @@ collections:
 
 ## Excerpts
 
-When your collection is displayed as a list — blog cards, product summaries, search results — each item needs a short preview. These are called excerpts.
+When records are displayed as a list — blog cards, product summaries, search results — each item needs a short preview. These are called excerpts.
 
 **Automatic excerpts:** If you don't do anything special, the site generates an excerpt from the first ~160 characters of your content body. This works fine in most cases.
 
@@ -596,9 +659,9 @@ When a `description` is present, it's used as the excerpt instead of the auto-ge
 You can also configure excerpt behavior in `site.yml`:
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
     excerpt:
       maxLength: 200          # Characters (default: 160)
@@ -613,13 +676,13 @@ collections:
 
 - **Filenames become URLs.** The file `design-tips.md` creates the slug `design-tips`, which becomes part of the URL (`/blog/design-tips`). Use lowercase, hyphen-separated names.
 
-- **Keep collections flat.** Put all items directly in the collection folder — don't create subfolders. `collections/articles/design-tips.md` works. `collections/articles/2025/design-tips.md` does not.
+- **Keep schema folders flat.** Put every file directly in its schema folder. `entities/article/design-tips.md` works; `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. Group in `records.yml` instead.
 
-- **Items vs. collections — a rule of thumb.** If you're writing content that fits naturally in one section (a few feature cards, a short FAQ), use items in a single markdown file. If the content is a growing catalog (blog posts, team members, products), use a collection.
+- **Items vs. records — a rule of thumb.** If you're writing content that fits naturally in one section (a few feature cards, a short FAQ), use items in a single markdown file. If the content is a growing catalog (blog posts, team members, products), use records.
 
 - **Use consistent frontmatter.** If your blog articles use `date`, `author`, and `tags`, add those fields to every article — even if some are optional. Consistency makes your content predictable and easier to maintain.
 
-- **Preview with `pnpm dev`.** Collections update automatically during development. Add a file, save it, and the site refreshes.
+- **Preview with `pnpm dev`.** Records update automatically during development. Add a file, list it in `records.yml`, and the site refreshes.
 
 ---
 
@@ -627,12 +690,13 @@ collections:
 
 | What you want to do | How to do it |
 |---------------------|-------------|
-| Create a collection | Add markdown files to a folder in `collections/` |
-| Declare it | Add a `collections:` entry in `site.yml` |
-| Sort items | `sort: date desc` or `sort: title asc` in `site.yml` |
-| Filter items | `where: { published: { ne: false } }` in `site.yml` |
+| Add records | Put files in `entities/<schema>/` |
+| Publish them | List them in `records.yml` — `- article/*.md` |
+| Reach them | Add a query to `queries.yml` — `recent: { schema: '@/article' }` |
+| Sort them | `sort: date desc` or `sort: title asc` on the query |
+| Filter them | `where: { published: { ne: false } }` on the query |
 | Show on a page | `data: articles` in `page.yml` |
-| Show a subset | `fetch: { collection: articles, limit: 3 }` in section frontmatter |
+| Show a subset | `fetch: { query: articles, limit: 3 }` in section frontmatter |
 | Create detail pages | Add a `[slug]/` folder under the list page |
 | Hide a draft | `published: false` in item frontmatter |
 | Add an image | Store next to the `.md` file, reference with `./` |
@@ -648,4 +712,4 @@ collections:
 - **[Site Setup](./site-setup.md)** — Site configuration, pages, locales, and more
 - **[Translating Your Site](./translating.md)** — Add multiple languages
 
-For technical details on collection processing, see [Content Collections](../reference/content-collections.md).
+For technical details on record processing, see [Content Records](../reference/content-collections.md).

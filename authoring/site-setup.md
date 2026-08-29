@@ -229,17 +229,17 @@ For more search options, see the [Search guide](./search.md).
 Collections let you create structured data from markdown files — like blog posts, team members, or product listings. Instead of writing JSON, you write markdown files in a folder:
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
 
   team:
-    path: collections/team
+    schema: '@/person'
     sort: order asc
 ```
 
-Each markdown file in `collections/articles/` becomes an item in the `articles` collection, sorted by date. Pages can then display this data using their template's components.
+Each markdown file in `entities/article/` becomes an item in the `articles` collection, sorted by date. Pages can then display this data using their template's components.
 
 For the full guide, see [Collections](./collections.md). For technical details, see [Content Collections](../reference/content-collections.md).
 
@@ -274,7 +274,7 @@ If your site needs data available on every page — like a shared collection or 
 data: config
 ```
 
-If you have a `collections/config/` collection, this makes it available to all pages. Components that expect `config` data will receive it automatically.
+If you have a `entities/config/` collection, this makes it available to all pages. Components that expect `config` data will receive it automatically.
 
 You can also fetch from a remote URL:
 
@@ -333,9 +333,9 @@ search:
   enabled: true
 
 # Blog content
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
 ```
 

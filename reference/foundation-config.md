@@ -631,7 +631,7 @@ fetcher:
   headers:                                # recognized by the default fetcher
     X-Tenant: acme
   envelope:                               # recognized by the default fetcher
-    collection: data.items
+    query: data.items
 ```
 
 This works because the framework default fetcher reads from `website.config.fetcher` (same block, root keys). Named transports and the default-fetcher vocabulary coexist under one `fetcher:` block.

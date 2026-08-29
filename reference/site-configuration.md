@@ -51,16 +51,16 @@ fetch:
   schema: siteConfig
 
 # Content Collections
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
 
 # Custom Content Paths (optional, for external content)
 paths:
   pages: ../docs/pages             # Default: pages/
   layout: ../docs/layout           # Default: layout/
-  collections: ../content          # Default: (site root)
+  entities: ../content             # Default: entities/
 ```
 
 ---
@@ -938,15 +938,15 @@ See [Data Fetching](./data-fetching.md) for the full reference.
 Define collections of markdown content that generate JSON data files.
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
     where:
       published: { ne: false }
 
   team:
-    path: collections/team
+    schema: '@/person'
     sort: order asc
 ```
 
@@ -969,9 +969,9 @@ Collections generate JSON files in `public/data/`. Use `data: collection-name` i
 Set `route:` when the collection has a detail page behind a dynamic route, and every record gains a `route` field of `<route>/<slug>`:
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     route: /blog          # pairs with a pages/blog/[slug]/ dynamic route
 ```
 
@@ -990,13 +990,13 @@ See [Content Collections](./content-collections.md) for details.
 
 ## Custom Content Paths
 
-By default, site content is read from standard directories relative to the site root: `pages/`, `layout/`, and `collections/`. You can override these locations using the `paths:` group in `site.yml`:
+By default, site content is read from standard directories relative to the site root: `pages/`, `layout/`, and `entities/`. You can override these locations using the `paths:` group in `site.yml`:
 
 ```yaml
 paths:
   pages: ../shared-content/pages
   layout: ../shared-content/layout
-  collections: ../shared-content/collections
+  entities: ../shared-content/entities
 ```
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
@@ -1140,13 +1140,13 @@ fetch:
   schema: config
 
 # Collections
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     sort: date desc
 
   products:
-    path: collections/products
+    schema: '@/product'
     sort: name asc
 ```
 

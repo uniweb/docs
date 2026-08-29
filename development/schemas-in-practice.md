@@ -157,7 +157,7 @@ This is a deliberate consequence of the framework being usable with no backend: 
 
 ### Solo project, static host
 
-You write schemas in `foundation/schemas/`, reference them as `@/product`, keep content in `collections/`, and deploy the built site anywhere. Standards like `@std/person` work too — add `@uniweb/schemas` as a foundation dependency. No account, no registration, no network.
+You write schemas in `foundation/schemas/`, reference them as `@/product`, keep records in `entities/`, and deploy the built site anywhere. Standards like `@std/person` work too — add `@uniweb/schemas` as a foundation dependency. No account, no registration, no network.
 
 ### An agency catalog reused across client projects
 

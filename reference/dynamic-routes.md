@@ -33,10 +33,10 @@ pages/
 
 ### 1. Create a collection
 
-Create markdown files in `collections/articles/`:
+Create markdown files in `entities/article/`:
 
 ```markdown
-<!-- collections/articles/getting-started.md -->
+<!-- entities/article/getting-started.md -->
 ---
 title: Getting Started with Uniweb
 excerpt: Learn the basics...
@@ -48,7 +48,7 @@ Your article content here...
 ```
 
 ```markdown
-<!-- collections/articles/advanced-features.md -->
+<!-- entities/article/advanced-features.md -->
 ---
 title: Advanced Features
 excerpt: Deep dive into...

@@ -93,7 +93,7 @@ Many APIs wrap collections. A per-fetch `transform:` handles one case; a site-le
 fetcher:
   baseUrl: https://api.example.com
   envelope:
-    collection: data.items
+    query: data.items
     item: data.article
     error: errors.0.message
 ```
@@ -117,7 +117,7 @@ fetch:
       tags: featured
     sort: { created: desc }
     limit: 10
-  envelope: { collection: data.results }
+  envelope: { query: data.results }
 ```
 
 The framework JSON-serializes `body:` and sets `Content-Type: application/json`. Your component reads `content.data.products` — no component-side change from the GET case.
@@ -144,7 +144,7 @@ fetch:
       query Articles {
         articles { id slug title excerpt }
       }
-  envelope: { collection: data.articles }
+  envelope: { query: data.articles }
 
   # Detail fetch for /articles/[slug] — object form of detail: carries its
   # own body with {slug} substitution from the route param.
@@ -165,7 +165,7 @@ The `{slug}` in `variables.slug` is substituted from the dynamic-route context. 
 For lean cascade payloads with on-demand details (the `deferred:` pattern, see [Data Fetching → Deferred fields](../reference/data-fetching.md#deferred-fields)) on an API-backed collection, declare the per-record endpoint with `detailUrl:`:
 
 ```yaml
-collections:
+queries:
   articles:
     url: /api/articles
     deferred: [body]
@@ -183,9 +183,9 @@ A site can mix static JSON and a remote backend freely:
 fetcher:
   baseUrl: https://api.example.com
 
-collections:
+queries:
   articles:
-    path: collections/articles   # markdown → public/data/articles.json
+    schema: '@/article'   # markdown → public/data/articles.json
 ```
 
 ```yaml

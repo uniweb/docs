@@ -544,9 +544,9 @@ Set up a blog with a list page and individual article pages.
 **1. Create a collection** in `site.yml`:
 
 ```yaml
-collections:
+queries:
   articles:
-    path: collections/articles
+    schema: '@/article'
     route: /blog          # pairs with the pages/blog/[slug]/ route in step 4
     sort: date desc
 ```
@@ -556,10 +556,10 @@ collections:
 nothing for the card to point at. See
 [Collection Options](../reference/site-configuration.md#collection-options).
 
-**2. Add article files** in `collections/articles/`:
+**2. Add article files** in `entities/article/`:
 
 ```
-collections/articles/
+entities/article/
 ├── hello-world.md
 ├── new-feature.md
 └── tips-and-tricks.md
@@ -910,5 +910,5 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
 - **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
 - **[Linking](./linking.md)** — Stable `page:` links
-- **[Collections](./collections.md)** — How collections work, the collections/ folder, and detail pages
+- **[Records](./collections.md)** — How records work, the `entities/` pool, `records.yml`, and detail pages
 - **[Search](./search.md)** — Search configuration

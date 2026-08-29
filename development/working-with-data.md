@@ -26,7 +26,7 @@ data: articles
 
 That single line does three things:
 
-1. References the `articles` collection (built from `collections/articles/`).
+1. References the `articles` collection (built from `entities/article/`).
 2. Makes the data available as `content.data.articles` on every section of the page.
 3. Caches the result — navigating away and back doesn't re-fetch.
 
@@ -206,7 +206,7 @@ fetch: /data/team.json
 
 # Collection with post-processing
 fetch:
-  collection: articles
+  query: articles
   limit: 3
   sort: date desc
 ```

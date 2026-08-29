@@ -14,7 +14,7 @@ A predicate is a YAML object whose top-level keys are field names. Bare values a
 # pages/blog/page.yml
 data: articles
 fetch:
-  collection: articles
+  query: articles
   where:
     published: true
     category: news
@@ -167,7 +167,7 @@ If you find yourself writing the same predicate in multiple places, save it. A s
 
 ```
 site/
-└── collections/
+└── entities/
     └── views/
         ├── tenured-biology.yml
         ├── recent-hires.yml
@@ -177,7 +177,7 @@ site/
 Each file is a record:
 
 ```yaml
-# collections/views/tenured-biology.yml
+# entities/view/tenured-biology.yml
 name: Tenured Biology
 description: Tenured members of the Department of Biology.
 where:
@@ -189,11 +189,11 @@ Declare the collection in `site.yml` like any other:
 
 ```yaml
 # site.yml
-collections:
+queries:
   members:
-    path: collections/members
+    schema: '@/member'
   views:
-    path: collections/views
+    schema: '@/view'
 ```
 
 Foundations read the views collection (e.g., on a `Cover` section) to populate a dropdown. When the reader picks a view, the foundation passes that record's `where:` value to its data-fetching code. The framework treats it identically to an inline `where:` — same evaluation semantics, same backend wire format if the backend supports predicate pushdown.
@@ -208,9 +208,9 @@ For sites where readers compose their own predicates by interacting with control
 
 ```yaml
 # site.yml
-collections:
+queries:
   members:
-    path: collections/members
+    schema: '@/member'
     queryable:
       department:
         type: enum
@@ -283,7 +283,7 @@ If you find yourself reaching for these, the answer is usually: precompute it du
 
 ```yaml
 fetch:
-  collection: articles
+  query: articles
   where: { tags: featured }
   sort: date desc
   limit: 3
@@ -293,7 +293,7 @@ fetch:
 
 ```yaml
 fetch:
-  collection: products
+  query: products
   where:
     active: true
     price: { lt: 100 }
@@ -304,7 +304,7 @@ fetch:
 
 ```yaml
 fetch:
-  collection: members
+  query: members
   where:
     department: biology
     start_year: { gte: 2020 }
@@ -314,7 +314,7 @@ fetch:
 
 ```yaml
 fetch:
-  collection: articles
+  query: articles
   where:
     not:
       status: draft
@@ -324,7 +324,7 @@ fetch:
 
 ```yaml
 fetch:
-  collection: members
+  query: members
   where:
     department: { in: [biology, geology] }
 ```
@@ -333,7 +333,7 @@ fetch:
 
 ```yaml
 fetch:
-  collection: members
+  query: members
   where:
     'education.doctorate.year': { exists: true }
 ```

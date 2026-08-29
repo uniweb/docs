@@ -12,13 +12,17 @@ This guide builds progressively: simple substitution first, then aggregation, th
 
 Three things connect a section to its data:
 
-**1. A collection in `site.yml`:**
+**1. Records in `entities/`, published by `records.yml`, reached by a query:**
 
 ```yaml
-# site.yml
-collections:
-  profile:
-    path: collections/profile
+# records.yml — listing an entity is what makes it a record
+- profile/*.yml
+```
+
+```yaml
+# queries.yml — a query names a schema; the published records of that schema are its rows
+profile:
+  schema: '@/profile'
 ```
 
 **2. A data reference in `page.yml`:**
@@ -40,7 +44,7 @@ type: Header
 {title} -- {affiliation}
 ```
 
-The collection processor reads every `.yml` file in `collections/profile/` and makes it available as `data.profile`. The content handler resolves `{first_name}` against the profile data before the component sees the content.
+The collection processor reads every `.yml` file in `entities/profile/` and makes it available as `data.profile`. The content handler resolves `{first_name}` against the profile data before the component sees the content.
 
 ---
 
@@ -49,7 +53,7 @@ The collection processor reads every `.yml` file in `collections/profile/` and m
 Any `{field_name}` in the markdown is replaced with the corresponding value from the data. Given this data:
 
 ```yaml
-# collections/profile/darwin.yml
+# entities/profile/darwin.yml
 first_name: Charles
 family_name: Darwin
 role: Naturalist
@@ -190,7 +194,7 @@ The `cv-loom` template demonstrates the full pattern — a complete academic CV 
 npx uniweb create --template cv-loom
 ```
 
-The template includes: a profile collection (`collections/profile/darwin.yml`), a foundation with `createLoomHandlers`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
+The template includes: a profile collection (`entities/profile/darwin.yml`), a foundation with `createLoomHandlers`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
 
 ---
 

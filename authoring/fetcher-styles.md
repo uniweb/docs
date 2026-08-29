@@ -181,7 +181,7 @@ Strapi wraps every response in `{ data, meta }`. The `strapi` style declares thi
 fetcher:
   request: { style: strapi }
   envelope:
-    collection: data.records
+    query: data.records
     item: data.record
 ```
 

@@ -468,7 +468,7 @@ locales/
 │       ├── .manifest.json                  # Staleness tracking (auto-managed)
 │       ├── pages/about/hero.md             # By page route
 │       ├── page-ids/installation/intro.md  # By page ID
-│       └── collections/articles/getting-started.md
+│       └── entities/article/getting-started.md
 ```
 
 ### Initialize a Free-Form Translation
@@ -476,7 +476,7 @@ locales/
 ```bash
 uniweb i18n init-freeform es pages/about hero
 uniweb i18n init-freeform es page-ids/installation intro
-uniweb i18n init-freeform es collections/articles getting-started
+uniweb i18n init-freeform es entities/article getting-started
 ```
 
 Creates a markdown file pre-populated with the source content, ready for translation. Also records a source hash for staleness detection.
@@ -520,7 +520,7 @@ uniweb i18n prune --freeform             # Remove orphaned files
 
 ## Collections i18n
 
-Collection data is translated alongside page content by default. The `extract` command processes both pages and all collection JSON — whether generated from `collections/` or hand-written.
+Record data is translated alongside page content by default. The `extract` command processes both pages and all record JSON — whether generated from `entities/` or hand-written.
 
 ### Extract Collection Strings
 
