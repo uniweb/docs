@@ -41,6 +41,10 @@ extensions:                          # Secondary foundations (optional)
 search:
   enabled: true
 
+# An app backend, if this site has one
+api: /_api                           # where it answers — same in dev and production
+$devApi: ./mock/api.js               # what answers it locally (never published)
+
 # Build Options
 build:
   prerender: true                    # Generate static HTML
@@ -501,6 +505,64 @@ Unknown keys in `agents:` are forwarded to your host as opaque data and simply n
 on, so a typo is silent. `uniweb doctor` flags them.
 
 ---
+
+## An App Backend
+
+A site can have its own backend — accounts, per-visitor data, content its members
+create. `api:` says where that backend answers:
+
+```yaml
+api: /_api
+```
+
+Components never see this value. They ask [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api),
+which reads it and answers "there is no backend" on a site that declares none — so a
+foundation works unchanged on a site with a backend and on a site without one.
+
+### Developing against it: `$devApi`
+
+Building an app against a live backend is slow, and it puts a shared database behind
+your experiments. Name a local handler instead:
+
+```yaml
+api: /_api                 # unchanged — the address is the same everywhere
+$devApi: ./mock/api.js     # development only
+```
+
+`./mock/api.js` default-exports a function that takes a `Request` and returns a
+`Response`:
+
+```js
+export default (request) => Response.json({ entities: [], matched: 0 })
+```
+
+The dev server mounts it at your `api:` address. Because that is the **same address**
+production uses, nothing in your foundation knows which one it is talking to — and
+because it is **same-origin**, sign-in cookies behave exactly as they will in
+production.
+
+Anything can sit behind it: a hand-written stub, recorded fixtures, or your real
+service running as a function. If you are building against Uniweb's own app backend,
+`@uniweb/api` ships one that speaks it:
+
+```js
+// mock/api.js
+import { createMockBackend } from '@uniweb/api/mock'
+export default createMockBackend({ seed }).fetch
+```
+
+> **`$devApi` is never published.** Keys beginning with `$` are local to your working
+> copy and are stripped from the built site, so a visitor cannot reach your local
+> handler and a build cannot ship it by accident. Delete the line and the site still
+> works — it simply has no backend, and the features that need one disappear rather
+> than break.
+
+The `conference` template is a worked example — a programme that reads as a static
+site, and becomes an editable app for the people running the event:
+
+```bash
+uniweb create my-event --template conference
+```
 
 ## Form Submissions
 
