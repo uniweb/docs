@@ -36,6 +36,44 @@ fields:
 
 The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object` (also spelled `group`), `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
 
+### Describing the schema itself
+
+Beside its content, a schema can carry a few keys about the model as a whole. All are optional:
+
+```yaml
+name: session                 # the schema's name — this is its identity
+label: Session                # a display name, for people
+description: A conference talk.
+source_locale: en             # the language the inline text is written in
+linkable: true                # may other schemas reference this one? (default: yes)
+creatable_by: unit_members    # who may create entries (default: anyone signed in)
+```
+
+`label` and `description` are plain strings in the source language — translations live in
+`locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
+quietly accepted.
+
+**`linkable`** controls whether another schema may point at this one with a `ref` field. It is
+`true` by default for any schema with a `brief:` section, because the brief *is* what a reference
+shows. A schema with no brief has nothing to show and is never linkable — asking for
+`linkable: true` there is an error rather than a silent no-op, since the reference would fail at
+the point someone tried to use it.
+
+**`creatable_by`** matters only when a backend stores your content, and it is the one key here
+with teeth. Entries are creatable by **anyone with an account** unless you say otherwise:
+
+| value | who may create entries |
+|---|---|
+| `any_user` | anyone signed in — **the default** |
+| `unit_members` | only members of the owning unit |
+
+Naming specific people is not something a schema can express — that is granted per account, where
+it can change without a new schema version. Use `creatable_by` to set the general rule, and grants
+for the exceptions.
+
+> An unrecognised key here is reported as a warning and not carried, so a typo like `creatabe_by`
+> tells you rather than leaving you with a restriction that does not apply.
+
 A section type binds the schema by naming it in `meta.js`:
 
 ```js
