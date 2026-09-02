@@ -33,8 +33,7 @@ Every capability this guide describes is optional. Empty config → today's beha
 | `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
 | `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: list / item / error |
 | `supports` | `site.yml fetcher:` | Query operators the source evaluates natively. See [`supports:`](#supports) |
-| `request.style` | `site.yml fetcher:` | How operators reshape for the wire. See [Request Styles](../authoring/fetcher-styles.md) |
-| `request.rename` | `site.yml fetcher:` | Operator name tweaks on top of a style |
+| `request.rename` | `site.yml fetcher:` | Operator name tweaks on the wire. See [Renaming operators](#renaming-operators) |
 | `method: POST` | per-fetch (`page.yml` / block frontmatter) | Send request as POST |
 | `body` | per-fetch | Arbitrary object serialized as JSON; supports `{slug}` substitution in strings |
 
@@ -223,19 +222,18 @@ Pushdown only applies to remote `url:` requests. Local `path:` reads are static 
 
 ### Wire-format conventions (default fetcher)
 
-How operators ride on the wire depends on which **request style** is active — selected via `fetcher.request.style:` in `site.yml`. The framework ships three styles; the ambient default is `json-body`.
+The default fetcher speaks one wire, the framework's own:
 
-| Style | GET | POST | Response envelope |
-|---|---|---|---|
-| `json-body` *(default)* | `?_where=<JSON>&_limit=N&_sort=field:dir` | Operators merged as top-level keys in the JSON body | None |
-| `flat-query` | `?field=value&limit=N&sort=-field` (only flat AND of equalities for `where`) | No pushdown | None |
-| `strapi` | `?filters[field][$op]=value&pagination[limit]=N&sort=field:dir` | No pushdown | `{ data }` wrapper |
+| Method | Operators on the wire |
+|---|---|
+| **GET** | `?_where=<JSON>&_limit=N&_sort=field:dir` — the leading underscore keeps clear of query parameters your backend already uses |
+| **POST** | Operators merged as top-level keys into the JSON body, alongside any fields you supplied |
 
-Full details, operator coverage, and recipes are in [Request Styles](../authoring/fetcher-styles.md).
+No response envelope is assumed; set `envelope:` when your backend wraps its responses.
 
-Example with the default `json-body`: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
+Example: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
 
-POST pushdown under `json-body` merges operators into the request body alongside any author-supplied body fields:
+POST pushdown merges operators into the request body alongside any author-supplied body fields:
 
 ```http
 POST /api/articles
@@ -250,38 +248,31 @@ Content-Type: application/json
 
 When the author already supplied a body (e.g., a GraphQL request), the operators are merged in as top-level keys (`where`, `limit`, `sort`). String bodies pass through unchanged — operators are dropped; use object bodies if you want pushdown into a POST request.
 
-### Picking a style
+### Renaming operators
 
-Pick the style that matches your backend's wire shape — no JavaScript needed:
+For a backend that speaks this shape but calls an operator by a different name, `rename:` changes the wire name without changing the shape:
 
 ```yaml
 # site.yml
 fetcher:
-  baseUrl: https://cms.example.com/api
-  supports: [where, limit, sort]
+  baseUrl: https://api.example.com
+  supports: [limit, sort]
   request:
-    style: strapi           # or: flat-query, or: json-body (the default)
-```
-
-For operator names that are almost-but-not-quite the shipped default, `rename:` tweaks the wire names without changing the style:
-
-```yaml
-fetcher:
-  request:
-    style: flat-query
     rename:
-      limit: pageSize       # wire name becomes ?pageSize=N instead of ?limit=N
-      sort: orderBy
+      limit: pageSize       # ?pageSize=N instead of ?_limit=N
+      sort: orderBy         # ?orderBy=field:dir instead of ?_sort=field:dir
 ```
 
-See [Request Styles](../authoring/fetcher-styles.md) for the full picker.
+`rename:` applies to whichever channel carries the operator — the query-parameter name on GET, the body key on POST. It cannot change the *shape* of the wire (bracket notation, nesting, composition), and it does not rename field names inside a predicate: if your backend calls a field `dept`, write `dept` in the site YAML. In dev, a `rename:` entry for an operator the wire does not carry gets a one-time warning so dead config is noticed.
 
-### Backend doesn't match any shipped style?
+### Backend doesn't speak these conventions?
 
-If none of `json-body`, `flat-query`, or `strapi` fits, two paths forward:
+Two paths forward:
 
-- **Adapt at the proxy** — your same-origin proxy translates one of the shipped shapes into your backend's native query language. Often a few lines of code at the edge.
-- **Write a custom transport** — a foundation-level named transport with its own `resolve()` and (optionally) its own `cacheKey()`. The site opts in per-schema via `fetcher.transports:`. Use this when the gap is wide enough that a proxy would duplicate backend logic. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
+- **Adapt at the proxy** — your same-origin proxy translates the default wire into your backend's native query language. Often a few lines of code at the edge.
+- **Write a named transport** — a transport with its own `resolve()` and (optionally) its own `cacheKey()`, exported by the foundation or by an extension the site loads; the site opts in per-schema via `fetcher.transports:`. Use this when the gap is wide enough that a proxy would duplicate backend logic — a CMS with its own filter syntax, for instance. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
+
+> Earlier releases shipped two more built-in wire dialects, `flat-query` and `strapi`, selected with `fetcher.request.style:`. They were removed: a third party's wire belongs in a transport, not in the runtime every site loads. A site that still names one gets an error in dev, and in production an error in the console plus the default wire — move the dialect into a transport.
 
 ---
 
@@ -376,7 +367,6 @@ Most sites don't hit any of these. For those that do, [Foundation Configuration 
 ## See also
 
 - [Data Fetching](../reference/data-fetching.md) — Reference for `fetch:` / `data:` config and the cascade.
-- [Request Styles](../authoring/fetcher-styles.md) — Choosing a wire-format style: `json-body`, `flat-query`, `strapi`.
-- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing a named transport (when no style fits).
+- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing a named transport (when the default wire does not fit).
 - [Working with Data](./working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, placeholder substitution, delivery paths.
