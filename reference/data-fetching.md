@@ -78,7 +78,7 @@ fetch:
   # OR
   query: team           # Named query, declared in queries.yml (resolves to /data/team.json)
 
-  schema: person             # Key in content.data — must match the component's `data:` key
+  as: person                 # Key in content.data — must match the component's `data:` key
   merge: false               # Replace existing data (default: false)
   transform: data.items      # Extract nested path from response
   detail: rest               # Single-entity fetch for dynamic routes (optional)
@@ -96,7 +96,7 @@ fetch:
 | `path` | — | Local file path relative to `public/` |
 | `url` | — | Remote URL (mutually exclusive with `path`) |
 | `query` | — | Named-query reference (mutually exclusive with `path`/`url`). Declare the query in `queries.yml` |
-| `schema` | *the query name, or inferred from the source* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects |
+| `as` | *the query name, or inferred from the source* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02 — that spelling is still accepted so existing content keeps working, and is never written. The word moved because `schema` also means the MODEL REF on a `queries` declaration.)* |
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
