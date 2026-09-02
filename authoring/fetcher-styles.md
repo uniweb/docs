@@ -155,7 +155,7 @@ GET https://cms.example.com/api/members
 | `{ field: { gt, gte, lt, lte } }` | `filters[field][$gt/$gte/$lt/$lte]=…` |
 | `{ field: { in: [...] } }` | `filters[field][$in][0]=…&filters[field][$in][1]=…` |
 | `{ field: { nin: [...] } }` | `filters[field][$notIn][0]=…` |
-| `{ field: { like: '…' } }` | `filters[field][$containsi]=…` (case-insensitive substring) |
+| `{ field: { like: '…' } }` | **Not pushed.** `like` is an anchored glob (`*` and `?` wildcards); Strapi's `$containsi` is an unanchored substring test with no wildcards. The two disagree in both directions, so a predicate containing `like` is evaluated at runtime as a whole |
 | `{ field: { exists: true } }` | `filters[field][$notNull]=true` |
 | `{ field: { exists: false } }` | `filters[field][$null]=true` |
 | `{ and: [...] }` | `filters[$and][0]…&filters[$and][1]…` |
