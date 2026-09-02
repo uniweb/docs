@@ -333,6 +333,39 @@ data: articles
 
 This fetches from `/data/articles.json` and makes it available as `content.data.articles`. Clean and readable.
 
+### Declaring more than one
+
+A list declares several — each is fetched and each arrives under its own key:
+
+```yaml
+# pages/home/page.yml
+title: Home
+data: [team, articles]
+```
+
+Sections on that page read `content.data.team` and `content.data.articles`
+independently. Because [delivery is default-on](#cascade), every section on the
+page receives both and ignores the keys it does not use — so one declaration at
+the page level serves a page whose sections need different data.
+
+The same works with the full syntax, where each entry takes its own options:
+
+```yaml
+fetch:
+  - query: team
+    sort: name
+  - query: articles
+    limit: 5
+```
+
+A list is available anywhere a single declaration is: `site.yml`, `folder.yml`,
+`page.yml`, and section frontmatter.
+
+> **How many requests is that?** Not your concern when authoring, and
+> deliberately so. You are declaring what the page *needs*; how the data is
+> retrieved is the fetcher's business. A source that can answer several queries
+> in one call is free to do so, and one that cannot will fetch them in parallel.
+
 ### The `fetch:` syntax (advanced)
 
 For more control, use the full fetch syntax with post-processing options:

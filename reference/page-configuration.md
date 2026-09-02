@@ -55,7 +55,7 @@ nest:                           # Declare parent-child relationships
   features: [card-a, card-b]   # features gets card-a and card-b as children
 
 # Data
-data: articles                  # Collection reference (recommended)
+data: articles                  # Collection reference (recommended; a list declares several)
 fetch:                          # Advanced: full fetch config
   url: https://api.example.com/team
   schema: team
@@ -598,6 +598,16 @@ data: articles
 ```
 
 Fetches from `/data/articles.json` (generated from a collection). All sections on the page receive it in `content.data.articles` automatically.
+
+A list declares several, each under its own key:
+
+```yaml
+data: [team, articles]
+```
+
+Every section on the page receives both — as `content.data.team` and
+`content.data.articles` — and ignores the keys it does not use. That is how one
+page-level declaration serves sections that need different data.
 
 ### Full Fetch Configuration
 
