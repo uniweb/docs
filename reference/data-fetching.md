@@ -174,7 +174,7 @@ fetch:
 
 See [Related Items](#related-items-pattern) for the common use.
 
-> **Deprecated:** `inherit: true` is accepted as an alias for one release with a dev-mode warning, then removed. Rename to `refine: true`.
+> **Removed:** `inherit: true`, the earlier spelling of `refine: true`, is no longer accepted — the build stops with an error naming the current spelling. Rename it.
 
 ### Precedence
 
