@@ -32,7 +32,7 @@ The simplest form — load data for a specific section:
 type: TeamGrid
 fetch:
   path: /data/team.json
-  schema: team
+  as: team
 ---
 
 # Our Team
@@ -99,7 +99,7 @@ fetch:
 | `as` | *the query name, or inferred from the source* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02 — that spelling is still accepted so existing content keeps working, and is never written. The word moved because `schema` also means the MODEL REF on a `queries` declaration.)* |
 | `merge` | `false` | Combine with existing data vs replace |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
-| `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#detail-queries). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
+| `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#where-the-record-comes-from). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
 | `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)) |
 | `sort` | — | Sort by field, e.g. `date desc` |
 | `limit` | — | Take first N records |
@@ -246,7 +246,7 @@ Fetched data completely replaces any existing data under that schema key.
 ```yaml
 fetch:
   path: /data/more-team.json
-  schema: team
+  as: team
   merge: true
 ```
 
@@ -286,7 +286,7 @@ Fetch from any URL:
 ```yaml
 fetch:
   url: https://jsonplaceholder.typicode.com/users
-  schema: team
+  as: team
   transform: data.members
 ```
 
@@ -666,7 +666,7 @@ export default {
 title: Blog
 fetch:
   url: https://api.myblog.com/posts
-  schema: posts
+  as: posts
   transform: data.articles
 ```
 
@@ -677,7 +677,7 @@ fetch:
 name: My Site
 fetch:
   path: /data/site-config.json
-  schema: config
+  as: config
 ```
 
 ```jsx

@@ -52,7 +52,7 @@ build:
 # Data Sources
 fetch:
   path: /data/global.json
-  schema: siteConfig
+  as: siteConfig
 
 # Content Collections
 queries:
@@ -977,7 +977,7 @@ Load data available to all pages.
 ```yaml
 fetch:
   path: /data/site-config.json
-  schema: config
+  as: config
 ```
 
 Every section on every page receives this data automatically in `content.data.config`.
@@ -1199,7 +1199,7 @@ build:
 # Global data
 fetch:
   path: /data/site-config.json
-  schema: config
+  as: config
 
 # Collections
 queries:

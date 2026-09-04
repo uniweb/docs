@@ -116,7 +116,7 @@ The `detail` field tells the runtime how to fetch just the one entity:
 title: Blog
 fetch:
   url: https://api.example.com/articles
-  schema: articles
+  as: articles
   detail: rest
 ```
 
@@ -186,7 +186,7 @@ Here's the full set of options available on a fetch config:
 fetch:
   path: /data/articles.json              # Local file (under public/)
   url: https://api.example.com/articles  # Remote URL (mutually exclusive with path)
-  schema: articles                       # Key in content.data
+  as: articles                       # Key in content.data
   detail: rest                           # Single-entity optimization (rest | query | pattern)
   prerender: true                        # Build-time fetch (true) vs runtime-only (false)
   transform: data.items                  # Extract nested path from response
@@ -257,7 +257,7 @@ pages/
 title: Products
 fetch:
   url: https://api.example.com/products
-  schema: products
+  as: products
   detail: rest
   transform: data.items
 ```

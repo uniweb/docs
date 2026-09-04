@@ -58,7 +58,7 @@ nest:                           # Declare parent-child relationships
 data: articles                  # Collection reference (recommended; a list declares several)
 fetch:                          # Advanced: full fetch config
   url: https://api.example.com/team
-  schema: team
+  as: team
 
 # Analytics
 trackSections: true             # Override the site's `emit` for this page (true or false)
@@ -614,7 +614,7 @@ page-level declaration serves sections that need different data.
 ```yaml
 fetch:
   path: /data/team.json
-  schema: team
+  as: team
   prerender: true
 ```
 
@@ -623,7 +623,7 @@ fetch:
 ```yaml
 fetch:
   url: https://api.example.com/data
-  schema: apiData
+  as: apiData
   transform: data.items
 ```
 

@@ -61,7 +61,7 @@ data: articles
 
 fetch:
   url: /articles           # resolves to https://api.example.com/articles
-  schema: articles
+  as: articles
 ```
 
 Absolute URLs (`https://…`) and protocol-relative URLs (`//cdn/…`) pass through unchanged, so one fetch config can mix backend calls and CDN reads freely.
@@ -194,7 +194,7 @@ data: articles
 # pages/live-stats/page.yml  → hits the remote API
 fetch:
   url: /stats/live             # resolves via baseUrl
-  schema: stats
+  as: stats
 ```
 
 No special flag. `path:` (local) and `url:` (remote) are already mutually exclusive per fetch, and the default fetcher handles both.
@@ -301,7 +301,7 @@ And rewrite your collection refs to URLs:
 # pages/articles/page.yml
 fetch:
   url: /api/articles
-  schema: articles
+  as: articles
 ```
 
 The dev backend exposes `GET /api/<collection>`, `GET /api/<collection>/<slug>`, and `POST /api/<collection>` — same surface a real backend would expose against the framework's conventions. Predicates evaluate via the same `matchWhere` evaluator the runtime uses as a fallback. Switch back to the static-file mode by setting `supports: []` and removing the `--port` server; nothing else in your site changes.

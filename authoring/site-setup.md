@@ -281,7 +281,7 @@ You can also fetch from a remote URL:
 ```yaml
 fetch:
   url: https://api.example.com/config
-  schema: config
+  as: config
 ```
 
 For details, see [Data Fetching](../reference/data-fetching.md).
