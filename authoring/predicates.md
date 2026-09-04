@@ -1,6 +1,6 @@
 # Predicates and Saved Views
 
-When you want to show only *some* records from a collection — only featured articles, only members from one department, only events after a date — you write a **predicate** in the `where:` field of a fetch declaration. Predicates are structured YAML objects: no special grammar to learn beyond the field-name → value pattern you already use in frontmatter.
+When you want to show only *some* of a query's records — only featured articles, only members from one department, only events after a date — you write a **predicate** in the `where:` field of a fetch declaration. Predicates are structured YAML objects: no special grammar to learn beyond the field-name → value pattern you already use in frontmatter.
 
 This guide covers the predicate format, the patterns for reusing predicates as saved views, and how foundations build filter UIs that compose predicates from reader interactions.
 
@@ -22,7 +22,7 @@ fetch:
 
 This delivers articles where `published == true` AND `category == 'news'`.
 
-The same predicate works on any fetch declaration — block frontmatter, page-level, folder-level, site-level. It also works against any source: a built collection, a local JSON file, a remote URL.
+The same predicate works on any fetch declaration — block frontmatter, page-level, folder-level, site-level. It also works against any source: the site's own compiled records, a local JSON file, a remote URL.
 
 ---
 
@@ -34,11 +34,15 @@ When you need more than equality, the value becomes a small object naming the op
 where:
   rank: { in: [associate, full] }       # value is in the list
   start_year: { gte: 2010 }             # ≥ comparison
-  title: { like: 'Origin*' }            # glob pattern (* wildcard)
+  status: { nin: [draft, archived] }    # value is NOT in the list
   email: { exists: true }               # field is present
 ```
 
-Available operators:
+Operators come in three tiers. The first is what nearly every predicate needs and what
+every source — the built records, a backend that answers queries — evaluates identically.
+Reach for the others knowingly.
+
+**The spine.** Equality, comparison, membership, presence:
 
 | Operator | Meaning | Example |
 |---|---|---|
@@ -48,14 +52,29 @@ Available operators:
 | `lt`, `lte` | Less than / less than or equal | `{ price: { lt: 100 } }` |
 | `in` | Value is in the listed array | `{ tag: { in: [news, events] } }` |
 | `nin` | Value is *not* in the listed array | `{ status: { nin: [draft, archived] } }` |
-| `like` | Glob match (`*` any run, `?` one char) | `{ name: { like: 'Dr. *' } }` |
 | `exists` | Field is truthy (boolean toggle) | `{ author: { exists: true } }` |
-| `under` | Path containment, at segment boundaries | `{ path: { under: 'guides' } }` |
+
+A bare value against a field that holds a list matches when the list *contains* it —
+`{ tags: featured }` selects a record whose `tags` are `[featured, sale]`.
+
+**Composition** — `and`, `or`, `not` — is covered below. `or` earns its place across
+*different* fields (*featured or pinned*); alternatives on one field are an `in` list.
+
+**Use knowingly.** These work on a site's own compiled records and are not something to
+build a site's core queries on:
+
+| Operator | Meaning | Example | Why it is here |
+|---|---|---|---|
+| `under` | Path containment, at segment boundaries | `{ path: { under: 'guides' } }` | selects a folder branch of the records. A backend that answers queries takes the branch as the query's *scope* instead |
+| `like` | Glob match (`*` any run, `?` one char) | `{ name: { like: 'Dr. *' } }` | text matching a reader types belongs in **search**, not in a predicate; see [Why not `like`](#why-not-like-with-a-wildcard) |
+
+Dotted field names (`tenure.start`) descend into a nested record and are evaluated on the
+compiled records; whether a backend can evaluate one depends on that backend.
 
 ### `under` — selecting a branch of a path
 
-Some fields hold a slash-separated location: where a record sits inside its
-collection, a category path, a docs section. `under` matches that value **and
+Some fields hold a slash-separated location: where a record sits inside the
+site's folder, a category path, a docs section. `under` matches that value **and
 everything below it**, and it respects segment boundaries — so a sibling that
 merely starts with the same letters is not swept in:
 
@@ -163,7 +182,7 @@ Each dot descends one level. Missing intermediate objects don't error — they j
 
 ## Saved views
 
-If you find yourself writing the same predicate in multiple places, save it. A saved view is just a regular collection of records, where each record holds a `where:` predicate alongside human-readable metadata:
+If you find yourself writing the same predicate in multiple places, save it. A saved view is just a regular set of records, where each record holds a `where:` predicate alongside human-readable metadata:
 
 ```
 site/
@@ -185,7 +204,7 @@ where:
   tenured: true
 ```
 
-Declare the collection in `site.yml` like any other:
+Declare the query in `site.yml` like any other:
 
 ```yaml
 # site.yml
@@ -196,7 +215,7 @@ queries:
     schema: '@/view'
 ```
 
-Foundations read the views collection (e.g., on a `Cover` section) to populate a dropdown. When the reader picks a view, the foundation passes that record's `where:` value to its data-fetching code. The framework treats it identically to an inline `where:` — same evaluation semantics, same backend wire format if the backend supports predicate pushdown.
+Foundations read the views query (e.g., on a `Cover` section) to populate a dropdown. When the reader picks a view, the foundation passes that record's `where:` value to its data-fetching code. The framework treats it identically to an inline `where:` — same evaluation semantics, same backend wire format if the backend supports predicate pushdown.
 
 There's no special framework feature for saved views. They're just records, and `where:` is just a field on each record. Authors who want curated named populations write them; foundations decide how to surface them.
 
@@ -204,7 +223,7 @@ There's no special framework feature for saved views. They're just records, and 
 
 ## Queryable surfaces (filter UIs from a foundation)
 
-For sites where readers compose their own predicates by interacting with controls — a department dropdown, a tenure toggle, a year-range slider — the collection declares its **queryable surface**: which fields are filterable, what type each is, and any type-specific metadata (enum options, range bounds):
+For sites where readers compose their own predicates by interacting with controls — a department dropdown, a tenure toggle, a year-range slider — the **query** declares its **queryable surface**: which fields are filterable, what type each is, and any type-specific metadata (enum options, range bounds):
 
 ```yaml
 # site.yml
@@ -343,5 +362,5 @@ fetch:
 ## What's next
 
 - **[Data Fetching](../reference/data-fetching.md)** — full reference for the `fetch:` declaration, including `supports:` (capability declaration) and `deferred:` (lean records).
-- **[Working with Collections](./collections.md)** — collections in depth.
+- **[Working with Collections](./collections.md)** — records and queries in depth.
 - **[Connecting a Backend](../development/connecting-a-backend.md)** — when your where-objects ship over the wire instead of running locally.

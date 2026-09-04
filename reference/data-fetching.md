@@ -97,7 +97,7 @@ fetch:
 | `url` | — | Remote URL (mutually exclusive with `path`) |
 | `query` | — | Named-query reference (mutually exclusive with `path`/`url`). Declare the query in `queries.yml` |
 | `as` | *the query name, or inferred from the source* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02 — that spelling is still accepted so existing content keeps working, and is never written. The word moved because `schema` also means the MODEL REF on a `queries` declaration.)* |
-| `merge` | `false` | Combine with existing data vs replace |
+| `merge` | `false` | **Build-time only.** How a *section's* own fetch lands in its data when the build (or the dev server) executes it — see [Merge vs Replace](#merge-vs-replace). It never ships in a site's payload and no runtime reads it |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#where-the-record-comes-from). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
 | `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)) |
@@ -230,6 +230,12 @@ You don't pick when fetching happens — the deployment mode does. Authoring `fe
 ---
 
 ## Merge vs Replace
+
+`merge` is a **build-time option on a section's own fetch**. When `uniweb build` (or the
+dev server) executes a section-level fetch, it decides whether the result replaces or
+combines with data the section already holds. It is consumed there and then: the built
+payload never carries it, and the runtime does not read it — a page-level or
+site-level `merge` has no effect.
 
 ### Replace (default)
 
@@ -479,10 +485,14 @@ The where-object is YAML-native (no string parsing), JSON-native for backend tra
 ### `sort:` and `limit:`
 
 ```yaml
-sort: date desc                # one field
-sort: order asc, title asc     # multiple fields, comma-separated
+sort: date desc                # one field: `date`, `date asc` or `date desc`
 limit: 10
 ```
+
+**`sort:` names one key.** A comma-separated list (`order asc, title asc`) is refused — at
+build time for compiled records, and as an error in dev for a fetched array — rather than
+partly honoured. The same single key is evaluated the same way whether the framework sorts
+the records itself or a backend that answers queries does.
 
 These run at the source when the fetcher's `supports:` lists them; otherwise the framework applies them in JS after the response.
 

@@ -406,7 +406,7 @@ with it is the section type's decision.
 
 ---
 
-## Loading and not-found states
+## Loading, failed and not-found states
 
 `block.dataLoading` is true while a fetch is outstanding:
 
@@ -416,10 +416,21 @@ if (block.dataLoading) {
 }
 ```
 
+`block.dataError` is set when a fetch **failed** — `{ articles: 'HTTP 502: Bad Gateway' }`,
+keyed the way `content.data` is, or `null`. A failed key is left **absent** from
+`content.data`; it is never delivered as `[]`, because `[]` is an answer ("no records")
+and a failure is not one:
+
+```jsx
+if (block.dataError?.articles) {
+  return <p>Could not load articles.</p>
+}
+```
+
 When the URL names no record, the key is delivered as `[]`, so
 `content.data.articles?.[0]` is `undefined`. Handle it — and note the page title is
-set to `"Not found"` for you, just as it is set from `item.title` on a hit. No
-`useEffect`, no `document.title`.
+set to `"Not found"` and `page.notFound` to `true` for you, just as the title is set
+from `item.title` on a hit. No `useEffect`, no `document.title`.
 
 | record field | page property |
 |---|---|
