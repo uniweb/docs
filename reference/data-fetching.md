@@ -426,7 +426,7 @@ See the [Queries](#queries) section below for the full where-object format and h
 
 ## Queries
 
-`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Whether the source evaluates them at the backend or the framework applies them as a fallback after the response arrives is a transport detail (see [Per-site transport config](#per-site-transport-config) → `supports:`).
+`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Who evaluates them depends on where the records come from: the framework evaluates them itself over a compiled file, a plain JSON `url:`, or a host's records address; a host that answers queries evaluates the same language at the source; a foundation transport decides for itself. The declaration is identical in every case.
 
 ### The where-object
 
@@ -494,7 +494,7 @@ build time for compiled records, and as an error in dev for a fetched array — 
 partly honoured. The same single key is evaluated the same way whether the framework sorts
 the records itself or a backend that answers queries does.
 
-These run at the source when the fetcher's `supports:` lists them; otherwise the framework applies them in JS after the response.
+The framework applies them in JS over the records it fetched, unless the records come from a host that answers queries — then the host applies them. Either way the same declaration, and the same single key.
 
 ---
 
@@ -702,27 +702,11 @@ export default function Footer({ content }) {
 
 ## Per-site transport config
 
-Sites declare a `fetcher:` block in `site.yml`. It does two things: tune the framework default fetcher (`baseUrl` / `headers` / `envelope`) and opt into foundation-provided **named transports** per schema.
+`fetcher:` in `site.yml` does one thing: it opts a schema into a foundation-provided **named transport**, and carries the binding config that transport reads.
 
 ```yaml
 # site.yml
 fetcher:
-  # Default-fetcher vocabulary — applies when no named transport handles the schema.
-  baseUrl: https://api.example.com
-  headers:
-    X-Tenant: acme
-    Accept: application/json
-  envelope:
-    query: data.items
-    item: data.article
-    error: errors.0.message
-
-  # Capability declaration — which query operators the source evaluates natively.
-  # Operators in this list are shipped to the source; operators not in it are
-  # applied as a runtime fallback after the response. Default: empty.
-  supports: [where, limit, sort]
-
-  # Named-transport selection — foundation-contributed transports, picked per schema.
   transports:
     articles: uniweb          # foundation's 'uniweb' transport handles `data: articles`
     events: default           # reserved — explicitly routes back to the default fetcher
@@ -730,29 +714,21 @@ fetcher:
     siteFolder: abc-123-def
 ```
 
-### `supports:` — the capability declaration
+### What the default fetcher does — and does not — take
 
-The default fetcher reads `supports:` to decide whether to push down query operators or apply them locally:
+With no transport selected, the framework's default fetcher handles the request: a compiled file (`path:`), a plain JSON `url:` (GET, or `method: POST` with a `body:`), the per-fetch `transform:` unwrap, the `detail:` forms for a record, and every `where:` / `sort:` / `limit:` evaluated in the browser over what arrived. A site published to a host that serves records live needs nothing more — the host stamps where its records are.
 
-- **`supports: []`** (default) — the source is treated as static (file or unaware backend). The fetcher fetches the whole collection; the framework applies `where:`, `sort:`, `limit:` in JS after the response. Two pages with different `where:` clauses share one cache entry — same fetch, different post-fetch evaluation.
-- **`supports: [where]`** — the source accepts predicates. The where-object ships in the request (`?_where=<JSON>` for GET; merged into the body for POST). The cache splits per predicate.
-- **`supports: [where, limit, sort]`** — full pushdown. The source returns the final result; the framework ships through.
-
-Pushdown only applies to remote `url:` requests. Local `path:` reads are static files; operators always evaluate as a runtime fallback.
-
-The wire format the default fetcher uses is documented in [Connecting a Backend → `supports:`](../development/connecting-a-backend.md#supports). Backends written against these conventions work with no client-side glue. Backends with a different convention need a [custom transport](./foundation-config.md#data-transports).
+There is **no site-level vocabulary to point that fetcher at a backend of your own.** `baseUrl`, `headers`, `envelope`, `supports` and `request.*` were retired: a backend with its own base, headers, wire or query language is a **transport**, written once in the foundation (or an extension) and selected here. See [Connecting a Backend](../development/connecting-a-backend.md) for when a plain `url:` is enough and when a transport is the answer, and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing one.
 
 ### How selection works
 
 For each request:
 
-1. If `fetcher.transports[request.schema]` is set, the dispatcher looks that name up in the registry of transports the foundation and its extensions registered. A match handles the request.
+1. If `fetcher.transports[request.as]` is set, the dispatcher looks that name up in the registry of transports the foundation and its extensions registered. A match handles the request.
 2. Otherwise, if `fetcher.transports.default` is set, that name handles every unclaimed schema.
-3. Otherwise, the framework default fetcher handles it — applying `baseUrl` / `headers` / `envelope` from the same block and per-fetch `method: POST` / `body`.
+3. Otherwise, the framework default fetcher handles it.
 
 No route-walking, no `match()` predicates, no silent foundation-owned routing — the site picks.
-
-See [Connecting a Backend](../development/connecting-a-backend.md) for recipes that stay on the default fetcher (relative URLs, static headers, response envelopes, `POST /search`, GraphQL) and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing and registering a custom transport.
 
 ### Secrets
 
@@ -778,6 +754,6 @@ Components should always handle the case where data might be empty.
 - [Dynamic Routes](./dynamic-routes.md) — Generate multiple pages from data (blogs, catalogs, etc.)
 - [Content Collections](./content-collections.md) — Markdown-based data collections
 - [Predicates](../authoring/predicates.md) — Author guide to where-objects and saved views
-- [Connecting a Backend](../development/connecting-a-backend.md) — `supports:`, transports, dev backend, secrets
+- [Connecting a Backend](../development/connecting-a-backend.md) — a plain `url:`, a host's records, a transport, secrets
 - [Content Structure](./content-structure.md) — How content is parsed and structured
 - [Component Metadata](./component-metadata.md) — Full meta.js schema reference

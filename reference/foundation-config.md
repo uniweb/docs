@@ -499,7 +499,7 @@ Each subsystem owns its lifecycle moment; `outputs` owns end-of-pipeline documen
 
 A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which schema. A foundation never silently intercepts a site's data request.
 
-When a site declares no transport for a schema, the framework's default fetcher handles it (plain GET + JSON parse + optional `transform:`, plus the site-level `baseUrl` / `headers` / `envelope` vocabulary — see [Connecting a Backend](../development/connecting-a-backend.md)). Most foundations need no transports at all.
+When a site declares no transport for a schema, the framework's default fetcher handles it — a compiled file or a plain JSON `url:`, GET or a per-fetch `method: POST` + `body:`, an optional `transform:`, and every query operator evaluated in the browser. It takes no site-level vocabulary for a backend of your own (a base URL, headers, an envelope, a wire): that is exactly what a transport is for — see [Connecting a Backend](../development/connecting-a-backend.md). Most foundations need no transports at all.
 
 Declared on the default export of `main.js` alongside identity, theme, and layout fields:
 

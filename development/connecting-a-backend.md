@@ -1,372 +1,145 @@
 # Connecting a Backend
 
-Most Uniweb sites start with records in `entities/` that the build turns into static JSON at `public/data/*.json`. That's great for blogs, docs, and marketing sites. Sometimes you need more: a base URL that varies by deploy target, a response envelope to unwrap, or a backend that takes queries in a POST body (GraphQL, `POST /search`).
+Most Uniweb sites start with records in `entities/` that the build turns into JSON at `public/data/*.json`. That is enough for blogs, docs and marketing sites, and it is what a site published to a Uniweb host reads live without any configuration. Sometimes you have a backend of your own: a JSON API the site should read, an API with its own query language, a service that needs a key.
 
-You don't always need a custom foundation for this. The framework's **default fetcher** understands a small vocabulary in `site.yml fetcher:` and a couple of per-fetch extensions that cover most straightforward backends with zero code.
+This guide says which of three shapes you are in, and what each one asks of you. It is about **author-driven fetching** — the content author writes `fetch:` in `page.yml` and the runtime fetches for the component. A component with its own domain knowledge (a search box, a pagination widget) uses standard React `useEffect + fetch`; see [Component Data Patterns](./component-data-patterns.md).
 
-This guide walks through what's supported, with recipes. For the internals (dispatcher, cache keys, delivery paths) see [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md).
-
-> **Audience:** site developers wiring a real backend, or foundation authors deciding whether they need to write a custom fetcher.
-
-> **This guide is about Role 1 — author-driven fetching.** The content author writes `fetch:` in `page.yml` and the runtime fetches for the component. If your component has its own domain knowledge (a search box, a pagination widget, a drill-down selector), it's a Role 2 component and should use standard React `useEffect + fetch` — see [Component Data Patterns](./component-data-patterns.md) for which pattern applies when.
+> **Audience:** site developers wiring a backend, or foundation authors deciding whether they need to write a transport.
 
 ---
 
-## The default fetcher, today
+## The three shapes
 
-Without any configuration, the default fetcher runs every request the dispatcher hands it. It:
+| your records come from | what you write | who evaluates `where:` / `sort:` / `limit:` |
+|---|---|---|
+| **the site itself** — `entities/`, compiled to `/data/*.json` | a query and a `fetch:`; nothing else | the framework, in the browser |
+| **a Uniweb host** that serves records live | the same query and `fetch:`; the host stamps where its records are | the framework over the host's answer — or the host itself, where it answers queries |
+| **a plain JSON endpoint** you control | `fetch: { url: … }` with per-fetch options | the framework, in the browser, over what arrived |
+| **a backend with its own base, headers, wire or query language** | a **transport** in the foundation, selected by the site | the transport |
 
-- `GET`s any URL — local path under `public/`, or remote.
-- Parses the JSON response.
-- Applies the per-fetch `transform:` dot-path to unwrap nested data.
-- Caches by query identity so SPA navigation doesn't re-fetch.
-
-Every capability this guide describes is optional. Empty config → today's behavior, unchanged.
-
----
-
-## The default fetcher vocabulary
-
-| Setting | Where | What it does |
-| --- | --- | --- |
-| `baseUrl` | `site.yml fetcher:` | Prepended to relative `url:` values |
-| `headers` | `site.yml fetcher:` | Static headers merged into every remote request |
-| `envelope` | `site.yml fetcher:` | Response-unwrap dot-paths: list / item / error |
-| `supports` | `site.yml fetcher:` | Query operators the source evaluates natively. See [`supports:`](#supports) |
-| `request.rename` | `site.yml fetcher:` | Operator name tweaks on the wire. See [Renaming operators](#renaming-operators) |
-| `method: POST` | per-fetch (`page.yml` / block frontmatter) | Send request as POST |
-| `body` | per-fetch | Arbitrary object serialized as JSON; supports `{slug}` substitution in strings |
-
-General-purpose HTTP fetching for public backends and local files. Secrets are handled at the deployment layer (see [Secrets](#secrets)), not via the framework's config.
+There is no site-level vocabulary that turns the default fetcher into a client for your backend. Earlier releases had one (`fetcher.baseUrl`, `headers`, `envelope`, `supports`, `request.style` / `rename`); it was retired because a third party's conventions belong in code that only the sites using that backend load — a transport — not in the runtime every site loads. A site that still declares those keys gets a warning at build time and they are ignored.
 
 ---
 
-## Recipes
+## A plain JSON endpoint
 
-### Relative URLs with a site base
-
-Your backend lives at one origin; author relative URLs per-fetch:
-
-```yaml
-# site.yml
-foundation: '@starter/docs'
-
-fetcher:
-  baseUrl: https://api.example.com
-```
+If your backend returns JSON at a URL, the default fetcher reads it with no configuration beyond the fetch itself:
 
 ```yaml
 # pages/articles/page.yml
-data: articles
-
 fetch:
-  url: /articles           # resolves to https://api.example.com/articles
+  url: https://api.example.com/articles
   as: articles
+  transform: data.items        # unwrap a nested response
+  where: { published: true }   # evaluated in the browser over what arrived
+  sort: date desc
+  limit: 10
 ```
 
-Absolute URLs (`https://…`) and protocol-relative URLs (`//cdn/…`) pass through unchanged, so one fetch config can mix backend calls and CDN reads freely.
+What the default fetcher supports per fetch:
 
-### Static headers (tenant routing, accept types)
+| option | what it does |
+|---|---|
+| `url` | any absolute or protocol-relative URL, or a same-origin path |
+| `method: POST` + `body` | send a JSON body (a GraphQL query, a `POST /search` filter). `{slug}` in a body string is substituted from the route param on a template page |
+| `transform` | a dot-path into the response |
+| `detail` | how to fetch one record on a template page — `rest`, `query`, a pattern, or the object form with its own `body` / `envelope`; see [Dynamic Routes → Where the record comes from](../reference/dynamic-routes.md#where-the-record-comes-from) |
+| `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned |
+| `prerender: false` | fetch in the browser rather than at build time (the default for a `url:`) |
 
-Some backends route by header or need specific content negotiation:
+The operators run **after** the response, over the whole set the endpoint returned. That is exactly right for an endpoint that returns everything, and wrong for one that pages or filters on its own — `limit: 20` over a paginated endpoint is twenty of *something*. When the backend needs to be asked rather than read, you are in the transport shape.
 
-```yaml
-# site.yml
-fetcher:
-  baseUrl: https://api.example.com
-  headers:
-    X-Tenant: acme
-    Accept: application/vnd.example+json
-```
-
-Every remote request from this site includes these headers. Local `public/data/*.json` requests aren't decorated — they're just file reads.
-
-Headers set here are visible to browsers (they ride on every outgoing request). Use them for non-secret values: tenant identifiers, API versioning, content negotiation. For anything that has to stay private, see [Secrets](#secrets).
-
-### Response envelopes: `{ data: { items: [...] } }`
-
-Many APIs wrap their lists. A per-fetch `transform:` handles one case; a site-level `envelope:` handles every case:
-
-```yaml
-# site.yml
-fetcher:
-  baseUrl: https://api.example.com
-  envelope:
-    query: data.items
-    item: data.article
-    error: errors.0.message
-```
-
-- `envelope.list` — applied to list responses. A per-fetch `transform:` still wins when both are set.
-- `envelope.item` — applied to detail responses (single-entity fetches via `detail:`).
-- `envelope.error` — on non-2xx, extract a human error from the response body. Falls back to `HTTP <status>: <statusText>` if the path isn't in the body.
-
-### `POST /search` with a filter body
-
-Some REST APIs take complex queries in a POST body:
-
-```yaml
-# pages/products/page.yml
-fetch:
-  url: /search/products
-  method: POST
-  body:
-    filter:
-      status: published
-      tags: featured
-    sort: { created: desc }
-    limit: 10
-  envelope: { query: data.results }
-```
-
-The framework JSON-serializes `body:` and sets `Content-Type: application/json`. Your component reads `content.data.products` — no component-side change from the GET case.
-
-### GraphQL — collection and detail queries
-
-GraphQL always uses POST with a query body. Point `baseUrl` at the endpoint and write queries per-fetch:
-
-```yaml
-# site.yml
-fetcher:
-  baseUrl: https://api.example.com/graphql
-```
+### GraphQL, in this shape
 
 ```yaml
 # pages/articles/page.yml
 data: articles
-
 fetch:
-  url: ""                  # empty — the baseUrl IS the endpoint
+  url: https://api.example.com/graphql
   method: POST
   body:
     query: |
-      query Articles {
-        articles { id slug title excerpt }
-      }
-  envelope: { query: data.articles }
+      query Articles { articles { id slug title excerpt } }
+  transform: data.articles
 
-  # Detail fetch for /articles/[slug] — object form of detail: carries its
-  # own body with {slug} substitution from the route param.
+  # the record on /articles/[slug] — the object form of detail: carries its own body
   detail:
     body:
       query: |
-        query Article($slug: String!) {
-          article(slug: $slug) { id title body }
-        }
+        query Article($slug: String!) { article(slug: $slug) { id title body } }
       variables: { slug: "{slug}" }
     envelope: { item: data.article }
 ```
 
-The `{slug}` in `variables.slug` is substituted from the dynamic-route context. GraphQL selection sets like `{ id slug title }` are *not* substituted — the placeholder matcher is strict about `{name}` with no whitespace, so `{ id }` stays literal.
-
-### Deferred fields against an API backend
-
-For lean cascade payloads with on-demand details (the `deferred:` pattern, see [Data Fetching → Deferred fields](../reference/data-fetching.md#deferred-fields)) on an API-backed collection, declare the per-record endpoint with `detailUrl:`:
-
-```yaml
-queries:
-  articles:
-    url: /api/articles
-    deferred: [body]
-    detailUrl: /api/articles/{slug}
-```
-
-Both the dynamic-route auto-detail and the `useEntityDetail` kit hook fetch from this URL (substituting `{slug}` from the route param or `record.slug` respectively). File-based collections (markdown, YAML, or JSON) need no `detailUrl:` — the build emits per-record files automatically for each item.
-
-### Hybrid: local collections + one remote API
-
-A site can mix static JSON and a remote backend freely:
-
-```yaml
-# site.yml
-fetcher:
-  baseUrl: https://api.example.com
-
-queries:
-  articles:
-    schema: '@/article'   # markdown → public/data/articles.json
-```
-
-```yaml
-# pages/blog/page.yml        → reads the local markdown collection
-data: articles
-
-# pages/live-stats/page.yml  → hits the remote API
-fetch:
-  url: /stats/live             # resolves via baseUrl
-  as: stats
-```
-
-No special flag. `path:` (local) and `url:` (remote) are already mutually exclusive per fetch, and the default fetcher handles both.
+`{slug}` in `variables.slug` is substituted from the route; GraphQL selection sets like `{ id slug }` are not (the placeholder matcher needs `{name}` with no whitespace).
 
 ---
 
-## `supports:`
+## A backend with its own conventions — write a transport
 
-When your backend can evaluate query operators (`where:`, `limit:`, `sort:`) at the source, declare what it supports. The framework will ship those operators in the request instead of fetching everything and filtering in the browser:
+A transport is a small object with `resolve(request, ctx)` and, optionally, `cacheKey(request)`, exported by the foundation (or by an extension the site loads) under a name. The site selects it per schema; the foundation never silently intercepts a site's requests.
 
-```yaml
-# site.yml
-fetcher:
-  baseUrl: https://api.example.com
-  supports: [where, limit, sort]
-```
-
-What changes per operator-set:
-
-- **`supports: []`** (default) — every operator is applied as a runtime fallback in JS. The framework fetches the whole collection; predicates and sorts run client-side. Two pages with different `where:` clauses share one cached fetch.
-- **`supports: [where]`** — only `where:` is shipped to the source. `limit:` and `sort:` continue to run client-side.
-- **`supports: [where, limit, sort]`** — full pushdown. The source returns the final result; the framework caches it and ships through.
-
-Pushdown only applies to remote `url:` requests. Local `path:` reads are static files; operators always evaluate as a runtime fallback.
-
-### Wire-format conventions (default fetcher)
-
-The default fetcher speaks one wire, the framework's own:
-
-| Method | Operators on the wire |
-|---|---|
-| **GET** | `?_where=<JSON>&_limit=N&_sort=field:dir` — the leading underscore keeps clear of query parameters your backend already uses |
-| **POST** | Operators merged as top-level keys into the JSON body, alongside any fields you supplied |
-
-No response envelope is assumed; set `envelope:` when your backend wraps its responses.
-
-Example: `GET /api/articles?_where=%7B%22tags%22%3A%22featured%22%7D&_limit=3&_sort=date%3Adesc`
-
-POST pushdown merges operators into the request body alongside any author-supplied body fields:
-
-```http
-POST /api/articles
-Content-Type: application/json
-
-{
-  "where": { "tags": "featured" },
-  "limit": 3,
-  "sort": "date:desc"
+```js
+// src/main.js
+export default {
+  transports: {
+    acme: {
+      async resolve(request, ctx) {
+        const { apiKey } = ctx.website.config?.fetcher?.acme ?? {}
+        const res = await fetch(`https://api.acme.test/${request.as}?limit=${request.limit ?? 50}`, {
+          headers: { 'X-Api-Key': apiKey },
+          signal: ctx.signal,
+        })
+        if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
+        const body = await res.json()
+        return { data: body.items }
+      },
+      cacheKey: (request) => `acme:${request.as}:${request.limit ?? 50}`,
+    },
+  },
 }
 ```
 
-When the author already supplied a body (e.g., a GraphQL request), the operators are merged in as top-level keys (`where`, `limit`, `sort`). String bodies pass through unchanged — operators are dropped; use object bodies if you want pushdown into a POST request.
-
-### Renaming operators
-
-For a backend that speaks this shape but calls an operator by a different name, `rename:` changes the wire name without changing the shape:
-
 ```yaml
 # site.yml
 fetcher:
-  baseUrl: https://api.example.com
-  supports: [limit, sort]
-  request:
-    rename:
-      limit: pageSize       # ?pageSize=N instead of ?_limit=N
-      sort: orderBy         # ?orderBy=field:dir instead of ?_sort=field:dir
+  transports:
+    articles: acme      # the acme transport handles `data: articles`
+  acme:                 # binding config the transport reads
+    apiKey: pk_public_123
 ```
 
-`rename:` applies to whichever channel carries the operator — the query-parameter name on GET, the body key on POST. It cannot change the *shape* of the wire (bracket notation, nesting, composition), and it does not rename field names inside a predicate: if your backend calls a field `dept`, write `dept` in the site YAML. In dev, a `rename:` entry for an operator the wire does not carry gets a one-time warning so dead config is noticed.
+Inside `resolve`, the request carries the author's whole declaration — `as`, `where`, `sort`, `limit`, `url` if given — and the transport decides what to send and what to evaluate. Return `{ data, error?, meta? }`; a failure is an `error`, never an empty `data`, so the section can tell the two apart (`block.dataError`). The full contract, including `cacheKey` and the `@uniweb/fetchers` middleware you can compose, is in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
 
-### Backend doesn't speak these conventions?
+Write a transport when:
 
-Two paths forward:
-
-- **Adapt at the proxy** — your same-origin proxy translates the default wire into your backend's native query language. Often a few lines of code at the edge.
-- **Write a named transport** — a transport with its own `resolve()` and (optionally) its own `cacheKey()`, exported by the foundation or by an extension the site loads; the site opts in per-schema via `fetcher.transports:`. Use this when the gap is wide enough that a proxy would duplicate backend logic — a CMS with its own filter syntax, for instance. See [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
-
-> Earlier releases shipped two more built-in wire dialects, `flat-query` and `strapi`, selected with `fetcher.request.style:`. They were removed: a third party's wire belongs in a transport, not in the runtime every site loads. A site that still names one gets an error in dev, and in production an error in the console plus the default wire — move the dialect into a transport.
-
----
-
-## Local dev backend
-
-For testing `supports:` end-to-end without standing up a real backend, the framework ships a tiny Node script that boots an HTTP server reading YAML/JSON collections from disk. It implements the default fetcher's wire-format conventions, so you can develop a site against a "real" backend running on `localhost`:
-
-```bash
-node scripts/framework/dev-backend.js \
-  --entities path/to/site/entities \
-  --port 8080
-```
-
-Point the site at it:
-
-```yaml
-# site.yml
-fetcher:
-  baseUrl: http://localhost:8080
-  supports: [where, limit, sort]
-```
-
-And rewrite your collection refs to URLs:
-
-```yaml
-# pages/articles/page.yml
-fetch:
-  url: /api/articles
-  as: articles
-```
-
-The dev backend exposes `GET /api/<collection>`, `GET /api/<collection>/<slug>`, and `POST /api/<collection>` — same surface a real backend would expose against the framework's conventions. Predicates evaluate via the same `matchWhere` evaluator the runtime uses as a fallback. Switch back to the static-file mode by setting `supports: []` and removing the `--port` server; nothing else in your site changes.
-
----
-
-## Filter state without re-fetching
-
-A common pattern: the site fetches a collection once, then the reader picks a filter. The filtered view updates without a new network request. This is **entirely client-side** when `supports:` doesn't include `where` — the fetch runs once, the foundation reads `page.state` for the active filter and narrows the already-loaded data using `matchWhere` from `@uniweb/core`:
-
-```jsx
-import { matchWhere } from '@uniweb/core'
-import { usePageState } from '@uniweb/kit'
-
-function FilteredList({ content }) {
-  const [filter] = usePageState('activeFilter', null)
-  const all = content.data.articles || []
-  const visible = filter ? matchWhere(filter, all) : all
-  return <ArticleGrid items={visible} />
-}
-```
-
-When `supports: [where]` is on, the same pattern applies — the foundation passes the predicate to `useFetched` instead, and the framework re-fetches the matching subset on each change. Author-side declarations don't change; only the foundation's component code differs.
-
-Components that genuinely need to compose dynamic predicates from rich UI (search boxes, faceted navigation) use the kit's `useFetched` hook with a request spec that includes the live predicate — the cache key includes the predicate, so the framework re-fetches automatically. See [Component Data Patterns](./component-data-patterns.md).
+- the backend has its **own query language** and you want `where:` evaluated at the source;
+- it needs **headers, a base URL, or an envelope** of its own;
+- it **pages**, and the page has to be asked for rather than read;
+- the response needs **reshaping** beyond a dot-path, or several endpoints compose into one record;
+- it speaks a **non-JSON wire**.
 
 ---
 
 ## Secrets
 
-Nothing in `site.yml` is private. The framework either embeds its config into built HTML (static builds) or has it injected into `__DATA__` at serve time (dynamic) — either way, the browser sees it. A site that puts a real API key in `site.yml fetcher.headers:` is publishing that key.
+Nothing in `site.yml` is private. The framework either embeds its config into built HTML (static builds) or has it injected into `__DATA__` at serve time — either way, the browser sees it. A site that puts a real API key in `site.yml` is publishing that key, and a transport that reads one from `ctx.website.config.fetcher` is reading a public value.
 
-So the default fetcher doesn't have a secrets channel. Instead, the pattern is **same-origin proxying**:
+The pattern is **same-origin proxying**:
 
 - The site fetches `/api/articles` — a URL on its own origin.
-- Something between the browser and the upstream backend (an edge worker, a backend service, the Uniweb platform's own proxy) intercepts that request, attaches the real credential server-side, and forwards it upstream.
+- Something between the browser and the upstream backend (an edge worker, a small backend service) attaches the real credential server-side and forwards upstream.
 - The site config only ever contains `url: /api/articles`. The secret never leaves the server.
 
-On the Uniweb platform, this is how private-backend sites work. The platform's deployment pipeline stores credentials keyed to the site (e.g. in a platform-level `secrets.yml` that the edge worker reads); the edge worker proxies matching paths through with credentials attached. The framework is uninvolved — it just sees a plain URL.
+For self-hosted deployments, put whatever you already use (a Cloudflare Worker, a reverse proxy, a small Node service) in front of the site and let the site fetch same-origin.
 
-For self-hosted deployments, the same pattern applies: put whatever you already use (a Cloudflare Worker, a reverse proxy, a small Node backend) in front of the site, and let the site fetch same-origin.
-
-**Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable) are a different category entirely. They're designed to be sent from browsers; no need for a proxy. Put them in `headers:` or directly in URLs. They're only called "tokens" — for architectural purposes they're public data.
-
-> **Planned:** a `${secrets.NAME}` interpolation syntax — where `site.yml` references a secret by name and the deployment proxy substitutes the real value at request time — is under design. The goal is to keep the simple posture (browser never sees secrets) while letting `site.yml` express which secret each request needs. Not available today; same-origin proxying remains the pattern.
-
----
-
-## When a custom fetcher pays off
-
-Write a foundation-level custom fetcher when:
-
-- **Response shape isn't a dot-path transform.** Merging two fields, computing derived values, normalizing snake_case → camelCase.
-- **Multi-endpoint composition.** Fetch an article, then fetch its author from a different endpoint and merge.
-- **Non-standard response handling.** Retry logic tied to specific statuses, rate-limit handling, idempotency keys.
-- **Complex pagination.** Cursor or offset conventions beyond what the default understands.
-- **A non-JSON wire protocol.** Protobuf, MessagePack, or anything not in the `fetch() + JSON.parse` flow.
-
-Most sites don't hit any of these. For those that do, [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) walks through writing the named transport and composing `@uniweb/fetchers` middleware around it.
+**Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable) are a different category: they are designed to be sent from browsers and need no proxy.
 
 ---
 
 ## See also
 
-- [Data Fetching](../reference/data-fetching.md) — Reference for `fetch:` / `data:` config and the cascade.
-- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing a named transport (when the default wire does not fit).
-- [Working with Data](./working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
-- [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, placeholder substitution, delivery paths.
+- [Data Fetching](../reference/data-fetching.md) — reference for `fetch:` / `data:` and the cascade
+- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — writing and registering a transport
+- [Dynamic Routes](../reference/dynamic-routes.md) — template pages and where the record comes from
+- [Working with Data](./working-with-data.md) — cascading, template pages, detail queries, filter-state patterns

@@ -266,18 +266,11 @@ Foundations may add richer types as they need them. The framework passes the met
 
 ## Where evaluation happens
 
-The same `where:` predicate runs in different places depending on the source's capabilities, declared by the site in `site.yml`:
+You don't pick. The same `where: { department: biology, tenured: true }` is evaluated wherever the records come from:
 
-```yaml
-fetcher:
-  baseUrl: https://api.example.com
-  supports: [where, limit, sort]
-```
-
-- **`supports: [where, ...]`** — the predicate ships to the source as JSON. The backend evaluates it server-side and returns only the matching records.
-- **`supports: []`** (the default) — the source is treated as static. The framework fetches the whole collection and applies the predicate in the browser.
-
-You don't pick which path runs. The same `where: { department: biology, tenured: true }` works against a static JSON file (full collection downloaded, filtered locally) or a real backend (predicate sent in the request, only matching records returned). When you swap the deployment from "demo with static files" to "production with a backend", only the `fetcher:` block changes.
+- **The site's own compiled records** (`/data/<name>.json`), a plain JSON `url:`, or a host's records address — the framework fetches the set and applies the predicate in the browser. Two pages with different predicates share one fetch.
+- **A host that answers queries** — the predicate travels with the query and the host returns only the matching records. Nothing changes in what you write.
+- **A backend reached through a foundation transport** — the transport decides. Write only what the spine table above covers if you want the same answer everywhere.
 
 ---
 
@@ -361,6 +354,6 @@ fetch:
 
 ## What's next
 
-- **[Data Fetching](../reference/data-fetching.md)** — full reference for the `fetch:` declaration, including `supports:` (capability declaration) and `deferred:` (lean records).
+- **[Data Fetching](../reference/data-fetching.md)** — full reference for the `fetch:` declaration, including `deferred:` (lean records).
 - **[Working with Collections](./collections.md)** — records and queries in depth.
 - **[Connecting a Backend](../development/connecting-a-backend.md)** — when your where-objects ship over the wire instead of running locally.

@@ -96,8 +96,8 @@ Normalized from the author's `fetch:` / `data:` config. Carried fields:
 | `detail` | no | String (`rest` / `query` / pattern) or object (`{ body, envelope }`) for template-page single-entity fetches. |
 | `method` | no | `GET` (default) or `POST`. Unsupported values warn and fall back to GET. |
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
-| `envelope` | no | Per-request overrides of site-level envelope (usually set by object-form `detail:`). |
-| `where` / `sort` / `limit` | no | Author-provided query hints (predicate, order, cap). Applied client-side unless the source's `supports:` lists them. |
+| `envelope` | no | Per-request unwrap paths for this one response (usually set by object-form `detail:`). |
+| `where` / `sort` / `limit` | no | The author's query (predicate, order, cap). The default fetcher evaluates them client-side over what arrived; a host that answers queries evaluates them at the source; a transport decides for itself. |
 | `dynamicContext` | no | Present on template-page item fetches: `{ paramName, paramValue, schema }`. |
 
 ### Context
@@ -220,10 +220,10 @@ A site that explicitly opts a remote fetch into `prerender: true` and relies on 
 
 ## Post-processing
 
-`where:` / `sort:` / `limit:` are applied after fetch in the fallback case (when the source's `supports:` doesn't push them down).
+`where:` / `sort:` / `limit:` are evaluated over what the source returned, with the one evaluator in `@uniweb/core` — the same code in both places, so the browser orders and filters exactly as the build did:
 
-- **Static build:** applied in `build/src/site/data-fetcher.js`'s `applyPostProcessing` before embedding into `__SITE_CONTENT__`.
-- **Runtime:** currently not applied — runtime fetches return raw data, and the build-time pipeline is where narrowing happens today. This is a latent gap that'll land as a dedicated runtime post-processing step when it's needed.
+- **Static build:** applied in `build/src/site/data-fetcher.js` before embedding into `__SITE_CONTENT__`.
+- **Runtime:** applied by the default fetcher after the response arrives (`runtime/src/default-fetcher.js`). A host that answers queries evaluates them at the source instead, and reports what it served.
 
 ---
 
