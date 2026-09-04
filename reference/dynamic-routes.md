@@ -270,6 +270,10 @@ queries:
     route: /blog          # pairs with pages/blog/[slug]/
 ```
 
+For a `[...path]` page, name it: `route: /blog/[...path]` bakes each record's
+placement into its href — `/blog/field/my-post` for a record `records.yml` placed
+under `field`, `/blog/my-post` for one at the root.
+
 **`detailPage:` on the fetch** — a `page:<stable_id>` reference to the page that
 renders one record. The runtime resolves it to a route template and fills in each
 record's param. Use this when a list appears on several pages, or when routes are
