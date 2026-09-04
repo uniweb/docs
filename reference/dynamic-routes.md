@@ -459,6 +459,62 @@ in the browser instead.
 
 ---
 
+## Multi-segment routes — `[...path]`
+
+A folder named exactly `[...path]` captures **the rest of the URL**, however many
+segments, where `[slug]` captures one. It is one fixed spelling: `[...slug]`,
+`[...rest]` and `[...]` are not the marker, because authors do not name how the URL
+is parsed.
+
+```text
+pages/blog/
+├── page.yml          # data: posts
+├── index/
+│   └── 1-posts.md
+└── [...path]/        # → /blog/my-post, /blog/rust/my-post, /blog/rust/2025/my-post
+    └── 1-post.md
+```
+
+The capture is split into three standard variables a query can reference:
+
+```text
+/blog/rust/2025/my-post   →   :path = rust/2025/my-post   the whole capture
+                              :dir  = rust/2025           everything before the last segment
+                              :slug = my-post             the last segment — the record's handle
+```
+
+`:slug` means the same thing under both route kinds — under `[slug]` it is the whole
+segment — and `:dir` is empty for a single segment, so a query written for one
+behaves the same under the other. **The record is delivered by `slug`**, exactly as
+under `[slug]`: a page under `[...path]` still reads `content.data.posts[0]`.
+
+**Where a record's URL comes from.** Its **placement** is the directory: the folder
+`records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record).
+`item.route` and the static build both compose `<placement>/<slug>`, so a record at
+the folder root is `/blog/my-post` and one placed under `rust/2025` is
+`/blog/rust/2025/my-post`.
+
+**Binding the parts is opt-in.** A URL segment has no meaning until a query gives it
+one; write a variable where it should mean something:
+
+```yaml
+# queries.yml — one saved query serves the list page AND the detail page
+posts:
+  schema: '@std/article'
+  scope: :dir              # the URL's directory is the folder branch — deliberately exposing it
+  # or:
+  # where: { tag: :dir }   # a content field — the folder stays private
+```
+
+**Unbound means the clause drops.** On the list page there is no `:dir`, so a
+`scope: :dir` or a `where: { tag: :dir }` simply vanishes and the whole set is
+delivered; on `/blog/rust/my-post` it binds to `rust`. That is what lets one query
+serve both pages — and it means a *misspelled* variable produces a list page rather
+than an error, so check the spelling: only `:path`, `:dir` and `:slug` are variables.
+A variable fills a value, never a key, an operator or `schema:`.
+
+---
+
 ## Examples
 
 ```text
@@ -504,7 +560,13 @@ are not reachable until a query names their Model.
 
 **Records missing from the output.**
 Every record needs the field the folder names. `[slug]` requires `slug` on each
-record; records without it are skipped.
+record (and so does `[...path]`); records without it get no page, and the build
+says how many — *"3 of 5 records have no "slug""* — once per template.
+
+**A section rendered nothing and the console is clean.**
+Read `block.dataError` before reading `content.data`: a fetch that failed leaves
+its key absent and puts the message there. It is never delivered as `[]`, which
+means "no records" and is an answer.
 
 **The section shows "not found".**
 The URL segment matched no record's param field. Usually the right signal — show a
