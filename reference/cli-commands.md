@@ -842,10 +842,10 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
 | `--json` | Porcelain: one compact JSON line on stdout (`{ok,scope,origin,entities:[{name,uuid,version,unchanged}]}`); human output to stderr. |
-| `--registry <url>` (alias `--backend`) | Submit to a specific registry origin. |
+| `--backend <url>` | Submit to a specific backend origin. |
 | `--token <bearer>` | Submit with this bearer; skips `uniweb login`. |
 
-> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; target a local registry with `--registry <url>` or `UNIWEB_REGISTER_URL`.
+> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; target a local backend with `--backend <url>` or `UNIWEB_REGISTER_URL`.
 
 ### Identity (scope + id)
 
@@ -959,7 +959,7 @@ uniweb register --schema-only
 uniweb register --dry-run
 
 # Submit to a specific registry origin
-uniweb register --registry http://localhost:8080
+uniweb register --backend http://localhost:8080
 ```
 
 ### After Registering
@@ -1015,7 +1015,7 @@ uniweb push --personal      # your personal account, deliberately
 | `--personal` | Own the new site under your personal account, deliberately |
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
-| `--registry <url>` | Override the backend origin |
+| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
 | `--no-validate` | Skip the content-conformance check (it only warns; see below) |
 
@@ -1041,7 +1041,7 @@ Pull is git-pull-like: it reconciles your working tree to the backend, **deletin
 | `--no-delete` | Project, but keep local files that have no backend item |
 | `--no-records` | Pull pages only; skip the records lane |
 | `--dry-run` | Report what it would fetch; write nothing |
-| `--registry <url>` | Override the backend origin |
+| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
 
 ---
@@ -1138,7 +1138,7 @@ Run from a foundation directory or workspace root.
 | `--list` | List all invites for your foundation |
 | `--revoke <id>` | Revoke an invite by ID |
 | `--resend <id>` | Resend an invite by ID |
-| `--registry <url>` | Use a specific registry URL |
+| `--backend <url>` | Use a specific backend origin |
 
 ### Examples
 
@@ -1200,7 +1200,7 @@ Run from a foundation directory or workspace root.
 |--------|-------------|
 | `--site <id>` | Specify a site ID (default: auto-generated) |
 | `--web` | Show web-based handoff instructions instead of running the API flow |
-| `--registry <url>` | Use a specific registry URL |
+| `--backend <url>` | Use a specific backend origin |
 
 ### What Happens
 
