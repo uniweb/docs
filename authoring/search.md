@@ -58,10 +58,14 @@ search:
 ```yaml
 search:
   provider: endpoint
-  endpoint: _search      # optional; this is the default
+  endpoint: _search      # required — there is no default
 ```
 
-**`endpoint` is resolved relative to your site's base path**, which is what makes one spelling work everywhere. On a site at the root it resolves to `/_search`; under `base: /docs/` it becomes `/docs/_search`; on a site served from a subpath it follows that subpath. Give an absolute `https://…` URL to point at a search service on another origin.
+**`endpoint` is required.** A provider with nowhere to send a query has nothing to do, so search behaves like every other service here: you name the target, or the site has no search. (Until 0.16 an omitted `endpoint` fell back to `_search`. It no longer does — a path a host serves is that host's to name, and a framework guess competes with it.)
+
+**It is resolved relative to your site's base path**, which is what makes one spelling work everywhere. On a site at the root `_search` resolves to `/_search`; under `base: /docs/` it becomes `/docs/_search`; on a site served from a subpath it follows that subpath. Give an absolute `https://…` URL to point at a search service on another origin.
+
+A host that serves your site may offer search itself, in which case it supplies the address and you declare nothing.
 
 The response envelope is read leniently — `{ results: [...] }`, `{ hits: [...] }`, `{ items: [...] }`, or a bare array all work — so a self-hosted search backend usually needs no adapter.
 
