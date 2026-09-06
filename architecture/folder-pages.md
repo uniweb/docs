@@ -58,7 +58,7 @@ The raw `page.route` value is now passed through `buildEngineContent()` only so 
 | Target | Mechanism | Where |
 |--------|-----------|-------|
 | **Client SPA** | `useEffect` + `navigate()` in PageRenderer | `runtime/src/components/PageRenderer.jsx` |
-| **Cloudflare Worker** | HTTP 302, computed at publish time | `uniweb-edge/src/publish.js` → `meta.json` redirects map, served by `index.js` |
+| **A host that renders server-side** | HTTP 302, computed at publish time from a redirects map | the host's own |
 | **Static export** (GitHub Pages) | `<meta http-equiv="refresh">` HTML file | `build/src/prerender.js` |
 
 ### Why three different redirect mechanisms?
@@ -80,19 +80,13 @@ This ensures `page.children` is populated regardless of whether the payload incl
 
 ## Key file map
 
+**This framework's half.** An authoring tool that edits redirects, and a host that serves them,
+each have their own — how they do it is theirs and is not described here.
+
 | Concern | File | Function |
 |---|---|---|
 | Folder→index resolution | `core/src/website.js` | `getPage()`, `getPageHierarchy()` |
 | Navigable route logic | `core/src/page.js` | `getNavigableRoute()`, `getNavRoute()` |
 | Locale URL generation | `core/src/website.js` | `getLocaleUrl()` |
-| Route computation (editor) | `uniweb-js/src/engine/content-helpers.js` | `computeEngineRoutes()` |
-| Redirect marker → `pageResult.redirect` | `uniweb-js/src/engine/content-helpers.js` | `buildEnginePreviewPayload()` |
-| Redirect marker → preview action | `uniweb-js/src/engine/action-executors.js` | `pagesPreview()`, `changePageRedirect` executor |
-| Persist redirect to PHP | `uniweb-js/src/adapters/editor.js` | `updatePageRedirect()` |
-| PHP `route` field write | `php/bundles/profiles/src/DocufolioController.php` | `updateTopicRoute()` |
-| Editor UI — context menu | `uniweb-js/src/pages/.../PageBar/PageContextMenu.jsx`, `PageItemAction.jsx` | "Redirect to…" item |
-| Editor UI — picker modal | `uniweb-js/src/pages/.../PageBar/PageRedirectModal.jsx` | `SelectBox` of valid targets |
-| Worker compute redirects | `uniweb-edge/src/publish.js` | `computeRedirects()` (3 passes) |
-| Worker serve 302 | `uniweb-edge/src/index.js` | `handleServe()` ~line 380 |
 | Client SPA redirect | `runtime/src/components/PageRenderer.jsx` | `redirectTarget` / `autoRedirectRoute` effects |
 | Static export redirect | `build/src/prerender.js` | `<meta http-equiv="refresh">` HTML |

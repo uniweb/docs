@@ -475,7 +475,7 @@ The dynamic runtime uses the same `<SectionOverrideStyles>` component. Editor up
 
 No `updateSectionTheme` message type needed. Same data flow as other section edits.
 
-### Published site (unicloud)
+### Published site (rendered server-side)
 
 `buildSectionOverrides()` is called during prerender and injected into the HTML alongside the global theme CSS:
 
@@ -484,15 +484,16 @@ const sectionCSS = buildSectionOverrides(page.blocks, appearance)
 // → <style id="uniweb-page-overrides">{sectionCSS}</style>
 ```
 
-### Legacy runtime (reference only)
+### Legacy rendering (reference only)
 
-`uniweb-js/src/core/theme.js` and `sectionStyleManager.js` contain the legacy rendering logic. Key patterns used as reference:
+An earlier renderer generated this CSS differently, and three of its patterns are worth knowing
+because the current shape is a reaction to them:
 
-- `appendStyle(style, colors, context)` — reads vars from `light` key, elements from `[context]` key
-- `getStyleContent(colors)` — generates dual CSS rules for toggle-enabled sites
-- `buildColorStyles({ vars, elements }, context)` — builds CSS variable map for a single context
+- reading vars from a `light` key and elements from a `[context]` key, rather than one map per context
+- generating dual CSS rules for toggle-enabled sites
+- building a CSS variable map for a single context at a time
 
-These files are **not modified** in this project. The modern runtime replaces their functionality.
+The modern runtime replaces all three. Nothing here is still in use.
 
 ---
 
@@ -691,11 +692,6 @@ const themes = {...}                   →  DELETE (context system replaces)
 | `core/src/theme.js` | Theme class — `hasSchemeToggle()`, `getAppearance()` |
 | `theming/src/css-generator.js` | Global theme CSS generation |
 | `theming/src/processor.js` | Theme validation, `DEFAULT_APPEARANCE` |
-| `uniweb-editor/dynamic-runtime/src/DynamicApp.jsx` | Editor preview — `updateParams` handler |
-| `uniweb-js/src/.../SectionColors.jsx` | Section color editor — uses `updateParams` |
-| `uniweb-js/src/.../ContextSelect.jsx` | Context picker — adds Auto option |
-| `uniweb-js/src/.../SectionStyle.jsx` | Section appearance panel |
-| `unicloud/src/renderer/assembler.js` | Inject section override CSS into HTML |
 
 ## Utilities
 

@@ -1204,7 +1204,7 @@ Run from a foundation directory or workspace root.
 
 ### What Happens
 
-1. Creates a site record on Unicloud with your foundation
+1. Creates a site record on the backend with your foundation
 2. Auto-grants a license (you own the foundation)
 3. Transfers ownership to the client's email
 4. Shows next steps for sharing the site files
