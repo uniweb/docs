@@ -224,9 +224,9 @@ For more search options, see the [Search guide](./search.md).
 
 ---
 
-## Content Collections
+## Records and Queries
 
-Collections let you create structured data from markdown files — like blog posts, team members, or product listings. Instead of writing JSON, you write markdown files in a folder:
+Records let you create structured data from markdown files — like blog posts, team members, or product listings. Instead of writing JSON, you write markdown files in a folder, and a named *query* says how components reach them:
 
 ```yaml
 queries:
@@ -239,9 +239,9 @@ queries:
     sort: order asc
 ```
 
-Each markdown file in `entities/article/` becomes an item in the `articles` collection, sorted by date. Pages can then display this data using their template's components.
+Each markdown file in `entities/article/` becomes an item the `articles` query returns, sorted by date. Pages can then display this data using their template's components.
 
-For the full guide, see [Collections](./collections.md). For technical details, see [Content Collections](../reference/content-collections.md).
+For the full guide, see [Working with Records](./collections.md). For technical details, see [Content Records](../reference/content-collections.md).
 
 ---
 
@@ -354,7 +354,7 @@ You only need to include what you're using. Start simple and add settings as you
 
 ### Start with the minimum
 
-A `site.yml` with just `name:` works. Add configuration as your site grows. You don't need to decide on languages, search, or collections up front.
+A `site.yml` with just `name:` works. Add configuration as your site grows. You don't need to decide on languages, search, or records up front.
 
 ### Use `pages:` with `...` for ordering
 
@@ -390,7 +390,7 @@ If adding translations, get one additional language working before adding more. 
 | `languages` | Supported languages | `languages: [en, es, fr]` |
 | `search.enabled` | Turn on full-text search | `enabled: true` |
 | `build.prerender` | Generate static HTML (default: true) | `prerender: true` |
-| `collections` | Define content collections | See [Collections](../reference/content-collections.md) |
+| `queries` | Named queries over your records (or use `queries.yml`) | See [Content Records](../reference/content-collections.md) |
 | `fetch` | Global data source | See [Data Fetching](../reference/data-fetching.md) |
 
 ---
@@ -400,6 +400,6 @@ If adding translations, get one additional language working before adding more. 
 - **[Writing Content](./writing-content.md)** — How to write sections in markdown
 - **[Theming](./theming.md)** — Customize colors, fonts, and dark mode
 - **[Translating Your Site](./translating.md)** — Full translation workflow
-- **[Collections](./collections.md)** — Blog posts, team members, products, and other repeating content
+- **[Records](./collections.md)** — Blog posts, team members, products, and other repeating content
 - **[Recipes](./recipes.md)** — Copy-paste solutions for common patterns
 - **[Deployment](../reference/deployment.md)** — Deploy to Vercel, Netlify, GitHub Pages, and more

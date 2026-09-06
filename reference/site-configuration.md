@@ -1109,7 +1109,7 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 - **Existing docs** — Point `pages` at an existing folder of markdown files
 - **Mixed sources** — Some pages local, others from external repos via per-subfolder mounting
 
-When `paths.collections` is set, per-collection `path` values in `collections:` are resolved relative to it instead of the site root.
+When `paths.entities` is set, every query reads its records from that pool instead of `entities/` at the site root.
 
 ### Editing external content in dev
 
