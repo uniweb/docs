@@ -60,6 +60,12 @@ queries:
     schema: '@/article'
     sort: date desc
 
+# Placeholders — values written once, referenced from any page as {name}
+placeholders:
+  product: Uniweb
+  vendor:
+    email: billing@acme.example
+
 # Custom Content Paths (optional, for external content)
 paths:
   pages: ../docs/pages             # Default: pages/
@@ -1047,6 +1053,51 @@ A component links a card with `item.route` rather than composing the URL itself,
 A trailing slash is normalized away: `route: /blog/` and `route: /blog` both produce `/blog/my-post`.
 
 See [Content Collections](./content-collections.md) for details.
+
+---
+
+## Placeholders
+
+Values you write once and reference from any page.
+
+```yaml
+placeholders:
+  product: Uniweb
+  vendor:
+    organization: Acme Studios
+    email: billing@acme.example
+```
+
+Any page can then reference them by name:
+
+```markdown
+Questions? Write to {vendor.email} and we'll get back to you.
+```
+
+Use them for anything repeated across pages that you would otherwise have to change in a dozen files — a company name, a support address, a product name, a current season.
+
+### How they resolve
+
+A placeholder is an ordinary variable, so nested values use dot paths (`{vendor.organization}`) and a record's own field of the same name always wins. On a page showing an article, `{title}` is that article's title even if the site declares a `title` placeholder — the site says what is true of every page, the record what is true of one.
+
+Values are carried as written: strings, numbers, booleans and lists all work.
+
+### Your foundation has to resolve them
+
+**Placeholder resolution is a foundation capability, not something every site gets.** A foundation opts in by declaring a content handler:
+
+```js
+// main.js
+import { createLoomHandlers } from '@uniweb/loom'
+
+export default {
+  handlers: createLoomHandlers({ vars: (data) => data?.profile?.[0] }),
+}
+```
+
+Without one, nothing resolves `{…}` and your pages render the literal text `{vendor.email}`. The build warns when a site declares `placeholders:` under a foundation that has no content handler, so you find out at build time rather than on the page.
+
+Once a foundation is wired, placeholders are the simplest thing you can write — but the same expressions can filter, sort, count and format live data. See [`@uniweb/loom`](https://www.npmjs.com/package/@uniweb/loom) for the full language.
 
 ---
 
