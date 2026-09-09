@@ -574,6 +574,10 @@ Components never see this value. They ask [`@uniweb/api`](https://www.npmjs.com/
 which reads it and answers "there is no backend" on a site that declares none — so a
 foundation works unchanged on a site with a backend and on a site without one.
 
+> **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
+> what the site does when there is no backend, and where a demo fixture belongs — see
+> [Sites with Accounts](../development/sites-with-accounts.md).
+
 ### Developing against it: `$devApi`
 
 Building an app against a live backend is slow, and it puts a shared database behind

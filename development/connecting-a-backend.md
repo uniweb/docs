@@ -2,6 +2,11 @@
 
 Most Uniweb sites start with records in `entities/` that the build turns into JSON at `public/data/*.json`. That is enough for blogs, docs and marketing sites, and it is what a site published to a Uniweb host reads live without any configuration. Sometimes you have a backend of your own: a JSON API the site should read, an API with its own query language, a service that needs a key.
 
+> ⛔ **Not what you want if you mean accounts.** This guide is about **content** — records the
+> same for every visitor. If you want members who sign in, per-visitor data, or content your
+> users create, that is a different mechanism with its own guide:
+> [Sites with Accounts](./sites-with-accounts.md).
+
 This guide says which of three shapes you are in, and what each one asks of you. It is about **author-driven fetching** — the content author writes `fetch:` in `page.yml` and the runtime fetches for the component. A component with its own domain knowledge (a search box, a pagination widget) uses standard React `useEffect + fetch`; see [Component Data Patterns](./component-data-patterns.md).
 
 > **Audience:** site developers wiring a backend, or foundation authors deciding whether they need to write a transport.
