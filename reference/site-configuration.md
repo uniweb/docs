@@ -1037,6 +1037,17 @@ fetch:
 
 Every section on every page receives this data automatically in `content.data.config`.
 
+### The `data:` shorthand
+
+To fetch a saved query, name it:
+
+```yaml
+data: articles              # same as fetch: { query: articles }
+data: [articles, team]      # one fetch each
+```
+
+`data:` and `fetch:` are the same mechanism — `data:` is the short form for the common case of "just give me this query". They work identically at the site, folder, page and section levels, and an explicit `fetch:` wins if you write both.
+
 ### Options
 
 | Option | Description |
