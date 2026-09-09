@@ -37,6 +37,11 @@ foundation: '@acme/marketing@1.2.3'  # Or a workspace package name, or a full UR
 extensions:                          # Secondary foundations (optional)
   - '@acme/effects@0.3.1'
 
+# Layout — cascades to every page; folder.yml and page.yml override per field
+layout:
+  name: DocsLayout
+  hide: [right]
+
 # Features
 search:
   enabled: true
@@ -140,6 +145,50 @@ extensions:
 When you reference a **workspace-local** extension, `uniweb publish` brings it along the
 same way it does the primary: it releases the extension if its code changed or isn't
 registered yet, and pins the released `@scope/name@version` on the published site.
+
+---
+
+## Layout
+
+Set the layout for the whole site, and adjust it per branch or per page.
+
+```yaml
+layout: DocsLayout          # the shorthand — just the layout name
+```
+
+```yaml
+layout:                     # or the expanded form
+  name: DocsLayout
+  hide: [right]             # areas of the layout to leave out
+  params:                   # layout-specific settings
+    sidebarWidth: wide
+```
+
+`hide` names layout areas — `header`, `footer`, `right`, or whatever your foundation declares — and turning one off leaves its content alone. Re-enable it later and everything is still there.
+
+### The cascade
+
+The same `layout:` block works in three places, and the nearest one wins **per field**:
+
+| where | applies to |
+|-------|-----------|
+| `site.yml` | every page |
+| `folder.yml` | that folder and everything under it |
+| `page.yml` | that page |
+
+Because it merges field by field, a page that sets only `hide` keeps the name it inherited:
+
+```yaml
+# site.yml
+layout: { name: DocsLayout, hide: [right] }
+
+# pages/pricing/page.yml — full width, still DocsLayout
+layout: { hide: [] }
+```
+
+That last line is worth noticing: `hide: []` is *"hide nothing"*, which is how a page opts out of an inherited `hide`. An absent `hide` inherits; an empty one overrides.
+
+See [page configuration](./page-configuration.md#layout) for the page-level form.
 
 ---
 
@@ -1238,6 +1287,11 @@ languages:
     label: English
   - code: es
     label: Español
+
+# Layout — cascades to every page; folder.yml and page.yml override per field
+layout:
+  name: DocsLayout
+  hide: [right]
 
 # Features
 search:
