@@ -706,8 +706,9 @@ tracking:
 A relative endpoint resolves against the site's `base:`, the same way `submit:`
 and `search:` do. An absolute URL is used as written.
 
-A host may also provide a destination, in which case you need nothing here. Your
-own `tracking:` always wins over the host's.
+A host may also provide a destination, in which case you need nothing here — and
+where it does, the host's is used. Your own `tracking:` endpoint is for a site
+whose host provides none.
 
 > **The endpoint is yours to provide.** Events are sent in the format below, so
 > the destination has to be something that accepts it — your own collector, a
@@ -849,12 +850,13 @@ tracking:
 ```
 
 The two are read key by key, so naming `emit` alone overrides nothing else the
-host declared. Declaring your own `endpoint:` always wins over the host's.
+host declared. An `endpoint:` of your own applies where the host supplies no
+collector; where it supplies one, the host's is used.
 
 | value | sends |
 | --- | --- |
 | `minimal` | `page_view` |
-| `standard` | `page_view`, `outbound_click`, `section_view` — the default when you supply your own `endpoint:` |
+| `standard` | `page_view`, `outbound_click`, `section_view` — the default when the collector is your own |
 | `all` | everything the framework emits, **including events added in later releases** |
 | a list | exactly those event names, e.g. `[page_view, section_view]` |
 
@@ -869,7 +871,7 @@ different depending on who supplies the address:**
 
 | your site | saying nothing about `emit` means |
 | --- | --- |
-| declares its own `endpoint:` | `standard` — the curated set above. A later framework release never grows it |
+| sends to its own `endpoint:` | `standard` — the curated set above. A later framework release never grows it |
 | uses a host-supplied collector | **whatever that host declares it collects** |
 
 The second case is the one to know about. A site on a host has no address of its

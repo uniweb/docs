@@ -71,8 +71,8 @@ fill it without a framework change.
 
 **On a host that handles submissions you configure nothing.** The host answers
 for itself in the served payload: an endpoint when it will accept submissions
-for this site, and no address when it will not. A `submit:` of your own
-overrides whatever the host would have said.
+for this site, and no address when it will not. A `submit:` of your own is used
+where the host gives no endpoint; where it gives one, the host's is used.
 
 ⛔ **There is deliberately no explanatory string, and absence is not an error to
 report to a visitor.** No endpoint means draw no form — or degrade to something
@@ -104,10 +104,10 @@ a subpath. An absolute URL is used as written.
 never names one — that's what lets the same foundation serve a site posting to
 its own API and a site whose host handles it, with no code change.
 
-> **Your declaration outranks the host's, including when the host declined.**
-> That's deliberate: a site posting to its own API, or to a form service, is
-> nobody's business but the site's, and a host that could overrule it would have
-> silent veto over where your visitors' data goes.
+> **Where your host offers a destination, the host's is used — and a host that
+> declined does not overrule yours.** Your own declaration is for what the host
+> does not provide: a site posting to its own API, or to a form service, keeps
+> working on a host that does not take submissions.
 >
 > The footgun is the narrow case where you point `submit:` at *the host's own*
 > endpoint after the host declined to accept submissions for this site. The form

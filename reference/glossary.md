@@ -53,7 +53,7 @@ Who or what supplies a service — often the host, sometimes a third party, some
 A React component in `src/sections/` that content authors can reference by name in frontmatter (`type: Hero`). Files and folders at the root of `src/sections/` are addressable by default. See [Creating Components](../development/creating-components).
 
 **Service**
-A named slot for an address the site does not hardcode — `search`, `submit`, `tracking`, `assistant`, `api`, `records`, or any name a foundation invents. Declared in `site.yml` or offered by the host, with the site's declaration winning. Presence is the switch: absent means the site does not have it, and a control for a service the site does not have is not drawn. See [Site Services](./site-services).
+A named slot for an address the site does not hardcode — `search`, `submit`, `tracking`, `assistant`, `api`, `records`, or any name a foundation invents. Offered by the host or declared in `site.yml`; where the host offers one, its offer wins. Presence is the switch: absent means the site does not have it, and a control for a service the site does not have is not drawn. See [Site Services](./site-services).
 
 **Semantic tokens**
 CSS variables (`--heading`, `--body`, `--section`, `--primary`, `--border`, etc.) that resolve differently per context. Components use these instead of hardcoded colors so they adapt to any theme automatically. See [Site Theming](./site-theming).
