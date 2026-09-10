@@ -122,9 +122,13 @@ Two habits worth forming early, both of which the README explains in full:
 configuration, not a probe:
 
 ```jsx
-import { isEnabled } from '@uniweb/api'
-if (!isEnabled(website)) return <StaticVersion />
+import { isApiEnabled } from '@uniweb/kit'
+if (!isApiEnabled()) return <StaticVersion />
 ```
+
+Every site service is asked the same way — `isSearchEnabled()`, `isSubmitEnabled()`,
+`isTrackingEnabled()`, `isAssistantEnabled()`. One predicate per service, no arguments, and `false`
+always means the same thing: draw nothing.
 
 **Treat "no source" and "nothing there" as different answers.** `absent` means there is no
 live source — no backend, or nobody signed in. `ready` with an empty list means the backend

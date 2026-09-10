@@ -677,7 +677,7 @@ function Header({ block }) {
   }
 
   // Search
-  if (website.isSearchEnabled()) {
+  if (isSearchEnabled()) {
     // Show search UI
   }
 }
@@ -693,7 +693,7 @@ function Header({ block }) {
 | `getActiveLocale()` | string | Get current locale code |
 | `getLocaleUrl(code)` | string | Get URL for a locale |
 | `hasMultipleLocales()` | boolean | Check if multilingual |
-| `isSearchEnabled()` | boolean | Check if search is enabled |
+| `isSearchEnabled()` | boolean | ⚠️ Prefer the standalone `isSearchEnabled()` below — one predicate per service, no `website` needed |
 | `isVersionedRoute(route)` | boolean | Check if route is versioned |
 | `getVersionScope(route)` | string | Get version scope for route |
 | `getVersionUrl(version, route)` | string | Compute versioned URL |

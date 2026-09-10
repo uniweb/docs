@@ -134,15 +134,34 @@ point — a foundation cannot tell, and never needs to. See
 
 ## Reading one
 
-Most of the time you do not call `resolveService` yourself — the hook that draws the feature has
-already asked, and hands you a boolean:
+**One predicate per service, no arguments.** Call it before you render UI for that service:
+
+```jsx
+import { isSearchEnabled, isSubmitEnabled, isApiEnabled } from '@uniweb/kit'
+
+if (!isSearchEnabled()) return null      // draw nothing
+```
 
 | you are drawing | ask |
 |---|---|
-| a search control | `const { isEnabled } = useSearch(website)` |
-| a form | `const { canSubmit } = useFormSubmit(…)` |
-| anything needing a signed-in visitor | `@uniweb/api` — see [Sites with Accounts](../development/sites-with-accounts.md) |
-| a service you invented | `resolveService(website, 'booking')` |
+| a search control | `isSearchEnabled()` |
+| a form | `isSubmitEnabled()` |
+| anything needing a signed-in visitor | `isApiEnabled()` |
+| an assistant surface | `isAssistantEnabled()` |
+| anything that reports events | `isTrackingEnabled()` |
+
+Each answers the same question — **would rendering UI for this service produce something that
+works?** — and `false` always means the same thing: draw nothing.
+
+The hooks that draw a feature also hand you the same answer as a field (`useSearch().isEnabled`,
+`useFormSubmit().canSubmit`), so a component already using one needs nothing extra.
+
+For a service the framework ships no client for, ask the site directly:
+`useWebsite().website.isServiceEnabled('booking')`.
+
+⭐ **`isSearchEnabled()` is true whenever *any* provider answers** — a server, or the prebuilt
+index that needs no address at all. It is not "is there a search service": gating a search box on
+that would hide it on every static site.
 
 Every one of these is a **synchronous read of the site's own configuration**, not a network
 probe. There is nothing to await and nothing to retry: the payload states what is on and what is
