@@ -26,6 +26,8 @@ uniweb deploy                  # Ship a site to a host (asks where, if not yet c
 uniweb add ci --host=<adapter>  # Set up CI so every push deploys (+ PR previews)
 uniweb push                    # Push local site content to the Uniweb backend
 uniweb pull                    # Pull backend site content to local files
+uniweb refresh                 # Catch up with the git remote and the backend (never pushes)
+uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
 uniweb status                  # Show a site's sync state (unpushed content)
 ```
@@ -976,14 +978,18 @@ uniweb register --backend http://localhost:8080
 
 ## uniweb push
 
-Push a site's content to the Uniweb backend — the **local → backend** direction of the git-style site-content sync. It sends two lanes: the static half (pages, sections, layout, theme, foundation ref) and the dynamic half (collections).
+Push a site's content to the Uniweb backend — the **local → backend** direction of the git-style site-content sync. It sends two lanes: the static half (pages, sections, layout, theme, foundation ref) and the dynamic half (records).
 
 ```bash
 uniweb login
 uniweb push
 ```
 
-Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` writes it into `site.yml::$uuid`); later pushes update it. Push is last-write-wins.
+Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` writes it into `site.yml::$uuid`); later pushes update it.
+
+**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
+
+When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — releasing the new version before the content goes up (or asking first) — because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
 ### Who owns the site — asked once, on the first push
 
@@ -1014,6 +1020,8 @@ uniweb push --personal      # your personal account, deliberately
 | `--org @org` | Own the new site under `@org` (membership-gated). Alias: `--as-org` |
 | `--personal` | Own the new site under your personal account, deliberately |
 | `--all` | Send every record (bypass the changed-only cache) |
+| `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
+| `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
 | `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
@@ -1025,24 +1033,75 @@ uniweb push --personal      # your personal account, deliberately
 
 ## uniweb pull
 
-Bring the backend's copy of a site back down to local files — the **backend → local** direction, the read-side mirror of `uniweb push`. It projects the returned content to `site.yml`/`theme.yml`, `pages/**`, and the collection files.
+Bring the backend's copy of a site back down to local files — the **backend → local** direction, the read-side mirror of `uniweb push`. It projects the returned content to `site.yml`/`theme.yml`, `pages/**`, and the record files.
 
 ```bash
 uniweb login
 uniweb pull
 ```
 
-Pull is git-pull-like: it reconciles your working tree to the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree). A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
+Pull is a checkout, not a merge: it rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree). A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
+
+Because it overwrites, **pull refuses while you have uncommitted changes** under the files it rewrites. Commit or stash them first — then your work is in git either way. Outside a git repository, pull asks before overwriting, and refuses when it cannot ask.
+
+To keep your local work instead, use `--merge`. It three-way merges your changes with the backend's, using the committed version of each file as the common ancestor: edits to different parts of a file combine silently, and only a genuine overlap gets conflict markers — in which case pull exits non-zero, so `uniweb pull --merge && uniweb push` never pushes conflict markers. `--merge` needs a git repository.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
+| `--merge` | Three-way merge your uncommitted changes with the backend's, instead of refusing |
+| `--force` | Discard your uncommitted changes and take the backend's version |
 | `--no-delete` | Project, but keep local files that have no backend item |
 | `--no-records` | Pull pages only; skip the records lane |
+| `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
 | `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
+
+---
+
+## uniweb refresh
+
+Catch up with everything outside your working copy: your teammates' commits on the git remote **and** content authors' edits on the backend. Running only `git pull` misses every edit made in the Uniweb apps; running only `uniweb pull` misses your teammates.
+
+```bash
+uniweb refresh
+```
+
+It runs `git pull` first, then `uniweb pull --merge`, and ends by reporting what it checked, what it skipped, and whether you have unpushed changes. It **never pushes** — it cannot ship anything, so it is safe to run at the start of every working session. It stops if `git pull` fails, and exits non-zero if the merge leaves conflicts.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--no-git` | Skip the git remote; backend only |
+| `--no-backend` | Skip the backend; git only |
+| `--backend <url>` | Override the backend origin |
+| `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
+
+---
+
+## uniweb sync
+
+Catch up, then share: `uniweb refresh` followed by `uniweb push`, and nothing more — `uniweb refresh && uniweb push` behaves identically. If the refresh leaves conflicts, sync stops before pushing.
+
+```bash
+uniweb sync
+```
+
+It does **not** publish: your changes reach the backend's draft, and going live stays a separate step (`uniweb publish`). Not to be confused with `uniweb i18n sync`, which updates the translation manifest.
+
+### Options
+
+`sync` accepts the options of both halves. The common ones:
+
+| Option | Description |
+|--------|-------------|
+| `--no-git` | Skip the git remote half of the refresh |
+| `--force` | Passed to the push only: overwrite changes made on the backend since your last pull |
+| `--backend <url>` | Override the backend origin |
+| `--token <bearer>` | Auth bearer (skips `uniweb login`) |
 
 ---
 
@@ -1077,7 +1136,7 @@ uniweb login
 uniweb publish
 ```
 
-`publish` also promotes edits made through the Uniweb apps since your last sync. If you have unpushed local content, it warns and asks before going live; run `uniweb push` first if you want to be explicit about sending local edits. A site that was never synced has no `site.yml::$uuid`, and `publish` says so.
+`publish` pushes your local content first — the same push as `uniweb push`, refused the same way if the site changed on the backend since your last pull — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
 
 The **first** publish of a site also creates it on the backend, which decides who owns it — see [Who owns the site](#who-owns-the-site--asked-once-on-the-first-push) under `uniweb push`. You are asked once, or you can answer up front with `--org` / `--personal`.
 
@@ -1085,16 +1144,18 @@ The **first** publish of a site also creates it on the backend, which decides wh
 
 | Option | Description |
 |--------|-------------|
-| `--dry-run` | Resolve everything (runtime, languages); POST nothing. |
-| `--no-verify` | Skip the unpushed-content pre-flight prompt (also `--yes` / `--force`). |
+| `--dry-run` | Resolve everything; release, sync and publish nothing. |
+| `--yes` | Skip confirmations (CI); never block on a prompt. |
+| `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
+| `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
+| `--no-save` | Skip recording this publish in `deploy.yml`. |
+| `--no-validate` | Skip the content-conformance check (it only warns). |
 | `--org @org` | Own the new site under `@org` (first publish only). Alias: `--as-org`. |
 | `--personal` | Own the new site under your personal account, deliberately. |
 | `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
 
-> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `clone`, `register`, and `status` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
-
-Interactively, if you have unpushed local content `publish` warns and asks before going live (since it publishes the *backend's* current state, not your local files).
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, and `status` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
 
 ---
 
