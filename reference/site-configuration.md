@@ -462,7 +462,7 @@ Four of the sections below — **Search**, **Accounts**, **Form Submissions** an
 for an address the site does not hardcode. A site declares one here, a host may offer one of its
 own, and the site's declaration wins. Where neither names an address, the site does not have that
 service and a component draws nothing. Any of them can be switched off with `false` or
-`{ enabled: false }` — and a site that switches one off wins over a host that offers it.
+`{ enabled: false }` — though where a host offers one, the host's offer wins.
 
 The keys are documented individually below. For the rule they share — the two tiers, what a
 host's silence means, and how a component asks — see

@@ -78,8 +78,9 @@ submit: false                       # this site has no form submission
 submit: { enabled: false }          # the same, keeping the rest of the block
 ```
 
-A site that switches a service off wins over a host that offers it, exactly as its own address
-would.
+Where a host offers the service, **the host's offer wins** — a hosted service is turned off with
+your host, where it is provided. A site's `false` decides wherever no host offers it, which on a
+static site is always.
 
 An absolute URL (`https://…`, `//host/…`) is passed through — a service on another origin is not
 the site's to relocate. A root-relative (`/forms`) or bare-relative (`_search`) address is joined
@@ -95,7 +96,7 @@ effect.
 |---|---|---|
 | an address | `'site'` | the site declared it |
 | an address | `'host'` | the host offers it |
-| `null` | `'site'` | **the site switched this service off** |
+| `null` | `'site'` | **the site switched this service off, and no host offers it** |
 | `null` | `'host'` | **a host is answering and does not offer this service** |
 | `null` | `null` | nobody declared anything — no host is speaking |
 
