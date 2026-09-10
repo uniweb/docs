@@ -18,6 +18,7 @@ That's all you need to get started. Everything else has sensible defaults.
 # Identity
 name: My Site
 description: A brief description for SEO
+preview: /images/card.png            # The site's card image in the Uniweb apps (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
   image: /og-default.png             # Default Open Graph / social-sharing image
@@ -85,12 +86,16 @@ paths:
 ```yaml
 name: My Site
 description: Build modern websites with components
+preview: /images/card.png
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Site name (used in `<title>`, metadata) |
 | `description` | string | Default meta description |
+| `preview` | string | The image on the site's card in the Uniweb apps — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one. |
+
+`uniweb publish` also records where the site went live, as `$url`. Like `$uuid`, it is written by the CLI rather than by hand.
 
 ---
 
