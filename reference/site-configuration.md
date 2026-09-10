@@ -95,7 +95,7 @@ preview: /images/card.png
 | `description` | string | Default meta description |
 | `preview` | string | The image on the site's card in the Uniweb apps — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one. |
 
-`uniweb publish` also records where the site went live, as `$url`. Like `$uuid`, it is written by the CLI rather than by hand.
+Once the site is published, `uniweb pull` also records where it went live, as `$url`. Like `$uuid`, it is written for you rather than by hand.
 
 ---
 
