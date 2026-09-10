@@ -9,7 +9,7 @@ pages:
   - working-with-data
   - data-schemas
   - schemas-in-practice
-  - connecting-a-backend
+  - data-sources
   - receiving-form-submissions
   - content-handlers
   - data-driven-sections

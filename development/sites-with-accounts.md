@@ -6,7 +6,7 @@ course catalogue where learners track progress. A conference programme the organ
 attendees check into. A members' directory only members can see.
 
 This guide is about the second kind: what to declare, how to build it before any server
-exists, and how the same site behaves when there is no backend at all.
+exists, and how the same site behaves without one.
 
 > **Audience:** foundation developers building components that need a signed-in visitor, and
 > site developers wiring one up.
@@ -19,8 +19,8 @@ Two different things are easy to confuse, and they have separate guides:
 
 | | you want | read |
 |---|---|---|
-| **Content** | articles, team members, a product list — the same for every visitor | [Connecting a Backend](./connecting-a-backend.md) |
-| **An app backend** | accounts, sign-in, per-visitor data, things members create | **this guide** |
+| **Content** | articles, team members, a product list — the same for every visitor | [Data Sources](./data-sources.md) |
+| **An `api` service** | accounts, sign-in, per-visitor data, things members create | **this guide** |
 
 A site can have both, one, or neither. They are declared separately and nothing about one
 implies the other.
@@ -29,7 +29,7 @@ implies the other.
 
 ## Declaring it
 
-One line says where your site's backend answers:
+One line says where your site's `api` service answers:
 
 ```yaml
 # site.yml
@@ -37,14 +37,14 @@ api: /_api
 ```
 
 Components never read this value. They ask [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api),
-which reads it for them — so **the same foundation works on a site with a backend and on a site
-without one**, with no branch in your build.
+which reads it for them — so **the same foundation works on a site with the service and on a site
+without it**, with no branch in your build.
 
 ---
 
 ## Building before the server exists
 
-You do not need a running backend to build against one. Name a local handler:
+You do not need the service running to build against it. Name a local handler:
 
 ```yaml
 api: /_api                 # unchanged — the address is the same in production
@@ -118,7 +118,7 @@ handled: **[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api)**.
 
 Two habits worth forming early, both of which the README explains in full:
 
-**Ask whether there is a backend before you draw.** It is a synchronous read of the site's own
+**Ask whether the site has the service before you draw.** It is a synchronous read of the site's own
 configuration, not a probe:
 
 ```jsx
@@ -131,16 +131,15 @@ Every site service is asked the same way — `isSearchEnabled()`, `isSubmitEnabl
 always means the same thing: draw nothing.
 
 **Treat "no source" and "nothing there" as different answers.** `absent` means there is no
-live source — no backend, or nobody signed in. `ready` with an empty list means the backend
+live source — no `api` service, or nobody signed in. `ready` with an empty list means the service
 answered and there is nothing. Showing *"nothing yet"* for the first tells a visitor their
 content is missing when it was never asked for.
 
 ---
 
-## A site with no backend
+## A site without the service
 
-Delete the `api:` line and the site still works. `@uniweb/api` answers *"there is no
-backend"*, and the features that need one **disappear rather than break**.
+Delete the `api:` line and the site still works. `isApiEnabled()` answers `false`, and the features that need the service **disappear rather than break**.
 
 ⛔ **When the answer is no, draw nothing** — not a disabled button, not an explanation. A
 visitor has no stake in which services the operator set up, and *"sign-in is unavailable"*
@@ -171,8 +170,8 @@ Three reasons, and the first is the one that matters:
 ## See also
 
 - **[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api)** — the client, in full
-- [Connecting a Backend](./connecting-a-backend.md) — content, which is a different problem
-- [Site Configuration](../reference/site-configuration.md#an-app-backend) — `api:` and `$devApi:`
+- [Data Sources](./data-sources.md) — content, which is a different problem
+- [Site Configuration](../reference/site-configuration.md#accounts) — `api:` and `$devApi:`
 - The **`conference` template** is a worked example of everything above — it scaffolds with
   `api:`, `$devApi:` and a `mock/` directory already wired, so you can read a working seed
   rather than assemble one:

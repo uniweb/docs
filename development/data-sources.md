@@ -1,6 +1,6 @@
-# Connecting a Backend
+# Data Sources
 
-Most Uniweb sites start with records in `entities/` that the build turns into JSON at `public/data/*.json`. That is enough for blogs, docs and marketing sites, and it is what a site published to a Uniweb host reads live without any configuration. Sometimes you have a backend of your own: a JSON API the site should read, an API with its own query language, a service that needs a key.
+Most Uniweb sites start with records in `entities/` that the build turns into JSON at `public/data/*.json`. That is enough for blogs, docs and marketing sites, and it is what a site published to a Uniweb host reads live without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.
 
 > ⛔ **Not what you want if you mean accounts.** This guide is about **content** — records the
 > same for every visitor. If you want members who sign in, per-visitor data, or content your
@@ -9,7 +9,7 @@ Most Uniweb sites start with records in `entities/` that the build turns into JS
 
 This guide says which of four shapes you are in, and what each one asks of you. It is about **author-driven fetching** — the content author writes `fetch:` in `page.yml` and the runtime fetches for the component. A component with its own domain knowledge (a search box, a pagination widget) uses standard React `useEffect + fetch`; see [Component Data Patterns](./component-data-patterns.md).
 
-> **Audience:** site developers wiring a backend, or foundation authors deciding whether they need to write a transport.
+> **Audience:** site developers connecting an API, or foundation authors deciding whether they need to write a transport.
 
 ---
 
@@ -20,15 +20,15 @@ This guide says which of four shapes you are in, and what each one asks of you. 
 | **the site itself** — `entities/`, compiled to `/data/*.json` | a query and a `fetch:`; nothing else | the framework, in the browser |
 | **a Uniweb host** that serves records live | the same query and `fetch:`; the host stamps where its records are | the framework over the host's answer — or the host itself, where it answers queries |
 | **a plain JSON endpoint** you control | `fetch: { url: … }` with per-fetch options | the framework, in the browser, over what arrived |
-| **a backend with its own base, headers, wire or query language** | a **transport** in the foundation, selected by the site | the transport |
+| **an API with its own base, headers, wire or query language** | a **transport** in the foundation, selected by the site | the transport |
 
-There is no site-level vocabulary that turns the default fetcher into a client for your backend. Earlier releases had one (`fetcher.baseUrl`, `headers`, `envelope`, `supports`, `request.style` / `rename`); it was retired because a third party's conventions belong in code that only the sites using that backend load — a transport — not in the runtime every site loads. A site that still declares those keys gets a warning at build time and they are ignored.
+There is no site-level vocabulary that turns the default fetcher into a client for your API. Earlier releases had one (`fetcher.baseUrl`, `headers`, `envelope`, `supports`, `request.style` / `rename`); it was retired because a third party's conventions belong in code that only the sites using that backend load — a transport — not in the runtime every site loads. A site that still declares those keys gets a warning at build time and they are ignored.
 
 ---
 
 ## A plain JSON endpoint
 
-If your backend returns JSON at a URL, the default fetcher reads it with no configuration beyond the fetch itself:
+If your API returns JSON at a URL, the default fetcher reads it with no configuration beyond the fetch itself:
 
 ```yaml
 # pages/articles/page.yml
@@ -52,7 +52,7 @@ What the default fetcher supports per fetch:
 | `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned |
 | `prerender: false` | fetch in the browser rather than at build time (the default for a `url:`) |
 
-The operators run **after** the response, over the whole set the endpoint returned. That is exactly right for an endpoint that returns everything, and wrong for one that pages or filters on its own — `limit: 20` over a paginated endpoint is twenty of *something*. When the backend needs to be asked rather than read, you are in the transport shape.
+The operators run **after** the response, over the whole set the endpoint returned. That is exactly right for an endpoint that returns everything, and wrong for one that pages or filters on its own — `limit: 20` over a paginated endpoint is twenty of *something*. When the API needs to be asked rather than read, you are in the transport shape.
 
 ### GraphQL, in this shape
 
@@ -80,7 +80,7 @@ fetch:
 
 ---
 
-## A backend with its own conventions — write a transport
+## An API with its own conventions — write a transport
 
 A transport is a small object with `resolve(request, ctx)` and, optionally, `cacheKey(request)`, exported by the foundation (or by an extension the site loads) under a name. The site selects it per schema; the foundation never silently intercepts a site's requests.
 
@@ -118,7 +118,7 @@ Inside `resolve`, the request carries the author's whole declaration — `as`, `
 
 Write a transport when:
 
-- the backend has its **own query language** and you want `where:` evaluated at the source;
+- the API has its **own query language** and you want `where:` evaluated at the source;
 - it needs **headers, a base URL, or an envelope** of its own;
 - it **pages**, and the page has to be asked for rather than read;
 - the response needs **reshaping** beyond a dot-path, or several endpoints compose into one record;
@@ -133,7 +133,7 @@ Nothing in `site.yml` is private. The framework either embeds its config into bu
 The pattern is **same-origin proxying**:
 
 - The site fetches `/api/articles` — a URL on its own origin.
-- Something between the browser and the upstream backend (an edge worker, a small backend service) attaches the real credential server-side and forwards upstream.
+- Something between the browser and the upstream API (an edge worker, a small server) attaches the real credential server-side and forwards upstream.
 - The site config only ever contains `url: /api/articles`. The secret never leaves the server.
 
 For self-hosted deployments, put whatever you already use (a Cloudflare Worker, a reverse proxy, a small Node service) in front of the site and let the site fetch same-origin.

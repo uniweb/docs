@@ -39,7 +39,7 @@ where:
 ```
 
 Operators come in three tiers. The first is what nearly every predicate needs and what
-every source — the built records, a backend that answers queries — evaluates identically.
+every source — the built records, a provider that answers queries — evaluates identically.
 Reach for the others knowingly.
 
 **The spine.** Equality, comparison, membership, presence:
@@ -356,4 +356,4 @@ fetch:
 
 - **[Data Fetching](../reference/data-fetching.md)** — full reference for the `fetch:` declaration, including `deferred:` (lean records).
 - **[Working with Collections](./collections.md)** — records and queries in depth.
-- **[Connecting a Backend](../development/connecting-a-backend.md)** — when your where-objects ship over the wire instead of running locally.
+- **[Data Sources](../development/data-sources.md)** — when your where-objects ship over the wire instead of running locally.

@@ -492,7 +492,7 @@ limit: 10
 **`sort:` names one key.** A comma-separated list (`order asc, title asc`) is refused — at
 build time for compiled records, and as an error in dev for a fetched array — rather than
 partly honoured. The same single key is evaluated the same way whether the framework sorts
-the records itself or a backend that answers queries does.
+the records itself or a provider that answers queries does.
 
 The framework applies them in JS over the records it fetched, unless the records come from a host that answers queries — then the host applies them. Either way the same declaration, and the same single key.
 
@@ -718,7 +718,7 @@ fetcher:
 
 With no transport selected, the framework's default fetcher handles the request: a compiled file (`path:`), a plain JSON `url:` (GET, or `method: POST` with a `body:`), the per-fetch `transform:` unwrap, the `detail:` forms for a record, and every `where:` / `sort:` / `limit:` evaluated in the browser over what arrived. A site published to a host that serves records live needs nothing more — the host stamps where its records are.
 
-There is **no site-level vocabulary to point that fetcher at a backend of your own.** `baseUrl`, `headers`, `envelope`, `supports` and `request.*` were retired: a backend with its own base, headers, wire or query language is a **transport**, written once in the foundation (or an extension) and selected here. See [Connecting a Backend](../development/connecting-a-backend.md) for when a plain `url:` is enough and when a transport is the answer, and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing one.
+There is **no site-level vocabulary to point that fetcher at a backend of your own.** `baseUrl`, `headers`, `envelope`, `supports` and `request.*` were retired: a backend with its own base, headers, wire or query language is a **transport**, written once in the foundation (or an extension) and selected here. See [Data Sources](../development/data-sources.md) for when a plain `url:` is enough and when a transport is the answer, and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing one.
 
 ### How selection works
 
@@ -732,7 +732,7 @@ No route-walking, no `match()` predicates, no silent foundation-owned routing �
 
 ### Secrets
 
-Secrets do not belong in `site.yml` — values here are public to the browser. Sites that need private credentials use a same-origin proxy at the deployment layer; the site then just fetches `/api/…` and the proxy attaches the credential server-side. See [Secrets](../development/connecting-a-backend.md#secrets).
+Secrets do not belong in `site.yml` — values here are public to the browser. Sites that need private credentials use a same-origin proxy at the deployment layer; the site then just fetches `/api/…` and the proxy attaches the credential server-side. See [Secrets](../development/data-sources.md#secrets).
 
 > **Planned:** a `${secrets.NAME}` interpolation syntax (resolved at request time by the deployment proxy) is under design. Not available today — same-origin proxying remains the pattern.
 
@@ -754,6 +754,6 @@ Components should always handle the case where data might be empty.
 - [Dynamic Routes](./dynamic-routes.md) — Generate multiple pages from data (blogs, catalogs, etc.)
 - [Content Collections](./content-collections.md) — Markdown-based data collections
 - [Predicates](../authoring/predicates.md) — Author guide to where-objects and saved views
-- [Connecting a Backend](../development/connecting-a-backend.md) — a plain `url:`, a host's records, a transport, secrets
+- [Data Sources](../development/data-sources.md) — a plain `url:`, a host's records, a transport, secrets
 - [Content Structure](./content-structure.md) — How content is parsed and structured
 - [Component Metadata](./component-metadata.md) — Full meta.js schema reference

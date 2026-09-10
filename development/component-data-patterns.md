@@ -183,5 +183,5 @@ For clarity, because these come up:
 ## See also
 
 - [Working with Data](./working-with-data.md) — Role 1 mechanics: cascade, template pages, detail queries.
-- [Connecting a Backend](./connecting-a-backend.md) — Role 1 with a real backend; `site.yml fetcher:` options for the default fetcher.
+- [Data Sources](./data-sources.md) — Role 1 with a real backend; `site.yml fetcher:` options for the default fetcher.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths.

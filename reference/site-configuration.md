@@ -46,7 +46,7 @@ layout:
 search:
   enabled: true
 
-# An app backend, if this site has one
+# Accounts — the `api` service, if this site has one
 api: /_api                           # where it answers — same in dev and production
 $devApi: ./mock/api.js               # what answers it locally (never published)
 
@@ -457,11 +457,12 @@ i18n:
 
 ## Site Services
 
-Four of the sections below — **Search**, **An App Backend**, **Form Submissions** and
+Four of the sections below — **Search**, **Accounts**, **Form Submissions** and
 **Tracking** — are one mechanism, not four features. Each declares a **service**: a named slot
 for an address the site does not hardcode. A site declares one here, a host may offer one of its
 own, and the site's declaration wins. Where neither names an address, the site does not have that
-service and a component draws nothing.
+service and a component draws nothing. Any of them can be switched off with `false` or
+`{ enabled: false }` — and a site that switches one off wins over a host that offers it.
 
 The keys are documented individually below. For the rule they share — the two tiers, what a
 host's silence means, and how a component asks — see
@@ -575,26 +576,26 @@ on, so a typo is silent. `uniweb doctor` flags them.
 
 ---
 
-## An App Backend
+## Accounts
 
-A site can have its own backend — accounts, per-visitor data, content its members
-create. `api:` says where that backend answers:
+A site can have its own `api` service — accounts, per-visitor data, content its
+members create. `api:` says where it answers:
 
 ```yaml
 api: /_api
 ```
 
 Components never see this value. They ask [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api),
-which reads it and answers "there is no backend" on a site that declares none — so a
-foundation works unchanged on a site with a backend and on a site without one.
+which reads it — `isApiEnabled()` is `false` on a site that declares none — so a
+foundation works unchanged on a site with the service and on a site without it.
 
 > **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
-> what the site does when there is no backend, and where a demo fixture belongs — see
+> what the site does without one, and where a demo fixture belongs — see
 > [Sites with Accounts](../development/sites-with-accounts.md).
 
 ### Developing against it: `$devApi`
 
-Building an app against a live backend is slow, and it puts a shared database behind
+Building an app against a live service is slow, and it puts a shared database behind
 your experiments. Name a local handler instead:
 
 ```yaml
@@ -615,7 +616,7 @@ because it is **same-origin**, sign-in cookies behave exactly as they will in
 production.
 
 Anything can sit behind it: a hand-written stub, recorded fixtures, or your real
-service running as a function. If you are building against Uniweb's own app backend,
+service running as a function. If you are building against Uniweb's own `api` service,
 `@uniweb/api` ships one that speaks it:
 
 ```js
@@ -627,7 +628,7 @@ export default createMockBackend({ seed }).fetch
 > **`$devApi` is never published.** Keys beginning with `$` are local to your working
 > copy and are stripped from the built site, so a visitor cannot reach your local
 > handler and a build cannot ship it by accident. Delete the line and the site still
-> works — it simply has no backend, and the features that need one disappear rather
+> works — it simply has no `api` service, and the features that need one disappear rather
 > than break.
 
 The `conference` template is a worked example — a programme that reads as a static

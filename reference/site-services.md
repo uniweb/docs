@@ -1,7 +1,7 @@
 # Site Services
 
 A **service** is a named slot for an address your site does not hardcode. Search, form
-submissions, analytics, an app backend — each is a name, and whoever runs the site says where
+submissions, analytics, accounts — each is a name, and whoever runs the site says where
 that name answers. A component asks for the name and gets an address or nothing.
 
 ## Overview
@@ -71,11 +71,21 @@ search:
   provider: endpoint
 ```
 
+**Either tier can switch a service off** — `false`, or `{ enabled: false }`:
+
+```yaml
+submit: false                       # this site has no form submission
+submit: { enabled: false }          # the same, keeping the rest of the block
+```
+
+A site that switches a service off wins over a host that offers it, exactly as its own address
+would.
+
 An absolute URL (`https://…`, `//host/…`) is passed through — a service on another origin is not
 the site's to relocate. A root-relative (`/forms`) or bare-relative (`_search`) address is joined
 to the site's base path.
 
-### Four answers, and the last two are different
+### What it returns, and why the last two differ
 
 `resolveService(website, name)` returns `{ url, source }`. `url` is the whole answer for acting;
 `source` says which tier answered, and is worth reading when a host's value appears not to take
@@ -85,6 +95,7 @@ effect.
 |---|---|---|
 | an address | `'site'` | the site declared it |
 | an address | `'host'` | the host offers it |
+| `null` | `'site'` | **the site switched this service off** |
 | `null` | `'host'` | **a host is answering and does not offer this service** |
 | `null` | `null` | nobody declared anything — no host is speaking |
 
@@ -107,7 +118,7 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `submit` | where form submissions go | site or host |
 | `tracking` | where analytics events go | site or host |
 | `assistant` | where an assistant surface answers | site |
-| `api` | the site's own app backend — accounts, per-visitor data, member writes | host (see below) |
+| `api` | accounts, per-visitor data, member writes | host (see below) |
 | `records` | where live record queries are answered | **host only** |
 
 Three of them deserve a note.
@@ -120,7 +131,7 @@ service"* — the two differ, and [`useSearch`](./kit-reference.md) answers the 
 
 **`api` is the one service a site does not normally author.** It has to be provisioned, so its
 address arrives in the payload rather than from `site.yml`. Arriving with the site does not make
-your host its provider — what answers there is a backend of its own. You *can* write `api:` in
+your host its provider — what answers there has a provider of its own. You *can* write `api:` in
 `site.yml`: that is how a static build reaches one, and how `$devApi` mounts a local mock. See
 [Sites with Accounts](../development/sites-with-accounts.md).
 
@@ -128,7 +139,7 @@ your host its provider — what answers there is a backend of its own. You *can*
 queries are resolved live at the source; when it is absent, the same queries are answered by the files
 the build compiled. Either way a component reads `content.data` identically, which is the whole
 point — a foundation cannot tell, and never needs to. See
-[Connecting a Backend](../development/connecting-a-backend.md).
+[Data Sources](../development/data-sources.md).
 
 ---
 
@@ -206,7 +217,7 @@ Three words, three levels, and a real sentence needs all three:
 > The `index` provider answers search queries from a file the build emitted.
 
 ⛔ **`records` and `api` normally have providers of their own.** Something answering live record
-queries, and an app backend holding your members, are separate from whatever serves your HTML —
+queries, and something holding your members' accounts, are separate from whatever serves your HTML —
 and neither is implied by your choice of host. One operator often sells several of these at once,
 which is exactly why the distinction is easy to miss, and why it matters the first time one of
 them is somebody else.
@@ -226,5 +237,5 @@ the origin you select with `uniweb login --backend`.
 - [Search](../authoring/search.md) — providers, and what a site declares
 - [Receiving Form Submissions](../development/receiving-form-submissions.md) — the `submit` service end to end
 - [Sites with Accounts](../development/sites-with-accounts.md) — the `api` service
-- [Connecting a Backend](../development/connecting-a-backend.md) — where a site's records come from
+- [Data Sources](../development/data-sources.md) — where a site's records come from
 - [Kit Reference](./kit-reference.md) — `resolveService`, `useSearch`, `useFormSubmit`

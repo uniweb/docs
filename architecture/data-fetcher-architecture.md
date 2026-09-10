@@ -1,6 +1,6 @@
 # Data Fetcher Architecture
 
-How Uniweb's data-fetching layer works end to end — dispatcher, default fetcher, cache keys, placeholder substitution, delivery paths, gotchas. For the "how to use it" view, see [Connecting a Backend](../development/connecting-a-backend.md).
+How Uniweb's data-fetching layer works end to end — dispatcher, default fetcher, cache keys, placeholder substitution, delivery paths, gotchas. For the "how to use it" view, see [Data Sources](../development/data-sources.md).
 
 > **Audience:** Framework contributors, foundation authors writing custom fetchers, anyone debugging a fetch that didn't fire or cached wrong.
 
@@ -290,7 +290,7 @@ Write a custom transport. Compose `@uniweb/fetchers` middleware around it. See [
 
 ## See also
 
-- [Connecting a Backend](../development/connecting-a-backend.md) — User guide with recipes.
+- [Data Sources](../development/data-sources.md) — User guide with recipes.
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing and registering a named transport.
 - [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
 - [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `data:` config.

@@ -452,5 +452,5 @@ A schema ref's `@acme` names an organization in the Uniweb registry, not an npm 
 - [Component Data Patterns](./component-data-patterns.md) — The two fetch roles (author-driven vs component-driven) and when to use which. Read this first if you're unsure your component should even be using `fetch:` declarations.
 - [Foundation Configuration → Data Fetcher](../reference/foundation-config.md#data-fetcher) — Full `fetcher:` declaration reference (routes, fallback, `cacheKey`, `prerenderable`).
 - [Kit Reference → `usePageState` / `useWebsiteState`](../reference/kit-reference.md#usepagestate--usewebsitestate) — Bridge hooks for observable state.
-- [Connecting a Backend](./connecting-a-backend.md) — a plain JSON `url:`, a host's live records, a foundation transport for a backend with its own conventions, and secrets.
+- [Data Sources](./data-sources.md) — a plain JSON `url:`, a host's live records, a foundation transport for a backend with its own conventions, and secrets.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths, gotchas.

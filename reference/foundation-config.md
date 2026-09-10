@@ -499,7 +499,7 @@ Each subsystem owns its lifecycle moment; `outputs` owns end-of-pipeline documen
 
 A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which schema. A foundation never silently intercepts a site's data request.
 
-When a site declares no transport for a schema, the framework's default fetcher handles it — a compiled file or a plain JSON `url:`, GET or a per-fetch `method: POST` + `body:`, an optional `transform:`, and every query operator evaluated in the browser. It takes no site-level vocabulary for a backend of your own (a base URL, headers, an envelope, a wire): that is exactly what a transport is for — see [Connecting a Backend](../development/connecting-a-backend.md). Most foundations need no transports at all.
+When a site declares no transport for a schema, the framework's default fetcher handles it — a compiled file or a plain JSON `url:`, GET or a per-fetch `method: POST` + `body:`, an optional `transform:`, and every query operator evaluated in the browser. It takes no site-level vocabulary for a backend of your own (a base URL, headers, an envelope, a wire): that is exactly what a transport is for — see [Data Sources](../development/data-sources.md). Most foundations need no transports at all.
 
 Declared on the default export of `main.js` alongside identity, theme, and layout fields:
 
@@ -619,7 +619,7 @@ fetcher:
 
 The transport reads its config via `ctx.website.config.fetcher.{transportName}`. The framework does no validation — document the keys your transport reads in the foundation's README.
 
-Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See the [Secrets section of the backend guide](../development/connecting-a-backend.md#secrets).
+Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See the [Secrets section of the backend guide](../development/data-sources.md#secrets).
 
 ### Per-site default-fetcher vocabulary
 
@@ -664,11 +664,11 @@ fetcher:
 Most foundations don't need one. Omit `transports:` when:
 
 - The site serves JSON from `public/data/` (the default fetcher works).
-- The site hits a remote API that the default fetcher's `baseUrl` / `headers` / `envelope` / `method: POST` vocabulary can express — see [Connecting a Backend](../development/connecting-a-backend.md).
+- The site hits a remote API that the default fetcher's `baseUrl` / `headers` / `envelope` / `method: POST` vocabulary can express — see [Data Sources](../development/data-sources.md).
 - Each component calls `fetch()` directly inside `useEffect` (bundled-style foundations).
 - A third-party SDK manages transport inside the component.
 
-See [Data Fetching](./data-fetching.md) for the author surface (`fetch:` / `data:` cascade) and [Connecting a Backend](../development/connecting-a-backend.md) for the recipes that don't need a custom transport.
+See [Data Fetching](./data-fetching.md) for the author surface (`fetch:` / `data:` cascade) and [Data Sources](../development/data-sources.md) for the recipes that don't need a custom transport.
 
 ---
 
