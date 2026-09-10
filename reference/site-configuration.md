@@ -455,6 +455,20 @@ i18n:
 
 ---
 
+## Site Services
+
+Four of the sections below — **Search**, **An App Backend**, **Form Submissions** and
+**Tracking** — are one mechanism, not four features. Each declares a **service**: a named slot
+for an address the site does not hardcode. A site declares one here, a host may offer one of its
+own, and the site's declaration wins. Where neither names an address, the site does not have that
+service and a component draws nothing.
+
+The keys are documented individually below. For the rule they share — the two tiers, what a
+host's silence means, and how a component asks — see
+[Site Services](./site-services.md).
+
+---
+
 ## Search
 
 Enable built-in full-text search. Search is **on by default** — you only need to write this to turn

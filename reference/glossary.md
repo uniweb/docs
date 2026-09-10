@@ -28,6 +28,9 @@ A Vite library project containing React components — the site's source code. L
 **Frontmatter**
 The YAML block between `---` markers at the top of a markdown file. Contains `type:` (which component renders this section), `theme:`, params, and other configuration. This is the binding mechanism between content and code.
 
+**Host**
+Who serves a site, and usually the provider of several of its services. Not a synonym for *provider*: a host serves the site, a provider supplies one service, and a site's form submissions can be provided by a third party its host has never heard of. A narrative term only — the framework never names a host in code, because a component that hardcodes one is welded to a single deployment. See [Site Services](./site-services).
+
 **Items**
 Repeating content groups within a single markdown file, created by headings after the main body text. Used for feature cards, FAQ entries, team members. Accessed via `content.items`. See [Content Structure](./content-structure).
 
@@ -43,8 +46,14 @@ Configurable options for a section type, defined in `meta.js` and set by content
 **Project**
 In co-located layouts, a subdirectory that groups its own foundation and site (e.g., `marketing/src/` + `marketing/site/`). Created with `uniweb add project <name>`. See [Project Structures](../development/project-structures).
 
+**Provider**
+Who or what supplies a service — often the host, sometimes a third party, sometimes the site itself. `search.provider` is the word scoped to one service, naming which provider answers search: `index` (a downloaded index, queried in the browser), `endpoint` (a server), or a foundation-supplied search transport. Distinct from the *service*, which is the slot it fills. See [Site Services](./site-services).
+
 **Section type**
 A React component in `src/sections/` that content authors can reference by name in frontmatter (`type: Hero`). Files and folders at the root of `src/sections/` are addressable by default. See [Creating Components](../development/creating-components).
+
+**Service**
+A named slot for an address the site does not hardcode — `search`, `submit`, `tracking`, `assistant`, `api`, `records`, or any name a foundation invents. Declared in `site.yml` or offered by the host, with the site's declaration winning. Presence is the switch: absent means the site does not have it, and a control for a service the site does not have is not drawn. See [Site Services](./site-services).
 
 **Semantic tokens**
 CSS variables (`--heading`, `--body`, `--section`, `--primary`, `--border`, etc.) that resolve differently per context. Components use these instead of hardcoded colors so they adapt to any theme automatically. See [Site Theming](./site-theming).
