@@ -656,11 +656,11 @@ if (!url) return null // this site has no assistant — render nothing, or degra
 To decide only *whether* to draw, a [service predicate](#service-predicates) is shorter —
 `isAssistantEnabled()`. Reach for `resolveService` when you need the address itself.
 
-Resolution is the same for every service: the site's own declaration
-(`assistant:` in `site.yml`), then what the host offers
-(`config.services.assistant` in the served payload), then neither. `source` is
-`'site'`, `'host'` or `null` — the thing to check when a host's value appears
-not to be taking effect.
+Resolution is the same for every service: what the host offers
+(`config.services.assistant` in the served payload), then the site's own
+declaration (`assistant:` in `site.yml`) for anything the host does not provide,
+then neither. `source` is `'host'`, `'site'` or `null` — which tier answered, and
+the thing to check when a value you set appears not to be taking effect.
 
 **`url` is the whole answer, and there is deliberately no explanatory string.**
 Absence is a rendering decision, not a message: no assistant endpoint → draw no

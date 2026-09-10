@@ -55,12 +55,14 @@ if (!url) return <p>Chat is unavailable</p>   // ⛔ invents a failure that isn'
 
 ## Who declares a service
 
-Two tiers, and the site wins:
+Two tiers — and where a host offers a service, the host wins:
 
-1. **The site**, authored — `search:`, `submit:`, `assistant:`, `tracking:` in `site.yml`. An
-   operator who names an endpoint means it, including on a host that offers one of its own.
-2. **The host**, served — `config.services.<name>` in the payload a host delivers. What the
-   deployment offers, which the site never had to know about.
+1. **The host**, served — `config.services.<name>` in the payload a host delivers. What the
+   deployment offers, which the site never had to know about. When a host offers a service, that
+   is the answer: nothing the site declares overrides it.
+2. **The site**, authored — `search:`, `submit:`, `assistant:`, `tracking:` in `site.yml`. Used for
+   any service the host does not provide — a form service or a search provider of your own — and,
+   on a static site where no host speaks, the whole answer.
 
 Either tier accepts a bare string or an object with an `endpoint` key:
 
@@ -94,7 +96,7 @@ effect.
 
 | `url` | `source` | means |
 |---|---|---|
-| an address | `'site'` | the site declared it |
+| an address | `'site'` | the site declared it, and no host offers it |
 | an address | `'host'` | the host offers it |
 | `null` | `'site'` | **the site switched this service off, and no host offers it** |
 | `null` | `'host'` | **a host is answering and does not offer this service** |

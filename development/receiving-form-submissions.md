@@ -54,8 +54,8 @@ config.services = {
 }
 ```
 
-Every service resolves the same way — your declaration, then the host's, then
-neither — through one function, so a foundation reads them alike:
+Every service resolves the same way — the host's offer, then your own declaration,
+then neither — through one function, so a foundation reads them alike:
 
 ```js
 import { resolveService } from '@uniweb/kit'

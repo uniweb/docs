@@ -459,10 +459,10 @@ i18n:
 
 Four of the sections below — **Search**, **Accounts**, **Form Submissions** and
 **Tracking** — are one mechanism, not four features. Each declares a **service**: a named slot
-for an address the site does not hardcode. A site declares one here, a host may offer one of its
-own, and the site's declaration wins. Where neither names an address, the site does not have that
-service and a component draws nothing. Any of them can be switched off with `false` or
-`{ enabled: false }` — though where a host offers one, the host's offer wins.
+for an address the site does not hardcode. A host may offer one, and where it does, its offer wins;
+a site declares one here for anything the host does not provide. Where neither names an address,
+the site does not have that service and a component draws nothing. Any of them can be switched
+off with `false` or `{ enabled: false }` — again, except where a host offers it.
 
 The keys are documented individually below. For the rule they share — the two tiers, what a
 host's silence means, and how a component asks — see
