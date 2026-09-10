@@ -448,7 +448,7 @@ function SearchBox({ website }) {
 | `isLoading` | a query is in flight |
 | `error` | the `Error` from a failed search, or `null` |
 | `lastQuery` | the text of the most recent query |
-| `isEnabled` | whether this site declares search at all |
+| `isEnabled` | whether search works on this site — the same answer as [`isSearchEnabled()`](#service-predicates) |
 | `query(text, options?)` | run a search (debounced); resolves with the results array |
 | `clear()` | drop results and reset |
 | `preload()` | warm the index ahead of first use — a no-op for providers with nothing to warm |
@@ -607,6 +607,40 @@ failure or a false success.
 
 ---
 
+### Service predicates
+
+One per service, no arguments. Call one **before rendering UI for that service**; `false` means
+draw nothing — not a disabled control, not an explanation.
+
+```jsx
+import { isSearchEnabled, isSubmitEnabled, isApiEnabled } from '@uniweb/kit'
+
+if (!isSearchEnabled()) return null
+```
+
+| predicate | true when |
+|---|---|
+| `isSearchEnabled()` | any provider answers search — a server, **or the prebuilt index** a static site ships |
+| `isSubmitEnabled()` | form submissions have somewhere to go |
+| `isApiEnabled()` | the site has an app backend — accounts, per-visitor data. Also exported by `@uniweb/api` |
+| `isAssistantEnabled()` | an assistant surface answers |
+| `isTrackingEnabled()` | analytics events have somewhere to go |
+
+Each is a synchronous read of the site's own configuration — nothing to await, nothing to retry.
+They resolve the active website themselves and delegate to
+[`website.isServiceEnabled(name)`](#website), which is also how you ask about a service kit ships
+no predicate for.
+
+⛔ **`isSearchEnabled()` is not "is there a search service."** Search is the one service with a
+local provider, so the predicate is true on a static site that carries an index and no server at
+all. Gating a search box on anything narrower hides it wherever search works without a host.
+
+The hooks that draw a feature return the same answer as a field — `useSearch().isEnabled`,
+`useFormSubmit().canSubmit` — so a component already using one needs nothing extra. See
+[Site Services](./site-services.md).
+
+---
+
 ### resolveService
 
 Where a named service lives for this site — search, form submission, an
@@ -618,6 +652,9 @@ import { resolveService } from '@uniweb/kit'
 const { url, source } = resolveService(website, 'assistant')
 if (!url) return null // this site has no assistant — render nothing, or degrade
 ```
+
+To decide only *whether* to draw, a [service predicate](#service-predicates) is shorter —
+`isAssistantEnabled()`. Reach for `resolveService` when you need the address itself.
 
 Resolution is the same for every service: the site's own declaration
 (`assistant:` in `site.yml`), then what the host offers
@@ -677,7 +714,7 @@ function Header({ block }) {
   }
 
   // Search
-  if (isSearchEnabled()) {
+  if (website.isServiceEnabled('search')) {
     // Show search UI
   }
 }
@@ -693,7 +730,8 @@ function Header({ block }) {
 | `getActiveLocale()` | string | Get current locale code |
 | `getLocaleUrl(code)` | string | Get URL for a locale |
 | `hasMultipleLocales()` | boolean | Check if multilingual |
-| `isSearchEnabled()` | boolean | ⚠️ Prefer the standalone `isSearchEnabled()` below — one predicate per service, no `website` needed |
+| `isSearchEnabled()` | boolean | Can this site be searched — by a server or the prebuilt index. In a component, prefer [`isSearchEnabled()`](#service-predicates) from kit |
+| `isServiceEnabled(name)` | boolean | Is there a provider for service `name`? The one implementation behind kit's [service predicates](#service-predicates); call it directly for a service kit ships no predicate for |
 | `isVersionedRoute(route)` | boolean | Check if route is versioned |
 | `getVersionScope(route)` | string | Get version scope for route |
 | `getVersionUrl(version, route)` | string | Compute versioned URL |
