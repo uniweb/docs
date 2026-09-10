@@ -84,30 +84,13 @@ Where a host offers the service, **the host's offer wins** — a hosted service 
 your host, where it is provided. A site's `false` decides wherever no host offers it, which on a
 static site is always.
 
-An absolute URL (`https://…`, `//host/…`) is passed through — a service on another origin is not
-the site's to relocate. A root-relative (`/forms`) or bare-relative (`_search`) address is joined
-to the site's base path.
+**A host's silence is an answer.** A host that publishes a services block is stating what it
+offers, so a name it leaves out is declined, exactly as if it had named it with no address — which
+is why a hosted site does not fall back to a search index its host never built. A declaration of
+the site's own still answers there.
 
-### What it returns, and why the last two differ
-
-`resolveService(website, name)` returns `{ url, source }`. `url` is the whole answer for acting;
-`source` says which tier answered, and is worth reading when a host's value appears not to take
-effect.
-
-| `url` | `source` | means |
-|---|---|---|
-| an address | `'site'` | the site declared it, and no host offers it |
-| an address | `'host'` | the host offers it |
-| `null` | `'site'` | **the site switched this service off, and no host offers it** |
-| `null` | `'host'` | **a host is answering and does not offer this service** |
-| `null` | `null` | nobody declared anything — no host is speaking |
-
-The last two both mean "no address", and a caller that only reads `url` treats them the same —
-which is correct for almost every service. They differ for a caller that has a fallback of its
-own, and search is the one that does: a host that publishes a services block is stating what it
-offers, so a name *absent* from that block carries the same answer as a name present with no
-address. Without that rule, "this host offers analytics and not search" and "there is no host at
-all" would be the same value, and a site would fall back to an index its host never built.
+What `resolveService` returns in each of these cases, and how an address is joined to the site's
+base path, is in the [Kit Reference](./kit-reference.md#resolveservice).
 
 ---
 
@@ -148,12 +131,13 @@ point — a foundation cannot tell, and never needs to. See
 
 ## Reading one
 
-**One predicate per service, no arguments.** Call it before you render UI for that service:
+**One predicate per service, no arguments.** Call it before you render UI for that service, and
+when it answers `false`, draw nothing:
 
 ```jsx
-import { isSearchEnabled, isSubmitEnabled, isApiEnabled } from '@uniweb/kit'
+import { isSearchEnabled } from '@uniweb/kit'
 
-if (!isSearchEnabled()) return null      // draw nothing
+if (!isSearchEnabled()) return null
 ```
 
 | you are drawing | ask |
@@ -164,12 +148,6 @@ if (!isSearchEnabled()) return null      // draw nothing
 | an assistant surface | `isAssistantEnabled()` |
 | anything that reports events | `isTrackingEnabled()` |
 
-Each answers the same question — **would rendering UI for this service produce something that
-works?** — and `false` always means the same thing: draw nothing.
-
-The hooks that draw a feature also hand you the same answer as a field (`useSearch().isEnabled`,
-`useFormSubmit().canSubmit`), so a component already using one needs nothing extra.
-
 For a service the framework ships no client for, ask the site directly:
 `useWebsite().website.isServiceEnabled('booking')`.
 
@@ -177,12 +155,8 @@ For a service the framework ships no client for, ask the site directly:
 index that needs no address at all. It is not "is there a search service": gating a search box on
 that would hide it on every static site.
 
-Every one of these is a **synchronous read of the site's own configuration**, not a network
-probe. There is nothing to await and nothing to retry: the payload states what is on and what is
-off, and the renderer's job is to not draw what cannot be used.
-
-`uniweb doctor` warns when a component calls one of these hooks and never reads its gate, because
-a control drawn for a service the site does not have is permanently dead.
+What each predicate reads, and the hook fields that carry the same answer, are in the
+[Kit Reference](./kit-reference.md#service-predicates).
 
 ---
 

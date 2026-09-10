@@ -636,8 +636,9 @@ local provider, so the predicate is true on a static site that carries an index 
 all. Gating a search box on anything narrower hides it wherever search works without a host.
 
 The hooks that draw a feature return the same answer as a field — `useSearch().isEnabled`,
-`useFormSubmit().canSubmit` — so a component already using one needs nothing extra. See
-[Site Services](./site-services.md).
+`useFormSubmit().canSubmit` — so a component already using one needs nothing extra. `uniweb doctor`
+warns when a component calls one of those hooks and never reads its gate, because a control drawn
+for a service the site does not have is permanently dead. See [Site Services](./site-services.md).
 
 ---
 
@@ -659,8 +660,24 @@ To decide only *whether* to draw, a [service predicate](#service-predicates) is 
 Resolution is the same for every service: what the host offers
 (`config.services.assistant` in the served payload), then the site's own
 declaration (`assistant:` in `site.yml`) for anything the host does not provide,
-then neither. `source` is `'host'`, `'site'` or `null` — which tier answered, and
-the thing to check when a value you set appears not to be taking effect.
+then neither. `source` says which tier answered — the thing to check when a value
+you set appears not to be taking effect:
+
+| `url` | `source` | means |
+|---|---|---|
+| an address | `'host'` | the host offers it |
+| an address | `'site'` | the site declared it, and no host offers it |
+| `null` | `'site'` | the site switched it off — `false` or `{ enabled: false }` — and no host offers it |
+| `null` | `'host'` | a host is answering and does not offer it |
+| `null` | `null` | nobody declared anything — no host is speaking |
+
+The last two both mean "no address", and a caller that only reads `url` treats them
+alike — correct for almost every service. They differ for a caller with a fallback
+of its own, and search is the one that has one: a host that publishes a services
+block is stating what it offers, so a name *absent* from that block is declined
+exactly as a name present with no address. Without that rule, "this host offers
+analytics and not search" and "there is no host at all" would be the same value,
+and a site would fall back to an index its host never built.
 
 **`url` is the whole answer, and there is deliberately no explanatory string.**
 Absence is a rendering decision, not a message: no assistant endpoint → draw no
@@ -671,10 +688,10 @@ one language, bypassing the site's own localization. Text a visitor should read
 is *site content* — authored and localized — never a string a service layer
 supplies.
 
-A declaration is a string or `{ endpoint }`. A host that declines names the
-service with no address, which resolves to `{ url: null, source: 'host' }` — the
-host answered, and that is all a caller can act on. Bare endpoints (`_search`)
-are rooted, absolute URLs pass through, and the base path is applied once.
+A declaration is a string or `{ endpoint }`. Absolute URLs (`https://…`,
+`//host/…`) pass through — a service on another origin is not the site's to
+relocate — and a root-relative (`/forms`) or bare (`_search`) endpoint is joined
+to the site's base path, once.
 
 **The name is open.** The framework ships clients for the services it implements
 and resolution for anything, so a foundation can define its own and a host can
