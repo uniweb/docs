@@ -204,8 +204,8 @@ a slice**, not to build a navigation tree, and most sites need none:
     - article/2019-*.md         # path: "archive"
 ```
 
-Each record carries the `path` of the folder it sits in, and a query slices on it
-with `where: { path: { under: 'archive' } }`. The organization is yours to choose:
+Each record carries the `path` of the folder it sits in, and a query reads one
+branch with `scope: archive`. The organization is yours to choose:
 it does **not** mirror the `entities/` layout, which names schemas and nothing
 else.
 
@@ -221,8 +221,9 @@ Each `.md` file in `entities/` becomes a JSON object with the following fields. 
 
 | Field | Source | Notes |
 |-------|--------|-------|
-| `slug` | Filename | `getting-started.md` → `"getting-started"` |
-| `path` | `records.yml` | The folder the record is PLACED in — `""` at the root, `"archive"` inside a `folder: archive`. Query it with [`under`](../authoring/predicates.md) |
+| `slug` | Filename | `getting-started.md` → `"getting-started"`; a frontmatter `slug:` overrides it |
+| `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
+| `path` | `records.yml` | The folder the record is PLACED in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](../authoring/predicates.md#a-folder-branch-is-scope-not-a-predicate) |
 | `title` | Frontmatter | Typically required |
 | `date` | Frontmatter | ISO date string |
 | `author` | Frontmatter | String or object |

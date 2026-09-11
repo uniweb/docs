@@ -13,7 +13,7 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Request (from EntityStore or build prerender)                        │
-│   { schema, path?, url?, transform?, method?, body?, dynamicContext? }│
+│   { as, path?, url?, transform?, method?, body?, dynamicContext? }    │
 └──────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
@@ -26,7 +26,7 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Site-selected named transport                                        │
-│   site.yml fetcher.transports[request.schema]                        │
+│   site.yml fetcher.transports[request.as]                            │
 │     → registry = primary foundation.transports ∪ extension transports│
 │   (primary wins on collision; bad extensions skipped with warning)   │
 └──────────────────────────────────────────────────────────────────────┘
@@ -89,7 +89,7 @@ Normalized from the author's `fetch:` / `data:` config. Carried fields:
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `schema` | yes | Key under `content.data` the result will be stored at. |
+| `as` | yes | Key under `content.data` the result will be stored at. |
 | `path` | either this | Local path under `public/`. Mutually exclusive with `url`. |
 | `url` | or this | Remote URL. Mutually exclusive with `path`. |
 | `transform` | no | Dot-path to extract from the response. Per-fetch, wins over `envelope`. |
@@ -97,8 +97,8 @@ Normalized from the author's `fetch:` / `data:` config. Carried fields:
 | `method` | no | `GET` (default) or `POST`. Unsupported values warn and fall back to GET. |
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
 | `envelope` | no | Per-request unwrap paths for this one response (usually set by object-form `detail:`). |
-| `where` / `sort` / `limit` | no | The author's query (predicate, order, cap). The default fetcher evaluates them client-side over what arrived; a host that answers queries evaluates them at the source; a transport decides for itself. |
-| `dynamicContext` | no | Present on template-page item fetches: `{ paramName, paramValue, schema }`. |
+| `scope` / `where` / `sort` / `limit` | no | The author's query (folder branch, predicate, order, cap). The default fetcher evaluates them client-side over what arrived — `scope` over each record's `path` — and each combination is its own cache entry; a host that answers queries evaluates them at the source; a transport decides for itself. |
+| `dynamicContext` | no | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
 ### Context
 
@@ -131,7 +131,7 @@ Throwing works but isn't idiomatic. The runtime catches and surfaces `{ data: []
 
 When `website.fetcher.dispatch(request, ctx)` is called:
 
-1. **Select fetcher.** Runtime `transport` override wins if set; otherwise look up `ctx.website.config.fetcher.transports[schema]` → `.transports.default` in the named-transport registry; otherwise the framework default fetcher. Record: a specific fetcher instance.
+1. **Select fetcher.** Runtime `transport` override wins if set; otherwise look up `ctx.website.config.fetcher.transports[as]` (the binding key) → `.transports.default` in the named-transport registry; otherwise the framework default fetcher. Record: a specific fetcher instance.
 2. **Derive cache key.** Call `fetcher.cacheKey(request)` if defined, else the framework default.
 3. **Cache hit?** `dataStore.get(key)` — return cached `{ data, meta }` synchronously-wrapped.
 4. **In-flight?** Attach this request's signal to the existing promise's abort set; await the same promise.
@@ -155,17 +155,24 @@ Fields that contribute:
 JSON.stringify({
   path,        // one of path or url — what resource
   url,
-  schema,      // which content.data key
+  as,          // which content.data key
   transform,   // per-fetch unwrap path
   method,      // only when non-GET; POST shares URLs with GET
   body,        // only on POST; two POSTs to the same URL with different
                // bodies are different queries
+  scope,       // the view taken of what came back: evaluated client-side,
+  where,       // so two views of one file are two entries — each cut from
+  sort,        // one read of the file when they are asked together
+  limit,
 })
 ```
 
+A request with no address — a question to a host that answers queries — is identified by the
+question itself instead: `query`, `schema`, `scope`, `where`, `match` (the one record a
+parametric page asks for), `sort`, `limit`, `whole`, plus `as`, `transform` and `locale`.
+
 Fields that do **not** contribute:
 
-- `limit`, `sort`, `where` — applied client-side post-fetch (fallback case); must not split the cache.
 - `detail` — the detail fetch produces a different URL or body, which already splits the key.
 - `dynamicContext` — carried on the request for resolution; the cache key's `body` already contains the substituted values.
 

@@ -65,37 +65,41 @@ build a site's core queries on:
 
 | Operator | Meaning | Example | Why it is here |
 |---|---|---|---|
-| `under` | Path containment, at segment boundaries | `{ path: { under: 'guides' } }` | selects a folder branch of the records. A backend that answers queries takes the branch as the query's *scope* instead |
 | `like` | Glob match (`*` any run, `?` one char) | `{ name: { like: 'Dr. *' } }` | text matching a reader types belongs in **search**, not in a predicate; see [Why not `like`](#why-not-like-with-a-wildcard) |
 
 Dotted field names (`tenure.start`) descend into a nested record and are evaluated on the
 compiled records; whether a backend can evaluate one depends on that backend.
 
-### `under` — selecting a branch of a path
+### A folder branch is `scope:`, not a predicate
 
-Some fields hold a slash-separated location: where a record sits inside the
-site's folder, a category path, a docs section. `under` matches that value **and
-everything below it**, and it respects segment boundaries — so a sibling that
-merely starts with the same letters is not swept in:
+Where a record sits inside the site's folder is its **placement** — `path` on the record,
+`""` at the root, `2024/spring` inside two folders. To read one branch of that folder,
+give the query a `scope:`. It holds the named folder **and everything below it**, and it
+respects segment boundaries, so a sibling that merely starts with the same letters is
+not swept in:
 
 ```yaml
-where:
-  path: { under: '2024' }     # matches '2024' and '2024/spring'
-                              # does NOT match '2024b'
+queries:
+  spring:
+    schema: '@/post'
+    scope: '2024'          # 2024 and 2024/spring — never 2024b
 ```
 
-Plain equality selects a single level, and `under` selects that level plus its
-descendants — so the pair covers both the "just here" and "everything below"
-cases with no extra setting:
+`scope:` works the same wherever the records come from: on a static site the compiled
+records are filtered by it, and a backend that answers queries takes it as the query's own
+scope. A page's `fetch:` may carry one too, and it wins over the query's. On a parametric
+page, `scope: :dir` reads the branch the URL names (see
+[Dynamic Routes](../reference/dynamic-routes.md#multi-segment-routes--path)).
+
+Plain equality on `path` still selects a single level:
 
 ```yaml
 where: { path: '2024' }            # only records directly at 2024
-where: { path: { under: '2024' } } # 2024 and everything nested inside it
 where: { path: '' }                # only records at the top level
 ```
 
-An empty value is the root and contains everything, so `{ under: '' }` matches
-every record — occasionally useful when the value comes from a variable.
+An earlier spelling, `where: { path: { under: '2024' } }`, is retired: the build refuses it
+and names `scope:` in its message.
 
 #### Why not `like` with a wildcard?
 
@@ -109,7 +113,7 @@ path field. Against records at `''`, `2024`, `2024/spring`, `2024/spring/may`,
 | `{ like: '2024/*' }` | `2024/spring`, `2024/spring/may` — misses `2024` itself |
 | `{ like: '2024*' }` | those two, `2024` — **and `2024b`**, a different branch |
 | `{ like: '2024/**/*' }` | **only** `2024/spring/may` — two levels or deeper |
-| `{ under: '2024' }` | `2024`, `2024/spring`, `2024/spring/may` |
+| `scope: '2024'` | `2024`, `2024/spring`, `2024/spring/may` |
 
 The one an author usually wants — a branch *and* everything inside it — is not a
 single glob at all. With `like` alone you would write:
@@ -121,9 +125,9 @@ where:
     - path: { like: '2024/*' }
 ```
 
-`under` says the same thing in one clause, and it stops at segment boundaries so
+`scope:` says the same thing in one field, and it stops at segment boundaries so
 a neighbour like `2024b` never sneaks in. **Use `like` for text — names, titles,
-codes. Use `under` for paths.**
+codes. Use `scope:` for a branch of the folder.**
 
 Strings use single or double quotes; numbers and booleans are bare. `null` matches missing or null fields.
 

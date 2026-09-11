@@ -129,12 +129,12 @@ Every record carries a `path` naming the folder it sits in, and they all stay in
 the same pool — a query over `@/news` still reaches all of them. Folders do not
 split anything and do not change a record's URL.
 
-To ask for one branch, query `path`:
+To ask for one branch, give the query a `scope:`:
 
 ```yaml
 fetch:
   query: news
-  where: { path: { under: '2024' } }   # 2024 and everything inside it
+  scope: '2024'                        # 2024 and everything inside it
 ```
 
 ```yaml
@@ -143,7 +143,7 @@ fetch:
   where: { path: '2024' }              # only records directly in 2024
 ```
 
-See [Predicates](./predicates.md) for `under` and the rest of the query language.
+See [Predicates](./predicates.md) for `scope:` and the rest of the query language.
 
 **Three things to know.**
 
@@ -319,7 +319,9 @@ recent:
 | Only published (skip drafts) | `{ published: { ne: false } }` |
 | Tagged "featured" | `{ tags: featured }` |
 | From 2025 onward | `{ date: { gte: '2025-01-01' } }` |
-| Inside one folder | `{ path: { under: 'archive' } }` |
+
+To read one folder of records and everything inside it, the query takes a
+`scope: archive` beside its `where:`, not a predicate.
 
 See [Predicates](./predicates.md) for the full operator reference.
 

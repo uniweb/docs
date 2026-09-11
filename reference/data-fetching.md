@@ -468,7 +468,11 @@ Operators (nested object form):
 | `nin` | Value is not in the listed array |
 | `like` | Glob match (`*` any run, `?` one char) |
 | `exists` | Field is present (truthy bool) |
-| `under` | Path containment at segment boundaries — `{ path: { under: '2024' } }` matches `2024` and `2024/spring`, not `2024b` |
+
+A branch of the site's folder is not an operator: it is the query's `scope:` — `scope: '2024'`
+holds records placed in `2024` and `2024/spring`, not `2024b` — on a named query or on a
+page's `fetch:`, where it wins over the query's. (`where: { path: { under: … } }` is retired;
+the build refuses it and names `scope:`.)
 
 Composition keys (work at any nesting level):
 
@@ -556,7 +560,7 @@ queries:
 
 The `{slug}` placeholder substitutes from the dynamic-route param (entity-store auto-detail) or from `record.slug` (`useEntityDetail` hook). File-based collections leave `detailUrl:` null and use the per-record file default.
 
-**Convention:** per-record sources are keyed by `item.slug`. The auto-detail flow on dynamic-route pages assumes the route param is `[slug]/`. Routes using other param names need an explicit author-written `detail:` value.
+**Convention:** per-record files are named by the record's `slug`. On a parametric page the matched record's own slug fills `{slug}`, whatever the route's param is called, so an `[id]` page reads the same file a `[slug]` page does.
 
 ---
 

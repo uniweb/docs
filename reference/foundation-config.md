@@ -560,18 +560,19 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 }
 ```
 
-**Request** — the normalized fetch config, with an extra `dynamicContext` on template-page item requests:
+**Request** — the normalized fetch config, with an extra `dynamicContext` on a parametric page's record request:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `schema` | string | Required. The key under `content.data` the result will be stored at. |
+| `as` | string | Required. The key under `content.data` the result will be stored at. |
 | `path` | string | Local path (under `public/`). Mutually exclusive with `url`. |
 | `url` | string | Remote URL. Mutually exclusive with `path`. |
 | `transform` | string | Dot-path into the response (e.g. `data.items`). |
-| `detail` | string | `'rest'` / `'query'` / custom pattern for template-page item fetches. |
+| `detail` | string | `'rest'` / `'query'` / custom pattern for a parametric page's record fetch. |
+| `scope` | string | The folder branch the query reads; the records' `path` must be at or below it. |
 | `where` | object | Author-provided predicate (where-object). |
 | `sort` / `limit` | any | Order and cap hints the author set. |
-| `dynamicContext` | object | Present for template-page item fetches: `{ paramName, paramValue, schema }`. |
+| `dynamicContext` | object | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
 **Context** — the framework singletons, handed to the fetcher directly (no `globalThis` reads needed):
 

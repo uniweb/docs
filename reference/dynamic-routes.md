@@ -1,12 +1,15 @@
 # Dynamic Routes
 
-One page template, many pages — one per record. Blogs, product catalogs, team
-directories, anything where each record needs its own URL.
+One page, many URLs — one per record. Blogs, product catalogs, team directories,
+anything where each record needs its own URL. Uniweb calls these **parametric
+pages** (other frameworks call them dynamic routes): a page whose URL carries a
+parameter, and whose data that parameter narrows to one record.
 
 ## Overview
 
-A folder named `[param]` is a route template. It expands into one page per record
-in the data its **parent** declares.
+A folder named `[param]` is a parametric page. It expands into one page per record
+of its **route query** — the query its URL names one record of, normally the one
+its **parent** declares ([which query the URL names](#which-query-the-url-names)).
 
 ```text
 pages/
@@ -15,7 +18,7 @@ pages/
     ├── index/                # the list page — promoted to /articles
     │   ├── page.yml
     │   └── 1-articles.md
-    └── [slug]/               # the template page → /articles/getting-started, …
+    └── [slug]/               # the parametric page → /articles/getting-started, …
         ├── 1-article.md
         └── 2-related.md
 ```
@@ -29,8 +32,8 @@ pages/
 /articles/best-practices      # one article  (slug: "best-practices")
 ```
 
-The template page declares no query of its own. It inherits the parent's, and the
-runtime narrows it to the one record the URL names.
+The parametric page declares no query of its own here. It inherits the parent's,
+and the runtime narrows it to the one record the URL names.
 
 ---
 
@@ -106,7 +109,7 @@ data: articles
 
 `data: articles` is shorthand for `fetch: { query: articles }`.
 
-### 4. Create the list and template folders
+### 4. Create the list and parametric folders
 
 ```yaml
 # pages/articles/index/page.yml
@@ -177,7 +180,7 @@ export default function Article({ content, block }) {
     return <div className="animate-pulse">Loading...</div>
   }
 
-  // Same key as the list page. On a template page it holds exactly one record.
+  // Same key as the list page. On the parametric page it holds exactly one record.
   const article = content.data.articles?.[0]
 
   if (!article) {
@@ -203,7 +206,7 @@ export default function Article({ content, block }) {
 
 ## How It Works
 
-### The template page inherits, it does not re-declare
+### The parametric page inherits, it does not re-declare
 
 A fetch declaration cascades down four levels — section → page → parent page →
 site — and the most specific declaration wins per key. The `[slug]` folder sits
@@ -217,41 +220,92 @@ The record arrives under the **same key on both pages**. Only the length differs
 | page | `content.data.articles` |
 |---|---|
 | list | `[ {…}, {…}, {…} ]` — every record |
-| template | `[ {…} ]` — the one the URL names |
-| template, no match | `[]` |
+| parametric | `[ {…} ]` — the one the URL names |
+| parametric, no match | `[]` |
 
 There is no singular key and no name transform. A detail section reads
 `content.data.articles[0]`; the runtime never collapses the array to an object,
 because reshaping is the foundation's job.
 
-### `:param` indexes exactly one query
+### Which query the URL names
 
-The param is matched against the **first** query the parent declares. A page that
-fetches two things still has only one that `:slug` can index — a route pattern
-names one variable, and "which record set does `:slug` index" has no second
-answer. The other keys cascade to the template page unchanged.
+A URL names one record of one query — the page's **route query**. It is chosen at
+the page level:
 
-### The param name is a record field
+1. the query the parametric page declares itself, in its own `page.yml`; otherwise
+2. its parent page's; otherwise
+3. the site's, in `site.yml`;
+4. and if none of those declares one, the query the page's own sections all
+   declare — when they declare the same one.
 
-`[slug]` means two things at once: the URL placeholder (`/articles/:slug`) **and**
-the record field the URL segment is matched against.
+The first query of the chosen level wins: a parent that fetches two things still
+has only one the URL can name, and the other keys cascade to the parametric page
+unchanged.
 
-| folder | param | URL pattern | matched against |
-|---|---|---|---|
-| `[slug]` | `slug` | `/blog/:slug` | `item.slug` |
-| `[id]` | `id` | `/products/:id` | `item.id` |
-| `[username]` | `username` | `/users/:username` | `item.username` |
+Every section the route query reaches — through the page, the parent, the site, or
+its own declaration of that same query — gets the one record. A section that
+declares a **different** query of its own gets that query as declared, so a
+sidebar of upcoming events on a member's page is not narrowed by the member's
+handle. A query two or more levels up reaches none of the page's sections, and is
+never its route query either.
 
-So the field must exist on every record and identify one uniquely. Name a field
-that is not there and nothing matches — the page reports not found. A non-unique
-field silently resolves to the first match.
+### What the URL segment is matched against
 
-### Static siblings win over the template
+The folder's name says what the segment matches:
 
-Under `/blog`, a hand-authored `/blog/about` beats the `[slug]` catch-all, which
+| folder | URL pattern | matched against |
+|---|---|---|
+| `[slug]` | `/blog/:slug` | the record's handle, `$name` — its `slug` when it has no `$name` |
+| `[...path]` | `/blog/:path*` | the handle, by the last segment ([below](#multi-segment-routes--path)) |
+| `[uuid]` | `/items/:uuid` | the record's identity, `$uuid` — a plain `uuid` field when it has none |
+| `[id]` | `/products/:id` | the record's own `id` field |
+| `[username]` | `/users/:username` | the record's own `username` field |
+
+Records compiled from `entities/` carry `$name`, the same value as their `slug`:
+the filename, unless frontmatter sets `slug:`. A host that answers queries serves
+`$name` too, so a `[slug]` page matches the same way on every site. Values compare
+as strings — `/products/42` matches a record whose `id` is the number `42`.
+
+The field must exist on every record and identify one. Name a field that is not
+there and nothing matches — the page reports not found. When several records
+match, the first is used; the build warns when two records of one query share a
+slug.
+
+### Static siblings win over the parametric page
+
+Under `/blog`, a hand-authored `/blog/about` beats the `[slug]` page, which
 matches only the paths no static page claims. This holds in the browser and in the
 static build alike. The one caveat: if a *record's* slug is also `about`, that
 record's page will not exist at that URL — the static page has it.
+
+### Pages inside a parametric page
+
+A folder inside a `[name]` folder is a page too, and a parametric one:
+`pages/members/[slug]/cv/` is `/members/:slug/cv`. It binds its ancestor's
+parameter, and its route query follows the same rule — its own query, else its
+parent's — so it reads the record when the page above it declares the query:
+
+```text
+pages/members/
+├── page.yml              # data: members — the list page's query
+├── list.md
+└── [slug]/
+    ├── page.yml          # data: members — declared again, so cv/ inherits it
+    ├── 1-profile.md      # /members/alice
+    └── cv/
+        └── 1-cv.md       # /members/alice/cv — Alice's record again
+```
+
+A query two levels up does not reach `cv/`, which is why `[slug]/page.yml` names
+the query itself. Both pages ask the same saved query, so it is fetched once.
+
+### Folder names the build refuses
+
+- `[dir]` and `[path]` — `:dir` and `:path` are route variables every parametric
+  page already has (below). `[path]` is usually a mistyped `[...path]`.
+- Any folder inside a `[...path]` folder — the catch-all takes the rest of the URL,
+  so a page below it could never be reached. A folder that holds something other
+  than a page is named with a leading `_`, which the build skips.
 
 ---
 
@@ -359,7 +413,7 @@ runtime obtained the record, never how you read it.
 
 ## Related items
 
-A section on a template page can receive the set **minus the current record**.
+A section on a parametric page can receive the set **minus the current record**.
 Refine the inherited query rather than declaring a new source:
 
 ```markdown
@@ -395,7 +449,7 @@ export default function RelatedArticles({ content, block }) {
 }
 ```
 
-This is the shape of a typical template page: one section rendering the whole
+This is the shape of a typical parametric page: one section rendering the whole
 record, another showing a few of its siblings.
 
 ```text
@@ -445,8 +499,8 @@ from `item.title` on a hit. No `useEffect`, no `document.title`.
 
 ## Static generation
 
-Dynamic routes are fully static-generatable. At build time each template expands
-into one concrete page per record, each rendered to HTML:
+Parametric pages are fully static-generatable. At build time each one expands
+into one concrete page per record of its route query, each rendered to HTML:
 
 ```text
 dist/
@@ -457,9 +511,10 @@ dist/
     └── best-practices/index.html
 ```
 
-No server needed. If the parent's fetch is `prerender: false`, or its source is a
-remote URL not read at build time, the template is kept as a template and matched
-in the browser instead.
+No server needed. If the route query is `prerender: false`, or its source is a
+remote URL not read at build time, the parametric page is kept as a pattern and
+matched in the browser instead — and so is a route with more than one parameter
+(`/orgs/:org/members/:slug`), which one query's records cannot fill.
 
 ---
 
@@ -479,7 +534,8 @@ pages/blog/
     └── 1-post.md
 ```
 
-The capture is split into three standard variables a query can reference:
+The capture is split into three standard variables a query can reference — the
+same three every parametric page has:
 
 ```text
 /blog/rust/2025/my-post   →   :path = rust/2025/my-post   the whole capture
@@ -487,10 +543,11 @@ The capture is split into three standard variables a query can reference:
                               :slug = my-post             the last segment — the record's handle
 ```
 
-`:slug` means the same thing under both route kinds — under `[slug]` it is the whole
-segment — and `:dir` is empty for a single segment, so a query written for one
-behaves the same under the other. **The record is delivered by `slug`**, exactly as
-under `[slug]`: a page under `[...path]` still reads `content.data.posts[0]`.
+`:slug` means the same thing under both route kinds — under `[slug]` (or any
+`[name]`) it is the whole segment, `:path` equals it and `:dir` is empty — so a
+query written for one behaves the same under the other. **The record is delivered
+by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
+`content.data.posts[0]`.
 
 **Where a record's URL comes from.** Its **placement** is the directory: the folder
 `records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record).
@@ -512,10 +569,20 @@ posts:
 
 **Unbound means the clause drops.** On the list page there is no `:dir`, so a
 `scope: :dir` or a `where: { tag: :dir }` simply vanishes and the whole set is
-delivered; on `/blog/rust/my-post` it binds to `rust`. That is what lets one query
-serve both pages — and it means a *misspelled* variable produces a list page rather
-than an error, so check the spelling: only `:path`, `:dir` and `:slug` are variables.
-A variable fills a value, never a key, an operator or `schema:`.
+delivered; on `/blog/rust/my-post` it binds to `rust`. An **empty** variable drops
+its clause too: on `/blog/my-post` there is no directory, and `scope: :dir` reads the
+whole folder. That is what lets one query serve both pages — and it means a
+*misspelled* variable produces a list page rather than an error, so check the
+spelling: only `:path`, `:dir` and `:slug` are variables. A variable fills a value,
+never a key, an operator or `schema:`.
+
+This works the same on a static site and on a host that answers queries: the build
+compiles the query's file without the clauses the route binds, and each page
+applies them for its own URL.
+
+**Without `scope: :dir`, the directory is decoration.** `/blog/anything/my-post`
+finds `my-post` wherever it is placed, and when two folders each hold a `my-post`,
+the first one is used. Bind `:dir` to `scope` when the branch should decide which.
 
 ---
 
@@ -563,9 +630,15 @@ A query must be declared in `site.yml::queries` or `queries.yml`. Entities on di
 are not reachable until a query names their Model.
 
 **Records missing from the output.**
-Every record needs the field the folder names. `[slug]` requires `slug` on each
-record (and so does `[...path]`); records without it get no page, and the build
-says how many — *"3 of 5 records have no "slug""* — once per template.
+Every record needs the field the folder names. `[slug]` and `[...path]` need a
+handle — `$name`, or `slug` — on each record; records without it get no page, and
+the build says how many — *"3 of 5 records have no "slug""* — once per page.
+
+**Every record shows on a parametric page.**
+The page has no route query: neither it, its parent nor the site declares a query,
+and its sections declare different ones. Declare the query in the parent's
+`page.yml` (`data: articles`) — the documented shape — or give all the sections the
+same one.
 
 **A section rendered nothing and the console is clean.**
 Read `block.dataError` before reading `content.data`: a fetch that failed leaves
@@ -573,10 +646,11 @@ its key absent and puts the message there. It is never delivered as `[]`, which
 means "no records" and is an answer.
 
 **The section shows "not found".**
-The URL segment matched no record's param field. Usually the right signal — show a
-proper not-found state. If it is wrong, check that the folder-level query is the one
-you meant and that the field exists on every record. Remember the record is at
-`content.data.articles[0]`, not under a singular key.
+The URL segment matched no record. Usually the right signal — show a proper
+not-found state. If it is wrong, check which query is the page's route query (its
+own, its parent's, or the site's) and that the field the folder names exists on
+every record. Remember the record is at `content.data.articles[0]`, not under a
+singular key.
 
 **A card's link is wrong or doubled (`/blog//my-post`).**
 Something is rebuilding the href. Read `item.route`.
