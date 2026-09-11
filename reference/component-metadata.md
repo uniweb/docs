@@ -360,7 +360,7 @@ background:
 
 The `data` field declares the **schema** for each `content.data` key your component renders. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
 
-Data delivery is **default-on**. A block on a page with a `data:` or `fetch:` declaration automatically receives `content.data.{key}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item.
+Data delivery is **default-on**. A block on a page with a `query:` or `fetch:` declaration automatically receives `content.data.{key}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item.
 
 ```javascript
 data: {

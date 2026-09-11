@@ -10,7 +10,7 @@ This guide covers how data flows from a fetch config to your components, how tem
 
 ## The model in one paragraph
 
-A page either has data or it doesn't. A page with a `fetch:` or `data:` declaration is a **dynamic page** — every section on it receives that data in `content.data.{schema}`. A child page of a dynamic page with a `[param]/` folder name is a **template page** — it fills in from the URL. Both cases work without any component-side opt-in. Components read what they need from `content.data` and ignore the rest.
+A page either has data or it doesn't. A page with a `fetch:` or `query:` declaration is a **dynamic page** — every section on it receives that data in `content.data.{schema}`. A child page of a dynamic page with a `[param]/` folder name is a **template page** — it fills in from the URL. Both cases work without any component-side opt-in. Components read what they need from `content.data` and ignore the rest.
 
 ---
 
@@ -21,7 +21,7 @@ A page declares what data it needs in `page.yml`:
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles
+query: articles
 ```
 
 That single line does three things:
@@ -75,7 +75,7 @@ Here's the canonical blog setup:
 ```text
 pages/
 └── blog/
-    ├── page.yml              # data: articles  ← dynamic page
+    ├── page.yml              # query: articles ← dynamic page
     ├── list.md               # type: ArticleList
     └── [slug]/
         ├── page.yml          # (nothing about data)
@@ -199,7 +199,7 @@ Shorthands for common cases:
 
 ```yaml
 # Collection reference — fetches /data/articles.json, schema inferred
-data: articles
+query: articles
 
 # Local file path — schema inferred from filename
 fetch: /data/team.json
@@ -322,7 +322,7 @@ That's one point on a spectrum. The spectrum exists because foundations can sit 
 
 Positions 1 and 2 are the common ones. A portable foundation that needs auth, a custom base URL, or a specific response envelope writes a fetcher — declared on `main.js` — and keeps the author-visible surface unchanged.
 
-**The author-visible surface does not change.** Pages still write `data:` / `fetch:` in `page.yml`, components still read `content.data.{schema}`. A site can't tell whether its data came from the default URL fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
+**The author-visible surface does not change.** Pages still write `query:` / `fetch:` in `page.yml`, components still read `content.data.{schema}`. A site can't tell whether its data came from the default URL fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
 
 ### Declaring a transport
 

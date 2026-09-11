@@ -104,10 +104,10 @@ id: b7788da4          # stable id — lets other pages point at this one
 title: Articles
 
 # The query cascades to every page under this folder, including [slug]/
-data: articles
+query: articles
 ```
 
-`data: articles` is shorthand for `fetch: { query: articles }`.
+`query: articles` is shorthand for `fetch: { query: articles }`.
 
 ### 4. Create the list and parametric folders
 
@@ -210,7 +210,7 @@ export default function Article({ content, block }) {
 
 A fetch declaration cascades down four levels — section → page → parent page →
 site — and the most specific declaration wins per key. The `[slug]` folder sits
-one level below `articles/`, so the parent's `data: articles` reaches it by the
+one level below `articles/`, so the parent's `query: articles` reaches it by the
 same walk that serves the list page. Nothing is fetched twice.
 
 ### One key, two array lengths
@@ -287,10 +287,10 @@ parent's — so it reads the record when the page above it declares the query:
 
 ```text
 pages/members/
-├── page.yml              # data: members — the list page's query
+├── page.yml              # query: members — the list page's query
 ├── list.md
 └── [slug]/
-    ├── page.yml          # data: members — declared again, so cv/ inherits it
+    ├── page.yml          # query: members — declared again, so cv/ inherits it
     ├── 1-profile.md      # /members/alice
     └── cv/
         └── 1-cv.md       # /members/alice/cv — Alice's record again
@@ -527,7 +527,7 @@ is parsed.
 
 ```text
 pages/blog/
-├── page.yml          # data: posts
+├── page.yml          # query: posts
 ├── index/
 │   └── 1-posts.md
 └── [...path]/        # → /blog/my-post, /blog/rust/my-post, /blog/rust/2025/my-post
@@ -591,7 +591,7 @@ the first one is used. Bind `:dir` to `scope` when the branch should decide whic
 ```text
 # Blog — folder-level query (recommended)
 pages/articles/
-├── page.yml          # data: articles
+├── page.yml          # query: articles
 ├── index/            # → /articles
 │   └── 1-articles.md
 └── [slug]/
@@ -600,14 +600,14 @@ pages/articles/
 
 # Flat — the query sits alongside the list section
 pages/blog/
-├── page.yml          # data: articles
+├── page.yml          # query: articles
 ├── 1-list.md         # type: BlogList
 └── [slug]/
     └── 1-article.md  # type: Article
 
 # Team directory
 pages/team/
-├── page.yml          # data: team
+├── page.yml          # query: team
 ├── index/
 │   └── 1-overview.md # type: TeamGrid
 └── [username]/
@@ -637,7 +637,7 @@ the build says how many — *"3 of 5 records have no "slug""* — once per page.
 **Every record shows on a parametric page.**
 The page has no route query: neither it, its parent nor the site declares a query,
 and its sections declare different ones. Declare the query in the parent's
-`page.yml` (`data: articles`) — the documented shape — or give all the sections the
+`page.yml` (`query: articles`) — the documented shape — or give all the sections the
 same one.
 
 **A section rendered nothing and the console is clean.**

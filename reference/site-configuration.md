@@ -1063,16 +1063,16 @@ fetch:
 
 Every section on every page receives this data automatically in `content.data.config`.
 
-### The `data:` shorthand
+### The `query:` shorthand
 
 To fetch a saved query, name it:
 
 ```yaml
-data: articles              # same as fetch: { query: articles }
-data: [articles, team]      # one fetch each
+query: articles             # same as fetch: { query: articles }
+query: [articles, team]     # one fetch each
 ```
 
-`data:` and `fetch:` are the same mechanism — `data:` is the short form for the common case of "just give me this query". They work identically at the site, folder, page and section levels, and an explicit `fetch:` wins if you write both.
+`query:` and `fetch:` are the same mechanism — `query:` is the short form for the common case of "just give me this query", and takes query names only; anything more is `fetch:`. They work identically at the site, folder, page and section levels. Write one or the other at a level — both is an error, and so is `data:`, the shorthand's former name.
 
 ### Options
 
@@ -1116,7 +1116,7 @@ queries:
 | `excerpt.maxLength` | Auto-excerpt character limit |
 | `excerpt.field` | Frontmatter field for excerpt |
 
-Collections generate JSON files in `public/data/`. Use `data: collection-name` in pages to fetch them.
+Collections generate JSON files in `public/data/`. Use `query: collection-name` in pages to fetch them.
 
 #### `route:` — where a record's detail page lives
 

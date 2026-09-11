@@ -21,14 +21,14 @@ Most React frameworks — Next.js, Remix, plain Vite — don't offer a runtime t
 
 Uniweb is built around Component Content Architecture (CCA): a strict separation between *what the site says* and *how it's built*. Content authors — often non-developers — compose pages by choosing section types and writing markdown. Component developers — often not the same people — build reusable section types. The two roles don't share files and can't break each other's work.
 
-Role 1 falls out of that separation. If a content author is going to reference data in their page (`data: articles`), the author is the one who knows which dataset. The component that renders those articles — a `BlogList`, a `TeamGrid` — is designed to work with *any* articles-shaped data, regardless of where it came from. That's what makes it reusable across sites: it doesn't care.
+Role 1 falls out of that separation. If a content author is going to reference data in their page (`query: articles`), the author is the one who knows which dataset. The component that renders those articles — a `BlogList`, a `TeamGrid` — is designed to work with *any* articles-shaped data, regardless of where it came from. That's what makes it reusable across sites: it doesn't care.
 
 So the runtime does the fetching. The author writes `fetch: /data/articles.json` or `fetch: { url: '…' }`; the runtime fetches; the component receives `content.data.articles` and renders. The component has zero domain knowledge of the backend. That's the feature.
 
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles            # author says what to fetch
+query: articles           # author says what to fetch
 ```
 
 ```jsx
@@ -111,7 +111,7 @@ A page can have sections of both kinds side by side. The runtime fetches `articl
 
 ```yaml
 # pages/dashboard/page.yml
-data: articles            # Role 1: runtime fetches this
+query: articles           # Role 1: runtime fetches this
 sections:
   - type: ArticleList     # reads content.data.articles
   - type: LiveSearch      # Role 2: fetches its own results

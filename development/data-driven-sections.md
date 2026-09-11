@@ -30,7 +30,7 @@ profile:
 ```yaml
 # page.yml
 title: Curriculum Vitae
-data: profile
+query: profile
 ```
 
 **3. Loom expressions in the markdown:**

@@ -12,7 +12,6 @@ A predicate is a YAML object whose top-level keys are field names. Bare values a
 
 ```yaml
 # pages/blog/page.yml
-data: articles
 fetch:
   query: articles
   where:

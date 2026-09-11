@@ -35,7 +35,7 @@ Records separate **content authoring** from **page structure**:
 - **`records.yml`** decides which of them are published
 - **`queries.yml`** names the queries pages ask for
 - At build time, each query's result becomes a JSON file in `public/data/`
-- Pages reference a query using `data: query-name`
+- Pages reference a query using `query: query-name`
 
 This keeps content portable and component-independent.
 
@@ -100,10 +100,10 @@ articles:
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles
+query: articles
 ```
 
-The build generates `public/data/articles.json` from the query's result, and `data: articles` makes it available to your components.
+The build generates `public/data/articles.json` from the query's result, and `query: articles` makes it available to your components.
 
 For more control, use the full fetch syntax: `fetch: /data/articles.json` or `fetch: { query: articles, limit: 10 }`.
 
@@ -670,7 +670,7 @@ Edit `site.yml` to set your site name...
 
 ```yaml
 title: Blog
-data: articles
+query: articles
 ```
 
 ### Using with Dynamic Routes
@@ -688,13 +688,13 @@ See [Dynamic Routes](./dynamic-routes.md) for details.
 
 ### Referencing a Query in Other Pages
 
-Use the `data:` shorthand to fetch a query's records anywhere in your site:
+Use the `query:` shorthand to fetch a query's records anywhere in your site:
 
 ```yaml
 # pages/home/teaser.md
 ---
 type: ArticleTeaser
-data: articles
+query: articles
 ---
 
 # Latest from the Blog
@@ -833,5 +833,5 @@ Records are identified by `slug`, `id`, or `name` (checked in that order). If no
 ## See Also
 
 - [Dynamic Routes](./dynamic-routes.md) — Generate pages from a query's records
-- [Data Fetching](./data-fetching.md) — The `data:` shorthand and advanced `fetch:` syntax
+- [Data Fetching](./data-fetching.md) — The `query:` shorthand and advanced `fetch:` syntax
 - [Content Structure](./content-structure.md) — How markdown content is parsed

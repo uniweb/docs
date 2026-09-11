@@ -271,7 +271,7 @@ This tells the site to prefix all URLs with `/docs/`. Navigation, links, assets,
 If your site needs data available on every page — like a shared collection or configuration from an API:
 
 ```yaml
-data: config
+query: config
 ```
 
 If you have a `entities/config/` collection, this makes it available to all pages. Components that expect `config` data will receive it automatically.

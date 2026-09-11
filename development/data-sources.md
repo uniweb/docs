@@ -58,9 +58,9 @@ The operators run **after** the response, over the whole set the endpoint return
 
 ```yaml
 # pages/articles/page.yml
-data: articles
 fetch:
   url: https://api.example.com/graphql
+  as: articles            # the content.data key — otherwise inferred from the URL (`graphql`)
   method: POST
   body:
     query: |
@@ -109,7 +109,7 @@ export default {
 # site.yml
 fetcher:
   transports:
-    articles: acme      # the acme transport handles `data: articles`
+    articles: acme      # the acme transport handles `query: articles`
   acme:                 # binding config the transport reads
     apiKey: pk_public_123
 ```
@@ -144,7 +144,7 @@ For self-hosted deployments, put whatever you already use (a Cloudflare Worker, 
 
 ## See also
 
-- [Data Fetching](../reference/data-fetching.md) — reference for `fetch:` / `data:` and the cascade
+- [Data Fetching](../reference/data-fetching.md) — reference for `fetch:` / `query:` and the cascade
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — writing and registering a transport
 - [Dynamic Routes](../reference/dynamic-routes.md) — template pages and where the record comes from
 - [Working with Data](./working-with-data.md) — cascading, template pages, detail queries, filter-state patterns

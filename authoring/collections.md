@@ -358,7 +358,7 @@ queries:
 
 What this changes:
 
-- The blog list page (`data: articles`) ships every article *without* the body. Cards stay light.
+- The blog list page (`query: articles`) ships every article *without* the body. Cards stay light.
 - A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the query key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
 - Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useEntityDetail` kit hook to fetch the full record on demand.
 
@@ -409,14 +409,14 @@ See [Predicates](./predicates.md) for the full pattern, including saved views.
 
 Once a query is declared, you can show its records on any page.
 
-### The data shorthand
+### The `query:` shorthand
 
-The simplest way is the `data:` line in `page.yml`:
+The simplest way is the `query:` line in `page.yml`:
 
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles
+query: articles
 ```
 
 This tells the page to run the `articles` query. The page's section types then display those articles — as a grid of cards, a list, or however the site's design presents them.
@@ -462,7 +462,7 @@ pages/
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles
+query: articles
 ```
 
 The `[slug]` folder tells the site: "For each record the query returns, create a page." The article at `entities/article/design-tips.md` becomes the page `/blog/design-tips`. The one at `entities/article/getting-started.md` becomes `/blog/getting-started`.
@@ -697,7 +697,7 @@ queries:
 | Reach them | Add a query to `queries.yml` — `recent: { schema: '@/article' }` |
 | Sort them | `sort: date desc` or `sort: title asc` on the query |
 | Filter them | `where: { published: { ne: false } }` on the query |
-| Show on a page | `data: articles` in `page.yml` |
+| Show on a page | `query: articles` in `page.yml` |
 | Show a subset | `fetch: { query: articles, limit: 3 }` in section frontmatter |
 | Create detail pages | Add a `[slug]/` folder under the list page |
 | Hide a draft | `published: false` in item frontmatter |

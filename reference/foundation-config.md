@@ -669,7 +669,7 @@ Most foundations don't need one. Omit `transports:` when:
 - Each component calls `fetch()` directly inside `useEffect` (bundled-style foundations).
 - A third-party SDK manages transport inside the component.
 
-See [Data Fetching](./data-fetching.md) for the author surface (`fetch:` / `data:` cascade) and [Data Sources](../development/data-sources.md) for the recipes that don't need a custom transport.
+See [Data Fetching](./data-fetching.md) for the author surface (`fetch:` / `query:` cascade) and [Data Sources](../development/data-sources.md) for the recipes that don't need a custom transport.
 
 ---
 

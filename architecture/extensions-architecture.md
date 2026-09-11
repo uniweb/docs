@@ -83,7 +83,7 @@ extensions:
 
 fetcher:
   transports:
-    views: stats         # extension's 'stats' transport handles `data: views`
+    views: stats         # extension's 'stats' transport handles `query: views`
 ```
 
 The dispatcher merges primary-foundation transports and extension transports into a single name-keyed registry. On a name collision the primary foundation wins (dev-mode warning); a bad or throwing extension transport is skipped with a warning rather than torn down (parallels the `Promise.allSettled` pattern for loading extensions).

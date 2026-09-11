@@ -55,8 +55,8 @@ nest:                           # Declare parent-child relationships
   features: [card-a, card-b]   # features gets card-a and card-b as children
 
 # Data
-data: articles                  # Collection reference (recommended; a list declares several)
-fetch:                          # Advanced: full fetch config
+query: articles                 # A query by name (recommended; a list declares several)
+fetch:                          # …or the full fetch config (one or the other, not both)
   url: https://api.example.com/team
   as: team
 
@@ -594,7 +594,7 @@ Load external data for components on this page.
 ### Simple Collection Reference
 
 ```yaml
-data: articles
+query: articles
 ```
 
 Fetches from `/data/articles.json` (generated from a collection). All sections on the page receive it in `content.data.articles` automatically.
@@ -602,7 +602,7 @@ Fetches from `/data/articles.json` (generated from a collection). All sections o
 A list declares several, each under its own key:
 
 ```yaml
-data: [team, articles]
+query: [team, articles]
 ```
 
 Every section on the page receives both — as `content.data.team` and
@@ -679,7 +679,7 @@ For pages generated from data, use `[param]` folder naming:
 
 ```
 pages/blog/
-├── page.yml              # data: articles
+├── page.yml              # query: articles
 └── [slug]/               # Dynamic route
     ├── page.yml
     └── article.md
@@ -761,7 +761,7 @@ layout:
 title: Blog
 description: Latest articles and tutorials
 
-data: articles
+query: articles
 
 seo:
   changefreq: weekly

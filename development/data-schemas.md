@@ -320,7 +320,7 @@ A schema only earns its keep where something runs it, so it's worth knowing exac
 
 | Where the data lives | Checked against |
 |---|---|
-| A **file-based collection** (`data: articles`) | The schema the section's `meta.js` binds to that key — each record |
+| A **file-based collection** (`query: articles`) | The schema the section's `meta.js` binds to that key — each record |
 | A **tagged data block** (```` ```yaml:form ````) | The schema bound to that *tag*, whether the value is a record or a list |
 | A **concept block** (```` ```md:faq ````) | `@std/faq`, if such a standard exists — resolved by name, never by a registry |
 

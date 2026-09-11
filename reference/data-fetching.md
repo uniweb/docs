@@ -49,7 +49,7 @@ Load data once, share with all sections on a page. Use this when the page has `.
 ```yaml
 # pages/about/page.yml
 title: About Us
-data: team
+query: team
 ```
 
 All sections on `/about` receive `content.data.team` automatically.
@@ -61,7 +61,7 @@ Load data shared across an entire route family. Use this when `page.yml` has no 
 ```yaml
 # pages/articles/page.yml
 # (no .md sections here — this is a pure data config layer)
-data: articles
+query: articles
 ```
 
 Both `articles/index/` (the listing page) and `articles/[id]/` (the detail page) pick up this fetch automatically. This is the recommended structure for dynamic routes.
@@ -178,7 +178,7 @@ See [Related Items](#related-items-pattern) for the common use.
 
 ### Precedence
 
-When a block tagged block (`yaml:pricing`) produces the same key as a cascaded fetch (`data: pricing`), the block's tagged block wins. Same for explicit block-level `fetch:` configs:
+When a block tagged block (`yaml:pricing`) produces the same key as a cascaded fetch (`query: pricing`), the block's tagged block wins. Same for explicit block-level `fetch:` configs:
 
 ```
 Block tagged blocks / block fetch  →  highest priority
@@ -323,7 +323,7 @@ fetch:
 
 If you're using [Content Collections](./content-collections.md), there are two ways to reference collection data.
 
-### The `data:` shorthand (recommended)
+### The `query:` shorthand (recommended)
 
 The simplest way to use collection data:
 
@@ -331,7 +331,7 @@ The simplest way to use collection data:
 # pages/home/teaser.md
 ---
 type: ArticleTeaser
-data: articles
+query: articles
 ---
 
 # Latest Articles
@@ -346,7 +346,7 @@ A list declares several — each is fetched and each arrives under its own key:
 ```yaml
 # pages/home/page.yml
 title: Home
-data: [team, articles]
+query: [team, articles]
 ```
 
 Sections on that page read `content.data.team` and `content.data.articles`
@@ -393,11 +393,11 @@ fetch:
 
 | Syntax | Use case |
 |--------|----------|
-| `data: articles` | Collection reference — the recommended default |
+| `query: articles` | Collection reference — the recommended default |
 | `fetch: { query: articles, ... }` | Collection with limit, sort, filter, or other options |
 | `fetch: { url: https://... }` | Remote data sources |
 
-The `data:` shorthand is equivalent to `fetch: { query: name }` but more compact.
+The `query:` shorthand is equivalent to `fetch: { query: name }` but more compact. It takes a query name or a list of names — anything more is `fetch:` — and it cannot sit beside a `fetch:` at the same level. `data:`, its former spelling, is refused with a message naming `query:`.
 
 ### Query operators on collection references
 
@@ -516,7 +516,7 @@ queries:
 
 What this does:
 
-- **`/data/articles.json`** (the cascade payload that `data: articles` delivers) ships every article *without* the `body` field. List pages stay lean.
+- **`/data/articles.json`** (the cascade payload that `query: articles` delivers) ships every article *without* the `body` field. List pages stay lean.
 - **`/data/articles/{slug}.json`** is emitted per record — the full record including the deferred fields.
 
 How components consume the full record:
@@ -654,7 +654,7 @@ export default function TeamGrid({ content, block }) {
 ```yaml
 # pages/team/page.yml
 title: Our Team
-data: team
+query: team
 ```
 
 ```markdown
@@ -712,7 +712,7 @@ export default function Footer({ content }) {
 # site.yml
 fetcher:
   transports:
-    articles: uniweb          # foundation's 'uniweb' transport handles `data: articles`
+    articles: uniweb          # foundation's 'uniweb' transport handles `query: articles`
     events: default           # reserved — explicitly routes back to the default fetcher
   uniweb:                       # binding config the 'uniweb' transport reads
     siteFolder: abc-123-def

@@ -495,9 +495,9 @@ Built the platform from scratch.
 Or configure a data fetch in `page.yml`:
 
 ```yaml
-data:
-  team:
-    source: /api/team
+fetch:
+  url: /api/team
+  as: team
 ```
 
 The component handles both. The rendering code after normalization is identical — it maps over `members` and renders cards.

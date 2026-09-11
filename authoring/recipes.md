@@ -589,7 +589,7 @@ pages/blog/
 ```yaml
 # pages/blog/page.yml
 title: Blog
-data: articles
+query: articles
 ```
 
 ```markdown
@@ -621,7 +621,7 @@ type: Article
 ```
 
 - The `[slug]` folder creates a dynamic route (`/blog/my-post`).
-- The `data: articles` in `page.yml` makes article data available to the page.
+- The `query: articles` in `page.yml` makes article data available to the page.
 - Dynamic route pages don't appear in navigation — they're generated from data.
 
 ---

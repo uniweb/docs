@@ -85,7 +85,7 @@ resolve(request, ctx): Promise<{ data, error?, meta? }>
 
 ### Request
 
-Normalized from the author's `fetch:` / `data:` config. Carried fields:
+Normalized from the author's `fetch:` / `query:` config. Carried fields:
 
 | Field | Required | Description |
 | --- | --- | --- |
@@ -300,5 +300,5 @@ Write a custom transport. Compose `@uniweb/fetchers` middleware around it. See [
 - [Data Sources](../development/data-sources.md) — User guide with recipes.
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing and registering a named transport.
 - [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
-- [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `data:` config.
+- [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `query:` config.
 - [Extensions Architecture](./extensions-architecture.md) — How extensions contribute named transports.
