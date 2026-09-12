@@ -380,8 +380,9 @@ prerender writes a meta-refresh document for it, so it needs nothing from the ho
 support it spell it `200` rather than `302` in `_redirects`. That needs a server, so `rewrite:` works
 on `cloudflare-pages` and `netlify` and nowhere else — on `github-pages`, `vercel`, `s3-cloudfront`
 and `generic-static` the prerender writes nothing for such a page and the route is simply **absent**,
-not degraded. If you need a rewrite on one of those, put the proxy in front of the site yourself, or
-use `redirect:` when a visible URL change is acceptable.
+not degraded. If you need a rewrite on one of those: **Vercel supports rewrites natively** — commit your own
+`vercel.json` beside `site.yml` and the build leaves it alone. Elsewhere, put a proxy in front of
+the site yourself, or use `redirect:` when a visible URL change is acceptable.
 
 **GitHub Pages has no PR previews** because the platform has no preview environment — a repo has one Pages site. Use Cloudflare Pages, Netlify, or Vercel if per-PR preview URLs matter.
 
