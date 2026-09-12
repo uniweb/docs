@@ -266,6 +266,17 @@ the filename, unless frontmatter sets `slug:`. A host that answers queries serve
 `$name` too, so a `[slug]` page matches the same way on every site. Values compare
 as strings — `/products/42` matches a record whose `id` is the number `42`.
 
+A field that holds **several values** matches **any member**: a record with
+`department: ['biology', 'genetics']` is reached at `/depts/biology` *and* at
+`/depts/genetics`. The record's own canonical link — what `route:` bakes — is its
+**first** value. This exists for the ordinary case of a field typed as multi-valued that
+holds one value; without it, that page renders not-found with nothing to explain it.
+
+⛔ **Routing by a field that is not unique picks one record, and which one is not
+guaranteed.** If two records both hold `biology`, `/depts/biology` shows one of them — the
+build warns when it happens, and a site served by a host may pick the other one. Route by a
+field whose value identifies a single record.
+
 The field must exist on every record and identify one. Name a field that is not
 there and nothing matches — the page reports not found. When several records
 match, the first is used; the build warns when two records of one query share a
