@@ -13,7 +13,7 @@ The `fetch` property lets you load structured data into `content.data`. It works
 | **Page** | `page.yml` with sections on the page | All sections on that page |
 | **Block** | `.md` frontmatter | That section only |
 
-**Delivery is default-on.** A block on a page receives the data from all enclosing levels automatically as `content.data.{schema}` — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
+**Delivery is default-on.** A block on a page receives the data from all enclosing levels automatically as `content.data.<as>` — the key the fetch's `as` names, which defaults to the query name — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
 
 Data cascades down: site → folder → page → block. The block-local level wins when keys collide.
 
