@@ -225,6 +225,12 @@ area a foundation's layout declares (e.g. `sidebar`). The `'*'` wildcard means e
 | `hideIn: ['*']` | ✗ | ✗ | ✓ |
 | `hidden: true` | ✗ | ✗ | ✗ (not published) |
 
+⛔ **This applies to the 404 page too.** `pages/404/` marked `hidden: true` is a **draft 404**: it is
+not published, and the site falls back to the generic `404.html` the build always writes. If you want
+an authored 404 that no menu lists — which is almost always what you want — it needs **no flag at
+all**: a 404 page is never listed in navigation to begin with. *(Until 2026-09-12 the flag was
+ignored for this one page and a "draft" 404 shipped anyway.)*
+
 Use cases:
 - **Draft / in-progress pages**: `hidden: true` (invisible on the live site; previewable in dev)
 - **Landing / thank-you pages** (reached only via a direct link): `hideIn: ['*']`
