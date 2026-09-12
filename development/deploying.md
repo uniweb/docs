@@ -374,6 +374,15 @@ When a site is hosted on the Uniweb backend, its content lives there as data —
 
 Each adapter implements only the operations it supports, and the CLI never offers one it can't perform: `uniweb deploy`'s wizard lists only destinations that have a deploy hook or a CI scaffold, and `uniweb add ci` lists only hosts that can scaffold a workflow.
 
+**`redirect:` travels; `rewrite:` does not.** A page's `redirect:` works on **every** host — the
+prerender writes a meta-refresh document for it, so it needs nothing from the host. A `rewrite:` is a
+**proxy**: the URL stays put and the body is served from an upstream, which is why the hosts that
+support it spell it `200` rather than `302` in `_redirects`. That needs a server, so `rewrite:` works
+on `cloudflare-pages` and `netlify` and nowhere else — on `github-pages`, `vercel`, `s3-cloudfront`
+and `generic-static` the prerender writes nothing for such a page and the route is simply **absent**,
+not degraded. If you need a rewrite on one of those, put the proxy in front of the site yourself, or
+use `redirect:` when a visible URL change is acceptable.
+
 **GitHub Pages has no PR previews** because the platform has no preview environment — a repo has one Pages site. Use Cloudflare Pages, Netlify, or Vercel if per-PR preview URLs matter.
 
 ### `deploy.yml` configuration
