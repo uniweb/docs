@@ -497,9 +497,9 @@ Each subsystem owns its lifecycle moment; `outputs` owns end-of-pipeline documen
 
 ## Data Transports
 
-A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which schema. A foundation never silently intercepts a site's data request.
+A foundation can export one or more **named transports** — reusable fetchers that a site can opt into by name. The site keeps authority: `site.yml` picks which transport handles which data key (a fetch's `as`). A foundation never silently intercepts a site's data request.
 
-When a site declares no transport for a schema, the framework's default fetcher handles it — a compiled file or a plain JSON `url:`, GET or a per-fetch `method: POST` + `body:`, an optional `transform:`, and every query operator evaluated in the browser. It takes no site-level vocabulary for a backend of your own (a base URL, headers, an envelope, a wire): that is exactly what a transport is for — see [Data Sources](../development/data-sources.md). Most foundations need no transports at all.
+When a site declares no transport for a key, the framework's default fetcher handles it — the file the build compiles from a query, a host's live records, or an external query's `url` (GET, or `method: POST` with its `body`) and `transform:`, with every query operator evaluated over what arrived. It takes no site-level vocabulary for a backend of your own (a base URL, headers, a wire of its own): that is exactly what a transport is for — see [Data Sources](../development/data-sources.md). Most foundations need no transports at all.
 
 Declared on the default export of `main.js` alongside identity, theme, and layout fields:
 
@@ -509,16 +509,16 @@ export default {
   defaultLayout: 'MarketingLayout',
 
   transports: {
-    uniweb: {
+    acme: {
       resolve: async (request, ctx) => {
-        const siteFolder = ctx.website.config?.fetcher?.uniweb?.siteFolder
-        const res = await fetch(`https://uniweb.app/sites/${siteFolder}/${request.schema}`, {
+        const baseUrl = ctx.website.config?.fetcher?.acme?.baseUrl
+        const res = await fetch(`${baseUrl}/${request.query ?? request.as}`, {
           signal: ctx.signal,
         })
         if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
         return { data: await res.json() }
       },
-      cacheKey: (request) => `uniweb:${request.schema}`,
+      cacheKey: (request) => `acme:${request.query ?? request.as}`,
     },
   },
 }
@@ -530,18 +530,18 @@ The site then opts in:
 # site.yml
 fetcher:
   transports:
-    articles: uniweb     # schema → transport name
+    articles: acme       # as → transport name
     events: default      # reserved name — framework default fetcher
-  uniweb:                 # transport-specific binding config
-    siteFolder: abc-123-def
+  acme:                   # transport-specific binding config
+    baseUrl: https://api.example.com
 ```
 
 ### How the site selects
 
 Selection is a name lookup, nothing more:
 
-1. If `fetcher.transports[request.schema]` is set, use that named transport from the primary foundation (or any extension that registers a transport by that name).
-2. Otherwise, if `fetcher.transports.default` is set, use that for every schema.
+1. If `fetcher.transports[request.as]` is set, use that named transport from the primary foundation (or any extension that registers a transport by that name).
+2. Otherwise, if `fetcher.transports.default` is set, use that for every other key.
 3. Otherwise, the framework default fetcher handles the request.
 
 There is no `match()` predicate, no route-walking, no fallback chain. The site always makes the selection, visible in `site.yml`, auditable.
@@ -565,10 +565,13 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 | Field | Type | Description |
 | --- | --- | --- |
 | `as` | string | Required. The key under `content.data` the result will be stored at. |
-| `path` | string | Local path (under `public/`). Mutually exclusive with `url`. |
-| `url` | string | Remote URL. Mutually exclusive with `path`. |
+| `query` | string | The query the request reads, by name. |
+| `path` | string | A compiled file under the site's base — `/data/<query>.json`, or a per-record file. Mutually exclusive with `url`. |
+| `url` | string | An external query's address. Mutually exclusive with `path`. |
+| `method` / `body` | string / any | An external query's `GET` or `POST`, and the POST's body. |
 | `transform` | string | Dot-path into the response (e.g. `data.items`). |
-| `detail` | string | `'rest'` / `'query'` / custom pattern for a parametric page's record fetch. |
+| `record` | object | An external query's `record:` — `{ url?, method?, body?, transform? }` — the request for one record on a parametric page. |
+| `detail` | string \| boolean | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true`. |
 | `scope` | string | The folder branch the query reads; the records' `path` must be at or below it. |
 | `where` | object | Author-provided predicate (where-object). |
 | `sort` / `limit` | any | Order and cap hints the author set. |
@@ -601,7 +604,7 @@ Optional fields on a transport object that the dispatcher recognizes:
 
 | Field | Default | Description |
 | --- | --- | --- |
-| `cacheKey(request)` | `{schema, path, url, transform, method?, body?}` stringified | Override when the transport derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
+| `cacheKey(request)` | `{path, url, as, transform, method?, body?, locale, scope, where, sort, limit}` stringified | Override when the transport derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
 | `prerenderable` | `true` | Set `false` to opt out of build-time (`uniweb build`) execution. The config is skipped at build and fetched at runtime in the browser. Use for transports that need browser-only APIs. |
 
 ### Binding config
@@ -612,9 +615,9 @@ Under the `fetcher:` block in `site.yml`, a foundation's transport can read its 
 # site.yml
 fetcher:
   transports:
-    articles: uniweb
-  uniweb:                      # binding for the 'uniweb' transport
-    siteFolder: abc-123-def
+    articles: acme
+  acme:                        # binding for the 'acme' transport
+    baseUrl: https://api.example.com
     sources: { blog: 'posts' }
 ```
 
@@ -622,20 +625,7 @@ The transport reads its config via `ctx.website.config.fetcher.{transportName}`.
 
 Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See the [Secrets section of the backend guide](../development/data-sources.md#secrets).
 
-### Per-site default-fetcher vocabulary
-
-Even without a named transport, sites can tune the framework's default fetcher via `site.yml`:
-
-```yaml
-fetcher:
-  baseUrl: https://api.example.com       # recognized by the default fetcher
-  headers:                                # recognized by the default fetcher
-    X-Tenant: acme
-  envelope:                               # recognized by the default fetcher
-    query: data.items
-```
-
-This works because the framework default fetcher reads from `website.config.fetcher` (same block, root keys). Named transports and the default-fetcher vocabulary coexist under one `fetcher:` block.
+> **Removed:** the per-site default-fetcher vocabulary — `fetcher.baseUrl`, `headers`, `envelope`, `supports` and `request.*`. The build warns and drops them. A public, keyless endpoint is an external query; a backend that needs a base URL or headers is a transport.
 
 ### Composing middleware
 
@@ -664,8 +654,8 @@ fetcher:
 
 Most foundations don't need one. Omit `transports:` when:
 
-- The site serves JSON from `public/data/` (the default fetcher works).
-- The site hits a remote API that the default fetcher's `baseUrl` / `headers` / `envelope` / `method: POST` vocabulary can express — see [Data Sources](../development/data-sources.md).
+- The site's data is its own records (the default fetcher reads what the build compiles, or a host's live records).
+- The site reads a public JSON API an external query can express — `url`, `method: POST` with a `body`, `transform` — see [Data Sources](../development/data-sources.md).
 - Each component calls `fetch()` directly inside `useEffect` (bundled-style foundations).
 - A third-party SDK manages transport inside the component.
 

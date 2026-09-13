@@ -1,6 +1,6 @@
 # Dynamic Data Fetching
 
-Load external data from local files or remote URLs and make it available to your components. Data can be fetched at build time (for static sites) or runtime (for dynamic content).
+Deliver a site's records — and data from public APIs — to your components. A page names a **query**, and the framework decides where its records come from: the file a static build generates from it, a host's live records once the site is published, or an external API. Data can be fetched at build time (for static sites) or at runtime (for live content).
 
 ## Overview
 
@@ -8,16 +8,18 @@ The `fetch` property lets you load structured data into `content.data`. It works
 
 | Level | File | Who sees the data |
 |-------|------|-------------------|
-| **Site** | `site.yml fetch:` | Every page and section (rarely used) |
+| **Site** | `site.yml fetch:` | Layout areas (header, footer, …) and the sections of top-level pages |
 | **Folder** | `page.yml` with no sections (only sub-pages) | All pages in the route family (`index/` and `[id]/`) |
 | **Page** | `page.yml` with sections on the page | All sections on that page |
 | **Block** | `.md` frontmatter | That section only |
 
-**Delivery is default-on.** A block on a page receives the data from all enclosing levels automatically as `content.data.<as>` — the key the fetch's `as` names, which defaults to the query name — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
+**A fetch names a query.** Queries are declared once — in `queries.yml`, or under `queries:` in `site.yml` — and a `fetch:` or its shorthand `query:` names one: `query: team`, `fetch: team` and `fetch: { query: team }` are the same declaration. Name the query and a page reads the file a local build generates from it while you develop, then the host's live records once the site is published, with nothing changed. `/data/<query>.json` is that generated file; it is never written in a `fetch:`.
+
+**Delivery is default-on.** A block on a page receives the data from every level that reaches it automatically as `content.data.<as>` — the key the fetch's `as` names, which defaults to the query name — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
 
 Data cascades down: site → folder → page → block. The block-local level wins when keys collide.
 
-The **folder level** is the canonical pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data-configuration layer for the entire route family. EntityStore walks: block → page → page.parent (folder) → site config.
+The **folder level** is the canonical pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data-configuration layer for the entire route family. The runtime walks: block → page → parent page (folder) → site — the site for a top-level page or a layout area only (see [Cascade](#cascade)).
 
 ---
 
@@ -25,14 +27,12 @@ The **folder level** is the canonical pattern for dynamic routes. A `page.yml` t
 
 ### Block-level fetch
 
-The simplest form — load data for a specific section:
+The simplest form — a query's records for one section:
 
 ```markdown
 ---
 type: TeamGrid
-fetch:
-  path: /data/team.json
-  as: team
+query: team
 ---
 
 # Our Team
@@ -72,59 +72,60 @@ Both `articles/index/` (the listing page) and `articles/[id]/` (the detail page)
 
 ```yaml
 fetch:
-  path: /data/team.json      # Local file (under public/)
-  # OR
-  url: https://api.example.com/team  # Remote URL
-  # OR
-  query: team           # Named query, declared in queries.yml (resolves to /data/team.json)
+  query: team                # Required: a query declared in queries.yml
 
   as: person                 # Key in content.data — must match the component's `data:` key
-  merge: false               # Replace existing data (default: false)
-  transform: data.items      # Extract nested path from response
-  detail: rest               # Single-entity fetch for dynamic routes (optional)
 
-  # Query operators — describe which records you want, in what order, how many.
-  where: { active: true }    # Predicate (where-object); see "Queries" below
-  sort: date desc            # Sort by field
-  limit: 6                   # Take first N items
+  # How this use adapts the query — see "Adapting a query" below.
+  where: { active: true }    # Narrows the query: both must hold
+  sort: date desc            # Replaces the query's order
+  limit: 6                   # Replaces the query's count
+
+  current: exclude           # On a section of a parametric page — see below
+  detailPage: page:b7788da4  # The page that renders one record — each record gets its `route`
+  prerender: false           # Leave this fetch to the browser (see "Build-time vs Runtime")
+  merge: false               # Build-time only: replace (default) or combine with the section's own data
 ```
 
 ### Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `path` | — | Local file path relative to `public/` |
-| `url` | — | Remote URL (mutually exclusive with `path`) |
-| `query` | — | Named-query reference (mutually exclusive with `path`/`url`). Declare the query in `queries.yml` |
-| `as` | *the query name, or inferred from the source* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02. ⛔ **That spelling is NOT read — the alias was removed on 2026-09-03.** A fetch authored as `schema: posts` binds to nothing and delivers no data, silently; re-author it as `as:`. The word moved because `schema` also means the MODEL REF on a `queries` declaration, and one name for both is what let a binding key silently break detail resolution.)* |
+| `query` | — | **Required.** The query to fetch, declared in `queries.yml` or under `queries:` in `site.yml`. A string where a fetch is expected is a query name: `fetch: team` is `fetch: { query: team }` |
+| `as` | *the query name* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02. ⛔ **That spelling is NOT read — the alias was removed on 2026-09-03.** A fetch authored as `schema: posts` binds to nothing and delivers no data, silently; re-author it as `as:`. The word moved because `schema` also means the MODEL REF on a `queries` declaration, and one name for both is what let a binding key silently break detail resolution.)* |
+| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)). It narrows the query: [both must hold](#adapting-a-query-where-sort-limit) |
+| `sort` | — | Sort by field, e.g. `date desc`. It replaces the query's |
+| `limit` | — | Take first N records. It replaces the query's |
+| `current` | `only` | On a section of a parametric page: `only`, `exclude` or `include` — see [below](#a-section-on-a-parametric-page-current) |
+| `detailPage` | — | A `page:<stable_id>` reference to the page that renders one record; each record gets its `route` — see [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record) |
+| `prerender` | `true` — `false` for an [external query](#external-queries) | `false` leaves the fetch to the browser; `true` has the build fetch an external query and embed the result |
 | `merge` | `false` | **Build-time only.** How a *section's* own fetch lands in its data when the build (or the dev server) executes it — see [Merge vs Replace](#merge-vs-replace). It never ships in a site's payload and no runtime reads it |
-| `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
-| `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#where-the-record-comes-from). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
-| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)). On a `query` reference it narrows the query: [both must hold](#adapting-a-query-where-sort-limit) |
-| `sort` | — | Sort by field, e.g. `date desc`. On a `query` reference it replaces the query's |
-| `limit` | — | Take first N records. On a `query` reference it replaces the query's |
 
-### Schema inference
+### What a fetch cannot say
 
-When `schema` is omitted, it's inferred from the filename:
+A fetch names a query, and the query says where its records come from. The build stops on a fetch that tries to say it itself, and names the fix:
 
-```yaml
-fetch: /data/team-members.json  # → schema: team-members
-fetch: /api/events.yaml         # → schema: events
-```
+| written on a fetch | write instead |
+|---|---|
+| a path — `fetch: /data/team.json`, or `path:` | name a query over the site's records: `fetch: team` |
+| `url:`, `method:`, `body:`, `transform:` | an [external query](#external-queries) that declares them, named here |
+| `detail:` | `current:` on a section of a parametric page, or `record:` on an external query |
+| `scope:` | the query's `scope:` |
 
 ---
 
 ## Cascade
 
-Data flows from site → folder → page → block. **Every block on a page receives every piece of data declared at any enclosing level**, with block-local data winning when keys collide.
+Data flows from site → folder → page → block. **Every block on a page receives every piece of data declared at the levels that reach it**, with block-local data winning when keys collide.
 
 ```
-Site fetch                      →  available everywhere
+Site fetch                      →  layout areas, and the sections of top-level pages
 Folder fetch (parent page.yml)  →  available to all pages in the route family
 Page fetch                      →  available to all sections on that page
 Block fetch / tagged blocks     →  block-local, wins on key collision
 ```
+
+**The site is the root page.** Its fetch reaches what a page's fetch would if the site were the parent of the pages directly under `pages/`: those pages — the homepage included — and the layout areas (header, footer, sidebars), which belong to the site rather than to any one page. A page further down, such as `/docs/setup`, does not receive it; a section there that needs the data names the query itself. On a top-level parametric page — `pages/[slug]/` — the site's query can be the one the URL names; see [Dynamic Routes → Which query the URL names](./dynamic-routes.md#which-query-the-url-names).
 
 No component-side opt-in is required. A component at `/blog/[slug]` automatically sees `content.data.articles` — the full collection on the list page, and a single-element array (the matched item) on the template page.
 
@@ -230,10 +231,10 @@ The component receives the related items directly in `content.data.articles`, re
 
 When data is fetched depends on the deployment mode of the site, not on a per-fetch flag:
 
-- **Bundled-site builds** (`uniweb build`) emit per-page HTML; local paths (`path:`) are read at build time and embedded in the HTML payload, while remote URLs (`url:`) are fetched in the browser at runtime.
-- **Shell-mode sites** ship a single HTML shell that's prerendered just-in-time by a Cloudflare worker per request; the same `fetch:` declarations are evaluated at request time.
+- **Bundled-site builds** (`uniweb build`) emit per-page HTML; a query over the site's own records is read at build time and embedded in the HTML payload, while an [external query](#external-queries) is fetched in the browser at runtime.
+- **Shell-mode sites** ship a single HTML shell that the host fills for each request; the same `fetch:` declarations are evaluated at request time.
 
-You don't pick when fetching happens — the deployment mode does. Authoring `fetch: { path: ... }` and `fetch: { url: ... }` is the same in either mode; the framework picks the appropriate execution time.
+You don't pick when fetching happens — the deployment mode does, and the same declaration works in either. The one per-fetch override is `prerender:` on a bundled build: `prerender: false` leaves a fetch to the browser, and `prerender: true` has the build call an external query.
 
 ---
 
@@ -249,7 +250,7 @@ site-level `merge` has no effect.
 
 ```yaml
 fetch:
-  path: /data/team.json
+  query: team
   merge: false  # default
 ```
 
@@ -259,8 +260,7 @@ Fetched data completely replaces any existing data under that schema key.
 
 ```yaml
 fetch:
-  path: /data/more-team.json
-  as: team
+  query: team
   merge: true
 ```
 
@@ -273,42 +273,71 @@ the first is used.
 
 ---
 
-## Local Files
+## Records from files
 
-**Prefer collections over manual JSON files.** Collections provide:
+**A site's records live in `entities/`, and a query names them.** Markdown, YAML and JSON
+files there are records; `queries.yml` says which of them a query returns, and a page names the
+query. That gives you:
 - Markdown, YAML, and JSON authoring
 - Automatic i18n support
-- Better content management
+- Schema validation and editor support
 
 See [Content Collections](./content-collections.md) for the recommended approach.
 
 ### `public/data/` is generated — don't write to it
 
-`public/data/` is where the build writes compiled collections. It is output, not a
-place to author. Files you put there are overwritten without warning the moment a
-collection takes the same name, and they get none of what a collection provides —
-no i18n extraction, no schema validation, no per-record files, no editor support.
+`public/data/` is where the build writes what each query compiles to. It is output, not a
+place to author, and a fetch never names a file there. Files you put there are overwritten
+without warning the moment a query takes the same name, and they get none of what a record
+provides — no i18n extraction, no schema validation, no per-record files, no editor support.
 
-Data that comes out of another tool goes in a collection too: a `.json` or `.yml`
-file holding a top-level array becomes one record per entry, so exporting into
-`entities/<schema>/` works the same as authoring there by hand.
+Data that comes out of another tool goes in `entities/` too: a `.json` or `.yml` file holding a
+top-level array becomes one record per entry, so exporting into `entities/<schema>/` works the
+same as authoring there by hand.
 
 ---
 
-## Remote URLs
+## External queries
 
-Fetch from any URL:
+A **query with `url:`** is an external query: its records come from a public JSON endpoint rather
+than from the site's own records. Declare it once, beside the site's other queries, and name it
+from any page:
 
 ```yaml
-fetch:
+# queries.yml
+team:
   url: https://jsonplaceholder.typicode.com/users
-  as: team
-  transform: data.members
 ```
+
+```yaml
+# pages/team/page.yml
+query: team
+```
+
+An external query is fetched from its own address — by the visitor's browser, unless a fetch says
+`prerender: true` — and never through a host's records service; the build compiles no file for
+it. A fetch adapts it like any query: its `where`, `sort` and `limit` are evaluated over the records
+the endpoint returned.
+
+| key | says |
+|---|---|
+| `url` | the address. Its presence is what makes the query external |
+| `method`, `body` | `POST` with a JSON body, for an endpoint that takes the question in its body (GraphQL, a search endpoint). `GET` is the default |
+| `transform` | a dot-path to the records in the response. It runs before `where`, `sort` and `limit` |
+| `where`, `sort`, `limit` | the query's own narrowing, evaluated over the records `transform` picked |
+| `record` | the request for one record in full, on a parametric page — `url`, `method`, `body`, `transform` ([below](#one-record-record)) |
+| `queryable` | as on any query |
+
+What describes the site's own records — `schema`, `scope`, `deferred`, `excerpt`, `route` — has
+no meaning beside `url:`, and the build stops on it.
+
+An external query is for **public, keyless** endpoints: every value in it reaches the browser. An
+API that needs a key, headers of its own, paging, or reshaping beyond a dot-path is a foundation
+transport — see [Data Sources](../development/data-sources.md).
 
 ### Transform
 
-Many APIs wrap data in a response envelope:
+Many APIs wrap their records in a larger response:
 
 ```json
 {
@@ -319,13 +348,39 @@ Many APIs wrap data in a response envelope:
 }
 ```
 
-Use `transform` to extract the relevant part:
+Use `transform` on the query to pick out the records:
 
 ```yaml
-fetch:
+# queries.yml
+team:
   url: https://api.example.com/team
   transform: data.members  # Gets just the array
 ```
+
+### One record: `record:`
+
+On a parametric page — `pages/blog/[id]/` — the record the URL names is found in the query's list.
+When the list carries less than a record (an endpoint that lists summaries), `record:` names the
+request for one record in full:
+
+```yaml
+# queries.yml
+posts:
+  url: https://jsonplaceholder.typicode.com/posts?_limit=12
+  record:
+    url: https://jsonplaceholder.typicode.com/posts/{id}   # `{id}` — the page's [id] segment
+```
+
+`record.url` and `record.method` default to the query's. `body` and `transform` never carry over —
+a record response is rarely wrapped the way the list is — so a wrapped record says
+`record.transform`. In a `url` or a `body`, the name the page's folder uses (`{id}` for `[id]`,
+`{slug}` for `[slug]`) is the value from the URL. See [Dynamic Routes → Where the record comes
+from](./dynamic-routes.md#where-the-record-comes-from).
+
+> **Removed:** `fetch: { url: … }` and `fetch: { path: … }` on a page or section, and a path
+> string — declare an external query, or a query over `entities/`, and name it. `transform:`,
+> `method:` and `body:` moved to the query, and `detail:` (`rest`, `query`, a URL pattern,
+> `{ body, envelope }`) is `record:`.
 
 ---
 
@@ -347,7 +402,7 @@ query: articles
 # Latest Articles
 ```
 
-This fetches from `/data/articles.json` and makes it available as `content.data.articles`. Clean and readable.
+This delivers the `articles` query as `content.data.articles`. On a static site it reads the file the build generates from the query; on a site a host serves, the host's live records. The declaration is the same.
 
 ### Declaring more than one
 
@@ -391,7 +446,7 @@ For more control, use the full fetch syntax with post-processing options:
 ---
 type: ArticleTeaser
 fetch:
-  query: articles   # Fetches from /data/articles.json
+  query: articles        # A query declared in queries.yml
   limit: 3               # Show only 3 items
   sort: date desc        # Most recent first
 ---
@@ -403,9 +458,10 @@ fetch:
 
 | Syntax | Use case |
 |--------|----------|
-| `query: articles` | Collection reference — the recommended default |
-| `fetch: { query: articles, ... }` | Collection with limit, sort, filter, or other options |
-| `fetch: { url: https://... }` | Remote data sources |
+| `query: articles` | A query by name — the recommended default |
+| `fetch: { query: articles, ... }` | A query adapted for this use — `limit`, `sort`, `where`, `as`, … |
+
+A public API is a query too — an [external query](#external-queries) — named the same way.
 
 The `query:` shorthand is equivalent to `fetch: { query: name }` but more compact. It takes a query name or a list of names — anything more is `fetch:` — and it cannot sit beside a `fetch:` at the same level. `data:`, its former spelling, is refused with a message naming `query:`.
 
@@ -448,22 +504,13 @@ Within one level, two entries under one `content.data` key should not exist — 
 articles }, { query: posts, as: articles }]`. The first is used and the rest are ignored, and the
 build warns.
 
-These options also work with `path:` and `url:` fetches:
-
-```yaml
-fetch:
-  path: /data/articles.json
-  sort: date desc
-  limit: 5
-```
-
 See the [Queries](#queries) section below for the full where-object format and how `where:` interacts with the source's capabilities.
 
 ---
 
 ## Queries
 
-`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Who evaluates them depends on where the records come from: the framework evaluates them itself over a compiled file, a plain JSON `url:`, or a host's records address; a host that answers queries evaluates the same language at the source; a foundation transport decides for itself. The declaration is identical in every case.
+`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Who evaluates them depends on where the records come from: the framework evaluates them itself over a compiled file or an external query's response; a host that answers queries evaluates the same language at the source; a foundation transport decides for itself. The declaration is identical in every case.
 
 ### The where-object
 
@@ -588,20 +635,9 @@ How components consume the full record:
 
 A query without `deferred:` behaves exactly as before — every field ships in the cascade payload.
 
-### Remote sources: `detailUrl:`
+### External queries: `record:`
 
-The above describes file-based records — the build emits per-record files at `/data/<name>/<slug>.json` for every one (markdown, YAML, or JSON) and the framework finds them automatically. For a **remote** source (a query declaring `url:`, with no per-record files on disk), the author names the per-record endpoint pattern with `detailUrl:`:
-
-```yaml
-# site.yml
-queries:
-  articles:
-    url: /api/articles                 # collection source (remote)
-    deferred: [body]
-    detailUrl: /api/articles/{slug}    # how to fetch one full record
-```
-
-The `{slug}` placeholder substitutes from the dynamic-route param (entity-store auto-detail) or from `record.slug` (`useEntityDetail` hook). File-based collections leave `detailUrl:` null and use the per-record file default.
+`deferred:` is for the site's own records — the build writes the per-record files at `/data/<name>/<slug>.json` for every one (markdown, YAML, or JSON) and the framework finds them automatically. An [external query](#external-queries) cannot declare it: its list is whatever the endpoint returns. When that list carries summaries, the query names the request for one full record with [`record:`](#one-record-record), and both a parametric page and `useEntityDetail` ask it.
 
 **Convention:** per-record files are named by the record's `slug`. On a parametric page the matched record's own slug fills `{slug}`, whatever the route's param is called, so an `[id]` page reads the same file a `[slug]` page does.
 
@@ -716,15 +752,19 @@ export default {
 }
 ```
 
-### Blog with remote API
+### Blog with an external API
+
+```yaml
+# queries.yml
+posts:
+  url: https://api.myblog.com/posts
+  transform: data.articles
+```
 
 ```yaml
 # pages/blog/page.yml
 title: Blog
-fetch:
-  url: https://api.myblog.com/posts
-  as: posts
-  transform: data.articles
+query: posts
 ```
 
 ### Site-wide config
@@ -732,13 +772,11 @@ fetch:
 ```yaml
 # site.yml
 name: My Site
-fetch:
-  path: /data/site-config.json
-  as: config
+query: config             # a query declared in queries.yml
 ```
 
 ```jsx
-// Any component on any page — site-level fetches are delivered everywhere.
+// A layout area's section, or a section on a top-level page — the site's fetch reaches both.
 export default function Footer({ content }) {
   const config = content.data.config || {}
   return <footer>{config.copyright}</footer>
@@ -749,30 +787,30 @@ export default function Footer({ content }) {
 
 ## Per-site transport config
 
-`fetcher:` in `site.yml` does one thing: it opts a schema into a foundation-provided **named transport**, and carries the binding config that transport reads.
+`fetcher:` in `site.yml` does one thing: it opts a data key (a fetch's `as`) into a foundation-provided **named transport**, and carries the binding config that transport reads.
 
 ```yaml
 # site.yml
 fetcher:
   transports:
-    articles: uniweb          # foundation's 'uniweb' transport handles `query: articles`
+    articles: acme            # foundation's 'acme' transport handles `query: articles`
     events: default           # reserved — explicitly routes back to the default fetcher
-  uniweb:                       # binding config the 'uniweb' transport reads
-    siteFolder: abc-123-def
+  acme:                         # binding config the 'acme' transport reads
+    baseUrl: https://api.example.com
 ```
 
 ### What the default fetcher does — and does not — take
 
-With no transport selected, the framework's default fetcher handles the request: a compiled file (`path:`), a plain JSON `url:` (GET, or `method: POST` with a `body:`), the per-fetch `transform:` unwrap, the `detail:` forms for a record, and every `where:` / `sort:` / `limit:` evaluated in the browser over what arrived. A site published to a host that serves records live needs nothing more — the host stamps where its records are.
+With no transport selected, the framework's default fetcher handles the request: the file a static build compiles from a query, an external query's `url:` (GET, or `POST` with its `body:`) unwrapped by its `transform:`, its `record:` request for one record, and every `where:` / `sort:` / `limit:` evaluated in the browser over what arrived. A site published to a host that serves records live needs nothing more — the host stamps where its records are.
 
-There is **no site-level vocabulary to point that fetcher at a backend of your own.** `baseUrl`, `headers`, `envelope`, `supports` and `request.*` were retired: a backend with its own base, headers, wire or query language is a **transport**, written once in the foundation (or an extension) and selected here. See [Data Sources](../development/data-sources.md) for when a plain `url:` is enough and when a transport is the answer, and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing one.
+There is **no site-level vocabulary to point that fetcher at a backend of your own.** `baseUrl`, `headers`, `envelope`, `supports` and `request.*` were retired: a backend with its own base, headers, wire or query language is a **transport**, written once in the foundation (or an extension) and selected here. See [Data Sources](../development/data-sources.md) for when an external query is enough and when a transport is the answer, and [Foundation Configuration → Data Transports](./foundation-config.md#data-transports) for writing one.
 
 ### How selection works
 
 For each request:
 
 1. If `fetcher.transports[request.as]` is set, the dispatcher looks that name up in the registry of transports the foundation and its extensions registered. A match handles the request.
-2. Otherwise, if `fetcher.transports.default` is set, that name handles every unclaimed schema.
+2. Otherwise, if `fetcher.transports.default` is set, that name handles every unclaimed key.
 3. Otherwise, the framework default fetcher handles it.
 
 No route-walking, no `match()` predicates, no silent foundation-owned routing — the site picks.
@@ -788,11 +826,11 @@ Secrets do not belong in `site.yml` — values here are public to the browser. S
 ## Error Handling
 
 If a fetch fails:
-- An empty array `[]` is used as fallback
+- Its key is left **absent** from `content.data` — never `[]`, which means "no records" — and the message is on `block.dataError[key]`
 - A warning is logged during build
 - The page still renders (graceful degradation)
 
-Components should always handle the case where data might be empty.
+Components should handle both: `block.dataError` for a failure, and an empty list for a query that matched nothing.
 
 ---
 
@@ -801,6 +839,6 @@ Components should always handle the case where data might be empty.
 - [Dynamic Routes](./dynamic-routes.md) — Generate multiple pages from data (blogs, catalogs, etc.)
 - [Content Collections](./content-collections.md) — Markdown-based data collections
 - [Predicates](../authoring/predicates.md) — Author guide to where-objects and saved views
-- [Data Sources](../development/data-sources.md) — a plain `url:`, a host's records, a transport, secrets
+- [Data Sources](../development/data-sources.md) — an external query, a host's records, a transport, secrets
 - [Content Structure](./content-structure.md) — How content is parsed and structured
 - [Component Metadata](./component-metadata.md) — Full meta.js schema reference

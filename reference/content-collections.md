@@ -12,15 +12,15 @@ Three files answer three separate questions, and keeping them apart is the whole
 | `records.yml` | what is **published**? | a list — listing an entity makes it a record |
 | `queries.yml` | how is it **reached**? | named queries; a page asks one by name |
 
-The build converts what a query returns to JSON in `public/data/`, which is an output directory — you don't need to interact with it directly.
+The build converts what a query returns to JSON in `public/data/`, which is an output directory — you don't need to interact with it directly. A page names the query, never that file: a site with no backend reads the generated file, and the same site published to a host that serves records live reads them from there, with nothing in the page changed.
 
 There are two ways to provide data to components:
 
 **Records** (`entities/` + `records.yml`) — Author content as `.md`, `.yml`, or `.json` files. The build converts them to JSON. Markdown records get ProseMirror content bodies, excerpts, and co-located assets automatically. YAML and JSON records pass through as-is. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structural data (schedules, pricing tiers).
 
-**Runtime data** (API fetch) — For production sites where a CMS or backend manages content and serves pre-localized data. Components receive it the same way as static data (via `content.data`).
+**External queries** (`url:` in `queries.yml`) — For records another system holds and serves as public JSON. A query with `url:` is fetched from that address; components receive it the same way as records (via `content.data`). See [Data Fetching → External queries](./data-fetching.md#external-queries).
 
-**Rule of thumb:** If authors maintain the content, use records in `entities/`. If it comes from an external system at request time, use runtime fetch.
+**Rule of thumb:** If authors maintain the content, use records in `entities/`. If it comes from an external system at request time, use an external query.
 
 > **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `entities/` as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
 
@@ -103,9 +103,9 @@ title: Blog
 query: articles
 ```
 
-The build generates `public/data/articles.json` from the query's result, and `query: articles` makes it available to your components.
+`query: articles` makes the query's records available to your components. On a site with no backend, the build generates `public/data/articles.json` from the query's result, and that is what the page reads.
 
-For more control, use the full fetch syntax: `fetch: /data/articles.json` or `fetch: { query: articles, limit: 10 }`.
+For more control, use the full fetch syntax: `fetch: { query: articles, limit: 10 }`. A string in `fetch:` is a query name too — `fetch: articles` — and `/data/articles.json` is never written in a fetch.
 
 ---
 
@@ -138,9 +138,9 @@ articles:
 ```
 
 > **A query names no path.** `entities/{schema}/` is the pool and `schema:`
-> addresses it, so there is no directory for a query to point at. `path:`/`url:`
-> mean something only for a **remote** source, whose address nothing local can
-> derive.
+> addresses it, so there is no directory for a query to point at. An address means
+> something only for an **external** query — `url:` — whose source nothing local
+> can derive.
 
 ### Several queries
 
@@ -708,7 +708,7 @@ query: articles
 # Latest from the Blog
 ```
 
-This fetches from `/data/articles.json` and makes it available as `content.data.articles`.
+This makes the query's records available as `content.data.articles` — on a site with no backend, read from `/data/articles.json`, the file the build generated.
 
 For more control (filtering, sorting, limiting), use the full `fetch:` syntax:
 
@@ -717,7 +717,7 @@ For more control (filtering, sorting, limiting), use the full `fetch:` syntax:
 ---
 type: ArticleTeaser
 fetch:
-  query: articles   # Fetches from /data/articles.json
+  query: articles   # A query declared in queries.yml
   limit: 3               # Only 3 articles
   sort: date desc        # Most recent first
 ---

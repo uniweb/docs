@@ -97,7 +97,7 @@ A multilingual site (English, Spanish, French) with blog, team pages, and full i
 
 **Full i18n with three languages.** The `site/locales/` directory contains `es.json`, `fr.json`, and `manifest.json`. This is the only template that demonstrates the complete translation workflow — extraction, manifest hashes, and locale files. If you need to build a multilingual site, this is the reference.
 
-**Data cascade.** The page's `page.yml` declares `data: articles`. `ArticleList` receives that data automatically in `content.data.articles` — no component-side opt-in required. `meta.js` can optionally declare `data: { articles: '@/article' }` to set the key's schema (field defaults and editor hints); the `@/article` ref resolves to the foundation's `foundation/schemas/article.yml`. The page fetches the collection once; every section type on the page consumes it. This is the CCA data layer pattern: page declares, component reads.
+**Data cascade.** The page's `page.yml` declares `query: articles`. `ArticleList` receives that data automatically in `content.data.articles` — no component-side opt-in required. `meta.js` can optionally declare `data: { articles: '@/article' }` to set the key's schema (field defaults and editor hints); the `@/article` ref resolves to the foundation's `foundation/schemas/article.yml`. The page fetches the collection once; every section type on the page consumes it. This is the CCA data layer pattern: page declares, component reads.
 
 **Dynamic routes with i18n.** The `site/pages/blog/[slug]/` folder creates dynamic routes for blog posts, and translations apply to the dynamic content. This shows how CCA's routing and i18n systems compose.
 
@@ -117,7 +117,7 @@ A data-driven dashboard for a wildlife conservation organization, featuring live
 
 **Semantic CSS tokens throughout.** `styles.css` maps a comprehensive set of tokens: `--color-heading`, `--color-body`, `--color-subtle`, `--color-link`, `--color-border`, `--color-section`. Components reference these exclusively — no hardcoded color classes anywhere. This is what a fully portable foundation's styling looks like.
 
-**Live API data with loading states.** Seven of ten section types use `block.dataLoading`. The pattern is consistent:
+**Live API data with loading states.** Ten of thirteen section types use `block.dataLoading`. The pattern is consistent:
 
 ```js
 // Publications/Publications.jsx
@@ -127,13 +127,13 @@ const loading = block.dataLoading
 
 The component doesn't fetch data, manage cache, or handle errors — the runtime does all of that. The component reads `content.data` and shows a loading state when `block.dataLoading` is true. See `Publications/Publications.jsx:17`, `Hero/Hero.jsx:9`, `Sightings/Sightings.jsx:24` for examples.
 
-**Per-section data fetching.** Each section's markdown frontmatter declares its own fetch config. The hero fetches weather data, sightings fetches from iNaturalist, publications fetches from a research API. The runtime resolves each independently. Check `site/pages/home/1-hero.md` and `site/pages/home/3-sightings.md` for the frontmatter fetch configs.
+**External queries, named per section.** Every live API the site reads is a named query in `site/site.yml` — `weather`, `sightings`, `papers` and the rest — with its `url:` and, where the records sit inside the response, a `transform:` that points at them. Each section's frontmatter names the query it shows: the hero names `weather`, sightings names `sightings` (iNaturalist), publications names `papers` (a research API). The runtime resolves each independently. Check `site/pages/home/1-hero.md` and `site/pages/home/3-sightings.md` for the frontmatter, and `site/site.yml` for the queries.
 
-**Dynamic routes with detail queries.** The `blog/[id]` folder creates dynamic routes for individual field notes. The parent `blog/page.yml` fetches from JSONPlaceholder with `detail: rest` — when a user navigates from the list, the cached collection provides the item; when they land directly on `/blog/5`, the runtime fetches `https://jsonplaceholder.typicode.com/posts/5` as a single REST call instead of fetching all 12 posts. This is the only template that combines dynamic routes with live API data and loading states.
+**Dynamic routes over an external query.** The `blog/[id]` folder creates dynamic routes for individual field notes. The parent `blog/page.yml` names the `posts` query, which lists 12 posts from JSONPlaceholder and declares `record: { url: https://jsonplaceholder.typicode.com/posts/{id} }` — the request for one whole post, `{id}` being the page's URL segment. On `/blog/5` the runtime finds post 5 in the list (from the cache, when the user came from the list page), then fetches it through `record:`. The home page's notes section binds the same query with `fetch: { query: posts, limit: 3 }`. This is the only template that combines dynamic routes with live API data and loading states.
 
 ### Why it's the portability reference
 
-Every section type in this foundation could serve a completely different site — different APIs, different colors, different content. The components know how to render data, not where data comes from. They know how to apply tokens, not what colors those tokens resolve to. Swap the `theme.yml` and every component rebrands. Swap the page configs and every component reads new APIs. That's what portable means in practice.
+Every section type in this foundation could serve a completely different site — different APIs, different colors, different content. The components know how to render data, not where data comes from. They know how to apply tokens, not what colors those tokens resolve to. Swap the `theme.yml` and every component rebrands. Swap the queries in `site.yml` and every component reads new APIs. That's what portable means in practice.
 
 ---
 
@@ -146,8 +146,8 @@ Start from what you're trying to learn:
 - **"How do I use the CCA data layer?"** — dynamic (any data section, `Publications` is the clearest) or international (`ArticleList` with data inheritance)
 - **"How does i18n work?"** — international (the only template with translations)
 - **"How do I use content.items for repeating content?"** — academic `PublicationList` (complex parsing) or marketing `Features` (simpler pattern)
-- **"How do dynamic routes work?"** — marketing `blog/[slug]` or international `blog/[slug]`; dynamic `blog/[id]` adds `detail: rest` for single-entity fetching
-- **"How do loading states work?"** — dynamic (7 sections demonstrate the pattern)
+- **"How do dynamic routes work?"** — marketing `blog/[slug]` or international `blog/[slug]`; dynamic `blog/[id]` adds an external query's `record:` for fetching one whole record
+- **"How do loading states work?"** — dynamic (10 sections demonstrate the pattern)
 - **"How do section backgrounds work?"** — marketing (gradients, solid colors via frontmatter `background:`) or dynamic (per-section data with backgrounds)
 
 ---

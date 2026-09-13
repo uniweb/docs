@@ -23,7 +23,7 @@ Uniweb is built around Component Content Architecture (CCA): a strict separation
 
 Role 1 falls out of that separation. If a content author is going to reference data in their page (`query: articles`), the author is the one who knows which dataset. The component that renders those articles — a `BlogList`, a `TeamGrid` — is designed to work with *any* articles-shaped data, regardless of where it came from. That's what makes it reusable across sites: it doesn't care.
 
-So the runtime does the fetching. The author writes `fetch: /data/articles.json` or `fetch: { url: '…' }`; the runtime fetches; the component receives `content.data.articles` and renders. The component has zero domain knowledge of the backend. That's the feature.
+So the runtime does the fetching. The author names a query — over the site's own records, or an external query declared in `queries.yml` — the runtime fetches; the component receives `content.data.articles` and renders. The component has zero domain knowledge of the backend. That's the feature.
 
 ```yaml
 # pages/blog/page.yml
@@ -42,7 +42,7 @@ export default function ArticleList({ content, block }) {
 
 The component works for *any* site's articles, not just one specific backend. That's the CCA payoff. The author drives; the component is a clean consumer.
 
-See [Working with Data](./working-with-data.md) for the mechanics — cascade, template pages, detail queries, post-processing.
+See [Working with Data](./working-with-data.md) for the mechanics — cascade, template pages, whole records, post-processing.
 
 ---
 
@@ -138,8 +138,8 @@ Role 2 components are free to do whatever they want with the browser's `fetch` A
 That said, a component that's doing its own fetching may want to benefit from **some** of the framework's plumbing:
 
 - **Shared cache across blocks.** Two components on the page fetching the same URL shouldn't each issue a request. The dispatcher's cache already exists; a kit-level `useFetch()` helper could participate in it.
-- **Site-level base URL.** If `site.yml fetcher: { baseUrl: ... }` is set, components doing their own fetches could pick it up automatically so they don't hardcode an environment-dependent host.
-- **Envelope unwrapping.** If the backend always wraps responses as `{ data: { items: [...] } }`, the site's `envelope:` config could apply to component-driven fetches too.
+- **A site-configured base URL.** Components doing their own fetches could read a base the site sets, so they don't hardcode an environment-dependent host.
+- **Response unwrapping.** If the backend always wraps responses as `{ data: { items: [...] } }`, the dot-path an external query's `transform:` uses could apply to component-driven fetches too.
 - **Abort on unmount.** Every component writes the same `AbortController` boilerplate. A helper could handle it.
 
 None of this exists today. The open question is whether a kit helper like:
@@ -149,7 +149,7 @@ import { useFetch } from '@uniweb/kit'
 
 function SearchBox() {
   const fetch = useFetch()
-  // ... same useEffect + fetch, but `fetch()` prepends baseUrl,
+  // ... same useEffect + fetch, but `fetch()` prepends the site's base URL,
   // participates in the cache, and auto-aborts on unmount.
 }
 ```
@@ -176,12 +176,12 @@ For clarity, because these come up:
 - **Role 2 (component-driven):** standard React. Domain-aware component fetches its own data. Fully supported; no framework machinery needed.
 - **The test:** does the component know what values to send to the backend? Yes → Role 2. No → Role 1.
 - **Filter-in-place:** looks like user-driven fetching but isn't. Client-side filtering of already-loaded Role 1 data via `page.state`.
-- **Future ergonomics:** a kit helper for Role 2 components to participate in cache / baseUrl / envelope is possible. Not designed yet. Role 2 works fine without it.
+- **Future ergonomics:** a kit helper for Role 2 components to participate in the cache, a site-configured base URL and abort-on-unmount is possible. Not designed yet. Role 2 works fine without it.
 
 ---
 
 ## See also
 
-- [Working with Data](./working-with-data.md) — Role 1 mechanics: cascade, template pages, detail queries.
-- [Data Sources](./data-sources.md) — Role 1 with a real backend; `site.yml fetcher:` options for the default fetcher.
+- [Working with Data](./working-with-data.md) — Role 1 mechanics: cascade, template pages, whole records.
+- [Data Sources](./data-sources.md) — Role 1 beyond the site's own records: external queries, a host's live records, foundation transports.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths.

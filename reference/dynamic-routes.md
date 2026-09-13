@@ -209,7 +209,8 @@ export default function Article({ content, block }) {
 ### The parametric page inherits, it does not re-declare
 
 A fetch declaration cascades down four levels — section → page → parent page →
-site — and the most specific declaration wins per key. The `[slug]` folder sits
+site, the site's reaching only a top-level page — and the most specific
+declaration wins per key. The `[slug]` folder sits
 one level below `articles/`, so the parent's `query: articles` reaches it by the
 same walk that serves the list page. Nothing is fetched twice.
 
@@ -234,7 +235,8 @@ the page level:
 
 1. the query the parametric page declares itself, in its own `page.yml`; otherwise
 2. its parent page's; otherwise
-3. the site's, in `site.yml`;
+3. the site's, in `site.yml` — for a top-level parametric page only
+   (`pages/[slug]/`), because the site's fetch reaches no page further down;
 4. and if none of those declares one, the query the page's own sections all
    declare — when they declare the same one.
 
@@ -366,63 +368,39 @@ normalization differs, on a field nobody checks until a visitor clicks it.
 
 When the visitor clicks through from the list, the records are already cached and
 the runtime just picks the match. When they land on the URL directly — a bookmark,
-a search result — nothing is cached. Resolution, in order:
+a search result — the runtime fetches the route query's records and picks the match
+there. Either way the query's list decides which records exist: a record it leaves
+out is not found.
 
-1. **Records already cached** → take the match locally. No request.
-2. **`detail:` declared** → fetch that one record.
-3. **Neither** → fetch the whole set, cache it, take the match.
+Some lists carry less than a whole record, and then the page asks for the record on
+its own:
 
-Step 3 is fine for a site's own compiled data and wasteful against a large or
-expensive API. `detail:` is what avoids it:
-
-```yaml
-# pages/articles/page.yml
-fetch:
-  url: https://api.example.com/articles
-  as: articles
-  detail: rest
-```
-
-| `detail:` | URL built | for `slug` = `my-post` |
-|---|---|---|
-| `rest` | `{url}/{value}` | `https://api.example.com/articles/my-post` |
-| `query` | `{url}?{param}={value}` | `https://api.example.com/articles?slug=my-post` |
-| a pattern | `{param}` substituted | `https://api.example.com/article/{slug}` → `…/article/my-post` |
-
-`detail:` is injected for you when the query declares `deferred:` fields, or when
-the host the site is published to serves records live.
-
-### The list's query string carries over
-
-`rest` and `query` build the detail URL from the list URL, so a query string on the
-list survives onto the single-record fetch:
+- **a query with `deferred:` fields** ships a lean list, and the build writes one full
+  file per record — the page reads it with no configuration;
+- **a host that serves records live** answers the record's own question — no
+  configuration either;
+- **an [external query](./data-fetching.md#external-queries)** whose endpoint lists
+  summaries names the request for one full record with `record:`:
 
 ```yaml
-fetch:
-  url: https://api.example.com/articles?lang=en&api_key=abc
-  detail: rest
-# detail fetch → https://api.example.com/articles/my-post?lang=en&api_key=abc
+# queries.yml
+articles:
+  url: https://api.example.com/articles?fields=summary   # the list: summaries are enough
+  record:
+    url: https://api.example.com/articles/{slug}         # one article, whole
 ```
 
-That is usually what you want: locale, an API key, a tenancy id are all still
-needed for one record. Pagination params (`?_limit=12`) come along too — meaningless
-for one record, but harmless.
+`record.url` and `record.method` default to the query's; `body` and `transform` never
+carry over. The name the page's folder uses — `{slug}` for `[slug]`, `{id}` for
+`[id]` — is the value from the URL. A `record.url` you write is used as written —
+nothing of the list's URL is added to it — so a `?lang=` or a tenancy id the record
+request still needs goes in `record.url` too.
 
-⛔ **The one to check is a param that narrows the response**, such as
-`?fields=summary`. Carried onto a detail request it truncates the very record the
-detail fetch exists to get in full — and it fails quietly: the request succeeds, the
-record arrives, only some fields are missing. It reads as a bug in your component.
-
-A custom pattern is used verbatim, so nothing carries over unless you put it there:
-
-```yaml
-fetch:
-  url: https://api.example.com/articles?fields=summary   # list: summaries are enough
-  detail: https://api.example.com/articles/{slug}        # detail: the whole record
-```
-
-Either way the component reads the same thing — `detail:` changes only *how* the
+Either way the component reads the same thing — the source changes only *how* the
 runtime obtained the record, never how you read it.
+
+> **Removed:** `detail:` — `rest`, `query`, a URL pattern and `{ body, envelope }`. An
+> external query's `record:` says the same thing, on the query.
 
 ---
 
@@ -532,8 +510,8 @@ dist/
     └── best-practices/index.html
 ```
 
-No server needed. If the route query is `prerender: false`, or its source is a
-remote URL not read at build time, the parametric page is kept as a pattern and
+No server needed. If the route query is `prerender: false`, or it is an external
+query the build does not fetch, the parametric page is kept as a pattern and
 matched in the browser instead — and so is a route with more than one parameter
 (`/orgs/:org/members/:slug`), which one query's records cannot fill.
 
@@ -641,9 +619,9 @@ pages/team/
 
 **Nothing arrives in `content.data`.**
 Check the binding key. It is `as:` on a fetch — `schema:` was the old spelling and
-is no longer read. When absent it is inferred from the query name, or from the last
-segment of the path or URL, so a stale `schema:` does not error: the data lands
-under a *different* key and your component reads `undefined`. The build warns and
+is no longer read. When absent it is the query name, so a stale `schema:` does not
+error: the data lands under the query's name and a component expecting the other
+key reads `undefined`. The build warns and
 names the key it actually bound to.
 
 **The query delivers nothing at all.**
@@ -656,8 +634,8 @@ handle — `$name`, or `slug` — on each record; records without it get no page
 the build says how many — *"3 of 5 records have no "slug""* — once per page.
 
 **Every record shows on a parametric page.**
-The page has no route query: neither it, its parent nor the site declares a query,
-and its sections declare different ones. Declare the query in the parent's
+The page has no route query: neither it, its parent nor — on a top-level page — the
+site declares a query, and its sections declare different ones. Declare the query in the parent's
 `page.yml` (`query: articles`) — the documented shape — or give all the sections the
 same one.
 

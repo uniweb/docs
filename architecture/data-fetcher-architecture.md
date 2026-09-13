@@ -34,33 +34,34 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ site.yml fetcher.transports.default (if set)                         │
-│   Same registry lookup for every unclaimed schema.                   │
+│   Same registry lookup for every unclaimed `as`.                     │
 └──────────────────────────────────────────────────────────────────────┘
                                │ not set (or name unregistered)
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Framework default fetcher (terminal — always present)                │
-│   createDefaultFetcher({ basePath, config: website.config.fetcher }) │
+│   createDefaultFetcher({ basePath })                                 │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
 The default fetcher is the terminal resolver. It always exists. Sites that declare no `fetcher.transports` (the common case — docs, marketing, starter templates) run every request through this path.
 
-There is **no `match()` predicate, no route-walking, no silent foundation-owned routing**. The site always picks — and the pick is visible in `site.yml`, auditable. Foundations contribute named transports; extensions contribute by name too; the site selects per schema.
+There is **no `match()` predicate, no route-walking, no silent foundation-owned routing**. The site always picks — and the pick is visible in `site.yml`, auditable. Foundations contribute named transports; extensions contribute by name too; the site selects per data key (`as`).
 
 ---
 
 ## The default fetcher's role
 
-Narrow on purpose. Its job is to cover sites hitting static JSON under `public/data/` or a simple REST/GraphQL backend, without the site needing a foundation written for it.
+Narrow on purpose. Its job is to cover a site reading its own records and public, keyless JSON endpoints, without the site needing a foundation written for it.
 
-What the default handles (via `site.yml fetcher:` or per-fetch):
+What the default handles, all of it read from the query a fetch names:
 
-- `baseUrl` for relative remote URLs.
-- `headers` — static headers merged into every remote request (tenant routing, content negotiation, custom Accept values).
-- `envelope` — response-unwrap dot-paths (list / item / error).
-- `method: POST` + `body` per-fetch, with placeholder substitution from `dynamicContext`.
-- Per-fetch `transform:` — unchanged from today.
+- The file the build compiles from a query (`/data/<query>.json`), and a `deferred:` query's per-record files, under the site's base path.
+- A host's live records service, when the host offers one — the questions a page asks, in one request.
+- An external query's `url`, `method: POST` + `body` (with placeholder substitution from `dynamicContext`), and `transform:` — and on a parametric page, its `record:` request.
+- `scope` / `where` / `sort` / `limit`, evaluated over what arrived.
+
+It reads no site-level `fetcher:` keys. The `baseUrl` / `headers` / `envelope` / `supports` / `request.*` vocabulary it once read is retired — the build warns and drops it. A backend that needs a base URL, headers or its own wire is a transport.
 
 What the default deliberately does **not** do:
 
@@ -69,7 +70,7 @@ What the default deliberately does **not** do:
 - **Mutations (PUT / PATCH / DELETE)** — optimistic updates, CSRF, action semantics — different feature entirely.
 - **Query-language compilation** — the default forwards what the site author wrote; it doesn't translate between query languages.
 - **Response normalization** — snake_case → camelCase, date parsing, field renames. Foundation work.
-- **Secrets / private credentials.** Any value in `site.yml fetcher:` ends up in the served HTML. The framework doesn't offer a feature that pretends otherwise. See [Secrets posture](#secrets-posture).
+- **Secrets / private credentials.** Any value in `site.yml` or `queries.yml` ends up in the served HTML. The framework doesn't offer a feature that pretends otherwise. See [Secrets posture](#secrets-posture).
 
 The scope test is capability vs. cost. Every line in the default ships in the runtime on every site. A capability that benefits only a subset, or requires conditional logic (route matching, per-endpoint rules), belongs in middleware or a custom fetcher.
 
@@ -90,13 +91,14 @@ Normalized from the author's `fetch:` / `query:` config. Carried fields:
 | Field | Required | Description |
 | --- | --- | --- |
 | `as` | yes | Key under `content.data` the result will be stored at. |
-| `path` | either this | Local path under `public/`. Mutually exclusive with `url`. |
-| `url` | or this | Remote URL. Mutually exclusive with `path`. |
-| `transform` | no | Dot-path to extract from the response. Per-fetch, wins over `envelope`. |
-| `detail` | no | String (`rest` / `query` / pattern) or object (`{ body, envelope }`) for template-page single-entity fetches. |
+| `query` | no | The query the request reads, by name. |
+| `path` | either this | A compiled file under the site's base — `/data/<query>.json`, or a per-record file. Resolved from the query; never authored. Mutually exclusive with `url`. |
+| `url` | or this | An external query's address, sent as written. Mutually exclusive with `path`. |
+| `transform` | no | Dot-path to the records in the response — the query's `transform`, or `record.transform` on a record request. |
 | `method` | no | `GET` (default) or `POST`. Unsupported values warn and fall back to GET. |
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
-| `envelope` | no | Per-request unwrap paths for this one response (usually set by object-form `detail:`). |
+| `record` | no | An external query's `record:` — `{ url?, method?, body?, transform? }` — which `buildDetailConfig` turns into a parametric page's record request. |
+| `detail` | no | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true` for an external query's `record:` or a host's records service. |
 | `scope` / `where` / `sort` / `limit` | no | The author's query (folder branch, predicate, order, cap). The default fetcher evaluates them client-side over what arrived — `scope` over each record's `path` — and each combination is its own cache entry; a host that answers queries evaluates them at the source; a transport decides for itself. |
 | `dynamicContext` | no | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
@@ -173,7 +175,7 @@ parametric page asks for), `sort`, `limit`, `whole`, plus `as`, `transform` and 
 
 Fields that do **not** contribute:
 
-- `detail` — the detail fetch produces a different URL or body, which already splits the key.
+- `detail` / `record` — a record request is its own request, with its own URL, path or body, which already splits the key.
 - `dynamicContext` — carried on the request for resolution; the cache key's `body` already contains the substituted values.
 
 Custom fetchers with specialized needs (e.g., a request where the response varies by some out-of-band value) can override `cacheKey(request)` on the fetcher object.
@@ -196,8 +198,10 @@ Interactive re-fetching (search boxes, pagination, drill-downs) is handled by **
 
 `@uniweb/core`'s `substitutePlaceholders(value, context, { encode })` handles `{name}` substitution in two places:
 
-- **URL patterns.** `detail: '/articles/{slug}'` — entity-store fills in the dynamic-route paramValue. Encoding ON.
-- **POST body objects.** `body: { variables: { slug: '{slug}' } }` — default fetcher fills in the dynamic-route paramValue before JSON-serializing. Encoding OFF (JSON will serialize).
+- **Record addresses.** An external query's `record: { url: 'https://api.example.com/articles/{slug}' }`, or a `deferred:` query's `/data/articles/{slug}.json` — `buildDetailConfig` fills in the dynamic-route paramValue. Encoding ON.
+- **POST body objects.** `body: { variables: { slug: '{slug}' } }` — a `record.body` is filled by `buildDetailConfig`, and the default fetcher fills a request's body from `dynamicContext` before JSON-serializing. Encoding OFF (JSON will serialize).
+
+The names available are the route's own param (`{slug}` for `[slug]`, `{id}` for `[id]`), `{param}` as an alias for it, and `{slug}` as the record's slug when the record is already in hand.
 
 The matcher is strict: `\{([A-Za-z_][A-Za-z0-9_]*)\}`. Whitespace inside the braces disqualifies the match — so GraphQL selection sets like `{ id name }` pass through unchanged when they appear in a body string.
 
@@ -214,14 +218,9 @@ Uniweb sites reach the browser through two framework-level delivery modes:
 
 The dispatcher's behavior is identical across both modes — same routing, same cache, same contract. The only difference is *where fetches that happen at build time run*, which is a concern of the preload path, not the runtime fetcher.
 
-### Runtime-only scope for the default-fetcher vocabulary
+### The build reads an external query as the browser does
 
-The `baseUrl` / `headers` / `envelope` vocabulary is consumed by the **runtime** default fetcher. The separate build-time fetch path (`framework/build/src/site/data-fetcher.js`, used for `prerender: true` configs) does not yet read these fields — it applies local-file resolution and basic remote `fetch()` only. In practice this rarely bites:
-
-- Local `path:` fetches don't use `baseUrl` / `envelope` anyway.
-- Remote `url:` fetches default to `prerender: false`, so they run at runtime and do see the new vocabulary.
-
-A site that explicitly opts a remote fetch into `prerender: true` and relies on `baseUrl` / `headers` / `envelope` at build time will not get them applied during build. Build-time parity is a planned follow-up; the runtime path is the production path for most sites.
+When a binding of an external query says `prerender: true`, the build-time fetch path (`build/src/site/data-fetcher.js`) reads it with the runtime default fetcher's vocabulary: `url`, `method: POST` with its `body`, and `transform`, then `where` / `sort` / `limit` with the same evaluator. A binding of an external query defaults to `prerender: false`, so it runs in the browser unless the binding says `prerender: true`.
 
 ---
 
@@ -236,19 +235,17 @@ A site that explicitly opts a remote fetch into `prerender: true` and relies on 
 
 ## Secrets posture
 
-The framework's config is **public to the browser** by construction. In baked-in builds the site config is inlined into HTML via `__SITE_CONTENT__`; in shell mode it's stamped into `__DATA__` at request time. Either way, values in `site.yml fetcher:` — `baseUrl`, `headers`, anything — are visible to anyone viewing the page source.
+The framework's config is **public to the browser** by construction. In baked-in builds the site config is inlined into HTML via `__SITE_CONTENT__`; in shell mode it's stamped into `__DATA__` at request time. Either way, values in `site.yml` and `queries.yml` — an external query's `url` and `body`, a transport's binding under `fetcher:`, anything — are visible to anyone viewing the page source.
 
-That means `site.yml` is the wrong place for secrets. The framework doesn't pretend otherwise: no `auth:` knob, no env-var resolution into `headers`, no "private" channel. The honest pattern is **same-origin proxying**:
+That means `site.yml` is the wrong place for secrets. The framework doesn't pretend otherwise: no `auth:` knob, no env-var resolution into a request, no "private" channel. The honest pattern is **same-origin proxying**:
 
-- The site's `fetch:` configs reference a URL on the site's own origin (`/api/articles`).
+- The site's external query references a URL on the site's own origin (`url: /api/articles`).
 - A layer in front of the site — an edge worker, a backend service, whatever the deployment provides — intercepts matching paths, attaches credentials server-side, forwards to the upstream backend, returns the response.
 - The framework sees a plain URL. The secret never leaves the server.
 
-On the Uniweb platform, this is handled at the platform level. Sites store credential references in a platform-level secrets store (keyed to the site); the edge worker reads them at request time and proxies transparently. Framework-level configs only ever contain same-origin URLs.
+A host may provide that layer; on a self-hosted deployment it is whatever proxy you put in front of the site. Either way the site's configs only ever contain same-origin URLs.
 
-For self-hosted deployments, the same pattern applies via whatever proxy you put in front of the site.
-
-**Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable, GitHub public-read) are a distinct category — they're designed to be sent from browsers, and rate-limited at the API. Put them in `headers:` or directly in URLs; no proxy needed. Calling them "secrets" would be a misnomer.
+**Publishable tokens** (Mapbox public, Algolia search-only, Stripe publishable, GitHub public-read) are a distinct category — they're designed to be sent from browsers, and rate-limited at the API. Put them directly in an external query's URL or body; no proxy needed. Calling them "secrets" would be a misnomer.
 
 ---
 
@@ -266,13 +263,13 @@ The default `deriveCacheKey` stringifies the body into the cache key. Typical bo
 
 GraphQL selection sets contain `{ id name }`. The placeholder matcher requires no whitespace between the braces (`\{([A-Za-z_][A-Za-z0-9_]*)\}`), so `{ id }` and `{slug}` are distinguishable: the first has whitespace and isn't matched; the second has no whitespace and gets substituted when `slug` is in the dynamic-route context. Tested explicitly.
 
-### `envelope.error` falls through when the path is missing
+### A non-2xx response is an error, not data
 
-When a non-2xx response doesn't have the `envelope.error` path (or the body isn't JSON), the framework falls back to `HTTP <status>: <statusText>` rather than surfacing `undefined`. Dedicated test covers the "path exists but not in this body" case.
+The default fetcher reports a non-2xx response as `HTTP <status>: <statusText>` and delivers no records; the key stays absent from `content.data` and the message lands on `block.dataError`. A `transform:` never reads an error body.
 
 ### Foundation fetchers reading `ctx.website.config.fetcher` see the same block
 
-`site.yml fetcher:` is one block. The default fetcher reads a specific vocabulary (`baseUrl` / `envelope`); foundations are free to read their own keys from the same block. Unknown keys are ignored — no framework-level schema validation. Custom fetchers should document the keys they read.
+`site.yml fetcher:` is one block. The dispatcher reads `fetcher.transports`; the default fetcher reads nothing from it; a transport reads its own binding, conventionally under `fetcher.<name>`. Unknown keys are ignored — no framework-level schema validation. Custom fetchers should document the keys they read.
 
 ### Filter state doesn't re-fetch
 
@@ -299,6 +296,6 @@ Write a custom transport. Compose `@uniweb/fetchers` middleware around it. See [
 
 - [Data Sources](../development/data-sources.md) — User guide with recipes.
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing and registering a named transport.
-- [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, detail queries, filter-state patterns.
+- [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, whole records, filter-state patterns.
 - [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `query:` config.
 - [Extensions Architecture](./extensions-architecture.md) — How extensions contribute named transports.

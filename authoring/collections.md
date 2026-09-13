@@ -129,12 +129,14 @@ Every record carries a `path` naming the folder it sits in, and they all stay in
 the same pool — a query over `@/news` still reaches all of them. Folders do not
 split anything and do not change a record's URL.
 
-To ask for one branch, give the query a `scope:`:
+To ask for one branch, give the query a `scope:` — it belongs to the query, so a
+`fetch:` that names the query can't carry one:
 
 ```yaml
-fetch:
-  query: news
-  scope: '2024'                        # 2024 and everything inside it
+queries:
+  news2024:
+    schema: '@/news'
+    scope: '2024'                      # 2024 and everything inside it
 ```
 
 ```yaml
@@ -364,17 +366,19 @@ What this changes:
 
 Skip `deferred:` for records without heavy fields — the entire record ships, like always.
 
-**Remote sources.** The above describes file-based records — the build emits per-record files at `/data/<name>/<slug>.json` automatically. For a query over a remote API (`url:` instead of a local `schema:`), tell the framework where to find one full record by setting `detailUrl:`:
+**External queries.** The above describes the site's own records — the build emits per-record files at `/data/<name>/<slug>.json` automatically. An external query — `url:` instead of a `schema:` — reads records the site doesn't hold, so it can't declare `deferred:`. When its list carries less than a whole record, name the request for one with `record:`:
 
 ```yaml
 queries:
   articles:
-    url: /api/articles                  # a remote source
-    deferred: [body]
-    detailUrl: /api/articles/{slug}     # how to fetch one full record
+    url: https://api.example.com/articles             # an external query
+    record:
+      url: https://api.example.com/articles/{slug}    # how to fetch one full record
 ```
 
-Both the dynamic-route auto-detail and `useEntityDetail` consult `detailUrl:` when set; file-based queries leave it null and use the per-record file default.
+Both the `[slug]` page and `useEntityDetail` use `record:` when it's set. See [Data Fetching → External queries](../reference/data-fetching.md#external-queries).
+
+> **Removed:** `detailUrl:` — its case is `record: { url }`.
 
 ### Filterable surfaces with `queryable:`
 

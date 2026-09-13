@@ -57,8 +57,8 @@ nest:                           # Declare parent-child relationships
 # Data
 query: articles                 # A query by name (recommended; a list declares several)
 fetch:                          # …or the full fetch config (one or the other, not both)
-  url: https://api.example.com/team
-  as: team
+  query: team                   # A query declared in queries.yml
+  limit: 6                      # Adapted for this page: where, sort, limit
 
 # Analytics
 trackSections: true             # Override the site's `emit` for this page (true or false)
@@ -603,7 +603,7 @@ Load external data for components on this page.
 query: articles
 ```
 
-Fetches from `/data/articles.json` (generated from a collection). All sections on the page receive it in `content.data.articles` automatically.
+Names the `articles` query. All sections on the page receive its records in `content.data.articles` automatically. On a site with no backend they are read from `/data/articles.json`, the file the build generates from the query; a host that serves records live answers the same query.
 
 A list declares several, each under its own key:
 
@@ -619,18 +619,29 @@ page-level declaration serves sections that need different data.
 
 ```yaml
 fetch:
-  path: /data/team.json
-  as: team
-  prerender: true
+  query: team
+  as: members                # Key in content.data (defaults to the query name)
+  where: { role: faculty }   # Narrows the query — both must hold
+  sort: name asc             # Replaces the query's order
+  limit: 12                  # Replaces the query's count
 ```
 
-### Remote Data
+A fetch always names a query. It never names a file or a URL.
+
+### External Data
+
+A public JSON API is an external query — declared once with its `url:`, and named by the page like any other query:
 
 ```yaml
-fetch:
+# queries.yml
+apiData:
   url: https://api.example.com/data
-  as: apiData
-  transform: data.items
+  transform: data.items      # Dot-path to the records in the response
+```
+
+```yaml
+# page.yml
+query: apiData
 ```
 
 See [Data Fetching](./data-fetching.md) for all options.

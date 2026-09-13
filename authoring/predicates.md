@@ -21,7 +21,7 @@ fetch:
 
 This delivers articles where `published == true` AND `category == 'news'`.
 
-The same predicate works on any fetch declaration — block frontmatter, page-level, folder-level, site-level. It also works against any source: the site's own compiled records, a local JSON file, a remote URL.
+The same predicate works on any fetch declaration — block frontmatter, page-level, folder-level, site-level. It also works against any source: the site's own records, a host's live records, an external query's response.
 
 ---
 

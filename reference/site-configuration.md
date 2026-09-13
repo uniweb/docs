@@ -56,9 +56,7 @@ build:
   prerender: true                    # Generate static HTML
 
 # Data Sources
-fetch:
-  path: /data/global.json
-  as: siteConfig
+query: config                        # A query by name — see Global Data Fetching
 
 # Content Collections
 queries:
@@ -1053,15 +1051,14 @@ When [view transitions](../development/view-transitions.md#interaction-with-spli
 
 ## Global Data Fetching
 
-Load data available to all pages.
+Load data for the site's layout areas and top-level pages.
 
 ```yaml
 fetch:
-  path: /data/site-config.json
-  as: config
+  query: config
 ```
 
-Every section on every page receives this data automatically in `content.data.config`.
+Every section of a layout area (header, footer, …) and of a top-level page — the homepage included — receives this data automatically in `content.data.config`. The site is the root page, so its fetch reaches the pages directly under `pages/` and no further: a section on `/docs/setup` that needs the data names the query itself. See [Data Fetching → Cascade](./data-fetching.md#cascade).
 
 ### The `query:` shorthand
 
@@ -1078,10 +1075,13 @@ query: [articles, team]     # one fetch each
 
 | Option | Description |
 |--------|-------------|
-| `path` | Local file in `public/` |
-| `url` | Remote URL |
-| `schema` | Key in `content.data` |
+| `query` | The query to read (required) |
+| `as` | Key in `content.data` (defaults to the query name) |
+| `where` | Narrows the query — both must hold |
+| `sort` / `limit` | Replace the query's order and count |
 | `prerender` | Build-time vs runtime fetch |
+
+A fetch never names a file or a URL: `/data/<query>.json` is what the build generates from a query, and a public API is an external query — a query with `url:`.
 
 See [Data Fetching](./data-fetching.md) for the full reference.
 
@@ -1108,7 +1108,8 @@ queries:
 
 | Option | Description |
 |--------|-------------|
-| `path` | Folder containing markdown files |
+| `schema` | The schema whose records the query reads — `entities/{schema}/` |
+| `url` | Instead of `schema`, an external query's address — see [Data Fetching → External queries](./data-fetching.md#external-queries) |
 | `route` | Base route for the collection's detail pages — see below |
 | `sort` | Sort expression (`field asc/desc`) |
 | `where` | Filter predicate (where-object) |
@@ -1339,9 +1340,7 @@ build:
   prerender: true
 
 # Global data
-fetch:
-  path: /data/site-config.json
-  as: config
+query: config
 
 # Collections
 queries:

@@ -268,20 +268,22 @@ This tells the site to prefix all URLs with `/docs/`. Navigation, links, assets,
 
 ## Global Data
 
-If your site needs data available on every page — like a shared collection or configuration from an API:
+If your site's header, footer or top-level pages need shared data — like a shared collection or configuration from an API:
 
 ```yaml
 query: config
 ```
 
-If you have a `entities/config/` collection, this makes it available to all pages. Components that expect `config` data will receive it automatically.
+If you have a `entities/config/` collection, this makes it available to the layout areas (header, footer, …) and to the sections of the pages directly under `pages/`. Components that expect `config` data will receive it automatically. A page further down, such as `/docs/setup`, doesn't receive it — a section there that needs the data names the query itself.
 
-You can also fetch from a remote URL:
+If the data comes from a public API instead, declare `config` as an external query — a query with `url:` — and name it the same way:
 
 ```yaml
-fetch:
-  url: https://api.example.com/config
-  as: config
+queries:
+  config:
+    url: https://api.example.com/config
+
+query: config
 ```
 
 For details, see [Data Fetching](../reference/data-fetching.md).
