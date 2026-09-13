@@ -9,14 +9,10 @@ Layout areas live in the `layout/` directory, parallel to `pages/`:
 ```
 site/
 ├── layout/
-│   ├── header/               # Renders at top of every page
-│   │   └── header.md
-│   ├── footer/               # Renders at bottom of every page
-│   │   └── footer.md
-│   ├── left/                 # Left sidebar (if layout supports)
-│   │   └── sidebar.md
-│   └── right/                # Right sidebar (if layout supports)
-│       └── sidebar.md
+│   ├── header.md             # Renders at top of every page
+│   ├── footer.md             # Renders at bottom of every page
+│   ├── left.md               # Left sidebar (if layout supports)
+│   └── right.md              # Right sidebar (if layout supports)
 ├── pages/
 │   └── home/                 # Regular page
 │       └── hero.md
@@ -28,6 +24,20 @@ Unlike regular pages, layout areas:
 - Can be hidden per-page via `layout.hide`
 
 The conventional area names are `header`, `footer`, `left`, and `right`. These are promoted by templates and documentation, but foundations can define any area names they need — `topbar`, `sidebar`, `statusbar`, or anything else. See [Custom Layouts](../development/custom-layouts.md#general-named-areas) for details.
+
+### How the `layout/` folder is read
+
+The folder's structure alone decides what each entry is. It never depends on which foundation the site uses:
+
+| Path | Is |
+|------|----|
+| `layout/<area>.md` | An area of the default layout, with one section |
+| `layout/<name>/` | A named layout — every folder directly under `layout/` |
+| `layout/<name>/<area>.md` | An area of that layout, with one section |
+| `layout/<name>/<area>/` | An area with several sections, rendered in filename order |
+| `layout/default/<area>/` | An area of the default layout with several sections |
+
+An area is a group of sections, not a page: it has no `page.yml`. Order its sections with numeric filename prefixes, and let each section declare its own data with `query:` or `fetch:`.
 
 ---
 
@@ -51,7 +61,7 @@ The conventional area names are `header`, `footer`, `left`, and `right`. These a
 The foundation's Layout component controls where areas appear:
 
 ```jsx
-// src/layouts/DocsLayout/index.jsx
+// src/layouts/docs/index.jsx — the layout named `docs`
 export default function DocsLayout({ header, footer, left, right, body }) {
   return (
     <div className="layout">
@@ -88,7 +98,7 @@ Renders at the top of every page, typically containing:
 - Dark mode toggle
 
 ```markdown
-<!-- layout/header/header.md -->
+<!-- layout/header.md -->
 ---
 type: Header
 sticky: true
@@ -111,7 +121,7 @@ Renders at the bottom of every page, typically containing:
 - Copyright notice
 
 ```markdown
-<!-- layout/footer/footer.md -->
+<!-- layout/footer.md -->
 ---
 type: Footer
 ---
@@ -137,7 +147,7 @@ type: Footer
 Side areas for documentation sites, dashboards, or complex layouts:
 
 ```markdown
-<!-- layout/left/sidebar.md -->
+<!-- layout/left.md -->
 ---
 type: Sidebar
 ---
@@ -160,15 +170,15 @@ type: Sidebar
 
 ## Multiple Sections
 
-Area folders can contain multiple `.md` files:
+An area with several sections is a folder inside a layout's folder. For the default layout, that folder is `layout/default/`:
 
 ```
-layout/header/
+layout/default/header/
 ├── 1-topbar.md       # Announcement bar
 └── 2-navbar.md       # Main navigation
 ```
 
-Both render in order, giving you flexibility for complex headers:
+The sections render in filename order, giving you flexibility for complex headers:
 
 ```jsx
 // 1-topbar.md
@@ -184,6 +194,10 @@ sticky: true
 ---
 <!-- Main navigation -->
 ```
+
+> **Note:** a folder directly under `layout/` is always a named layout. `layout/header/` is the layout named `header`, not the default layout's header area — the build warns when a layout folder is named like a common area. Write `layout/header.md` for a one-section header, or `layout/default/header/` for several sections.
+
+An area folder holds only its section files: no `page.yml`, no `@`-prefixed child sections, and no folders of markdown inside it. The build stops with a message naming the file if it finds one.
 
 ---
 
@@ -210,7 +224,7 @@ You can also select a different layout and hide specific areas:
 # pages/reference/page.yml
 title: Quick Reference
 layout:
-  name: DocsLayout
+  name: docs
   hide: [left, right]
 ```
 
@@ -218,23 +232,25 @@ layout:
 
 ## Named Layout Areas
 
-When a foundation provides multiple layouts, each layout's area content lives in a subdirectory of `layout/`:
+When a foundation provides multiple layouts, each layout's area content lives in a folder of `layout/` named after the layout:
 
 ```
 site/layout/
 ├── header.md            ← default layout areas
 ├── footer.md
 ├── left.md
-├── marketing/           ← areas for MarketingLayout
+├── marketing/           ← areas for the `marketing` layout
 │   ├── header.md
 │   └── footer.md
-└── dashboard/           ← areas for DashboardLayout
+└── dashboard/           ← areas for the `dashboard` layout
     ├── topbar.md
-    ├── sidebar.md
+    ├── sidebar/         ← an area with several sections
+    │   ├── 1-nav.md
+    │   └── 2-filters.md
     └── statusbar.md
 ```
 
-The directory name matches the layout name (case-insensitive, `Layout` suffix stripped). See [Custom Layouts](../development/custom-layouts.md#named-layouts) for the full guide.
+The folder name is the layout name, matched regardless of case: `layout/marketing/` holds the areas of pages whose layout is `marketing` or `Marketing`. A named layout's areas are its own — a page on the `marketing` layout gets no `left` area from the default layout's `left.md`. See [Custom Layouts](../development/custom-layouts.md#named-layouts) for the full guide.
 
 ---
 

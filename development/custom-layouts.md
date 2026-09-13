@@ -27,11 +27,11 @@ function DefaultLayout({ header, body, footer }) {
 
 | Prop | Source | What it contains |
 |------|--------|-----------------|
-| `header` | `layout/header/` folder | Pre-rendered React elements (or null) |
+| `header` | the `header` area — `layout/header.md` | Pre-rendered React elements (or null) |
 | `body` | Page content files | Pre-rendered React elements (or null) |
-| `footer` | `layout/footer/` folder | Pre-rendered React elements (or null) |
-| `left` | `layout/left/` folder | Pre-rendered React elements (or null) |
-| `right` | `layout/right/` folder | Pre-rendered React elements (or null) |
+| `footer` | the `footer` area — `layout/footer.md` | Pre-rendered React elements (or null) |
+| `left` | the `left` area — `layout/left.md` | Pre-rendered React elements (or null) |
+| `right` | the `right` area — `layout/right.md` | Pre-rendered React elements (or null) |
 | `params` | page.yml `layout.params` + meta.js defaults | Merged layout parameters |
 | `page` | Runtime | Current Page instance |
 | `website` | Runtime | Website instance |
@@ -42,31 +42,30 @@ The key insight: by the time your Layout receives these props, the sections are 
 
 ---
 
-## Layout Areas Are Like Pages
+## Layout Areas Hold Sections
 
-Each layout folder can contain multiple sections, just like a regular page folder:
+An area can hold several sections. Most areas have one, written as a single file; an area with several is a folder of section files inside its layout's folder — `layout/default/` for the default layout:
 
 ```
 site/
 ├── layout/
-│   ├── header/
-│   │   ├── page.yml
-│   │   ├── 1-topbar.md        ← Announcement bar
-│   │   └── 2-navbar.md         ← Main navigation
-│   ├── footer/
-│   │   ├── page.yml
-│   │   ├── 1-footer.md         ← Footer links
-│   │   └── 2-copyright.md      ← Copyright bar
-│   └── left/
-│       ├── page.yml
-│       └── sidebar-nav.md      ← Sidebar navigation
+│   ├── left.md                 ← Sidebar navigation (one section)
+│   └── default/
+│       ├── header/
+│       │   ├── 1-topbar.md     ← Announcement bar
+│       │   └── 2-navbar.md     ← Main navigation
+│       └── footer/
+│           ├── 1-footer.md     ← Footer links
+│           └── 2-copyright.md  ← Copyright bar
 ├── pages/
 │   └── home/
 │       ├── page.yml
 │       └── hero.md
 ```
 
-The runtime renders all sections in `layout/header/` into a single React element and passes that as the `header` prop. Your Layout wraps that element in a `<header>` tag — that's where the semantic HTML comes from. Section components themselves render `<div>`s. They don't know whether they'll end up in a header, sidebar, or main content area.
+An area is not a page: it has no `page.yml`, its sections render in filename order, and each section declares its own data. A folder directly under `layout/` is always a named layout ([Named Layout Content](#named-layout-content)), which is why the default layout's multi-section areas live in `layout/default/`.
+
+The runtime renders all sections of the `header` area into a single React element and passes that as the `header` prop. Your Layout wraps that element in a `<header>` tag — that's where the semantic HTML comes from. Section components themselves render `<div>`s. They don't know whether they'll end up in a header, sidebar, or main content area.
 
 ```
 ┌─────────────────────────────────────┐
@@ -401,7 +400,7 @@ export default {
 }
 ```
 
-The `areas` array tells the content-collector which layout section files to expect. The `params` work like section type params — defaults are merged with values from `page.yml`.
+The `areas` array declares which areas the layout renders. It does not decide how a site's `layout/` folder is read — that comes from the folder alone ([Named Layout Content](#named-layout-content)). The `params` work like section type params — defaults are merged with values from `page.yml`.
 
 #### Scroll management
 
@@ -474,10 +473,10 @@ export default {
 }
 ```
 
-The site provides content with matching filenames:
+The site provides content with matching filenames, in the layout's folder:
 
 ```
-layout/dashboard/
+layout/DashboardLayout/
 ├── topbar.md
 ├── sidebar.md
 └── statusbar.md
@@ -502,23 +501,27 @@ function DashboardLayout({ topbar, sidebar, body, statusbar }) {
 
 ### Named Layout Content
 
-When a site uses named layouts, each layout's area content lives in a subdirectory of `layout/`:
+When a site uses named layouts, each layout's area content lives in a folder of `layout/` named after the layout:
 
 ```
 site/layout/
 ├── header.md            ← default layout areas (bare files)
 ├── footer.md
 ├── left.md
-├── marketing/           ← named layout areas
+├── MarketingLayout/     ← areas for the MarketingLayout layout
 │   ├── header.md
 │   └── footer.md
-└── dashboard/           ← named layout areas
+└── DashboardLayout/     ← areas for the DashboardLayout layout
     ├── topbar.md
-    ├── sidebar.md
+    ├── sidebar/         ← an area with several sections
+    │   ├── 1-nav.md
+    │   └── 2-filters.md
     └── statusbar.md
 ```
 
-The directory name is the layout name, lowercased. If the layout name is `MarketingLayout`, the content directory is `layout/marketing/` (the framework matches case-insensitively and strips the `Layout` suffix).
+The structure alone decides what each entry is — no foundation is consulted: a file at the top of `layout/` is a default-layout area, a folder directly under `layout/` is a named layout, and a folder inside a layout's folder is an area with several sections. The folder name is the layout name, matched regardless of case, so `layout/marketinglayout/` works as well as `layout/MarketingLayout/`.
+
+A named layout's areas are its own. A page on `MarketingLayout` gets no `left` area from the default layout's `left.md`; if the layout should have one, give it `layout/MarketingLayout/left.md`.
 
 ---
 
@@ -547,7 +550,7 @@ Section components render `<div>`s. They don't add `<header>` or `<main>` wrappe
 
 - **Close mobile drawers on route change.** SPA navigation doesn't trigger a page reload, so drawers stay open unless you close them explicitly. The docs template watches `page.route` in a `useEffect`.
 
-- **Test with and without areas.** Some pages may not have `layout/left/` or `layout/right/` content. Your Layout should handle null gracefully — check before rendering, and consider adjusting the main content width when areas are absent.
+- **Test with and without areas.** Some pages may not have `left` or `right` area content. Your Layout should handle null gracefully — check before rendering, and consider adjusting the main content width when areas are absent.
 
 ---
 

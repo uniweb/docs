@@ -138,7 +138,7 @@ src/sections/
 └── Footer.jsx
 ```
 
-Content authors can now use `type: Hero`, `type: Features`, `type: Testimonial`, and so on. Header and Footer go in the site's `layout/header/` and `layout/footer/` folders to render on every page.
+Content authors can now use `type: Hero`, `type: Features`, `type: Testimonial`, and so on. Header and Footer go in the site's `layout/header.md` and `layout/footer.md` to render on every page.
 
 ### Configuration with params
 

@@ -668,12 +668,12 @@ But — as discussed in the [Front Desk Pattern](#the-front-desk-pattern) sectio
 The runtime's default Layout renders every page as three areas — `<header>`, `<main>`, `<footer>` — stacked vertically. Sections within each area render sequentially. This is what you get without any configuration:
 
 ```html
-<header>  <!-- layout/header/ sections (0 or more) -->
+<header>  <!-- header area sections (0 or more) -->
 <main>    <!-- page body sections (0 or more) -->
-<footer>  <!-- layout/footer/ sections (0 or more) -->
+<footer>  <!-- footer area sections (0 or more) -->
 ```
 
-Header and footer content comes from the `layout/header/` and `layout/footer/` folders. The default Layout ignores left and right panel content (`layout/left/`, `layout/right/`).
+Header and footer content comes from the site's `layout/header.md` and `layout/footer.md` (see [Layout Areas](../reference/layout-areas.md) for areas with several sections). The default Layout ignores left and right panel content (`layout/left.md`, `layout/right.md`).
 
 ### `Component.as` — controlling the wrapper tag
 
