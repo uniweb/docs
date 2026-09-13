@@ -247,7 +247,9 @@ its own declaration of that same query — gets the one record. A section that
 declares a **different** query of its own gets that query as declared, so a
 sidebar of upcoming events on a member's page is not narrowed by the member's
 handle. A query two or more levels up reaches none of the page's sections, and is
-never its route query either.
+never its route query either — except for a [page nested inside a parametric
+page](#pages-inside-a-parametric-page), which shares the route query of the page
+that captured its parameter.
 
 ### What the URL segment is matched against
 
@@ -292,23 +294,25 @@ record's page will not exist at that URL — the static page has it.
 ### Pages inside a parametric page
 
 A folder inside a `[name]` folder is a page too, and a parametric one:
-`pages/members/[slug]/cv/` is `/members/:slug/cv`. It binds its ancestor's
-parameter, and its route query follows the same rule — its own query, else its
-parent's — so it reads the record when the page above it declares the query:
+`pages/members/[slug]/cv/` is `/members/:slug/cv`. Its `:slug` was captured by the
+`[slug]` page, so it is about the same record: its route query is **the `[slug]`
+page's**, found by the rule above at that page — however far up it is declared —
+and its sections receive that record.
 
 ```text
 pages/members/
-├── page.yml              # query: members — the list page's query
+├── page.yml              # query: members — the route query of [slug]/ and of cv/
 ├── list.md
 └── [slug]/
-    ├── page.yml          # query: members — declared again, so cv/ inherits it
-    ├── 1-profile.md      # /members/alice
+    ├── 1-profile.md      # /members/alice     — content.data.members[0] is Alice
     └── cv/
-        └── 1-cv.md       # /members/alice/cv — Alice's record again
+        ├── page.yml      # query: publications — cv/'s own data, under its own key
+        └── 1-cv.md       # /members/alice/cv  — content.data.members[0] is Alice again
 ```
 
-A query two levels up does not reach `cv/`, which is why `[slug]/page.yml` names
-the query itself. Both pages ask the same saved query, so it is fetched once.
+A query the nested page declares itself is delivered under its own key and changes
+nothing about what `:slug` names — `publications` above is not searched for `alice`.
+Its other keys cascade as usual, one parent up.
 
 ### Folder names the build refuses
 
@@ -424,21 +428,25 @@ runtime obtained the record, never how you read it.
 
 ## Related items
 
-A section on a parametric page can receive the set **minus the current record**.
-Refine the inherited query rather than declaring a new source:
+A section on a parametric page can receive the set **minus the current record**. Name
+the query and say how the section uses the page's record with `current:`:
 
 ```markdown
 <!-- pages/articles/[slug]/2-related.md -->
 ---
 type: RelatedArticles
 fetch:
-  refine: true    # borrow the ancestor's query, don't introduce a source
-  detail: false   # the set minus the record this page is about
-  limit: 3
+  query: articles
+  current: exclude   # the query's records without the one this page is about
+  limit: 3           # three others
 ---
 
 # More articles
 ```
+
+`current: only` is the default — the record, as a list of one — and `current: include`
+gives all of them with the record among them, for a previous / next pager. The order
+of work is narrow, sort, remove the record, then `limit`.
 
 ```jsx
 export default function RelatedArticles({ content, block }) {
@@ -467,7 +475,7 @@ record, another showing a few of its siblings.
 pages/articles/[slug]/
 ├── 1-article.md      # type: Article           → content.data.articles[0]
 ├── 2-author.md       # type: AuthorBio         → content.data.articles[0]
-└── 3-related.md      # type: RelatedArticles   → refine: true, detail: false, limit: 3
+└── 3-related.md      # type: RelatedArticles   → fetch: { query: articles, current: exclude, limit: 3 }
 ```
 
 Each section reads what it cares about. The page offers the data; what to render

@@ -91,7 +91,7 @@ content.data.articles[0]   // { slug: 'my-post', title: '...' }
 
 The collection key is the same on the list page and the detail page — only the array length differs (the full collection on `/blog`, one element on `/blog/my-post`). There is no separate singular key.
 
-No component-side opt-in. No `refine: true`. The template page's Article component reads `content.data.articles[0]` directly.
+No component-side opt-in. The template page's Article component reads `content.data.articles[0]` directly.
 
 ---
 
@@ -164,7 +164,7 @@ const article = content.data.articles?.[0]
 if (!article) return <NotFound />
 ```
 
-A "related articles" section that wants the *full* collection (not just the focused record) declares a block-level `fetch: { refine: true, detail: false }` — that asks for the collection minus the current item, which arrives as a multi-element array.
+A "related articles" section that wants the other records (not just the focused one) declares `fetch: { query: articles, current: exclude }` in its frontmatter — the query's records minus the one the page is about, as a multi-element array.
 
 ### When to use it
 
@@ -213,24 +213,24 @@ fetch:
 
 ---
 
-## Per-instance overrides: block-level `fetch: { refine: true, ... }`
+## Per-section choices on a parametric page: `current:`
 
-Sometimes a specific block on a template page needs the data shaped differently — "give me the collection, not the matched item" (for a related-items panel), or "give me a slice." A block's `.md` frontmatter can borrow the parent's query with modifications:
+Sometimes a specific section on a parametric page needs the data shaped differently — "give me the other records, not the matched one" (for a related-items panel), or "give me all of them, this one included" (for a previous / next pager). The section names the query and says how it uses the page's record:
 
 ```yaml
-# pages/articles/[id]/2-related.md
+# pages/articles/[slug]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  refine: true    # borrow the parent's query
-  detail: false   # collection, minus the current item
-  limit: 3        # slice to 3
+  query: articles
+  current: exclude   # the query's records, minus the one this page is about
+  limit: 3           # three others
 ---
 
 # More articles
 ```
 
-This is per-instance. No new URL — the runtime merges these overrides into the parent's fetch config.
+`current: only` is the default (the record, as a list of one), `exclude` gives the others, and `include` gives all of them. `where`, `sort` and `limit` adapt the query as on any fetch.
 
 ---
 

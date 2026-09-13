@@ -157,24 +157,30 @@ export default {
 
 It then receives `content.data = {}` regardless of what the cascade produced. Used for pure layout primitives or debug components — almost never in practice.
 
-### Block-level override: `fetch: { refine: true, ... }`
+### A section on a parametric page: `current:`
 
-A block's `.md` frontmatter can borrow the parent's query and customize how the result arrives. `refine: true` tells the runtime "this isn't a new data source — it's a per-instance refinement of the ancestor's query."
+On a [parametric page](./dynamic-routes.md) — `pages/articles/[slug]/` — every section receives the one record the URL names, as a list of one. A section that wants something else names the query and says how it uses the page's record with `current:`:
+
+| `current:` | the section receives |
+|---|---|
+| `only` | the record, as a list of one — the default, what every section gets without saying |
+| `exclude` | the query's records without it — "related", "more articles" |
+| `include` | all of them, the record among them — for a previous / next pager |
 
 ```yaml
-# pages/articles/[id]/2-related.md
+# pages/articles/[slug]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  refine: true    # borrow the parent's query (don't define a new URL)
-  detail: false   # give me the collection minus the current item
-  limit: 3        # slice to 3
+  query: articles
+  current: exclude
+  limit: 3        # counts the others
 ---
 ```
 
-See [Related Items](#related-items-pattern) for the common use.
+`current:` belongs on a section's `fetch:`, under the key the page's URL narrows. The build stops on a `current:` in `page.yml`, `folder.yml` or `site.yml`, and warns about one that nothing reads — on another key, or on a page that is not parametric. See [Related Items](#related-items-pattern) for the common use.
 
-> **Removed:** `inherit: true`, the earlier spelling of `refine: true`, is no longer accepted — the build stops with an error naming the current spelling. Rename it.
+> **Removed:** `refine: true` and `detail: false` — write `current: exclude`. `inherit: true`, their earlier spelling, is refused the same way. The build stops with a message naming `current:`.
 
 ### Precedence
 
@@ -191,15 +197,17 @@ Site fetch                          →  lowest priority
 
 ## Related Items Pattern
 
-A section on a dynamic page can receive the full collection **minus the current item** using `detail: false`. Combined with `limit`, this is the "related items" pattern:
+A section on a parametric page can receive the query's records **without the one the page is about** using `current: exclude`. Combined with `limit`, this is the "related items" pattern:
 
 ```yaml
-# pages/articles/[id]/2-related.md
+# pages/articles/[slug]/2-related.md
 ---
 type: RelatedArticles
 fetch:
-  refine: true
-  detail: false
+  query: articles
+  current: exclude
+  where: { featured: true }   # narrows, as on any fetch
+  sort: date desc
   limit: 3
 ---
 
@@ -210,11 +218,11 @@ fetch:
 // RelatedArticles/meta.js
 export default {
   data: { articles: '@/article' },
-  // refine: true, detail: false, and limit are set per-instance in the .md frontmatter
+  // `current:`, `where`, `sort` and `limit` are set per section in the .md frontmatter
 }
 ```
 
-The component receives the related items directly in `content.data.articles` — filtered and sliced, ready to render. Because `detail: false` asks for the collection (not the focused record), the component gets the related-articles array, not a single-element one.
+The component receives the related items directly in `content.data.articles`, ready to render. The order of work is narrow, sort, remove the page's record, then `limit` — so `limit: 3` is three *other* articles.
 
 ---
 

@@ -380,7 +380,7 @@ export default {
 }
 ```
 
-> A `data:` declaration is a hint (it drives the editor and supplies defaults), never a delivery gate. The block-frontmatter form `fetch: { refine: true, detail: false, limit: 3 }` in a `.md` file is a different mechanism (per-instance override of the parent's query). See [Data Fetching](./data-fetching.md) for details.
+> A `data:` declaration is a hint (it drives the editor and supplies defaults), never a delivery gate. The frontmatter form `fetch: { query: articles, current: exclude, limit: 3 }` in a `.md` file is a different mechanism — what a section fetches, and on a parametric page how it uses the page's record. See [Data Fetching](./data-fetching.md) for details.
 
 #### The three value forms
 
