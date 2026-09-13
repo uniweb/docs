@@ -397,7 +397,7 @@ Operators: `eq` `ne` `gt` `gte` `lt` `lte` `in` `not_in` `exists` `contains` `st
 
 ## Sorting
 
-Sort by one or more fields:
+Sort by one field:
 
 ```yaml
 queries:
@@ -411,8 +411,11 @@ queries:
 
   team:
     schema: '@/person'
-    sort: order asc, name asc  # By order, then alphabetically
+    sort: order asc         # By their `order` field
 ```
+
+A query sorts by one key. A comma-separated list (`order asc, name asc`) stops the build
+rather than being partly honoured.
 
 ### Sort direction
 
