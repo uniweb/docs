@@ -444,8 +444,8 @@ where:
   # Set membership
   rank: { in: [associate, full] }
 
-  # Pattern match
-  title: { like: 'Origin*' }
+  # Text (plain, case-insensitive)
+  title: { starts_with: 'origin' }
 
   # Boolean composition
   and:
@@ -464,10 +464,16 @@ Operators (nested object form):
 | `eq` | Equal (also implicit when the value is bare) |
 | `ne` | Not equal |
 | `gt`, `gte`, `lt`, `lte` | Comparisons |
-| `in` | Value is in the listed array |
-| `nin` | Value is not in the listed array |
-| `like` | Glob match (`*` any run, `?` one char) |
-| `exists` | Field is present (truthy bool) |
+| `in` | Equal to one of the listed values |
+| `not_in` | Equal to none of the listed values |
+| `exists` | `true`: the field has a value — not missing, empty text or an empty list. `false`: it has none |
+| `contains` | On a text, holds the value as a piece of it; on a list, holds an item equal to it |
+| `starts_with`, `ends_with` | A text that starts / ends with the value |
+
+Text operators take plain text (no wildcards) and compare regardless of case. A condition on a
+list field holds when any member satisfies it. A where-object outside this language — an unknown
+operator, an empty `and:` / `or:`, a text operator with empty text — stops the build; `like` and
+`nin` are retired. See [Predicates](../authoring/predicates.md) for the full rules.
 
 A branch of the site's folder is not an operator: it is the query's `scope:` — `scope: '2024'`
 holds records placed in `2024` and `2024/spring`, not `2024b` — on a named query or on a

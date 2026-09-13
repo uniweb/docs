@@ -391,7 +391,7 @@ Common shapes:
 | Tagged "featured" | `{ tags: featured }` |
 | In a category | `{ category: tutorial }` |
 
-Operators: `eq` `ne` `gt` `gte` `lt` `lte` `in` `nin` `like` `exists`. Compose with `and:` / `or:` / `not:`. Full reference and the saved-views pattern: [Predicates](../authoring/predicates.md).
+Operators: `eq` `ne` `gt` `gte` `lt` `lte` `in` `not_in` `exists` `contains` `starts_with` `ends_with`. Compose with `and:` / `or:` / `not:`. Full reference and the saved-views pattern: [Predicates](../authoring/predicates.md).
 
 ---
 

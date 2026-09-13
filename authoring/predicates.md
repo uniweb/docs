@@ -31,17 +31,17 @@ When you need more than equality, the value becomes a small object naming the op
 
 ```yaml
 where:
-  rank: { in: [associate, full] }       # value is in the list
-  start_year: { gte: 2010 }             # ≥ comparison
-  status: { nin: [draft, archived] }    # value is NOT in the list
-  email: { exists: true }               # field is present
+  rank: { in: [associate, full] }         # value is one of the list
+  start_year: { gte: 2010 }               # ≥ comparison
+  status: { not_in: [draft, archived] }   # value is none of the list
+  email: { exists: true }                 # field has a value
+  title: { starts_with: 'the' }           # text, case-insensitive
 ```
 
-Operators come in three tiers. The first is what nearly every predicate needs and what
-every source — the built records, a provider that answers queries — evaluates identically.
-Reach for the others knowingly.
+Every operator means the same thing wherever the records come from — the site's own
+compiled records, or a host that answers queries.
 
-**The spine.** Equality, comparison, membership, presence:
+**Equality, comparison, membership, presence:**
 
 | Operator | Meaning | Example |
 |---|---|---|
@@ -49,22 +49,34 @@ Reach for the others knowingly.
 | `ne` | Not equal | `{ draft: { ne: true } }` |
 | `gt`, `gte` | Greater than / greater than or equal | `{ year: { gte: 2020 } }` |
 | `lt`, `lte` | Less than / less than or equal | `{ price: { lt: 100 } }` |
-| `in` | Value is in the listed array | `{ tag: { in: [news, events] } }` |
-| `nin` | Value is *not* in the listed array | `{ status: { nin: [draft, archived] } }` |
-| `exists` | Field is truthy (boolean toggle) | `{ author: { exists: true } }` |
+| `in` | Equal to one of the listed values | `{ tag: { in: [news, events] } }` |
+| `not_in` | Equal to none of the listed values | `{ status: { not_in: [draft, archived] } }` |
+| `exists` | `true`: the field has a value — not missing, empty text or an empty list (`0` and `false` are values). `false`: it has none | `{ author: { exists: true } }` |
 
-A bare value against a field that holds a list matches when the list *contains* it —
-`{ tags: featured }` selects a record whose `tags` are `[featured, sale]`.
+**Text** — plain text, no wildcards, compared regardless of case:
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `starts_with` | A text that starts with the value | `{ title: { starts_with: 'the' } }` |
+| `ends_with` | A text that ends with the value | `{ file: { ends_with: '.pdf' } }` |
+| `contains` | On a text, holds the value as a piece of it; on a list, holds an item equal to it | `{ title: { contains: 'guide' } }` · `{ tags: { contains: news } }` |
+
+Values keep their type: `'3'` does not equal `3`, and a number or a boolean is not text.
+
+**Lists.** A condition on a field that holds a list holds when **any member** satisfies it:
+`{ tags: featured }` selects a record whose `tags` are `[featured, sale]`, `{ tags: { ne: featured } }`
+selects one that does not have `featured`, `{ tags: { not_in: [a, b] } }` one that has neither,
+and a comparison holds when some member satisfies it.
+
+**Missing fields.** A record with no value for a field satisfies `ne`, `not_in` and
+`exists: false`, and nothing else — a record with no `status` is "not archived".
 
 **Composition** — `and`, `or`, `not` — is covered below. `or` earns its place across
 *different* fields (*featured or pinned*); alternatives on one field are an `in` list.
 
-**Use knowingly.** These work on a site's own compiled records and are not something to
-build a site's core queries on:
-
-| Operator | Meaning | Example | Why it is here |
-|---|---|---|---|
-| `like` | Glob match (`*` any run, `?` one char) | `{ name: { like: 'Dr. *' } }` | text matching a reader types belongs in **search**, not in a predicate; see [Why not `like`](#why-not-like-with-a-wildcard) |
+A predicate the language does not contain stops the build with a message naming the
+problem: an unknown operator, an empty `and:` or `or:`, a text operator with empty text.
+`like` and `nin` are retired — write `starts_with`, `ends_with` or `contains`, and `not_in`.
 
 Dotted field names (`tenure.start`) descend into a nested record and are evaluated on the
 compiled records; whether a backend can evaluate one depends on that backend.
@@ -100,33 +112,19 @@ where: { path: '' }                # only records at the top level
 An earlier spelling, `where: { path: { under: '2024' } }`, is retired: the build refuses it
 and names `scope:` in its message.
 
-#### Why not `like` with a wildcard?
+#### Why not `starts_with` on `path`?
 
-`like` is a general string glob, not a path matcher — its `*` matches any run of
-characters, **including slashes**. That makes wildcard patterns misleading on a
-path field. Against records at `''`, `2024`, `2024/spring`, `2024/spring/may`,
-`2024b` and `2023`:
+`starts_with` compares text, not folders. Against records at `''`, `2024`, `2024/spring`,
+`2024/spring/may`, `2024b` and `2023`:
 
-| pattern | what it actually selects |
+| condition | what it actually selects |
 | --- | --- |
-| `{ like: '2024/*' }` | `2024/spring`, `2024/spring/may` — misses `2024` itself |
-| `{ like: '2024*' }` | those two, `2024` — **and `2024b`**, a different branch |
-| `{ like: '2024/**/*' }` | **only** `2024/spring/may` — two levels or deeper |
+| `{ path: { starts_with: '2024/' } }` | `2024/spring`, `2024/spring/may` — misses `2024` itself |
+| `{ path: { starts_with: '2024' } }` | those two, `2024` — **and `2024b`**, a different branch |
 | `scope: '2024'` | `2024`, `2024/spring`, `2024/spring/may` |
 
-The one an author usually wants — a branch *and* everything inside it — is not a
-single glob at all. With `like` alone you would write:
-
-```yaml
-where:
-  or:
-    - path: '2024'
-    - path: { like: '2024/*' }
-```
-
-`scope:` says the same thing in one field, and it stops at segment boundaries so
-a neighbour like `2024b` never sneaks in. **Use `like` for text — names, titles,
-codes. Use `scope:` for a branch of the folder.**
+`scope:` stops at segment boundaries, so a neighbour like `2024b` never sneaks in.
+**Use the text operators for text — names, titles, codes. Use `scope:` for a branch of the folder.**
 
 Strings use single or double quotes; numbers and booleans are bare. `null` matches missing or null fields.
 
@@ -180,6 +178,10 @@ where:
 ```
 
 Each dot descends one level. Missing intermediate objects don't error — they just don't match.
+
+When a step reaches a list — a CV's `education` entries, say — the path descends into each
+item, and the values it reaches are read as a list: `education.degree: PhD` selects a record
+any of whose `education` entries has that degree.
 
 ---
 
