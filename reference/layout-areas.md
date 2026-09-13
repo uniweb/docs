@@ -250,7 +250,7 @@ site/layout/
     └── statusbar.md
 ```
 
-The folder name is the layout name, matched regardless of case: `layout/marketing/` holds the areas of pages whose layout is `marketing` or `Marketing`. A named layout's areas are its own — a page on the `marketing` layout gets no `left` area from the default layout's `left.md`. See [Custom Layouts](../development/custom-layouts.md#named-layouts) for the full guide.
+The folder name is the layout name, matched regardless of case and with or without a trailing `Layout`: `layout/marketing/` holds the areas of pages whose layout is `marketing`, `Marketing` or the foundation's `MarketingLayout`. A named layout's areas are its own — a page on the `marketing` layout gets no `left` area from the default layout's `left.md`. See [Custom Layouts](../development/custom-layouts.md#named-layouts) for the full guide.
 
 ---
 

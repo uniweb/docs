@@ -376,7 +376,7 @@ export default {
 }
 ```
 
-Pages without an explicit `layout:` use the default. The layout name matches the directory name — `DocsLayout/` is referenced as `DocsLayout`.
+Pages without an explicit `layout:` use the default. The layout name matches the directory name, regardless of case and of a trailing `Layout` — `DocsLayout/` is referenced as `DocsLayout`, or simply `docs`.
 
 ### Layout meta.js
 
@@ -519,7 +519,7 @@ site/layout/
     └── statusbar.md
 ```
 
-The structure alone decides what each entry is — no foundation is consulted: a file at the top of `layout/` is a default-layout area, a folder directly under `layout/` is a named layout, and a folder inside a layout's folder is an area with several sections. The folder name is the layout name, matched regardless of case, so `layout/marketinglayout/` works as well as `layout/MarketingLayout/`.
+The structure alone decides what each entry is — no foundation is consulted: a file at the top of `layout/` is a default-layout area, a folder directly under `layout/` is a named layout, and a folder inside a layout's folder is an area with several sections. The folder name is the layout name, matched regardless of case and with or without a trailing `Layout` — so a foundation layout named `MarketingLayout` gets its areas from `layout/marketing/`, which reads best, as well as from `layout/MarketingLayout/`. Two folders that name one layout (`layout/marketing/` and `layout/MarketingLayout/`) stop the build.
 
 A named layout's areas are its own. A page on `MarketingLayout` gets no `left` area from the default layout's `left.md`; if the layout should have one, give it `layout/MarketingLayout/left.md`.
 
