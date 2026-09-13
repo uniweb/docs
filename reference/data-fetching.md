@@ -100,9 +100,9 @@ fetch:
 | `merge` | `false` | **Build-time only.** How a *section's* own fetch lands in its data when the build (or the dev server) executes it — see [Merge vs Replace](#merge-vs-replace). It never ships in a site's payload and no runtime reads it |
 | `transform` | — | Dot-path to extract from response (e.g., `data.items`) |
 | `detail` | — | How to fetch a single entity on [dynamic routes](./dynamic-routes.md#where-the-record-comes-from). Values: `rest`, `query`, or a custom URL pattern. `rest`/`query` build on `url`, so **its query string carries over** — [check yours](./dynamic-routes.md#the-lists-query-string-carries-over) if it narrows the response |
-| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)) |
-| `sort` | — | Sort by field, e.g. `date desc` |
-| `limit` | — | Take first N records |
+| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)). On a `query` reference it narrows the query: [both must hold](#adapting-a-query-where-sort-limit) |
+| `sort` | — | Sort by field, e.g. `date desc`. On a `query` reference it replaces the query's |
+| `limit` | — | Take first N records. On a `query` reference it replaces the query's |
 
 ### Schema inference
 
@@ -259,7 +259,9 @@ fetch:
 - **Arrays**: Concatenated (`[...existing, ...fetched]`)
 - **Objects**: Shallow merged (`{ ...existing, ...fetched }`)
 
-Useful for combining data from multiple sources.
+Useful for combining fetched records with data the section declares itself, in a tagged data
+block under the same key. It does not combine two fetches: of two `fetch:` entries under one key,
+the first is used.
 
 ---
 
@@ -399,9 +401,10 @@ fetch:
 
 The `query:` shorthand is equivalent to `fetch: { query: name }` but more compact. It takes a query name or a list of names — anything more is `fetch:` — and it cannot sit beside a `fetch:` at the same level. `data:`, its former spelling, is refused with a message naming `query:`.
 
-### Query operators on collection references
+### Adapting a query: `where:`, `sort:`, `limit:`
 
-`where:`, `sort:`, and `limit:` work on collection refs the same way they work on any other fetch:
+A fetch that names a query reuses it, and can adapt it for this one use with `where:`,
+`sort:` and `limit:` — and nothing else:
 
 ```yaml
 fetch:
@@ -410,6 +413,32 @@ fetch:
   sort: date desc             # Newest first
   limit: 3                    # Take first 3
 ```
+
+**A fetch narrows its query and never widens it.** It can pick its own order and count, but it
+can never add records the query leaves out:
+
+| On the fetch | Combined with the query's |
+|---|---|
+| `where` | both must hold |
+| `sort` | the fetch's replaces the query's |
+| `limit` | the fetch's replaces the query's — it may be larger |
+
+So one saved query serves many pages: `articles` declares `where: { published: true }` once,
+and the home page's `fetch: { query: articles, where: { tags: featured }, limit: 3 }` shows the
+three newest published articles tagged `featured`. The same holds whether the framework
+evaluates the query over the compiled file or a host that answers queries does.
+
+A `limit` says how many a list shows, never which records exist: every record the query
+selects is compiled, and every one gets its page under a [dynamic route](./dynamic-routes.md) —
+including the ones past a list's `limit`.
+
+⛔ **`scope:` is not one of them.** Which branch of the folder a query reads decides what the query
+is, so it belongs on the query in `queries.yml`; the build stops on a `fetch:` that names a query
+and carries a `scope:`. To read another branch, declare another query.
+
+Within one level, two entries under one `content.data` key should not exist — `fetch: [{ query:
+articles }, { query: posts, as: articles }]`. The first is used and the rest are ignored, and the
+build warns.
 
 These options also work with `path:` and `url:` fetches:
 
@@ -476,8 +505,8 @@ operator, an empty `and:` / `or:`, a text operator with empty text — stops the
 `nin` are retired. See [Predicates](../authoring/predicates.md) for the full rules.
 
 A branch of the site's folder is not an operator: it is the query's `scope:` — `scope: '2024'`
-holds records placed in `2024` and `2024/spring`, not `2024b` — on a named query or on a
-page's `fetch:`, where it wins over the query's. (`where: { path: { under: … } }` is retired;
+holds records placed in `2024` and `2024/spring`, not `2024b` — declared on the named query.
+A `fetch:` that names the query cannot change it. (`where: { path: { under: … } }` is retired;
 the build refuses it and names `scope:`.)
 
 Composition keys (work at any nesting level):

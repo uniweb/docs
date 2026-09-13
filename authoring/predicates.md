@@ -98,8 +98,10 @@ queries:
 
 `scope:` works the same wherever the records come from: on a static site the compiled
 records are filtered by it, and a backend that answers queries takes it as the query's own
-scope. A page's `fetch:` may carry one too, and it wins over the query's. On a parametric
-page, `scope: :dir` reads the branch the URL names (see
+scope. It belongs to the query alone — which branch a query reads decides what the query is —
+so a `fetch:` that names the query cannot carry one; the build stops and says where it goes.
+To read another branch, declare another query. On a parametric page, `scope: :dir` reads the
+branch the URL names (see
 [Dynamic Routes](../reference/dynamic-routes.md#multi-segment-routes--path)).
 
 Plain equality on `path` still selects a single level:

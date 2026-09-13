@@ -511,7 +511,9 @@ from `item.title` on a hit. No `useEffect`, no `document.title`.
 ## Static generation
 
 Parametric pages are fully static-generatable. At build time each one expands
-into one concrete page per record of its route query, each rendered to HTML:
+into one concrete page per record of its route query, each rendered to HTML —
+every record the query selects, whatever `limit` the list shows (a `limit` is how
+many a list shows, never which records have a page):
 
 ```text
 dist/

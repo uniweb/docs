@@ -131,7 +131,7 @@ articles:
   sort: date desc           # Field + direction
   where:
     published: { ne: false }
-  limit: 100                # Max records (0 = unlimited)
+  limit: 100                # How many a list shows (0 = no limit)
   excerpt:
     maxLength: 160          # Auto-excerpt character limit
     field: description      # Use this frontmatter field if present
@@ -426,11 +426,11 @@ rather than being partly honoured.
 
 ## Limiting
 
-Limit the number of items in the output:
+A query's `limit:` is how many records a list of it shows:
 
 ```yaml
 queries:
-  # Latest 10 articles only
+  # Lists show the latest 10
   articles:
     schema: '@/article'
     sort: date desc
@@ -438,6 +438,11 @@ queries:
 ```
 
 Use `limit: 0` (or omit) for no limit.
+
+A limit decides how many a list shows, never which records exist. Every record the query
+selects is still compiled, and each still gets its page under a [dynamic route](./dynamic-routes.md).
+A page that names the query can show its own count — `fetch: { query: articles, limit: 3 }`, or
+more than the query's — see [Data Fetching](./data-fetching.md#adapting-a-query-where-sort-limit).
 
 ---
 
