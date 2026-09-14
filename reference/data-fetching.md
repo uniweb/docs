@@ -586,7 +586,16 @@ limit: 10
 **`sort:` names one key.** A comma-separated list (`order asc, title asc`) is refused — at
 build time for compiled records, and as an error in dev for a fetched array — rather than
 partly honoured. The same single key is evaluated the same way whether the framework sorts
-the records itself or a provider that answers queries does.
+the records itself or a provider that answers queries does:
+
+- **Text sorts in the page's language.** `Álvarez` comes before `Zamora` on a Spanish page, and
+  `apple` before `Banana` — capitals and accents only break ties between the same letters. Numbers
+  inside text are not read as numbers: `item 10` sorts before `item 2`.
+- **A record with no value for the key sorts last**, whichever the direction — a missing field,
+  `null`, an empty text, or a list (nothing says which of its items orders the record).
+- **Records that compare equal keep their order.**
+- **A field holding values of different kinds** sorts booleans first, then numbers, then texts.
+- **A dotted key** (`tenure.start`) sorts by a nested value; a path that meets a list gives no value.
 
 The framework applies them in JS over the records it fetched, unless the records come from a host that answers queries — then the host applies them. Either way the same declaration, and the same single key.
 
