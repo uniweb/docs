@@ -173,6 +173,7 @@ A fetch names a query, and the query says where its records come from. The build
 | `scope:` | the query's `scope:` |
 | `detail:` | `current:` on a section of a parametric page, or `record:` on an external query |
 | `refine:`, `inherit:` | `current: exclude` |
+| `merge:` | nothing — a fetch fills the key it names, and a tagged data block under a key the component declares fills it first |
 | `current:` in `page.yml`, `folder.yml` or `site.yml` | `current:` on a section's own fetch |
 
 `schema:` on a fetch — the former spelling of `as:` — is not read: the build warns, and the fetch fills the key named after its query.

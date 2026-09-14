@@ -123,7 +123,7 @@ A data schema gives records a typed shape, used for validation, field defaults a
 | a `records.yml` | only the entities it lists | the listed entities are published |
 | an empty `records.yml` | nothing is published | everything published is removed — the CLI asks first |
 
-An entity left out of a `records.yml` stays a draft: it exists, but no query reaches it.
+An entity left out of a `records.yml` stays a draft: it exists, but no query reaches it. A `records.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build rather than publishing everything.
 
 ### Folders
 
@@ -300,7 +300,7 @@ Here's how the architecture works:
 ![Architecture Diagram](./getting-started-diagram.svg)
 ```
 
-At build time a `./` or `../` path in a markdown body — or in a YAML or JSON record's field — is copied to `public/records/<schema folder>/` and rewritten to that URL:
+At build time a `./` or `../` path in a markdown record's body or frontmatter — or in a YAML or JSON record's field — is copied to `public/records/`, at its path under `entities/`, and rewritten to that URL:
 
 ```
 public/
@@ -328,7 +328,7 @@ public/
 }
 ```
 
-The files are keyed by the record's schema folder, so a record reachable by two queries has one copy at one URL. They are named by their file name alone: give co-located files names that are unique within the schema folder.
+A file keeps its place under `entities/`: beside its record it is `/records/article/pic.png`, in a subfolder `/records/article/img/pic.png`, and a `../shared/logo.svg` elsewhere in `entities/` is `/records/shared/logo.svg` — so two files that share a name never collide, and a record reachable by two queries has one copy at one URL. A file outside `entities/` is published under `/records/_external/`, with a short hash of its path in front of its name.
 
 | Path | Resolution |
 |-------------|------------|
@@ -388,7 +388,7 @@ During development (`pnpm dev`):
 
 - `entities/` is watched: a record added, edited or removed regenerates the query files, and the page reloads.
 - The runtime fetches local records live, as it would from a host, so what you see matches production.
-- Changes to `records.yml` or `queries.yml` need a restart of the dev server.
+- `site.yml`, `queries.yml` and `records.yml` are watched too: an edit regenerates the query files and reloads, including a `records.yml` created while the server runs.
 
 During a production build (`pnpm build`), each query compiles to `public/data/<query>.json` before the Vite build, and the files are included in `dist/`.
 
@@ -401,6 +401,7 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 | A query's schema folder is missing | Warning logged, the query has no records |
 | A query matching no records | Warning logged, the query answers `[]` |
 | Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
+| A `records.yml` that is not a list | The build stops, naming the problem |
 | Unpublished records | Left out (`.md`, `.yml`, and single-object `.json`) |
 | Sorting by a field some records lack | Those records sort last, in either direction |
 | A folder two levels deep in `entities/` | Names an organization's schema |

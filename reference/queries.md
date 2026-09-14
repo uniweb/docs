@@ -220,7 +220,8 @@ partly honoured.
 
 `limit: N` keeps the first N records in `sort`. It is part of the set: a query with `limit: 100`
 has 100 records everywhere it is used — in every list that names it, and in the pages a parametric
-page has. `limit: 0`, or no `limit`, keeps every record.
+page has. `limit: 0`, or no `limit`, keeps every record. A `limit` is a whole number: the build
+stops on `limit: "5"` or `limit: -1` rather than reading either as no limit.
 
 ---
 
@@ -426,7 +427,7 @@ dot-path is a foundation transport — see [Data Sources](../development/data-so
 | removed | write instead |
 |---|---|
 | `route:` on a query | nothing — every record carries [`$route`](./dynamic-routes.md#linking-to-a-record) |
-| `detailUrl:` | `record: { url: … }` on an external query |
+| `detailUrl:`, `detail:` | `record: { url: … }` on an external query |
 | `where: { path: { under: … } }` | `scope:` |
 | `like`, `nin` | `starts_with`, `ends_with`, `contains`; `not_in` |
 | a sort by several fields | one field |

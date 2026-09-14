@@ -722,7 +722,7 @@ queries:
 
 - **Use consistent frontmatter.** If your blog articles use `date`, `author`, and `tags`, add those fields to every article — even if some are optional. Consistency makes your content predictable and easier to maintain.
 
-- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `entities/` and the site refreshes. After changing `records.yml` or `queries.yml`, restart the dev server.
+- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `entities/`, or change `records.yml` or `queries.yml`, and the site refreshes.
 
 ---
 

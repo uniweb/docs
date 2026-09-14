@@ -315,11 +315,12 @@ Its other keys reach it as usual, from one parent up.
 ### Folder names
 
 A parametric folder is `[...path]`, or a bracket name of letters, digits and `_` —
-`[slug]`, `[id]`, `[member_id]`. Any other bracketed name — `[my-id]`, `[...slug]`,
-`[...rest]` — is not a parametric page: it becomes an ordinary page whose URL contains
-the brackets.
+`[slug]`, `[id]`, `[member_id]`.
 
-The build refuses:
+The build refuses, and so does `uniweb push`:
+
+- Any other bracketed name — `[my-id]`, or a `[...slug]` or `[...rest]`, which is
+  spelled `[...path]`.
 
 - `[dir]` and `[path]` — `:dir` and `:path` are route variables every parametric
   page already has ([below](#multi-segment-routes--path)). `[path]` is usually a
