@@ -547,14 +547,8 @@ Set up a blog with a list page and individual article pages.
 queries:
   articles:
     schema: '@/article'
-    route: /blog          # pairs with the pages/blog/[slug]/ route in step 4
     sort: date desc
 ```
-
-`route:` is what gives each record its own link. With it, every compiled article carries
-`route: /blog/<slug>`, which is what a list component uses for the card's href — without it there is
-nothing for the card to point at. See
-[Collection Options](../reference/site-configuration.md#collection-options).
 
 **2. Add article files** in `entities/article/`:
 
@@ -623,6 +617,9 @@ type: Article
 - The `[slug]` folder creates a dynamic route (`/blog/my-post`).
 - The `query: articles` in `page.yml` makes article data available to the page.
 - Dynamic route pages don't appear in navigation — they're generated from data.
+- Every article now carries `$route: /blog/<slug>` — the page that shows it — which is what a list
+  component uses for the card's href, wherever the list appears. See
+  [Linking to a record](../reference/dynamic-routes.md#linking-to-a-record).
 
 ---
 

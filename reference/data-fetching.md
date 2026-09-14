@@ -82,7 +82,7 @@ fetch:
   limit: 6                   # The first 6 of them — never more than the query selects
 
   current: exclude           # On a section of a parametric page — see below
-  detailPage: page:b7788da4  # The page that renders one record — each record gets its `route`
+  detailPage: page:b7788da4  # Link records to this page instead of their query's own — `$route`
   prerender: false           # Leave this fetch to the browser (see "Build-time vs Runtime")
   merge: false               # Build-time only: replace (default) or combine with the section's own data
 ```
@@ -97,7 +97,7 @@ fetch:
 | `sort` | — | Put the query's records in another order, e.g. `date desc`. Without it they keep the query's order |
 | `limit` | — | Take the first N of the query's records — never more than the query selects |
 | `current` | `only` | On a section of a parametric page: `only`, `exclude` or `include` — see [below](#a-section-on-a-parametric-page-current) |
-| `detailPage` | — | A `page:<stable_id>` reference to the page that renders one record; each record gets its `route` — see [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record) |
+| `detailPage` | *the query's page* | A `page:<stable_id>` reference to the page that renders one record. Every record carries `$route`, the URL of the page that shows it — by default the parametric page whose route query is the record's query; this picks another — see [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record) |
 | `prerender` | `true` — `false` for an [external query](#external-queries) | `false` leaves the fetch to the browser; `true` has the build fetch an external query and embed the result |
 | `merge` | `false` | **Build-time only.** How a *section's* own fetch lands in its data when the build (or the dev server) executes it — see [Merge vs Replace](#merge-vs-replace). It never ships in a site's payload and no runtime reads it |
 
@@ -328,8 +328,10 @@ the endpoint returned.
 | `record` | the request for one record in full, on a parametric page — `url`, `method`, `body`, `transform` ([below](#one-record-record)) |
 | `queryable` | as on any query |
 
-What describes the site's own records — `schema`, `scope`, `deferred`, `excerpt`, `route` — has
-no meaning beside `url:`, and the build stops on it.
+What describes the site's own records — `schema`, `scope`, `deferred`, `excerpt` — has no
+meaning beside `url:`, and the build stops on it. An external query's records are linked like
+any other's: each carries `$route` when a parametric page names the query
+([Linking to a record](./dynamic-routes.md#linking-to-a-record)).
 
 An external query is for **public, keyless** endpoints: every value in it reaches the browser. An
 API that needs a key, headers of its own, paging, or reshaping beyond a dot-path is a foundation

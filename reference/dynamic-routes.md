@@ -78,7 +78,6 @@ asks over its records, and a page fetches it by name. Declare it in `site.yml`
 queries:
   articles:
     schema: '@std/article'   # the Model these entities are
-    route: /blog             # base route of the detail pages — see "Linking to a record"
     sort: date desc
 ```
 
@@ -156,8 +155,8 @@ export default function ArticleList({ content, block }) {
     <ul>
       {articles.map(a => (
         <li key={a.slug}>
-          {/* a.route is the record's own link — never rebuild it */}
-          <a href={a.route}>{a.title}</a>
+          {/* a.$route is the page that shows this record — never rebuild it */}
+          <a href={a.$route}>{a.title}</a>
         </li>
       ))}
     </ul>
@@ -272,8 +271,8 @@ as strings — `/products/42` matches a record whose `id` is the number `42`.
 
 A field that holds **several values** matches **any member**: a record with
 `department: ['biology', 'genetics']` is reached at `/depts/biology` *and* at
-`/depts/genetics`. The record's own canonical link — what `route:` bakes — is its
-**first** value. This exists for the ordinary case of a field typed as multi-valued that
+`/depts/genetics`. The record's own link — its [`$route`](#linking-to-a-record) — uses
+its **first** value. This exists for the ordinary case of a field typed as multi-valued that
 holds one value; without it, that page renders not-found with nothing to explain it.
 
 ⛔ **Routing by a field that is not unique picks one record, and which one is not
@@ -328,39 +327,53 @@ Its other keys cascade as usual, one parent up.
 
 ## Linking to a record
 
-A card needs an href. **Read `item.route` — do not compose it.** Two declarations
-produce it, and either is enough:
+A card needs an href. **Read `item.$route` — do not compose it.** Every record a query
+delivers into `content.data` carries `$route`, the URL of the page that shows that
+record, and there is nothing to declare:
 
-**`route:` on the query** — the base route of the detail pages. The build stamps
-`route: /blog/<slug>` onto every record it compiles.
-
-```yaml
-queries:
-  articles:
-    schema: '@std/article'
-    route: /blog          # pairs with pages/blog/[slug]/
+```jsx
+{articles.map(a => <a key={a.$name} href={a.$route}>{a.title}</a>)}
 ```
 
-For a `[...path]` page, name it: `route: /blog/[...path]` bakes each record's
-placement into its href — `/blog/field/my-post` for a record `records.yml` placed
-under `field`, `/blog/my-post` for one at the root.
+That page is the parametric page whose [route query](#which-query-the-url-names) is the
+record's query — in the Quick Start, `pages/articles/[slug]/` — so an article links to
+`/articles/<slug>` wherever a list of articles appears: the list page, the homepage, a
+sidebar on another article. The URL is filled from the field the page's URL is
+[matched against](#what-the-url-segment-is-matched-against) — a `[slug]` page's from
+the record's handle, a [`[...path]`](#multi-segment-routes--path) page's from its
+placement and handle. On a multilingual site it follows the page's translated route.
 
-**`detailPage:` on the fetch** — a `page:<stable_id>` reference to the page that
-renders one record. The runtime resolves it to a route template and fills in each
-record's param. Use this when a list appears on several pages, or when routes are
-localized: it follows the page even if it moves, and it is locale-aware.
+A record gets **no `$route`** when its query has no parametric page, or when it lacks
+the field the page's URL is built from — never a broken link, so a card can tell:
+
+```jsx
+const Card = a.$route ? Link : 'div'
+```
+
+**`detailPage:` on the fetch picks another page** — a `page:<stable_id>` reference to
+the page that renders one record. Use it when a list should link to a page other than
+the query's own, or when two parametric pages share a route query: without it, records
+link to the first of them in page order.
 
 ```yaml
-# pages/home/page.yml — a "latest posts" list on the homepage
+# pages/home/page.yml — a "featured" list linking to the featured layout
 fetch:
   query: articles
   limit: 3
-  detailPage: page:b7788da4      # the id: in pages/articles/page.yml
+  detailPage: page:c0ffee12      # the id: in pages/featured/[slug]/page.yml
 ```
+
+The `$` marks a field the framework fills, as `$name` does — so the link never lands
+on a field of your own. A record's own `route` field (a trail's, a bus line's) is left
+exactly as it is.
 
 Rebuilding the link in a component (`` `/articles/${a.slug}` ``) makes a second
 producer of a value that already exists — and the two disagree exactly where the
 normalization differs, on a field nobody checks until a visitor clicks it.
+
+> **Removed:** `route:` on a query, which had the build write a `route` field into
+> every record it compiled. The build stops on it and points here; delete it and read
+> `$route`.
 
 ---
 
@@ -441,7 +454,7 @@ export default function RelatedArticles({ content, block }) {
       <h2>More Articles</h2>
       <ul>
         {related.map(a => (
-          <li key={a.slug}><a href={a.route}>{a.title}</a></li>
+          <li key={a.slug}><a href={a.$route}>{a.title}</a></li>
         ))}
       </ul>
     </section>
@@ -554,8 +567,8 @@ by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
 
 **Where a record's URL comes from.** Its **placement** is the directory: the folder
 `records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record).
-`item.route` and the static build both compose `<placement>/<slug>`, so a record at
-the folder root is `/blog/my-post` and one placed under `rust/2025` is
+A record's `$route` and the static build's pages both compose `<placement>/<slug>`, so
+a record at the folder root is `/blog/my-post` and one placed under `rust/2025` is
 `/blog/rust/2025/my-post`.
 
 **Binding the parts is opt-in.** A URL segment has no meaning until a query gives it
@@ -656,7 +669,13 @@ every record. Remember the record is at `content.data.articles[0]`, not under a
 singular key.
 
 **A card's link is wrong or doubled (`/blog//my-post`).**
-Something is rebuilding the href. Read `item.route`.
+Something is rebuilding the href. Read `item.$route`.
+
+**A card has no link — `item.$route` is undefined.**
+The record's query has no parametric page: no `[slug]` page names it as its route
+query. Check which query that page's URL names, or point the fetch at a page with
+`detailPage:`. A record missing the field the URL is built from — its handle, for a
+`[slug]` page — gets no link either.
 
 ---
 

@@ -1110,7 +1110,6 @@ queries:
 |--------|-------------|
 | `schema` | The schema whose records the query reads — `entities/{schema}/` |
 | `url` | Instead of `schema`, an external query's address — see [Data Fetching → External queries](./data-fetching.md#external-queries) |
-| `route` | Base route for the collection's detail pages — see below |
 | `sort` | Sort expression (`field asc/desc`) |
 | `where` | Filter predicate (where-object) |
 | `limit` | Maximum items |
@@ -1119,25 +1118,11 @@ queries:
 
 Collections generate JSON files in `public/data/`. Use `query: collection-name` in pages to fetch them.
 
-#### `route:` — where a record's detail page lives
+#### A record's link — `$route`
 
-Set `route:` when the collection has a detail page behind a dynamic route, and every record gains a `route` field of `<route>/<slug>`:
+A query declares no link. Every record it delivers carries `$route`, the URL of the parametric page that shows it — `/blog/my-post` for a `pages/blog/[slug]/` page whose route query is `articles` — and a component links a card with `item.$route` rather than composing the URL itself. See [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record).
 
-```yaml
-queries:
-  articles:
-    schema: '@/article'
-    route: /blog          # pairs with a pages/blog/[slug]/ dynamic route
-```
-
-```jsonc
-// public/data/articles.json — each record now carries its own link
-[{ "slug": "my-post", "title": "My Post", "route": "/blog/my-post" }]
-```
-
-A component links a card with `item.route` rather than composing the URL itself, so the base route is declared once and read everywhere. Without `route:`, compiled records carry no link and a card has nothing to point at.
-
-A trailing slash is normalized away: `route: /blog/` and `route: /blog` both produce `/blog/my-post`.
+> **Removed:** `route:` on a query, which wrote a `route` field into every compiled record. The build stops on it.
 
 See [Content Collections](./content-collections.md) for details.
 

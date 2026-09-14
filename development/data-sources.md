@@ -58,7 +58,7 @@ What an external query declares:
 | `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned — they select its records. A page's `fetch:` then takes from those records, as from any query's |
 | `record` | the request for one record in full on a parametric page — `url`, `method`, `body`, `transform`; see [Dynamic Routes → Where the record comes from](../reference/dynamic-routes.md#where-the-record-comes-from) |
 
-A fetch of an external query runs in the browser; `prerender: true` on the fetch has the build call it instead. It is never sent to a host's records service, and the build compiles no file for it. Beside `url:`, the keys that describe the site's own records — `schema`, `scope`, `deferred`, `excerpt`, `route` — stop the build.
+A fetch of an external query runs in the browser; `prerender: true` on the fetch has the build call it instead. It is never sent to a host's records service, and the build compiles no file for it. Beside `url:`, the keys that describe the site's own records — `schema`, `scope`, `deferred`, `excerpt` — stop the build.
 
 The operators run **after** the response, over the whole set the endpoint returned. That is exactly right for an endpoint that returns everything, and wrong for one that pages or filters on its own — `limit: 20` over a paginated endpoint is twenty of *something*. When the API needs to be asked rather than read, you are in the transport shape.
 
