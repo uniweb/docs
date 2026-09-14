@@ -621,12 +621,13 @@ page-level declaration serves sections that need different data.
 fetch:
   query: team
   as: members                # Key in content.data (defaults to the query name)
-  where: { role: faculty }   # Narrows the query — both must hold
-  sort: name asc             # Replaces the query's order
-  limit: 12                  # Replaces the query's count
+  where: { role: faculty }   # Only the query's records that also match
+  sort: name asc             # Put them in another order
+  limit: 12                  # The first 12 of them — never more than the query selects
 ```
 
-A fetch always names a query. It never names a file or a URL.
+A fetch always names a query, and takes from the records it selects — never adding one.
+It never names a file or a URL.
 
 ### External Data
 

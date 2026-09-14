@@ -572,9 +572,10 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 | `transform` | string | Dot-path into the response (e.g. `data.items`). |
 | `record` | object | An external query's `record:` — `{ url?, method?, body?, transform? }` — the request for one record on a parametric page. |
 | `detail` | string \| boolean | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true`. |
-| `scope` | string | The folder branch the query reads; the records' `path` must be at or below it. |
-| `where` | object | Author-provided predicate (where-object). |
-| `sort` / `limit` | any | Order and cap hints the author set. |
+| `scope` | string | The query's folder branch; the records' `path` must be at or below it. |
+| `where` | object | The query's predicate (where-object). |
+| `sort` / `limit` | any | The query's order and count. With `scope` and `where` they select **the query's records** — its `limit` included. |
+| `narrow` | object | What this fetch takes of the query's records — its own `where`, `sort` and `limit`, applied after the query's: `where` keeps the records that also match, `sort` re-orders them, `limit` takes the first N. Absent when the fetch takes all of them. A transport that evaluates at the source applies the query first and `narrow` second, so a fetch never gets a record the query does not select. |
 | `dynamicContext` | object | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
 **Context** — the framework singletons, handed to the fetcher directly (no `globalThis` reads needed):
@@ -604,7 +605,7 @@ Optional fields on a transport object that the dispatcher recognizes:
 
 | Field | Default | Description |
 | --- | --- | --- |
-| `cacheKey(request)` | `{path, url, as, transform, method?, body?, locale, scope, where, sort, limit}` stringified | Override when the transport derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
+| `cacheKey(request)` | `{path, url, as, transform, method?, body?, locale, scope, where, sort, limit, narrow}` stringified | Override when the transport derives response content from fields the default key doesn't cover, or when two requests should intentionally share a key. |
 | `prerenderable` | `true` | Set `false` to opt out of build-time (`uniweb build`) execution. The config is skipped at build and fetched at runtime in the browser. Use for transports that need browser-only APIs. |
 
 ### Binding config

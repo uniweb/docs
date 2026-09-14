@@ -149,15 +149,16 @@ A "related articles" section that wants the other records (not just the focused 
 
 ## The fetch config
 
-A fetch names a query and says how this use adapts it:
+A fetch names a query and says what this use takes of the records the query selects — never
+adding one:
 
 ```yaml
 fetch:
   query: articles                        # Required: a query declared in queries.yml
   as: articles                           # Key in content.data (defaults to the query name)
-  limit: 6                               # Replaces the query's count
-  sort: date desc                        # Replaces the query's order
-  where: { tags: featured }              # Narrows the query — both must hold
+  limit: 6                               # The first 6 of the query's records — never more than it selects
+  sort: date desc                        # Put them in another order
+  where: { tags: featured }              # Only the query's records that also match
   prerender: true                        # Build-time fetch (true) vs runtime-only (false)
 ```
 
@@ -198,7 +199,7 @@ fetch:
 # More articles
 ```
 
-`current: only` is the default (the record, as a list of one), `exclude` gives the others, and `include` gives all of them. `where`, `sort` and `limit` adapt the query as on any fetch.
+`current: only` is the default (the record, as a list of one), `exclude` gives the others, and `include` gives all of them. `where`, `sort` and `limit` take from the query's records as on any fetch.
 
 ---
 

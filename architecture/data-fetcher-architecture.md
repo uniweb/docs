@@ -59,7 +59,7 @@ What the default handles, all of it read from the query a fetch names:
 - The file the build compiles from a query (`/data/<query>.json`), and a `deferred:` query's per-record files, under the site's base path.
 - A host's live records service, when the host offers one — the questions a page asks, in one request.
 - An external query's `url`, `method: POST` + `body` (with placeholder substitution from `dynamicContext`), and `transform:` — and on a parametric page, its `record:` request.
-- `scope` / `where` / `sort` / `limit`, evaluated over what arrived.
+- The query's `scope` / `where` / `sort` / `limit`, then the fetch's `narrow` of them, evaluated over what arrived.
 
 It reads no site-level `fetcher:` keys. The `baseUrl` / `headers` / `envelope` / `supports` / `request.*` vocabulary it once read is retired — the build warns and drops it. A backend that needs a base URL, headers or its own wire is a transport.
 
@@ -99,7 +99,8 @@ Normalized from the author's `fetch:` / `query:` config. Carried fields:
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
 | `record` | no | An external query's `record:` — `{ url?, method?, body?, transform? }` — which `buildDetailConfig` turns into a parametric page's record request. |
 | `detail` | no | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true` for an external query's `record:` or a host's records service. |
-| `scope` / `where` / `sort` / `limit` | no | The author's query (folder branch, predicate, order, cap). The default fetcher evaluates them client-side over what arrived — `scope` over each record's `path` — and each combination is its own cache entry; a host that answers queries evaluates them at the source; a transport decides for itself. |
+| `scope` / `where` / `sort` / `limit` | no | The query as saved (folder branch, predicate, order, count) — together they select the query's records, its `limit` included. |
+| `narrow` | no | What this fetch takes of the query's records: its own `where`, `sort` and `limit`, applied after the query's — and on a host's record question, `match` for the one record a parametric page names and `cursor` to resume an answer. Absent when the fetch takes all of the query's records. The default fetcher evaluates both levels client-side over what arrived — `scope` over each record's `path` — and each combination is its own cache entry; a host that answers queries evaluates them at the source; a transport decides for itself. |
 | `dynamicContext` | no | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
 ### Context
@@ -166,12 +167,14 @@ JSON.stringify({
   where,       // so two views of one file are two entries — each cut from
   sort,        // one read of the file when they are asked together
   limit,
+  narrow,      // the fetch's own where / sort / limit, in one field order
 })
 ```
 
 A request with no address — a question to a host that answers queries — is identified by the
-question itself instead: `query`, `schema`, `scope`, `where`, `match` (the one record a
-parametric page asks for), `sort`, `limit`, `whole`, plus `as`, `transform` and `locale`.
+question itself instead: `query`, `schema`, `scope`, `where`, `sort`, `limit`, `narrow` (whose
+`match` is the one record a parametric page asks for), `whole`, plus `as`, `transform` and
+`locale`.
 
 Fields that do **not** contribute:
 
@@ -220,13 +223,13 @@ The dispatcher's behavior is identical across both modes — same routing, same 
 
 ### The build reads an external query as the browser does
 
-When a binding of an external query says `prerender: true`, the build-time fetch path (`build/src/site/data-fetcher.js`) reads it with the runtime default fetcher's vocabulary: `url`, `method: POST` with its `body`, and `transform`, then `where` / `sort` / `limit` with the same evaluator. A binding of an external query defaults to `prerender: false`, so it runs in the browser unless the binding says `prerender: true`.
+When a binding of an external query says `prerender: true`, the build-time fetch path (`build/src/site/data-fetcher.js`) reads it with the runtime default fetcher's vocabulary: `url`, `method: POST` with its `body`, and `transform`, then the query's `where` / `sort` / `limit` and the fetch's `narrow` with the same evaluator. A binding of an external query defaults to `prerender: false`, so it runs in the browser unless the binding says `prerender: true`.
 
 ---
 
 ## Post-processing
 
-`where:` / `sort:` / `limit:` are evaluated over what the source returned, with the one evaluator in `@uniweb/core` — the same code in both places, so the browser orders and filters exactly as the build did:
+`where:` / `sort:` / `limit:` are evaluated over what the source returned, with the one evaluator in `@uniweb/core` (`evaluateQuery`) — the same code in both places, so the browser orders and filters exactly as the build did. It works in two levels: the query's `scope`, `where`, `sort` and `limit` select its records, and then the fetch's `narrow` — its own `where`, `sort` and `limit` — takes from them, so a fetch never receives a record its query leaves out:
 
 - **Static build:** applied in `build/src/site/data-fetcher.js` before embedding into `__SITE_CONTENT__`.
 - **Runtime:** applied by the default fetcher after the response arrives (`runtime/src/default-fetcher.js`). A host that answers queries evaluates them at the source instead, and reports what it served.

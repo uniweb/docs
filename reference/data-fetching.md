@@ -76,10 +76,10 @@ fetch:
 
   as: person                 # Key in content.data — must match the component's `data:` key
 
-  # How this use adapts the query — see "Adapting a query" below.
-  where: { active: true }    # Narrows the query: both must hold
-  sort: date desc            # Replaces the query's order
-  limit: 6                   # Replaces the query's count
+  # What this use takes of the query's records — see "Adapting a query" below.
+  where: { active: true }    # Only the query's records that also match
+  sort: date desc            # Put them in another order
+  limit: 6                   # The first 6 of them — never more than the query selects
 
   current: exclude           # On a section of a parametric page — see below
   detailPage: page:b7788da4  # The page that renders one record — each record gets its `route`
@@ -93,9 +93,9 @@ fetch:
 |--------|---------|-------------|
 | `query` | — | **Required.** The query to fetch, declared in `queries.yml` or under `queries:` in `site.yml`. A string where a fetch is expected is a query name: `fetch: team` is `fetch: { query: team }` |
 | `as` | *the query name* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02. ⛔ **That spelling is NOT read — the alias was removed on 2026-09-03.** A fetch authored as `schema: posts` binds to nothing and delivers no data, silently; re-author it as `as:`. The word moved because `schema` also means the MODEL REF on a `queries` declaration, and one name for both is what let a binding key silently break detail resolution.)* |
-| `where` | — | Predicate that records must match. Where-object format (see [Queries](#queries)). It narrows the query: [both must hold](#adapting-a-query-where-sort-limit) |
-| `sort` | — | Sort by field, e.g. `date desc`. It replaces the query's |
-| `limit` | — | Take first N records. It replaces the query's |
+| `where` | — | Predicate the query's records must also match. Where-object format (see [Queries](#queries)). It [takes from the query's records](#adapting-a-query-where-sort-limit), never adds to them |
+| `sort` | — | Put the query's records in another order, e.g. `date desc`. Without it they keep the query's order |
+| `limit` | — | Take the first N of the query's records — never more than the query selects |
 | `current` | `only` | On a section of a parametric page: `only`, `exclude` or `include` — see [below](#a-section-on-a-parametric-page-current) |
 | `detailPage` | — | A `page:<stable_id>` reference to the page that renders one record; each record gets its `route` — see [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record) |
 | `prerender` | `true` — `false` for an [external query](#external-queries) | `false` leaves the fetch to the browser; `true` has the build fetch an external query and embed the result |
@@ -223,7 +223,7 @@ export default {
 }
 ```
 
-The component receives the related items directly in `content.data.articles`, ready to render. The order of work is narrow, sort, remove the page's record, then `limit` — so `limit: 3` is three *other* articles.
+The component receives the related items directly in `content.data.articles`, ready to render. The order of work is the query's records, then the fetch's `where` and `sort`, then remove the page's record, then `limit` — so `limit: 3` is three *other* articles, and never one the query does not select.
 
 ---
 
@@ -478,23 +478,40 @@ fetch:
   limit: 3                    # Take first 3
 ```
 
-**A fetch narrows its query and never widens it.** It can pick its own order and count, but it
-can never add records the query leaves out:
+**A query selects a set of records, and a fetch takes from that set.** The query's `scope`,
+`where`, `sort` and `limit` decide which records it selects — its `limit` included: a query for
+the 100 most recent articles selects those 100. A fetch's adaptations apply after the query, to
+those records, so a fetch can take fewer of them and put them in another order, but it can never
+add a record the query leaves out:
 
-| On the fetch | Combined with the query's |
+| On the fetch | What it does to the query's records |
 |---|---|
-| `where` | both must hold |
-| `sort` | the fetch's replaces the query's |
-| `limit` | the fetch's replaces the query's — it may be larger |
+| `where` | keeps the ones that also match |
+| `sort` | puts them in another order — without it, the query's order holds |
+| `limit` | takes the first N of them — never more than the query selects |
 
-So one saved query serves many pages: `articles` declares `where: { published: true }` once,
-and the home page's `fetch: { query: articles, where: { tags: featured }, limit: 3 }` shows the
-three newest published articles tagged `featured`. The same holds whether the framework
-evaluates the query over the compiled file or a host that answers queries does.
+So one saved query serves many pages. With this query:
 
-A `limit` says how many a list shows, never which records exist: every record the query
-selects is compiled, and every one gets its page under a [dynamic route](./dynamic-routes.md) —
-including the ones past a list's `limit`.
+```yaml
+# queries.yml
+articles:
+  schema: '@std/article'
+  where: { published: true }
+  sort: date desc
+  limit: 100
+```
+
+the blog page shows all of it with `query: articles`, and the home page's
+`fetch: { query: articles, where: { tags: featured }, limit: 3 }` shows the three newest
+articles tagged `featured` **among those 100** — never an older one, even when fewer than
+three of the 100 are featured. The same holds whether the framework evaluates the query over
+the compiled file or a host that answers queries does.
+
+**A query decides which records have pages; a fetch never does.** Under a
+[dynamic route](./dynamic-routes.md), each record the query selects gets its page and no other
+record does — an article older than the 100 most recent has none. A list's `limit: 3` still
+leaves every one of the 100 its page. So a condition or a count that should decide which pages
+exist belongs on the query.
 
 ⛔ **`scope:` is not one of them.** Which branch of the folder a query reads decides what the query
 is, so it belongs on the query in `queries.yml`; the build stops on a `fetch:` that names a query
@@ -510,7 +527,7 @@ See the [Queries](#queries) section below for the full where-object format and h
 
 ## Queries
 
-`where:`, `sort:`, and `limit:` on a fetch declaration form a **query**: a complete description of which records you want, in what order, how many. They're not "post-processing" — they're part of the request. Who evaluates them depends on where the records come from: the framework evaluates them itself over a compiled file or an external query's response; a host that answers queries evaluates the same language at the source; a foundation transport decides for itself. The declaration is identical in every case.
+`where:`, `sort:`, and `limit:` — on a query, and on a fetch that takes from one — describe **which records you want, in what order, how many**. They're not "post-processing" — they're part of the request. Who evaluates them depends on where the records come from: the framework evaluates them itself over a compiled file or an external query's response; a host that answers queries evaluates the same language at the source; a foundation transport decides for itself. The declaration is identical in every case.
 
 ### The where-object
 

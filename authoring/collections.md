@@ -307,7 +307,7 @@ recent:
 | `schema` | Which records this query is over | `'@/article'`, `'@std/person'` |
 | `sort` | Order records by a field | `date desc` (newest first) |
 | `where` | Include only matching records (predicate) | `{ published: { ne: false } }` |
-| `limit` | How many records a list of it shows — every record still gets its page | `100` |
+| `limit` | How many records the query selects — the first N in its `sort`. Only those get pages | `100` |
 | `deferred` | Heavy fields stripped from list payloads (see below) | `[body]` |
 | `queryable` | Fields a foundation can offer for filtering UI (see below) | (object) |
 | `url` | A remote source instead of the local pool | `/api/articles` |
@@ -443,10 +443,11 @@ fetch:
 
 This pulls just three articles, sorted newest first, for a teaser section. The full blog page still shows everything.
 
-A `fetch:` like this adapts the query for one section: its `where:` narrows the query's (both
-must hold), and its `sort:` and `limit:` replace the query's. It can never add records the query
-leaves out, and it cannot change the query's `scope:` — for another folder branch, declare
-another query.
+A `fetch:` like this takes from the query's records for one section: its `where:` keeps the
+ones that also match, its `sort:` puts them in another order, and its `limit:` takes the first
+few. It can never add a record the query leaves out — a `limit:` larger than the query's still
+shows only what the query selects — and it cannot change the query's `scope:`: for another
+folder branch, declare another query.
 
 ---
 

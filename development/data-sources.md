@@ -55,7 +55,7 @@ What an external query declares:
 | `url` | any absolute or protocol-relative URL, or a same-origin path. Its presence is what makes the query external |
 | `method: POST` + `body` | send a JSON body (a GraphQL query, a `POST /search` filter) |
 | `transform` | a dot-path to the records in the response; it runs before `where`, `sort` and `limit` |
-| `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned. A page's `fetch:` narrows it further, as it narrows any query |
+| `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned — they select its records. A page's `fetch:` then takes from those records, as from any query's |
 | `record` | the request for one record in full on a parametric page — `url`, `method`, `body`, `transform`; see [Dynamic Routes → Where the record comes from](../reference/dynamic-routes.md#where-the-record-comes-from) |
 
 A fetch of an external query runs in the browser; `prerender: true` on the fetch has the build call it instead. It is never sent to a host's records service, and the build compiles no file for it. Beside `url:`, the keys that describe the site's own records — `schema`, `scope`, `deferred`, `excerpt`, `route` — stop the build.
@@ -95,12 +95,17 @@ A transport is a small object with `resolve(request, ctx)` and, optionally, `cac
 
 ```js
 // src/main.js
+
+// How many records to ask for: the query's own `limit`, or fewer when this fetch's
+// `narrow` takes fewer — never more than the query selects.
+const count = (request) => Math.min(request.limit || 50, request.narrow?.limit || Infinity)
+
 export default {
   transports: {
     acme: {
       async resolve(request, ctx) {
         const { apiKey } = ctx.website.config?.fetcher?.acme ?? {}
-        const res = await fetch(`https://api.acme.test/${request.as}?limit=${request.limit ?? 50}`, {
+        const res = await fetch(`https://api.acme.test/${request.as}?limit=${count(request)}`, {
           headers: { 'X-Api-Key': apiKey },
           signal: ctx.signal,
         })
@@ -108,7 +113,7 @@ export default {
         const body = await res.json()
         return { data: body.items }
       },
-      cacheKey: (request) => `acme:${request.as}:${request.limit ?? 50}`,
+      cacheKey: (request) => `acme:${request.as}:${count(request)}`,
     },
   },
 }
@@ -123,7 +128,10 @@ fetcher:
     apiKey: pk_public_123
 ```
 
-Inside `resolve`, the request carries the resolved declaration — `query`, `as`, `where`, `sort`, `limit`, and an external query's `url`, `method`, `body` and `transform` — and the transport decides what to send and what to evaluate. Return `{ data, error?, meta? }`; a failure is an `error`, never an empty `data`, so the section can tell the two apart (`block.dataError`). The full contract, including `cacheKey` and the `@uniweb/fetchers` middleware you can compose, is in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
+Inside `resolve`, the request carries the resolved declaration in two levels, and the transport decides what to send and what to evaluate:
+
+- **the query as saved** — `query`, `as`, `scope`, `where`, `sort`, `limit`, and an external query's `url`, `method`, `body` and `transform`. These select the query's records, its `limit` included;
+- **`narrow`** — what this fetch takes of those records: its own `where`, `sort` and `limit`. Absent when the fetch takes all of them. Apply it after the query, so a fetch never gets a record the query leaves out. Return `{ data, error?, meta? }`; a failure is an `error`, never an empty `data`, so the section can tell the two apart (`block.dataError`). The full contract, including `cacheKey` and the `@uniweb/fetchers` middleware you can compose, is in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports).
 
 Write a transport when:
 

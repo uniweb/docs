@@ -369,16 +369,18 @@ normalization differs, on a field nobody checks until a visitor clicks it.
 When the visitor clicks through from the list, the records are already cached and
 the runtime just picks the match. When they land on the URL directly — a bookmark,
 a search result — the runtime fetches the route query's records and picks the match
-there. Either way the query's list decides which records exist: a record it leaves
-out is not found.
+there. Either way the query decides which records exist — its `scope`, `where`, `sort`
+and `limit` — and a record it leaves out is not found, whatever a list on the page
+shows. A route query for the 100 most recent articles gives those 100 a page each, and
+an older article none.
 
 Some lists carry less than a whole record, and then the page asks for the record on
 its own:
 
 - **a query with `deferred:` fields** ships a lean list, and the build writes one full
   file per record — the page reads it with no configuration;
-- **a host that serves records live** answers the record's own question — no
-  configuration either;
+- **a host that serves records live** answers one question for it — this record, if
+  the query selects it — with no configuration either;
 - **an [external query](./data-fetching.md#external-queries)** whose endpoint lists
   summaries names the request for one full record with `record:`:
 
@@ -424,7 +426,8 @@ fetch:
 
 `current: only` is the default — the record, as a list of one — and `current: include`
 gives all of them with the record among them, for a previous / next pager. The order
-of work is narrow, sort, remove the record, then `limit`.
+of work is the query's records, then the fetch's `where` and `sort`, then remove the
+record, then `limit` — so the others never include a record the query does not select.
 
 ```jsx
 export default function RelatedArticles({ content, block }) {
@@ -498,8 +501,9 @@ from `item.title` on a hit. No `useEffect`, no `document.title`.
 
 Parametric pages are fully static-generatable. At build time each one expands
 into one concrete page per record of its route query, each rendered to HTML —
-every record the query selects, whatever `limit` the list shows (a `limit` is how
-many a list shows, never which records have a page):
+every record the query selects, and no other. A query's own `limit` counts: a query
+for the 100 most recent articles makes 100 pages. A `limit` on a list's `fetch:`
+does not — a list showing three still leaves every one of the 100 its page:
 
 ```text
 dist/

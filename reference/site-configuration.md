@@ -1077,8 +1077,8 @@ query: [articles, team]     # one fetch each
 |--------|-------------|
 | `query` | The query to read (required) |
 | `as` | Key in `content.data` (defaults to the query name) |
-| `where` | Narrows the query — both must hold |
-| `sort` / `limit` | Replace the query's order and count |
+| `where` | Keeps the query's records that also match |
+| `sort` / `limit` | Put the query's records in another order / take the first N of them — never more than the query selects |
 | `prerender` | Build-time vs runtime fetch |
 
 A fetch never names a file or a URL: `/data/<query>.json` is what the build generates from a query, and a public API is an external query — a query with `url:`.
