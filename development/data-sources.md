@@ -95,25 +95,26 @@ A transport is a small object with `resolve(request, ctx)` and, optionally, `cac
 
 ```js
 // src/main.js
-
-// How many records to ask for: the query's own `limit`, or fewer when this fetch's
-// `narrow` takes fewer — never more than the query selects.
-const count = (request) => Math.min(request.limit || 50, request.narrow?.limit || Infinity)
-
 export default {
   transports: {
     acme: {
       async resolve(request, ctx) {
         const { apiKey } = ctx.website.config?.fetcher?.acme ?? {}
-        const res = await fetch(`https://api.acme.test/${request.as}?limit=${count(request)}`, {
+        // The query's records: as many as the query selects.
+        const res = await fetch(`https://api.acme.test/${request.as}?limit=${request.limit ?? 50}`, {
           headers: { 'X-Api-Key': apiKey },
           signal: ctx.signal,
         })
         if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
-        const body = await res.json()
-        return { data: body.items }
+        const { items } = await res.json()
+        // What this fetch takes of them. This API can neither filter nor re-sort, so the
+        // transport takes a count and says so for anything else — a wrong list is worse
+        // than an error.
+        const { limit, ...other } = request.narrow ?? {}
+        if (Object.keys(other).length > 0) return { data: [], error: 'acme: a fetch can only take a count' }
+        return { data: limit ? items.slice(0, limit) : items }
       },
-      cacheKey: (request) => `acme:${request.as}:${count(request)}`,
+      cacheKey: (request) => `acme:${request.as}:${request.limit ?? 50}:${request.narrow?.limit ?? ''}`,
     },
   },
 }

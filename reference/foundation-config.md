@@ -575,7 +575,7 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 | `scope` | string | The query's folder branch; the records' `path` must be at or below it. |
 | `where` | object | The query's predicate (where-object). |
 | `sort` / `limit` | any | The query's order and count. With `scope` and `where` they select **the query's records** — its `limit` included. |
-| `narrow` | object | What this fetch takes of the query's records — its own `where`, `sort` and `limit`, applied after the query's: `where` keeps the records that also match, `sort` re-orders them, `limit` takes the first N. Absent when the fetch takes all of them. A transport that evaluates at the source applies the query first and `narrow` second, so a fetch never gets a record the query does not select. |
+| `narrow` | object | What this fetch takes of the query's records — its own `where`, `sort` and `limit`, applied after the query's: `where` keeps the records that also match, `sort` re-orders them, `limit` takes the first N. On a parametric page's record question to a host's records service it holds `match` instead: the one record the URL names. Absent when the fetch takes all of them. A transport that evaluates at the source applies the query first and `narrow` second, so a fetch never gets a record the query does not select. |
 | `dynamicContext` | object | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
 
 **Context** — the framework singletons, handed to the fetcher directly (no `globalThis` reads needed):
