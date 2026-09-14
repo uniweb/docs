@@ -15,9 +15,9 @@ The `fetch` property lets you load structured data into `content.data`. It works
 
 **A fetch names a query.** Queries are declared once — in `queries.yml`, or under `queries:` in `site.yml` — and a `fetch:` or its shorthand `query:` names one: `query: team`, `fetch: team` and `fetch: { query: team }` are the same declaration. Name the query and a page reads the file a local build generates from it while you develop, then the host's live records once the site is published, with nothing changed. `/data/<query>.json` is that generated file; it is never written in a `fetch:`.
 
-**Delivery is default-on.** A block on a page receives the data from every level that reaches it automatically as `content.data.<as>` — the key the fetch's `as` names, which defaults to the query name — no opt-in required. Components ignore keys they don't care about, the same way they ignore unused frontmatter fields. Components opt out explicitly (rarely) with `data: false` in `meta.js`.
+**A section receives the keys its component declares.** Its `content.data` holds every key in the component's `meta.js` `data:` — and in its foundation's `main.js` `data:` — and nothing else. Each key is filled from the fetches that reach the section: a fetch fills the key its `as` names, which defaults to the query name, or, when the component names its key differently, the key of the query's schema ([Which fetch fills a key](#which-fetch-fills-a-key)).
 
-Data cascades down: site → folder → page → block. The block-local level wins when keys collide.
+Data cascades down: site → folder → page → block. The most specific level fills a key first.
 
 The **folder level** is the canonical pattern for dynamic routes. A `page.yml` that has no `.md` files directly — only `index/` and `[id]/` sub-directories — acts as a pure data-configuration layer for the entire route family. The runtime walks: block → page → parent page (folder) → site — the site for a top-level page or a layout area only (see [Cascade](#cascade)).
 
@@ -92,7 +92,7 @@ fetch:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `query` | — | **Required.** The query to fetch, declared in `queries.yml` or under `queries:` in `site.yml`. A string where a fetch is expected is a query name: `fetch: team` is `fetch: { query: team }` |
-| `as` | *the query name* | Key under `content.data` where the data is delivered. It must **match the key the component declares** in its `meta.js` `data:` block — a component reads `content.data.<key>` by that name, so a mismatch delivers nothing. Set it only to bridge a query whose name differs from the key the component expects. *(Called `schema` before 2026-09-02. ⛔ **That spelling is NOT read — the alias was removed on 2026-09-03.** A fetch authored as `schema: posts` binds to nothing and delivers no data, silently; re-author it as `as:`. The word moved because `schema` also means the MODEL REF on a `queries` declaration, and one name for both is what let a binding key silently break detail resolution.)* |
+| `as` | *the query name* | The key this fetch fills. A component that declares this key receives the records under it; one that declares its keys under other names receives them under the first still-empty key of the query's schema ([Which fetch fills a key](#which-fetch-fills-a-key)). Set it to pick the key when two keys, or two fetches, share a schema. *(Called `schema` before 2026-09-02. ⛔ **That spelling is NOT read — the alias was removed on 2026-09-03.** A fetch authored as `schema: posts` binds to nothing and delivers no data, silently; re-author it as `as:`. The word moved because `schema` also means the MODEL REF on a `queries` declaration, and one name for both is what let a binding key silently break detail resolution.)* |
 | `where` | — | Predicate the query's records must also match. Where-object format (see [Queries](#queries)). It [takes from the query's records](#adapting-a-query-where-sort-limit), never adds to them |
 | `sort` | — | Put the query's records in another order, e.g. `date desc`. Without it they keep the query's order |
 | `limit` | — | Take the first N of the query's records — never more than the query selects |
@@ -116,7 +116,7 @@ A fetch names a query, and the query says where its records come from. The build
 
 ## Cascade
 
-Data flows from site → folder → page → block. **Every block on a page receives every piece of data declared at the levels that reach it**, with block-local data winning when keys collide.
+Data flows from site → folder → page → block. **The fetches declared at the levels that reach a block are what its component's keys are filled from** — the most specific level first.
 
 ```
 Site fetch                      →  layout areas, and the sections of top-level pages
@@ -127,11 +127,11 @@ Block fetch / tagged blocks     →  block-local, wins on key collision
 
 **The site is the root page.** Its fetch reaches what a page's fetch would if the site were the parent of the pages directly under `pages/`: those pages — the homepage included — and the layout areas (header, footer, sidebars), which belong to the site rather than to any one page. A page further down, such as `/docs/setup`, does not receive it; a section there that needs the data names the query itself. On a top-level parametric page — `pages/[slug]/` — the site's query can be the one the URL names; see [Dynamic Routes → Which query the URL names](./dynamic-routes.md#which-query-the-url-names).
 
-No component-side opt-in is required. A component at `/blog/[slug]` automatically sees `content.data.articles` — the full collection on the list page, and a single-element array (the matched item) on the template page.
+A component at `/blog/[slug]` that declares `articles` sees `content.data.articles` — the full collection on the list page, and a single-element array (the matched item) on the template page.
 
-### Declaring what your component works with (optional)
+### What a section receives: the keys its component declares
 
-Components declare the **schema** for each `content.data` key in `meta.js` via the `data:` field. This is a **hint**, not a delivery gate — it drives the visual editor, the foundation's published metadata, and the field defaults the runtime applies to each item. Each entry's value is a named ref, an inline field map, or an inline rich-form:
+A section's `content.data` holds **every key its component declares, and nothing else** — the keys in its `meta.js` `data:`, and the keys its foundation declares in `main.js` `data:`. A component with no `data:`, or `data: false`, receives none of its own.
 
 ```js
 // src/sections/ArticleList/meta.js
@@ -142,21 +142,64 @@ export default {
 }
 ```
 
-The schema supplies field defaults that the runtime applies across every item in the array. When no cascade source exists, the key stays absent — `content.data.articles === undefined` distinguishes "no source" from `[]` (empty source).
+Each entry's value is a named schema ref, an inline field map, an inline rich-form — or `{}` for a key whose records have no schema, such as an external API's. A schema supplies field defaults that the runtime applies to each item, drives the visual editor, and goes into the foundation's published metadata.
+
+| `content.data.<key>` | means |
+|---|---|
+| a list | the records of the fetch that fills the key — `[]` is an answer with none |
+| any other value | a tagged data block in the section (```` ```yaml:<key> ````), or an editor form |
+| `null`, with `block.dataLoading` | its fetch has not answered yet |
+| `null`, with `block.dataError[key]` | its fetch failed |
+| `null` | nothing fills it |
 
 Collections are always delivered as **arrays**: the full collection on a list page, a single-element array on a `[slug]` detail page, `[]` when nothing matches. See [Dynamic Routes](./dynamic-routes.md) for the detail-page flow.
 
-### Opting out (rare)
+A tagged data block under a key the component does not declare is left out of `content.data` — the browser console says so while you develop — and stays in `content.sequence`, where a component that renders the sequence finds it.
 
-A component that genuinely cannot tolerate ambient data declares `data: false`:
+> **Changed:** delivery used to be default-on — every key the levels above a section fetched reached its component, and `data:` was only a hint for defaults and the editor. A component now declares each key it reads.
+
+### Which fetch fills a key
+
+A tagged data block in the section fills its key first. Then the fetches that reach the section are taken one level at a time, most specific first — the section's own, its page's, its parent page's, the site's. Within a level:
+
+1. **a fetch fills its own key** — its `as`, which is its query's name — when the component declares that key;
+2. **the fetches whose keys the component does not declare fill its still-empty keys of their query's schema**, in order: the first such fetch, in the order they are written, fills the first such key, in the order `data:` lists them, and the next fetch the next key.
+
+A key filled at one level is not refilled by a less specific one, and a fetch that fills none of a section's keys is not requested for it. So a component can name a key for what it shows:
 
 ```js
+// src/sections/RelatedArticles/meta.js
 export default {
-  data: false,
+  data: { related: '@std/article' },
 }
 ```
 
-It then receives `content.data = {}` regardless of what the cascade produced. Used for pure layout primitives or debug components — almost never in practice.
+```markdown
+<!-- pages/articles/[slug]/2-related.md — `articles` is a query over @std/article -->
+---
+type: RelatedArticles
+fetch:
+  query: articles
+  current: exclude
+  limit: 3
+---
+```
+
+The section receives three other articles under `related`. Where two keys, or two fetches, share a schema and the order pairs them the wrong way, `as:` on the fetch names the key it fills.
+
+A schema ref written `@/<name>` means "this project's own `<name>`", so it matches a query's schema of the same name in any scope: a foundation's `@/member` is the same schema as a site's `@/member` — or its `@acme/member`, as a host qualifies it. `@std/person` and `@acme/person` are different schemas.
+
+### Keys every section receives — `main.js` `data:`
+
+A foundation whose [handlers](../development/content-handlers.md) read data declares those keys in `main.js`, in the same form as `meta.js`. Every section receives them, whether or not its component declares them — a handler runs for every section:
+
+```js
+// src/main.js
+export default {
+  handlers: createLoomHandlers({ engine, vars: (data) => data?.profile?.[0] }),
+  data: { profile: {} },
+}
+```
 
 ### A section on a parametric page: `current:`
 
@@ -187,13 +230,14 @@ fetch:
 
 ### Precedence
 
-When a block tagged block (`yaml:pricing`) produces the same key as a cascaded fetch (`query: pricing`), the block's tagged block wins. Same for explicit block-level `fetch:` configs:
+A key is filled by the first of these that fills it:
 
 ```
-Block tagged blocks / block fetch  →  highest priority
-Page fetch                          →  medium priority
-Folder fetch                        →  lower priority
-Site fetch                          →  lowest priority
+Tagged data block in the section  →  first
+Section fetch                      →  then each level, most specific first
+Page fetch
+Folder (parent page) fetch
+Site fetch                         →  last
 ```
 
 ---
@@ -419,9 +463,9 @@ query: [team, articles]
 ```
 
 Sections on that page read `content.data.team` and `content.data.articles`
-independently. Because [delivery is default-on](#cascade), every section on the
-page receives both and ignores the keys it does not use — so one declaration at
-the page level serves a page whose sections need different data.
+independently. Each section receives the ones its component
+[declares](#what-a-section-receives-the-keys-its-component-declares) — so one
+declaration at the page level serves a page whose sections need different data.
 
 The same works with the full syntax, where each entry takes its own options:
 
@@ -775,7 +819,7 @@ type: TeamGrid
 ```
 
 ```js
-// meta.js — `data:` is optional; delivery is default-on
+// meta.js — `data:` names what the section receives
 export default {
   title: 'Team Grid',
   data: { team: '@std/person' },
@@ -856,7 +900,7 @@ Secrets do not belong in `site.yml` — values here are public to the browser. S
 ## Error Handling
 
 If a fetch fails:
-- Its key is left **absent** from `content.data` — never `[]`, which means "no records" — and the message is on `block.dataError[key]`
+- The key it fills is `null` in `content.data` — never `[]`, which means "no records" — and the message is on `block.dataError[key]`
 - A warning is logged during build
 - The page still renders (graceful degradation)
 

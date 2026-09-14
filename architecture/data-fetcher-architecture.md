@@ -268,7 +268,7 @@ GraphQL selection sets contain `{ id name }`. The placeholder matcher requires n
 
 ### A non-2xx response is an error, not data
 
-The default fetcher reports a non-2xx response as `HTTP <status>: <statusText>` and delivers no records; the key stays absent from `content.data` and the message lands on `block.dataError`. A `transform:` never reads an error body.
+The default fetcher reports a non-2xx response as `HTTP <status>: <statusText>` and delivers no records; the key it fills is `null` in `content.data` and the message lands on `block.dataError`. A `transform:` never reads an error body.
 
 ### Foundation fetchers reading `ctx.website.config.fetcher` see the same block
 

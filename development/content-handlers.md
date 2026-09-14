@@ -29,6 +29,20 @@ All three are optional. Each runs per block and is error-isolated — a failing 
 
 Most foundations only need the `content` hook. The `data` and `props` hooks are for advanced cases — filtering data before it reaches content, or adjusting parsed output before the component renders.
 
+### Declare the keys your handlers read
+
+A handler receives a section's `content.data`, and a section's `content.data` holds only the keys its component declares — so a handler cannot rely on a key it has not declared. Declare the keys your handlers read in `main.js` `data:`, in the same form as a section's `meta.js` `data:`; every section receives them, whatever its component declares:
+
+```js
+// src/main.js
+export default {
+  handlers: createLoomHandlers({ vars: (data) => data?.profile?.[0] }),
+  data: { profile: {} },   // `{}`: a key whose records have no schema
+}
+```
+
+See [What a section receives](../reference/data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
+
 ---
 
 ## The createLoomHandlers Shortcut
@@ -42,6 +56,7 @@ export default {
   handlers: createLoomHandlers({
     vars: (data) => data?.profile?.[0],
   }),
+  data: { profile: {} },
 }
 ```
 

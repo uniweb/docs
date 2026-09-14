@@ -291,6 +291,21 @@ This is useful when your foundation has a general-purpose component that should 
 
 ---
 
+## Data Every Section Receives
+
+A section's `content.data` holds the keys its component declares in `meta.js` `data:`. Keys your foundation's [content handlers](../development/content-handlers.md) — or a hook every section uses — read are declared once, in `main.js` `data:`, and every section receives them:
+
+```js
+// src/main.js
+export default {
+  data: { profile: {}, members: '@/member' },
+}
+```
+
+Each value is a schema ref, an inline field map, or `{}` for records with no schema. A section's own `data:` wins for a key both declare. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
+
+---
+
 ## Custom Layout
 
 Foundations can provide custom Layout components that control page structure. Layouts live in `src/layouts/` and are auto-discovered.

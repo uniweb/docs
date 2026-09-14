@@ -358,9 +358,9 @@ background:
 
 ### Data
 
-The `data` field declares the **schema** for each `content.data` key your component renders. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
+The `data` field declares **the `content.data` keys your component receives**, each with its schema. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
 
-Data delivery is **default-on**. A block on a page with a `query:` or `fetch:` declaration automatically receives `content.data.{key}` — no `meta.js` opt-in required. The `data` field is therefore optional in most components. When present, it tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item.
+A section's `content.data` holds the keys its component declares, and nothing else (plus any its foundation declares in `main.js`). A component that reads `content.data.events` declares `events`. Each key is filled from the fetches and tagged blocks that reach the section — by name, or, for a fetch under another name, by the query's schema — and a key nothing fills is `null`. The schema tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
 
 ```javascript
 data: {
@@ -370,17 +370,11 @@ data: {
 }
 ```
 
-Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below). The site, author, or editor decides *how* each key is filled — a fetched collection, a tagged code block, or an editor form — and the schema is the same regardless of source.
+Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below), or `{}` for a key whose records have no schema — an external API's. The site, author, or editor decides *how* each key is filled — a fetched collection, a tagged code block, or an editor form — and the schema is the same regardless of source.
 
-**Opt-out:** a component that should not receive any ambient data declares `data: false`. Rare — used only for pure layout primitives or debug components.
+A component with no `data` field, or `data: false`, receives no keys of its own.
 
-```javascript
-export default {
-  data: false,
-}
-```
-
-> A `data:` declaration is a hint (it drives the editor and supplies defaults), never a delivery gate. The frontmatter form `fetch: { query: articles, current: exclude, limit: 3 }` in a `.md` file is a different mechanism — what a section fetches, and on a parametric page how it uses the page's record. See [Data Fetching](./data-fetching.md) for details.
+> **Changed:** delivery used to be default-on, and `data:` a hint for the editor and defaults. It is now what the section receives. The frontmatter form `fetch: { query: articles, current: exclude, limit: 3 }` in a `.md` file is a different mechanism — what a section fetches, and on a parametric page how it uses the page's record. See [Data Fetching](./data-fetching.md) for details.
 
 #### The three value forms
 

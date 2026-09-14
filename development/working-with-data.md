@@ -10,7 +10,7 @@ This guide covers how data flows from a query to your components, how template p
 
 ## The model in one paragraph
 
-A page either has data or it doesn't. A page with a `fetch:` or `query:` declaration is a **dynamic page** — every section on it receives that data in `content.data.<as>`. A child page of a dynamic page with a `[param]/` folder name is a **template page** — it fills in from the URL. Both cases work without any component-side opt-in. Components read what they need from `content.data` and ignore the rest.
+A page either has data or it doesn't. A page with a `fetch:` or `query:` declaration is a **dynamic page** — its data fills the `content.data` keys the components of its sections declare. A child page of a dynamic page with a `[param]/` folder name is a **template page** — it fills in from the URL. A component declares the keys it reads in its `meta.js` `data:`, and receives those and nothing else.
 
 ---
 
@@ -27,12 +27,21 @@ query: articles
 That single line does three things:
 
 1. Names the `articles` query (declared in `queries.yml`, over `entities/article/`).
-2. Makes its records available as `content.data.articles` on every section of the page.
+2. Makes its records available as `content.data.articles` to every section of the page whose component declares `articles` — or a key of the query's schema.
 3. Caches the result — navigating away and back doesn't re-fetch.
 
 The page names the query, never a file: while you develop, it reads the file generated locally from the query; once the site is published to a host that serves records live, it reads those records. Nothing in the page changes.
 
-Your component reads it:
+Your component declares the key in `meta.js`, and reads it:
+
+```js
+// src/sections/ArticleList/meta.js
+export default {
+  title: 'Article List',
+  // 'articles' is the content.data key; '@/article' is this foundation's schema.
+  data: { articles: '@/article' },
+}
+```
 
 ```jsx
 // src/sections/ArticleList/ArticleList.jsx
@@ -53,20 +62,11 @@ export default function ArticleList({ content, block }) {
 
 That's the full wiring. No `fetch()` call, no `useState`, no `useEffect`.
 
-### Optional: declare the data schema
+### The declaration is the delivery
 
-If you want the editor to show schema hints, or want the runtime to apply field defaults to each item, declare the schema for the `content.data` key in `meta.js`. The value is a named ref, an inline field map, or an inline rich-form:
+A section receives the keys its component declares, and nothing else: a component that reads `content.data.articles` without declaring `articles` receives nothing under it. The value is a named ref, an inline field map, an inline rich-form, or `{}` for records with no schema. A schema also shows hints in the editor, and the runtime applies its field defaults to each item. (`@/article` resolves to this foundation's `foundation/schemas/article.{js,json,yml}`; use `@std/<name>` for a shared standard schema.)
 
-```js
-// src/sections/ArticleList/meta.js
-export default {
-  title: 'Article List',
-  // 'articles' is the content.data key; '@/article' is this foundation's schema.
-  data: { articles: '@/article' },
-}
-```
-
-This is a **declaration**, not a gate. A component without this field still receives `content.data.articles` — it just won't get the schema's field defaults applied. (`@/article` resolves to this foundation's `foundation/schemas/article.{js,json,yml}`; use `@uniweb/<name>` for a shared standard schema.)
+The key need not be the query's name. A component declaring `posts: '@/article'` on the same page receives the `articles` records under `posts`, because nothing else fills a key of that schema — see [Which fetch fills a key](../reference/data-fetching.md#which-fetch-fills-a-key).
 
 ---
 

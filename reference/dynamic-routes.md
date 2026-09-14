@@ -134,8 +134,8 @@ type: Article
 
 ```js
 // src/sections/ArticleList/meta.js
-// `data:` names the schema for the content.data.articles key. Delivery is
-// default-on — this is a hint for field defaults and the editor, not a gate.
+// `data:` declares the content.data.articles key, and its schema — a section
+// receives the keys its component declares, and nothing else.
 export default {
   title: 'Article List',
   data: { articles: '@std/article' },
@@ -223,9 +223,11 @@ The record arrives under the **same key on both pages**. Only the length differs
 | parametric | `[ {…} ]` — the one the URL names |
 | parametric, no match | `[]` |
 
-There is no singular key and no name transform. A detail section reads
-`content.data.articles[0]`; the runtime never collapses the array to an object,
-because reshaping is the foundation's job.
+A detail section reads `content.data.articles[0]`; the runtime never collapses the
+array to an object, because reshaping is the foundation's job. The key is the one the
+component declares: a component declaring `article: '@std/article'` receives the same
+list of one under `article`, because the route query fills the first key of its schema
+([Which fetch fills a key](./data-fetching.md#which-fetch-fills-a-key)).
 
 ### Which query the URL names
 
@@ -495,9 +497,9 @@ if (block.dataLoading) {
 ```
 
 `block.dataError` is set when a fetch **failed** — `{ articles: 'HTTP 502: Bad Gateway' }`,
-keyed the way `content.data` is, or `null`. A failed key is left **absent** from
-`content.data`; it is never delivered as `[]`, because `[]` is an answer ("no records")
-and a failure is not one:
+keyed the way `content.data` is, or `null`. A failed key is `null` in `content.data`;
+it is never delivered as `[]`, because `[]` is an answer ("no records") and a failure
+is not one:
 
 ```jsx
 if (block.dataError?.articles) {
@@ -642,11 +644,12 @@ pages/team/
 ## Troubleshooting
 
 **Nothing arrives in `content.data`.**
-Check the binding key. It is `as:` on a fetch — `schema:` was the old spelling and
-is no longer read. When absent it is the query name, so a stale `schema:` does not
-error: the data lands under the query's name and a component expecting the other
-key reads `undefined`. The build warns and
-names the key it actually bound to.
+Check that the component declares the key it reads, in its `meta.js` `data:` — a
+section receives only the keys its component declares. Then check what fills it: a
+fetch whose `as:` is the key (the query's name by default), or a fetch of a query
+whose schema is the key's. `schema:` on a fetch was the old spelling of `as:` and is
+no longer read (the build warns). `uniweb validate` reports a section on a page that
+fetches data none of which fills its keys.
 
 **The query delivers nothing at all.**
 A query must be declared in `site.yml::queries` or `queries.yml`. Entities on disk
@@ -665,8 +668,9 @@ same one.
 
 **A section rendered nothing and the console is clean.**
 Read `block.dataError` before reading `content.data`: a fetch that failed leaves
-its key absent and puts the message there. It is never delivered as `[]`, which
-means "no records" and is an answer.
+its key `null` and puts the message there. It is never delivered as `[]`, which
+means "no records" and is an answer. And check the component declares the key: a
+section receives only the keys its `meta.js` `data:` names.
 
 **The section shows "not found".**
 The URL segment matched no record. Usually the right signal — show a proper
