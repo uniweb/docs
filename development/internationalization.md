@@ -509,12 +509,14 @@ These commands update all languages and their manifests.
 
 ### Prune Orphaned Translations
 
-Remove free-form translations whose source content no longer exists:
+Remove free-form page translations whose section no longer exists — judged by the same paths the site reads translations from, so a translation a page still renders is never removed:
 
 ```bash
 uniweb i18n prune --freeform --dry-run   # Preview what would be removed
 uniweb i18n prune --freeform             # Remove orphaned files
 ```
+
+Record translations (`entities/…`) are never pruned, and neither are the translations of a page whose sections the built site content doesn't carry — a site that splits its content into per-page files, for instance.
 
 ---
 
@@ -528,9 +530,11 @@ Record data is translated alongside page content by default. The `extract` comma
 uniweb i18n extract                      # Pages + records (default)
 uniweb i18n extract --records-only       # Records only
 uniweb i18n extract --no-records         # Pages only
+uniweb i18n status --records-only        # Coverage of the record translations
+uniweb i18n audit --records-only         # Stale and missing record translations
 ```
 
-Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record rather than by any query that returns it. Extraction covers all record data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable.
+Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record rather than by any query that returns it. Extraction covers all record data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable. A record's handles — `slug`, `path`, and system fields such as `$name` — are never extracted. The per-record files a query writes for [`deferred:`](../reference/queries.md#deferred--fields-a-list-leaves-out) fields are translated with the same strings as the list, so a translated record page shows its translated body.
 
 ---
 
@@ -621,7 +625,7 @@ The search client automatically uses the correct index for the active language.
 | `--by-page` | status --missing | Group by page |
 | `--freeform` | status, prune | Free-form translation mode |
 | `--json` | status | Machine-readable output |
-| `--records-only` | extract | Records only |
+| `--records-only` | extract, status, audit | Record strings only (`locales/records/`) |
 | `--no-records` | extract | Skip records (pages only) |
 | `--all-stale` | update-hash | Update all stale hashes |
 
