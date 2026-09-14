@@ -686,14 +686,14 @@ What this does:
 How components consume the full record:
 
 - **On dynamic-route pages** (`[slug]/`), the focused entity's full record is delivered as a **single-element array** under the collection key — `content.data.articles[0]`. The framework routes the detail fetch to the per-record file. No author config needed — the existing dynamic-route flow handles it.
-- **Anywhere else**, components use the `useEntityDetail` kit hook to fetch the full record on demand. If the query has no separate detail source — nothing was stripped from it — the hook returns the record you passed in, so a component can call it unconditionally without checking first:
+- **Anywhere else**, components use the `useWholeRecord` kit hook to fetch the whole record on demand. If the query has no separate detail source — nothing was stripped from it — the hook returns the record you passed in, so a component can call it unconditionally without checking first:
 
   ```jsx
-  import { useEntityDetail } from '@uniweb/kit'
+  import { useWholeRecord } from '@uniweb/kit'
 
   function ArticleCard({ article }) {
     const [open, setOpen] = useState(false)
-    const { data: full, loading } = useEntityDetail(open ? article : null, {
+    const { data: full, loading } = useWholeRecord(open ? article : null, {
       query: 'articles',
     })
     return (
@@ -711,7 +711,7 @@ A query without `deferred:` behaves exactly as before — every field ships in t
 
 ### External queries: `record:`
 
-`deferred:` is for the site's own records — the build writes the per-record files at `/data/<name>/<slug>.json` for every one (markdown, YAML, or JSON) and the framework finds them automatically. An [external query](#external-queries) cannot declare it: its list is whatever the endpoint returns. When that list carries summaries, the query names the request for one full record with [`record:`](#one-record-record), and both a parametric page and `useEntityDetail` ask it.
+`deferred:` is for the site's own records — the build writes the per-record files at `/data/<name>/<slug>.json` for every one (markdown, YAML, or JSON) and the framework finds them automatically. An [external query](#external-queries) cannot declare it: its list is whatever the endpoint returns. When that list carries summaries, the query names the request for one full record with [`record:`](#one-record-record), and both a parametric page and `useWholeRecord` ask it.
 
 **Convention:** per-record files are named by the record's `slug`. On a parametric page the matched record's own slug fills `{slug}`, whatever the route's param is called, so an `[id]` page reads the same file a `[slug]` page does.
 

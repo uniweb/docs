@@ -362,7 +362,7 @@ What this changes:
 
 - The blog list page (`query: articles`) ships every article *without* the body. Cards stay light.
 - A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the query key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
-- Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useEntityDetail` kit hook to fetch the full record on demand.
+- Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useWholeRecord` kit hook to fetch the whole record on demand.
 
 Skip `deferred:` for records without heavy fields — the entire record ships, like always.
 
@@ -376,7 +376,7 @@ queries:
       url: https://api.example.com/articles/{slug}    # how to fetch one full record
 ```
 
-Both the `[slug]` page and `useEntityDetail` use `record:` when it's set. See [Data Fetching → External queries](../reference/data-fetching.md#external-queries).
+Both the `[slug]` page and `useWholeRecord` use `record:` when it's set. See [Data Fetching → External queries](../reference/data-fetching.md#external-queries).
 
 > **Removed:** `detailUrl:` — its case is `record: { url }`.
 

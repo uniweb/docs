@@ -183,7 +183,7 @@ extraction.
 that section *is* the list shape — the card, the row, the summary. Every other
 field is loaded only when one record is the focus: the list payload carries the
 brief fields, and the full record is fetched on demand (automatically on a
-`[slug]` page, or via `useEntityDetail` elsewhere).
+`[slug]` page, or via `useWholeRecord` elsewhere).
 
 You don't configure this. Declaring `deferred:` by hand still works and takes
 precedence, but with a schema you rarely need it — the brief already says what a
