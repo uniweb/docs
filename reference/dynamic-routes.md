@@ -442,6 +442,13 @@ gives all of them with the record among them, for a previous / next pager. The o
 of work is the query's records, then the fetch's `where` and `sort`, then remove the
 record, then `limit` — so the others never include a record the query does not select.
 
+`current:` follows the **query** the fetch names, not the key its records land under.
+Give the others a key of their own with `as:` — `{ query: articles, as: related,
+current: exclude }` — and the section receives the others under `related` beside the
+record under `articles`. A fetch of **another** query receives that query's records,
+and reads `current:` only when you write one: `{ query: featured, current: exclude }`
+is the featured articles without this one.
+
 ```jsx
 export default function RelatedArticles({ content, block }) {
   if (block.dataLoading) return <div className="animate-pulse">Loading...</div>

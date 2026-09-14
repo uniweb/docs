@@ -160,13 +160,15 @@ It then receives `content.data = {}` regardless of what the cascade produced. Us
 
 ### A section on a parametric page: `current:`
 
-On a [parametric page](./dynamic-routes.md) — `pages/articles/[slug]/` — every section receives the one record the URL names, as a list of one. A section that wants something else names the query and says how it uses the page's record with `current:`:
+On a [parametric page](./dynamic-routes.md) — `pages/articles/[slug]/` — every section receives the one record the URL names, as a list of one. A section that wants something else fetches a query and says how it uses the page's record with `current:`:
 
 | `current:` | the section receives |
 |---|---|
-| `only` | the record, as a list of one — the default, what every section gets without saying |
+| `only` | the record, as a list of one — the default for a fetch of the page's query |
 | `exclude` | the query's records without it — "related", "more articles" |
 | `include` | all of them, the record among them — for a previous / next pager |
+
+**`current:` follows the query the fetch names, not the key it lands under.** A fetch of the page's own query — the one its URL names a record of — gets the record unless its `current:` says otherwise, whatever its `as`, so `{ query: articles, as: related, current: exclude }` delivers the others under `related`. A fetch of **another** query gets that query's records as it describes them, and reads `current:` only when you write it: `exclude` takes the page's record out of them, `only` keeps just that record when the query holds it. The page's record is found in either by the URL's parameter, the way the page finds it.
 
 ```yaml
 # pages/articles/[slug]/2-related.md
@@ -179,7 +181,7 @@ fetch:
 ---
 ```
 
-`current:` belongs on a section's `fetch:`, under the key the page's URL narrows. The build stops on a `current:` in `page.yml`, `folder.yml` or `site.yml`, and warns about one that nothing reads — on another key, or on a page that is not parametric. See [Related Items](#related-items-pattern) for the common use.
+`current:` belongs on a section's `fetch:`. The build stops on a `current:` in `page.yml`, `folder.yml` or `site.yml`, and warns about one that nothing reads — on a page that is not parametric, or on one whose URL names no query. See [Related Items](#related-items-pattern) for the common use.
 
 > **Removed:** `refine: true` and `detail: false` — write `current: exclude`. `inherit: true`, their earlier spelling, is refused the same way. The build stops with a message naming `current:`.
 
