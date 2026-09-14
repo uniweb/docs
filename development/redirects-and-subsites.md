@@ -10,9 +10,13 @@ Uniweb handles both cases through page-level declarations that are visible in th
 
 A redirect sends the browser to a different URL. Use it when a page has no content of its own — it exists as a route but immediately navigates somewhere else.
 
+### A page with no content redirects on its own
+
+A page with no sections of its own — a `/solutions` folder that only organizes `/solutions/academic`, `/solutions/institutional` and `/solutions/governance` — needs no declaration. Visiting it takes the visitor to its first child that has content, in their language, both in the browser and, on a static build, through a small redirect page at its URL. The folder keeps its place in navigation.
+
 ### When to use redirects
 
-- **Parent pages that redirect to their first child.** A `/solutions` page that exists only to organize `/solutions/academic`, `/solutions/institutional`, and `/solutions/governance` in navigation. The parent has no content — visiting it should take you to the first child.
+- **A parent page that should go somewhere other than its first child.** The automatic redirect picks the first child with content; `redirect:` names another.
 - **Moved pages.** A page that used to live at `/features` now lives at `/product/features`. The old URL should redirect to the new one.
 - **Vanity URLs.** A short URL like `/start` that redirects to `/docs/getting-started`.
 
@@ -35,7 +39,7 @@ The redirect target can be:
 | Absolute path | `redirect: /product/features` | `/product/features` |
 | External URL | `redirect: https://docs.example.com` | External navigation |
 
-No `.md` files are needed in the page directory — the redirect replaces content entirely. The page still appears in navigation (controlled by `pages:`, `hidden:`, etc.) but clicking it navigates to the target.
+No `.md` files are needed in the page directory — the redirect replaces content entirely. The page still appears in navigation (controlled by `pages:` and `hideIn:`) but clicking it navigates to the target.
 
 ### How redirects work
 
@@ -55,15 +59,7 @@ Redirects operate at three levels for maximum compatibility:
 
 ### Redirect vs index
 
-Uniweb also has `index:` in page.yml, which serves a different purpose:
-
-| | `index: academic` | `redirect: academic` |
-|---|---|---|
-| URL in browser | `/solutions` | `/solutions/academic` |
-| Content source | Academic page content served at parent route | Academic page keeps its own route |
-| Child route | `/solutions/academic` doesn't exist (absorbed) | `/solutions/academic` is the canonical URL |
-
-Use `index:` when the child IS the parent page (its content belongs at the parent URL). Use `redirect:` when the child should keep its own URL and the parent just points to it.
+Only the site root serves a child page at its parent's URL: `index:` (or the first `pages:` entry) in `site.yml` picks the homepage, served at `/`. Below the root, every folder keeps its own route — `pages/solutions/academic/` is always `/solutions/academic` — so a parent page shows content of its own, redirects on its own to its first child, or names a `redirect:`. To serve content at `/solutions`, put the sections in `pages/solutions/` itself.
 
 ---
 

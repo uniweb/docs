@@ -41,7 +41,7 @@ export default {
 }
 ```
 
-See [What a section receives](../reference/data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
+See [What a section receives](../reference/data-fetching.md#what-a-section-receives).
 
 ---
 
@@ -160,6 +160,6 @@ Both are rarely needed. The content handler covers most data-driven use cases.
 ## See Also
 
 - [Data-Driven Sections](./data-driven-sections.md) -- Expressions, aggregation, and the repeat pattern
-- [Working with Data](./working-with-data.md) -- Data fetching and collections
+- [Working with Data](./working-with-data.md) -- Queries, and how their records reach a section
 - [Foundation Configuration](../reference/foundation-config.md) -- Full main.js reference
 - [Component Metadata](../reference/component-metadata.md) -- The meta.js contract

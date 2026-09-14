@@ -11,7 +11,7 @@ This guide is about the schema *definition* — authoring one, sharing it across
 | What you write | What you get |
 |---|---|
 | The shape, once, in a schema file | `validate` on your data, runtime defaults, and a form in the editor — all from one definition |
-| A reference by name (`@/product`) | The binding is a name, not a path — move or rename the implementation freely |
+| A reference by name (`@/product`) | The reference is a name, not a path — move or rename the implementation freely |
 | Shared schemas in one place (`@org/schemas`) | Fix `person` once; every foundation that references it picks up the change |
 
 ---
@@ -74,7 +74,7 @@ for the exceptions.
 > An unrecognised key here is reported as a warning and not carried, so a typo like `creatabe_by`
 > tells you rather than leaving you with a restriction that does not apply.
 
-A section type binds the schema by naming it in `meta.js`:
+A section type names the schema in its `meta.js`, under the key it reads:
 
 ```js
 // foundation/sections/Products/meta.js
@@ -84,7 +84,7 @@ export default {
 }
 ```
 
-Your component then reads `content.data.products` — an array of products, each with the schema's defaults already applied, so there's nothing to null-check. The binding is what the section receives: a component without it receives no `products`. (Full binding reference — inline field maps and the editor "rich form" — is in [Component Metadata → Data](../reference/component-metadata.md#data).)
+Your component then reads `content.data.products` — a list of products, each with the schema's defaults already applied, so its fields need no null checks. The declaration is what the section receives: a component that doesn't declare `products` receives no `products`. (The full `data:` reference — inline field maps and the editor "rich form" — is in [Component Metadata → Data](../reference/component-metadata.md#data).)
 
 For content with more structure than a flat record — say a profile with a bio plus a list of publications — a schema declares named `sections:` instead of `fields:`. Each section is one record by default, or a repeating list (`many: true`):
 
@@ -128,7 +128,7 @@ sections:
 
 Once you [register](#registering-schemas) the schema, this rule is enforced wherever entities of the type are written — appends are accepted, but changing or removing an existing record is refused. There's no "replace the whole section" shortcut either: re-submitting records adds new ones rather than overwriting what's already there. Because the rule lives in the content type rather than in a form, it holds for every writer, not just the editor UI. That makes an append-only section **tamper-evident**: the accumulated history stands on its own. Reach for it for activity logs, submissions, audit trails — anything meant to accumulate and never be rewritten.
 
-`append_only` is only valid where there are many records to append to — a `many: true` section, or a list of records authored as a field (`activity: { type: object, many: true, append_only: true }`). On a single record it's rejected rather than ignored. For file-based collections there's no write step, so it has no effect until the type is registered.
+`append_only` is only valid where there are many records to append to — a `many: true` section, or a list of records authored as a field (`activity: { type: object, many: true, append_only: true }`). On a single record it's rejected rather than ignored. Records in files have no write step, so it has no effect until the type is registered.
 
 ### When the content *is* a list
 
@@ -237,7 +237,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 
 You can always write the canonical kind directly; the friendly names just save you the folding.
 
-**Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). Collection-level flags like `required` ride on the list; the type describes each item.
+**Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). List-level flags like `required` ride on the list; the type describes each item.
 
 Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
 
@@ -263,7 +263,7 @@ fields:
 - **A delete floor, not a fill requirement.** It refuses a delete that would take the section below N. Nothing forces an author to populate it in the first place. On a single-record section, read it as *"undeletable once created"*.
 - **A write guarantee, never a render guarantee.** Your component still handles an empty list — the same schema can be rendered by a foundation that never saw the constraint, so content and code stay independent axes.
 
-Constraints on a plain leaf field are ignored; a leaf narrows with `enum` and `format` instead. They take effect once the schema is [registered](#registering-schemas) — file-based collections have no write step.
+Constraints on a plain leaf field are ignored; a leaf narrows with `enum` and `format` instead. They take effect once the schema is [registered](#registering-schemas) — records in files have no write step.
 
 ### Rich content: `format`
 
@@ -320,18 +320,18 @@ A schema only earns its keep where something runs it, so it's worth knowing exac
 
 | Where the data lives | Checked against |
 |---|---|
-| A **file-based collection** (`query: articles`) | The schema the section's `meta.js` binds to that key — each record |
-| A **tagged data block** (```` ```yaml:form ````) | The schema bound to that *tag*, whether the value is a record or a list |
+| **Records a query delivers** (`query: articles`) | The schema of the key they fill in the section's `meta.js` — each record |
+| A **tagged data block** (```` ```yaml:form ````) | The schema the section declares for that *tag*, whether the value is a record or a list |
 | A **concept block** (```` ```md:faq ````) | `@std/faq`, if such a standard exists — resolved by name, never by a registry |
 
 Findings are **warnings by default**; `uniweb validate --strict` exits non-zero for CI.
 
 Two things are reported as **deferred** rather than checked, and both for the same honest reason — the data isn't there to look at:
 
-- a **remote `url:` source**, which isn't fetched at build time;
+- an **external query** (`url:`), which isn't fetched at build time;
 - a **`sections:`-form schema describing a multi-section entity**, which no single flat file reproduces. (A `sections:` schema whose root is *a list* — see [When the content is a list](#when-the-content-is-a-list) — is checked normally, records and all.)
 
-An inline schema on a binding is reported too, rather than guessed at.
+An inline schema in a section's `data:` is reported too, rather than guessed at.
 
 **What is never checked, by design:** a visitor's answers to a form, an API response shape, or anything else that only exists at runtime. `validate` is a pre-ship gate over content you can see, not a runtime guard — the runtime stays tolerant, applying defaults and ignoring the rest.
 
@@ -355,7 +355,19 @@ Add `@uniweb/schemas` as a dependency when you reference any `@std/<name>`. Full
 
 ## Sharing schemas across projects
 
-Build more than one foundation — a few brands, a client's product line — and they want the same shapes: a `person`, a `project`, a `product`. Define each once and reference it everywhere. The two mechanisms (an `@org/schemas` package, or a routed directory via `schemas.config.js`) are covered in [Working with Data → Sharing schemas](./working-with-data.md#sharing-schemas-across-foundations).
+Build more than one foundation — a few brands, a client's product line — and they want the same shapes: a `person`, a `project`, a `product`. You don't copy the schema into each foundation. Define it once and reference it, two ways:
+
+- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you register) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
+- **A routed directory** — keep the schemas in a plain folder anywhere on disk and point each foundation's `schemas.config.js` at it. No package, no install:
+
+  ```js
+  // foundation/schemas.config.js
+  export default { '@acme': '../shared/acme-schemas' }
+  ```
+
+  `@acme/person` then resolves to `../shared/acme-schemas/person.{js,yml}`. The config is plain JS, so the path can be relative, absolute, or read from an environment variable — useful when one schema repo is shared across many client workspaces on your machine. Reference: [Component Metadata → Routing a scope](../reference/component-metadata.md#routing-a-scope-with-schemasconfigjs).
+
+Either way the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. A schema ref's `@acme` names an organization in the Uniweb registry, not an npm scope — the two look alike and aren't connected. For which delivery to pick, how a git repo works as a source, and when registering is required, see [Schemas in Practice](./schemas-in-practice.md).
 
 The package form is worth a second look here, because it's also what you register (next section). An `@org/schemas` package is an ordinary workspace package whose job is to hold schemas:
 
@@ -373,7 +385,7 @@ Any foundation that lists `@acme/schemas` as a dependency can bind `@acme/produc
 
 ## Registering schemas
 
-Everything above works offline, against local files — authoring, validating, and rendering with file-based collections need no account and no network. **Registering** is the step that turns a schema into a *reusable content type* in the Uniweb registry: authors can then create and manage entities of that type (in the editor, through the form your schema describes), and any foundation can reference it by name.
+Everything above works offline, against local files — authoring, validating, and rendering records from files need no account and no network. **Registering** is the step that turns a schema into a *reusable content type* in the Uniweb registry: authors can then create and manage entities of that type (in the editor, through the form your schema describes), and any foundation can reference it by name.
 
 Registering is a platform command, so authenticate first:
 
@@ -417,7 +429,7 @@ A few practical notes:
 
 - [Schemas in Practice](./schemas-in-practice.md) — where a schema file lives, how a second project consumes it, and when registering is actually required. Read this if `@acme/person` won't resolve.
 - [Designing Data Schemas](./designing-data-schemas.md) — the modeling decisions behind a set of related types: sections, subsections, embed vs reference, and relationship (edge) attributes, with a worked LMS example.
-- [Working with Data](./working-with-data.md) — How data is fetched, cached, and delivered to components at runtime; the `@org/schemas` package and routed-directory sharing mechanisms; `uniweb validate`.
+- [Working with Data](./working-with-data.md) — How a query's records reach your components at runtime, and `uniweb validate`.
 - [Component Metadata → Data](../reference/component-metadata.md#data) — The `data:` field reference: named refs, inline field maps, and the editor rich-form.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — Why one schema serves validation, editor UI, and delivery — and how the registry makes content types shareable.
 - [Publishing and Working with Clients](./publishing-and-clients.md) — Publishing a foundation as a catalog product, and the invite / handoff client workflows.

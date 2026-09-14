@@ -20,21 +20,22 @@ search:
 1. **Build time**: Content is extracted from all pages and sections
 2. **Index generation**: A `search-index.json` file is created in your build output
 3. **Runtime**: The search client loads the index on first use and caches it
-4. **Search**: [Fuse.js](https://fusejs.io/) performs fuzzy matching against the index, and results are ordered as described below
+4. **Search**: The query is ranked against the index in the browser, as described below — by the same engine a host that answers search uses, so a site's results come back in the same order wherever it is served
 
 The index is cached in localStorage and revalidated against the server on each load, so a rebuilt site never answers from the copy a visitor cached earlier. When the index is unchanged the check costs a few hundred bytes rather than a re-download.
 
 ### How results are ordered
 
-Fuzzy matching is what lets a misspelled query still find the right page, but on its own it will rank a near-miss above an exact hit — on page-sized text, "inset" matches "insert" and "instead" about as well as it matches "inset". Left alone, a page that genuinely covers the subject can fall below ten pages that never mention it.
+Results are ranked by relevance (BM25F):
 
-So results are ordered in three tiers, with the fuzzy match kept as the fallback it should be:
+- **A word in the title counts for more** than the same word in the body, and a page counts for more than one of its sections.
+- **Rare words count for more than common ones.** A word that appears on nearly every page barely affects the order, so there is no stop-word list to maintain, in any language.
+- **The query's words together as a phrase** rank a result higher.
+- **The last word is completed as you type**: `insta` finds `install` and `installation`.
+- **A misspelling is corrected only when nothing matched.** A query with no exact hits falls back to words one edit away — `fomr` finds `form` — so a near-miss never outranks a page that uses the word you typed.
+- **Accents and case are ignored** (`café` finds `cafe`), and text in scripts written without spaces between words — Chinese, Japanese, Thai — is indexed in pairs of characters, so a query can find a word inside a sentence.
 
-1. Every word of the query appears in the **title**
-2. Every word appears in the **body**
-3. Everything else — the fuzzy tail
-
-Fuse's own relevance ordering decides within each tier. Multi-word queries require *all* words, so "Inset Components" is not satisfied by a page that only says "components". Nothing is discarded: a query that matches nothing literally still returns fuzzy hits, which is what answers a typo.
+A word that appears nowhere in the site doesn't sink a query: the other words still rank. Words are matched as written, with no stemming — `running` does not find `ran`.
 
 ## Providers
 
@@ -49,7 +50,7 @@ search:
 
 | Provider | What it does | Trade-off |
 |---|---|---|
-| `index` (default) | Downloads `search-index.json` and matches locally with Fuse.js | Free and works on **any** host, including a plain static one. Fuzzy — tolerates typos. Can only contain what existed at build time. |
+| `index` (default) | Downloads `search-index.json` and ranks it in the browser | Free and works on **any** host, including a plain static one. Corrects typos. Can only contain what existed at build time. |
 | `endpoint` | Queries a server-side search API | Can index content that isn't in your files — records fetched from an API — and can be re-indexed without rebuilding the site. Needs a host that serves one. |
 | *any other name* | A search transport supplied by your foundation | Fully open — Typesense, Meilisearch, Pagefind, a vendor API |
 
@@ -84,7 +85,7 @@ Every provider returns the same result shape, so a search UI is written once.
 | Field | Meaning |
 |---|---|
 | `id` | Stable identifier for the hit |
-| `type` | `page`, `section`, or `collection` |
+| `type` | `page`, `section`, or `record` |
 | `route` | Page route the hit belongs to |
 | `href` | Where to navigate — includes the `#anchor` when there is one |
 | `title` | The hit's own title |
@@ -94,9 +95,9 @@ Every provider returns the same result shape, so a search UI is written once.
 
 **Present when the provider can supply it** — `null` otherwise:
 
-`sectionId`, `anchor`, `description`, `component`, `snippetText`, `matches`, `collection`, `item`
+`sectionId`, `anchor`, `description`, `component`, `snippetText`, `matches`, `group`, `item`
 
-Whether one of these arrives is a *deployment* fact, not a content fact — the same site yields `item` (a collection record's fields) from a server provider and `null` from the local index, while `matches` goes the other way. Render them defensively:
+Whether one of these arrives is a *deployment* fact, not a content fact — the same site yields `item` (a record's fields; `group` names the query it came from) from a server provider and `null` from the local index, while `matches` goes the other way. Render them defensively:
 
 ```jsx
 {result.item?.image && <img src={result.item.image} alt="" />}
@@ -152,22 +153,9 @@ Or simply omit the `search` configuration—search is enabled by default.
 
 ## Foundation Requirements
 
-To use search, your foundation needs:
+To use search, your foundation needs **a search UI component** that uses the search client from `@uniweb/kit` — nothing to install beyond kit. The engine that ranks the local index is loaded on demand, only when a site actually queries it, so a site using `provider: endpoint` never downloads it.
 
-1. **Fuse.js dependency** in the foundation's `package.json` (i.e. `src/package.json` for the default layout) — required by the `index` provider:
-   ```json
-   {
-     "dependencies": {
-       "fuse.js": "^7.0.0"
-     }
-   }
-   ```
-
-   Providers are loaded on demand, so a site using `provider: endpoint` never loads Fuse.js at runtime. Keep the dependency declared anyway unless you are certain no site using your foundation will fall back to the local index.
-
-2. **A search UI component** that uses the search client from `@uniweb/kit`
-
-The academic template includes both of these ready to use.
+The academic template includes a search UI ready to use.
 
 Nothing in a search UI needs to know which provider is active. If you want to show it — a "live results" badge, say — the client exposes `getProviderName()`, which reports the *active* provider (so it reads `index` after a fallback, not what was declared).
 
@@ -226,7 +214,7 @@ The search client automatically uses the correct index based on the active local
 
 - **Index size**: Typically 20-50KB for small/medium sites
 - **Caching**: Index is cached in memory and localStorage
-- **Lazy loading**: Fuse.js is dynamically imported only when needed
+- **Lazy loading**: the ranking engine is loaded only when a site queries its local index
 - **Preloading**: Optional `client.preload()` for instant first search
 
 For large sites (hundreds of pages), consider:

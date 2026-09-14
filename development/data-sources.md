@@ -1,6 +1,6 @@
 # Data Sources
 
-Most Uniweb sites start with records in `entities/` that the build turns into JSON at `public/data/*.json`. That is enough for blogs, docs and marketing sites, and it is what a site published to a Uniweb host reads live without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.
+Most Uniweb sites start with records in `entities/`, named by queries in `queries.yml`. That is enough for blogs, docs and marketing sites: a static build turns each query into a file the site reads, and a site published to a host that serves records live reads the same queries from there, without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.
 
 > ⛔ **Not what you want if you mean accounts.** This guide is about **content** — records the
 > same for every visitor. If you want members who sign in, per-visitor data, or content your
@@ -56,7 +56,7 @@ What an external query declares:
 | `method: POST` + `body` | send a JSON body (a GraphQL query, a `POST /search` filter) |
 | `transform` | a dot-path to the records in the response; it runs before `where`, `sort` and `limit` |
 | `where`, `sort`, `limit` | the query, evaluated by the framework over the records the endpoint returned — they select its records. A page's `fetch:` then takes from those records, as from any query's |
-| `record` | the request for one record in full on a parametric page — `url`, `method`, `body`, `transform`; see [Dynamic Routes → Where the record comes from](../reference/dynamic-routes.md#where-the-record-comes-from) |
+| `record` | the request for one record in full on a parametric page — `url`, `method`, `body`, `transform`; see [Parametric Pages → Where the record comes from](../reference/dynamic-routes.md#where-the-record-comes-from) |
 
 A fetch of an external query runs in the browser; `prerender: true` on the fetch has the build call it instead. It is never sent to a host's records service, and the build compiles no file for it. Beside `url:`, the keys that describe the site's own records — `schema`, `scope`, `deferred`, `excerpt` — stop the build.
 
@@ -162,7 +162,8 @@ For self-hosted deployments, put whatever you already use (a Cloudflare Worker, 
 
 ## See also
 
-- [Data Fetching](../reference/data-fetching.md) — reference for `fetch:` / `query:` and the cascade
+- [Queries](../reference/queries.md) — everything a query can say, external queries included
+- [Data Fetching](../reference/data-fetching.md) — `fetch:` / `query:`, narrowing, and what a section receives
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — writing and registering a transport
-- [Dynamic Routes](../reference/dynamic-routes.md) — template pages and where the record comes from
-- [Working with Data](./working-with-data.md) — cascading, template pages, a record's own request, filter-state patterns
+- [Parametric Pages](../reference/dynamic-routes.md) — one page per record, and where the record comes from
+- [Working with Data](./working-with-data.md) — one query, many uses: what each section receives, parametric pages, whole records

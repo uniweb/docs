@@ -219,7 +219,7 @@ Upload the contents of `site/dist/`.
 | Configure your site | [Site Configuration](../reference/site-configuration) |
 | Add multiple languages | [Internationalization](../development/internationalization) |
 | Load external data | [Data Fetching](../reference/data-fetching) |
-| Generate pages from data | [Dynamic Routes](../reference/dynamic-routes) |
+| Generate a page per record | [Parametric Pages](../reference/dynamic-routes) |
 
 ## Common Templates
 

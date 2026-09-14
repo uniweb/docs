@@ -1,4 +1,4 @@
-# Dynamic Routes
+# Parametric Pages
 
 One page, many URLs — one per record. Blogs, product catalogs, team directories,
 anything where each record needs its own URL. Uniweb calls these **parametric
@@ -7,17 +7,15 @@ parameter, and whose data that parameter narrows to one record.
 
 ## Overview
 
-A folder named `[param]` is a parametric page. It expands into one page per record
-of its **route query** — the query its URL names one record of, normally the one
-its **parent** declares ([which query the URL names](#which-query-the-url-names)).
+A folder named in brackets — `[slug]` — is a parametric page. It has a URL for each
+record of its **route query**: the query its URL names one record of, normally the one
+its **parent** page names ([which query the URL names](#which-query-the-url-names)).
 
 ```text
 pages/
 └── articles/
-    ├── page.yml              # the query is declared here (folder level — no sections)
-    ├── index/                # the list page — promoted to /articles
-    │   ├── page.yml
-    │   └── 1-articles.md
+    ├── page.yml              # query: articles
+    ├── 1-list.md             # the list, at /articles
     └── [slug]/               # the parametric page → /articles/getting-started, …
         ├── 1-article.md
         └── 2-related.md
@@ -32,19 +30,20 @@ pages/
 /articles/best-practices      # one article  (slug: "best-practices")
 ```
 
-The parametric page declares no query of its own here. It inherits the parent's,
-and the runtime narrows it to the one record the URL names.
+The parametric page declares no query of its own here. It takes its parent's, and each
+URL names one record of it.
 
 ---
 
 ## Quick Start
 
-### 1. Write the entities
+### 1. Write the records
 
-Markdown files under `entities/{schema}/`. The filename stem becomes the `slug`.
+Markdown files under `entities/`, in the folder the schema names — `entities/std/article/`
+for the standard `@std/article`. The filename stem becomes the `slug`.
 
 ```markdown
-<!-- entities/article/getting-started.md -->
+<!-- entities/std/article/getting-started.md -->
 ---
 title: Getting Started with Uniweb
 excerpt: Learn the basics...
@@ -56,7 +55,7 @@ Your article content here...
 ```
 
 ```markdown
-<!-- entities/article/advanced-features.md -->
+<!-- entities/std/article/advanced-features.md -->
 ---
 title: Advanced Features
 excerpt: Deep dive into...
@@ -67,61 +66,50 @@ date: 2025-01-20
 Your article content here...
 ```
 
-### 2. Declare the query
-
-An entity on disk is not yet reachable. A **query** is the named question the site
-asks over its records, and a page fetches it by name. Declare it in `site.yml`
-(or in `queries.yml`, a bare map at the site root):
-
-```yaml
-# site.yml
-queries:
-  articles:
-    schema: '@std/article'   # the Model these entities are
-    sort: date desc
-```
-
-> **`schema:` here is the Model ref** — which type these records are. It is not the
-> `content.data` key; that is `as:` on a *fetch*, further down. One word, two jobs,
-> so the two were split — see [Data Fetching](./data-fetching.md).
-
-A query with no `schema:` takes its own name (`articles` → `@/articles`).
-
-Optionally add `records.yml` to control what is published. Listing an entity there
-is what makes it a record; omit the file and the whole pool is delivered.
+`records.yml` says which entities are published. Without it, a build publishes every
+entity in `entities/`; with it, only what it lists:
 
 ```yaml
 # records.yml
 - std/article/*.md
 ```
 
-### 3. Set up the folder-level page.yml
+### 2. Declare the query
+
+A **query** is the named question the site asks over its records, and a page names it.
+Declare it in `queries.yml`, a bare map at the site root (or under `queries:` in
+`site.yml`):
+
+```yaml
+# queries.yml
+articles:
+  schema: '@std/article'   # the Model these records are
+  sort: date desc
+```
+
+> **`schema:` here is the Model** — which type these records are. It is not the
+> `content.data` key a component reads them under; that is the key the component
+> declares. See [Queries](./queries.md).
+
+### 3. Name the query on the page
 
 ```yaml
 # pages/articles/page.yml
 id: b7788da4          # stable id — lets other pages point at this one
 title: Articles
-
-# The query cascades to every page under this folder, including [slug]/
-query: articles
-```
-
-`query: articles` is shorthand for `fetch: { query: articles }`.
-
-### 4. Create the list and parametric folders
-
-```yaml
-# pages/articles/index/page.yml
-title: Articles
-description: Latest articles and tutorials
+query: articles       # reaches this page's sections and its child pages', [slug]/ included
 ```
 
 ```markdown
-<!-- pages/articles/index/1-articles.md -->
+<!-- pages/articles/1-list.md -->
 ---
 type: ArticleList
 ---
+
+# Articles
 ```
+
+### 4. Add the parametric page
 
 ```markdown
 <!-- pages/articles/[slug]/1-article.md -->
@@ -179,7 +167,7 @@ export default function Article({ content, block }) {
     return <div className="animate-pulse">Loading...</div>
   }
 
-  // Same key as the list page. On the parametric page it holds exactly one record.
+  // The same key as the list. On the parametric page it holds exactly one record.
   const article = content.data.articles?.[0]
 
   if (!article) {
@@ -207,52 +195,59 @@ export default function Article({ content, block }) {
 
 ### The parametric page inherits, it does not re-declare
 
-A fetch declaration cascades down four levels — section → page → parent page →
-site, the site's reaching only a top-level page — and the most specific
-declaration wins per key. The `[slug]` folder sits
-one level below `articles/`, so the parent's `query: articles` reaches it by the
-same walk that serves the list page. Nothing is fetched twice.
+A fetch reaches four levels — section → page → parent page → site, the site's
+reaching only a top-level page — and the most specific fills each key first. The
+`[slug]` folder sits one level below `articles/`, so the parent's `query: articles`
+reaches it by the same walk that serves the list. Nothing is declared twice.
 
-### One key, two array lengths
+### One key, two lengths
 
-The record arrives under the **same key on both pages**. Only the length differs:
+The records arrive under the **same key on both pages**. Only the length differs:
 
 | page | `content.data.articles` |
 |---|---|
-| list | `[ {…}, {…}, {…} ]` — every record |
-| parametric | `[ {…} ]` — the one the URL names |
-| parametric, no match | `[]` |
+| `/articles` | `[ {…}, {…}, {…} ]` — every record the query selects |
+| `/articles/getting-started` | `[ {…} ]` — the one the URL names |
+| a URL that names no record | `[]` |
 
-A detail section reads `content.data.articles[0]`; the runtime never collapses the
-array to an object, because reshaping is the foundation's job. The key is the one the
-component declares: a component declaring `article: '@std/article'` receives the same
-list of one under `article`, because the route query fills the first key of its schema
-([Which fetch fills a key](./data-fetching.md#which-fetch-fills-a-key)).
+A section showing the record reads `content.data.articles[0]`; the runtime never
+collapses the list to an object, because reshaping is the foundation's job. The key is
+the one the component declares: a component declaring `article: '@std/article'`
+receives the same list of one under `article`, because the route query fills the first
+key of its schema ([Which fetch fills a key](./data-fetching.md#which-fetch-fills-a-key)).
 
 ### Which query the URL names
 
 A URL names one record of one query — the page's **route query**. It is chosen at
 the page level:
 
-1. the query the parametric page declares itself, in its own `page.yml`; otherwise
+1. the query the parametric page names itself, in its own `page.yml`; otherwise
 2. its parent page's; otherwise
 3. the site's, in `site.yml` — for a top-level parametric page only
    (`pages/[slug]/`), because the site's fetch reaches no page further down;
-4. and if none of those declares one, the query the page's own sections all
-   declare — when they declare the same one.
+4. and if none of those names one, the query the page's own sections all
+   name — when they name the same one.
 
 The first query of the chosen level wins: a parent that fetches two things still
-has only one the URL can name, and the other keys cascade to the parametric page
+has only one the URL can name, and the other keys reach the parametric page
 unchanged.
 
 Every section the route query reaches — through the page, the parent, the site, or
-its own declaration of that same query — gets the one record. A section that
-declares a **different** query of its own gets that query as declared, so a
-sidebar of upcoming events on a member's page is not narrowed by the member's
-handle. A query two or more levels up reaches none of the page's sections, and is
-never its route query either — except for a [page nested inside a parametric
-page](#pages-inside-a-parametric-page), which shares the route query of the page
-that captured its parameter.
+its own fetch of that same query — gets the one record. A section that fetches a
+**different** query gets that query's records, so a sidebar of upcoming events on a
+member's page is not narrowed by the member's handle. A query two or more levels up
+reaches none of the page's sections, and is never its route query either — except for
+a [page nested inside a parametric page](#pages-inside-a-parametric-page), which shares
+the route query of the page that captured its parameter.
+
+### Which URLs exist
+
+**A parametric page has a URL for each record of its route query's set, and no other.**
+The query decides which records exist — its `scope`, `where`, `sort` and `limit` — so a
+route query for the 100 most recent articles gives those 100 a page each, and an older
+article none, whatever a list elsewhere shows. A `where` or `limit` on a list's
+`fetch:` changes what that list shows and never which pages exist. See
+[Queries → What a query selects](./queries.md#what-a-query-selects-its-set).
 
 ### What the URL segment is matched against
 
@@ -277,7 +272,7 @@ A field that holds **several values** matches **any member**: a record with
 its **first** value. This exists for the ordinary case of a field typed as multi-valued that
 holds one value; without it, that page renders not-found with nothing to explain it.
 
-⛔ **Routing by a field that is not unique picks one record, and which one is not
+**Routing by a field that is not unique picks one record, and which one is not
 guaranteed.** If two records both hold `biology`, `/depts/biology` shows one of them — the
 build warns when it happens, and a site served by a host may pick the other one. Route by a
 field whose value identifies a single record.
@@ -305,7 +300,7 @@ and its sections receive that record.
 ```text
 pages/members/
 ├── page.yml              # query: members — the route query of [slug]/ and of cv/
-├── list.md
+├── 1-list.md
 └── [slug]/
     ├── 1-profile.md      # /members/alice     — content.data.members[0] is Alice
     └── cv/
@@ -313,14 +308,22 @@ pages/members/
         └── 1-cv.md       # /members/alice/cv  — content.data.members[0] is Alice again
 ```
 
-A query the nested page declares itself is delivered under its own key and changes
+A query the nested page names itself is delivered under its own key and changes
 nothing about what `:slug` names — `publications` above is not searched for `alice`.
-Its other keys cascade as usual, one parent up.
+Its other keys reach it as usual, from one parent up.
 
-### Folder names the build refuses
+### Folder names
+
+A parametric folder is `[...path]`, or a bracket name of letters, digits and `_` —
+`[slug]`, `[id]`, `[member_id]`. Any other bracketed name — `[my-id]`, `[...slug]`,
+`[...rest]` — is not a parametric page: it becomes an ordinary page whose URL contains
+the brackets.
+
+The build refuses:
 
 - `[dir]` and `[path]` — `:dir` and `:path` are route variables every parametric
-  page already has (below). `[path]` is usually a mistyped `[...path]`.
+  page already has ([below](#multi-segment-routes--path)). `[path]` is usually a
+  mistyped `[...path]`.
 - Any folder inside a `[...path]` folder — the catch-all takes the rest of the URL,
   so a page below it could never be reached. A folder that holds something other
   than a page is named with a leading `_`, which the build skips.
@@ -339,7 +342,7 @@ record, and there is nothing to declare:
 
 That page is the parametric page whose [route query](#which-query-the-url-names) is the
 record's query — in the Quick Start, `pages/articles/[slug]/` — so an article links to
-`/articles/<slug>` wherever a list of articles appears: the list page, the homepage, a
+`/articles/<slug>` wherever a list of articles appears: the list, the homepage, a
 sidebar on another article. The URL is filled from the field the page's URL is
 [matched against](#what-the-url-segment-is-matched-against) — a `[slug]` page's from
 the record's handle, a [`[...path]`](#multi-segment-routes--path) page's from its
@@ -381,23 +384,21 @@ normalization differs, on a field nobody checks until a visitor clicks it.
 
 ## Where the record comes from
 
-When the visitor clicks through from the list, the records are already cached and
-the runtime just picks the match. When they land on the URL directly — a bookmark,
-a search result — the runtime fetches the route query's records and picks the match
-there. Either way the query decides which records exist — its `scope`, `where`, `sort`
-and `limit` — and a record it leaves out is not found, whatever a list on the page
-shows. A route query for the 100 most recent articles gives those 100 a page each, and
-an older article none.
+When the visitor clicks through from the list, the query's records are already cached
+and the runtime finds the record the URL names among them. When they land on the URL
+directly — a bookmark, a search result — the runtime fetches the route query's records
+and finds it there. A host that answers queries is asked for the one record directly —
+this record, if the query selects it.
 
-Some lists carry less than a whole record, and then the page asks for the record on
-its own:
+Some lists carry less than a whole record, and then the page also asks for the record
+on its own, even when it found it in a cached list:
 
-- **a query with `deferred:` fields** ships a lean list, and the build writes one full
-  file per record — the page reads it with no configuration;
-- **a host that serves records live** answers one question for it — this record, if
-  the query selects it — with no configuration either;
-- **an [external query](./data-fetching.md#external-queries)** whose endpoint lists
-  summaries names the request for one full record with `record:`:
+- **a query with `deferred:` fields** leaves those fields out of lists, and the build
+  writes one full file per record — the page reads it with no configuration;
+- **a host that serves records live** lists briefs and answers the page's record whole,
+  with no configuration either;
+- **an [external query](./queries.md#external-queries)** whose endpoint lists summaries
+  names the request for one full record with `record:`:
 
 ```yaml
 # queries.yml
@@ -510,7 +511,7 @@ if (block.dataError?.articles) {
 When the URL names no record, the key is delivered as `[]`, so
 `content.data.articles?.[0]` is `undefined`. Handle it — and note the page title is
 set to `"Not found"` and `page.notFound` to `true` for you, just as the title is set
-from `item.title` on a hit. No `useEffect`, no `document.title`.
+from the record's `title` on a hit. No `useEffect`, no `document.title`.
 
 | record field | page property |
 |---|---|
@@ -553,8 +554,7 @@ is parsed.
 ```text
 pages/blog/
 ├── page.yml          # query: posts
-├── index/
-│   └── 1-posts.md
+├── 1-posts.md
 └── [...path]/        # → /blog/my-post, /blog/rust/my-post, /blog/rust/2025/my-post
     └── 1-post.md
 ```
@@ -584,7 +584,7 @@ a record at the folder root is `/blog/my-post` and one placed under `rust/2025` 
 one; write a variable where it should mean something:
 
 ```yaml
-# queries.yml — one saved query serves the list page AND the detail page
+# queries.yml — one saved query serves /blog and the parametric page under it
 posts:
   schema: '@std/article'
   scope: :dir              # the URL's directory is the folder branch — deliberately exposing it
@@ -592,14 +592,14 @@ posts:
   # where: { tag: :dir }   # a content field — the folder stays private
 ```
 
-**Unbound means the clause drops.** On the list page there is no `:dir`, so a
+**Unbound means the clause drops.** On `/blog` there is no `:dir`, so a
 `scope: :dir` or a `where: { tag: :dir }` simply vanishes and the whole set is
 delivered; on `/blog/rust/my-post` it binds to `rust`. An **empty** variable drops
 its clause too: on `/blog/my-post` there is no directory, and `scope: :dir` reads the
-whole folder. That is what lets one query serve both pages — and it means a
-*misspelled* variable produces a list page rather than an error, so check the
-spelling: only `:path`, `:dir` and `:slug` are variables. A variable fills a value,
-never a key, an operator or `schema:`.
+whole folder. That is what lets one query serve both pages. Only `:path`, `:dir` and
+`:slug` are variables — anything else, a misspelling included, is an ordinary value
+that matches only a record holding it literally. A variable fills a value, never a
+key, an operator or `schema:`.
 
 This works the same on a static site and on a host that answers queries: the build
 compiles the query's file without the clauses the route binds, and each page
@@ -614,29 +614,29 @@ the first one is used. Bind `:dir` to `scope` when the branch should decide whic
 ## Examples
 
 ```text
-# Blog — folder-level query (recommended)
-pages/articles/
-├── page.yml          # query: articles
-├── index/            # → /articles
-│   └── 1-articles.md
-└── [slug]/
-    ├── 1-article.md
-    └── 2-related.md
-
-# Flat — the query sits alongside the list section
+# Blog
 pages/blog/
 ├── page.yml          # query: articles
-├── 1-list.md         # type: BlogList
+├── 1-list.md         # type: ArticleList → /blog
 └── [slug]/
-    └── 1-article.md  # type: Article
+    ├── 1-article.md  # type: Article     → /blog/<slug>
+    └── 2-related.md  # type: RelatedArticles, fetch: { query: articles, current: exclude, limit: 3 }
 
 # Team directory
 pages/team/
 ├── page.yml          # query: team
-├── index/
-│   └── 1-overview.md # type: TeamGrid
+├── 1-overview.md     # type: TeamGrid
 └── [username]/
     └── 1-profile.md  # type: PersonProfile
+
+# A member's page, and a page under it about the same member
+pages/members/
+├── page.yml          # query: members
+├── 1-list.md
+└── [slug]/
+    ├── 1-profile.md  # /members/<slug>
+    └── cv/
+        └── 1-cv.md   # /members/<slug>/cv
 ```
 
 ---
@@ -652,19 +652,27 @@ no longer read (the build warns). `uniweb validate` reports a section on a page 
 fetches data none of which fills its keys.
 
 **The query delivers nothing at all.**
-A query must be declared in `site.yml::queries` or `queries.yml`. Entities on disk
-are not reachable until a query names their Model.
+A query must be declared in `queries.yml` or `site.yml::queries`. Records on disk
+are not reachable until a query names their Model — and, when the site has a
+`records.yml`, until it lists them.
+
+**`/articles` shows an article instead of the list.**
+The list's sections are in a subfolder. `pages/articles/index/` is the page
+`/articles/index`, not `/articles`: only the site root promotes a page to its parent's
+route. `/articles`, having no sections of its own, takes the visitor to its first child
+with content. Put the list's sections in `pages/articles/` itself, beside `page.yml`.
 
 **Records missing from the output.**
 Every record needs the field the folder names. `[slug]` and `[...path]` need a
 handle — `$name`, or `slug` — on each record; records without it get no page, and
-the build says how many — *"3 of 5 records have no "slug""* — once per page.
+the build says how many — *"3 of 5 records have no "slug""* — once per page. A record
+outside the route query's set — excluded by its `where`, or past its `limit` — has no
+page either.
 
 **Every record shows on a parametric page.**
 The page has no route query: neither it, its parent nor — on a top-level page — the
-site declares a query, and its sections declare different ones. Declare the query in the parent's
-`page.yml` (`query: articles`) — the documented shape — or give all the sections the
-same one.
+site names a query, and its sections name different ones. Name the query in the parent's
+`page.yml` (`query: articles`), or give all the sections the same one.
 
 **A section rendered nothing and the console is clean.**
 Read `block.dataError` before reading `content.data`: a fetch that failed leaves
@@ -673,11 +681,11 @@ means "no records" and is an answer. And check the component declares the key: a
 section receives only the keys its `meta.js` `data:` names.
 
 **The section shows "not found".**
-The URL segment matched no record. Usually the right signal — show a proper
-not-found state. If it is wrong, check which query is the page's route query (its
-own, its parent's, or the site's) and that the field the folder names exists on
-every record. Remember the record is at `content.data.articles[0]`, not under a
-singular key.
+The URL segment matched no record of the route query's set. Usually the right signal —
+show a proper not-found state. If it is wrong, check which query is the page's route
+query (its own, its parent's, or the site's), that the record is in that query's set,
+and that the field the folder names exists on every record. Remember the record is at
+`content.data.articles[0]`, not under a singular key.
 
 **A card's link is wrong or doubled (`/blog//my-post`).**
 Something is rebuilding the href. Read `item.$route`.
@@ -692,7 +700,8 @@ query. Check which query that page's URL names, or point the fetch at a page wit
 
 ## See Also
 
-- [Data Fetching](./data-fetching.md) — the full fetch reference: `as:`, `where:`, `deferred:`, transports
-- [Collections](../authoring/collections.md) — declaring queries and records
-- [Content Structure](./content-structure.md) — how content is parsed
+- [Queries](./queries.md) — what a query selects: `schema`, `scope`, `where`, `sort`, `limit`, external queries
+- [Data Fetching](./data-fetching.md) — naming a query, narrowing it, what a section receives, `current:`
+- [Working with Data](../development/working-with-data.md) — one query across a site: a list, a parametric page, a "more to read" section
+- [Working with Records](../authoring/collections.md) — records and queries, for authors
 - [Component Metadata](./component-metadata.md) — the `meta.js` reference

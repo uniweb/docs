@@ -13,14 +13,15 @@ Every data fetch goes through the **FetcherDispatcher** — a small object on `w
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Request (from EntityStore or build prerender)                        │
-│   { as, path?, url?, transform?, method?, body?, dynamicContext? }    │
+│   { as, query?, path? | url?, transform?, method?, body?,            │
+│     scope?, where?, sort?, limit?, narrow?, dynamicContext? }        │
 └──────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Runtime transport override (if set)                                  │
-│   Passed via initUniweb({ transport }). Editor preview only;         │
-│   handles every Layer-1 request unconditionally.                     │
+│   Passed via initUniweb({ transport }) by a host that supplies all   │
+│   data itself (an editor's preview); handles every request.          │
 └──────────────────────────────────────────────────────────────────────┘
                                │ not set
                                ▼
@@ -134,7 +135,7 @@ Throwing works but isn't idiomatic. The runtime catches and surfaces `{ data: []
 
 When `website.fetcher.dispatch(request, ctx)` is called:
 
-1. **Select fetcher.** Runtime `transport` override wins if set; otherwise look up `ctx.website.config.fetcher.transports[as]` (the binding key) → `.transports.default` in the named-transport registry; otherwise the framework default fetcher. Record: a specific fetcher instance.
+1. **Select fetcher.** Runtime `transport` override wins if set; otherwise look up `ctx.website.config.fetcher.transports[as]` (the fetch's own `as`) → `.transports.default` in the named-transport registry; otherwise the framework default fetcher. Record: a specific fetcher instance.
 2. **Derive cache key.** Call `fetcher.cacheKey(request)` if defined, else the framework default.
 3. **Cache hit?** `dataStore.get(key)` — return cached `{ data, meta }` synchronously-wrapped.
 4. **In-flight?** Attach this request's signal to the existing promise's abort set; await the same promise.
@@ -168,6 +169,7 @@ JSON.stringify({
   sort,        // one read of the file when they are asked together
   limit,
   narrow,      // the fetch's own where / sort / limit, in one field order
+  locale,
 })
 ```
 
@@ -191,7 +193,7 @@ Today's model:
 
 - `BlockRenderer` runs the block's fetch **once** per block lifecycle. The fetch effect is keyed on `[block]` — it fires at mount and re-fires on SPA navigation that changes the block, and nowhere else.
 - `page.state` / `website.state` drive React re-renders of subscribing components via kit hooks. They do **not** drive re-dispatches.
-- Filter-state patterns (academic-metrics-style) are implemented by fetching a collection once and re-computing client-side from it as state changes.
+- Filter-state patterns (academic-metrics-style) are implemented by fetching a query's records once and re-computing client-side from them as state changes.
 
 Interactive re-fetching (search boxes, pagination, drill-downs) is handled by **domain-aware components** — components that know the backend and fetch their own data with standard React (`useEffect + fetch`). The framework doesn't bridge this case because a component that knows what variables to send already has backend domain knowledge, which is definitionally outside the "runtime hands me data" contract. See [Component Data Patterns](../development/component-data-patterns.md).
 
@@ -201,7 +203,7 @@ Interactive re-fetching (search boxes, pagination, drill-downs) is handled by **
 
 `@uniweb/core`'s `substitutePlaceholders(value, context, { encode })` handles `{name}` substitution in two places:
 
-- **Record addresses.** An external query's `record: { url: 'https://api.example.com/articles/{slug}' }`, or a `deferred:` query's `/data/articles/{slug}.json` — `buildDetailConfig` fills in the dynamic-route paramValue. Encoding ON.
+- **Record addresses.** An external query's `record: { url: 'https://api.example.com/articles/{slug}' }`, or a `deferred:` query's `/data/articles/{slug}.json` — `buildDetailConfig` fills in the value from the parametric page's URL. Encoding ON.
 - **POST body objects.** `body: { variables: { slug: '{slug}' } }` — a `record.body` is filled by `buildDetailConfig`, and the default fetcher fills a request's body from `dynamicContext` before JSON-serializing. Encoding OFF (JSON will serialize).
 
 The names available are the route's own param (`{slug}` for `[slug]`, `{id}` for `[id]`), `{param}` as an alias for it, and `{slug}` as the record's slug when the record is already in hand.
@@ -214,16 +216,31 @@ Only keys actually present in the context substitute. Unknown keys pass through 
 
 ## Delivery paths
 
-Uniweb sites reach the browser through two framework-level delivery modes:
+The same dispatcher runs however the site reaches the browser:
 
-- **Baked-in build (`uniweb build`).** Site content is embedded into the built HTML at `__SITE_CONTENT__` (a Vite `define`). `prerender: true` fetch configs are executed by the build pipeline (in Node, using `process.env` for anything that needs it), and their results are pre-populated into `DataStore` on runtime startup.
-- **Shell mode (`uniweb build --shell`).** Built HTML contains no site content. Something else (a serve script, an edge worker, any backend) stamps `__DATA__` into the HTML at request time and decides what goes in it. The framework provides the shell; the framework does not provide the stamper.
+- **A static build (`uniweb build`).** Site content is embedded into the built HTML at `__SITE_CONTENT__` (a Vite `define`). The fetches a page needs are executed by the build pipeline (in Node), and their results are embedded in the page and hydrated into the `DataStore` on runtime startup.
+- **A host that serves the site.** The host serves an HTML shell and stamps the site's payload (`__DATA__`) into it at request time. A host that prerenders runs the runtime's own page prefetch over a transport it supplies and passes the answers in, which hydrate the `DataStore` the same way.
 
-The dispatcher's behavior is identical across both modes — same routing, same cache, same contract. The only difference is *where fetches that happen at build time run*, which is a concern of the preload path, not the runtime fetcher.
+The dispatcher's behavior is identical in both — same routing, same cache, same contract. The only difference is *where fetches that happen before the page reaches the browser run*, which is a concern of the preload path, not the runtime fetcher.
 
 ### The build reads an external query as the browser does
 
-When a binding of an external query says `prerender: true`, the build-time fetch path (`build/src/site/data-fetcher.js`) reads it with the runtime default fetcher's vocabulary: `url`, `method: POST` with its `body`, and `transform`, then the query's `where` / `sort` / `limit` and the fetch's `narrow` with the same evaluator. A binding of an external query defaults to `prerender: false`, so it runs in the browser unless the binding says `prerender: true`.
+When a fetch of an external query says `prerender: true`, the build-time fetch path (`build/src/site/data-fetcher.js`) reads it with the runtime default fetcher's vocabulary: `url`, `method: POST` with its `body`, and `transform`, then the query's `where` / `sort` / `limit` and the fetch's `narrow` with the same evaluator. A fetch of an external query defaults to `prerender: false`, so it runs in the browser unless it says `prerender: true`.
+
+---
+
+## From a fetch to `content.data`
+
+The dispatcher answers requests; the **entity store** (`@uniweb/core`) decides which requests a section needs and what its component receives. For each section it:
+
+1. **Collects the fetches that reach the section**, one level at a time: the section's own, its page's, its parent page's, and the site's (for a layout area or a top-level page only).
+2. **Pairs each key the component declares with the fetch that fills it** — `fillDeclaredKeys`: a fetch fills its own `as` when the component declares it, and otherwise the component's first still-empty key of the query's schema. A key already held by the section (a tagged data block, or an answer a static build embedded) is filled from what it holds.
+3. **Resolves each filling fetch** to a request: the query as saved, with route variables bound, and the fetch's narrowing as `narrow`. Only fetches that fill a key are dispatched.
+4. **On a parametric page, applies `current:`** — decided by the query the fetch names (`currentFor`): a fetch of the route query takes the page's record by default; `exclude` asks `narrow.limit` one higher and removes it.
+5. **Links records**: each record gets `$route`, the URL of the parametric page whose route query is the fetch's query (or its `detailPage`), filled at render time on every lane.
+6. **Delivers the declared keys**: the records as a list, `null` for a key nothing fills or whose fetch failed — with the message on `block.dataError` — and `block.dataLoading` while a fetch is pending.
+
+A host's prefetch resolves the fetches with the same functions — every fetch of every level, a superset — so everything the render asks for is among the answers it embeds. The rules are in [Data Fetching → What a section receives](../reference/data-fetching.md#what-a-section-receives) and [Parametric Pages](../reference/dynamic-routes.md).
 
 ---
 
@@ -238,7 +255,7 @@ When a binding of an external query says `prerender: true`, the build-time fetch
 
 ## Secrets posture
 
-The framework's config is **public to the browser** by construction. In baked-in builds the site config is inlined into HTML via `__SITE_CONTENT__`; in shell mode it's stamped into `__DATA__` at request time. Either way, values in `site.yml` and `queries.yml` — an external query's `url` and `body`, a transport's binding under `fetcher:`, anything — are visible to anyone viewing the page source.
+The framework's config is **public to the browser** by construction. In baked-in builds the site config is inlined into HTML via `__SITE_CONTENT__`; when a host serves the site, it's stamped into `__DATA__` at request time. Either way, values in `site.yml` and `queries.yml` — an external query's `url` and `body`, a transport's binding under `fetcher:`, anything — are visible to anyone viewing the page source.
 
 That means `site.yml` is the wrong place for secrets. The framework doesn't pretend otherwise: no `auth:` knob, no env-var resolution into a request, no "private" channel. The honest pattern is **same-origin proxying**:
 
@@ -264,7 +281,7 @@ The default `deriveCacheKey` stringifies the body into the cache key. Typical bo
 
 ### Body placeholder collision with GraphQL `{ field }` braces
 
-GraphQL selection sets contain `{ id name }`. The placeholder matcher requires no whitespace between the braces (`\{([A-Za-z_][A-Za-z0-9_]*)\}`), so `{ id }` and `{slug}` are distinguishable: the first has whitespace and isn't matched; the second has no whitespace and gets substituted when `slug` is in the dynamic-route context. Tested explicitly.
+GraphQL selection sets contain `{ id name }`. The placeholder matcher requires no whitespace between the braces (`\{([A-Za-z_][A-Za-z0-9_]*)\}`), so `{ id }` and `{slug}` are distinguishable: the first has whitespace and isn't matched; the second has no whitespace and gets substituted when `slug` is in the parametric page's context. Tested explicitly.
 
 ### A non-2xx response is an error, not data
 
@@ -299,6 +316,7 @@ Write a custom transport. Compose `@uniweb/fetchers` middleware around it. See [
 
 - [Data Sources](../development/data-sources.md) — User guide with recipes.
 - [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Writing and registering a named transport.
-- [Working with Data](../development/working-with-data.md) — Narrative guide: cascading, template pages, whole records, filter-state patterns.
-- [Data Fetching](../reference/data-fetching.md) — Author-facing reference for `fetch:` / `query:` config.
+- [Working with Data](../development/working-with-data.md) — Narrative guide: one query across a site, what each section receives, whole records.
+- [Data Fetching](../reference/data-fetching.md) — Reference for `fetch:` / `query:`, narrowing, and what a section receives.
+- [Queries](../reference/queries.md) — Everything a query can say, external queries included.
 - [Extensions Architecture](./extensions-architecture.md) — How extensions contribute named transports.

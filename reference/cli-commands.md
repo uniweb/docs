@@ -96,7 +96,7 @@ Without `--template` or `--blank`, the CLI scaffolds a working project with foun
 | `docs` | Documentation site with sidebar, search, versioning |
 | `academic` | Research site with publications, team, timeline |
 | `dynamic` | Live API data fetching with loading states and transforms |
-| `international` | Multilingual site with i18n, blog, and collections |
+| `international` | Multilingual site with i18n, a blog, and records |
 | `store` | E-commerce with product grid and Shopify integration |
 | `extensions` | Multi-foundation demo with a visual effects extension |
 
@@ -340,7 +340,6 @@ When run at workspace root, builds all foundations first, then extensions, then 
 | `--no-prerender` | Skip static HTML generation (overrides site.yml) |
 | `--foundation-dir <path>` | Path to foundation (for site prerendering) |
 | `--platform <name>` | Deployment platform (e.g., `vercel`) |
-| `--shell` | Build site without embedded content (for dynamic backend serving) |
 
 ### Foundation Build
 
@@ -409,16 +408,6 @@ dist/
 └── assets/
 ```
 
-### Shell Mode
-
-The `--shell` flag builds a site without embedded content — no `__SITE_CONTENT__`, no `__FOUNDATION_CONFIG__`, no theme CSS in HTML. This produces a shell that a dynamic backend can populate at request time.
-
-```bash
-UNIWEB_BASE=/sites/marketing/ uniweb build --shell
-```
-
-Shell mode forces runtime foundation linking (import maps) and skips prerender.
-
 ### Examples
 
 ```bash
@@ -433,9 +422,6 @@ cd site && uniweb build --prerender
 
 # Build for Vercel deployment
 uniweb build --platform vercel
-
-# Build shell for dynamic backend
-uniweb build --shell
 ```
 
 ---
@@ -1325,7 +1311,7 @@ Ship a site to a host. Run it with no destination configured and it asks:
     Somewhere else · export a folder
 ```
 
-Pick a host and it asks *how* — set up a workflow so every push deploys, or upload from this machine now. **Uniweb Cloud** runs [`uniweb publish`](#uniweb-publish); **Somewhere else** runs [`uniweb export`](#uniweb-export). Your answer is recorded in `deploy.yml`, so later runs go straight there.
+Pick a host and it asks *how* — set up a workflow so every push deploys, or upload from this machine now. **Uniweb Cloud** runs [`uniweb publish`](#uniweb-publish); **Somewhere else** runs [`uniweb export`](./deployment.md). Your answer is recorded in `deploy.yml`, so later runs go straight there.
 
 ```bash
 uniweb deploy [options]

@@ -292,9 +292,9 @@ Most sites won't need free-form translations. They're for the special cases wher
 
 ---
 
-## Translating Collections
+## Translating Records
 
-If your site has collections (blog posts, team members, product listings), those are extracted automatically alongside page content:
+If your site has records (blog posts, team members, product listings), their text is extracted automatically alongside page content:
 
 ```bash
 uniweb i18n extract
@@ -302,7 +302,7 @@ uniweb i18n extract
 
 Record strings get their own manifest at `locales/records/manifest.json` and follow the same translate-and-build workflow.
 
-To extract only collection strings (skipping pages):
+To extract only record strings (skipping pages):
 
 ```bash
 uniweb i18n extract --records-only

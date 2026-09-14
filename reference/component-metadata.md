@@ -9,6 +9,7 @@ A `meta.js` file declares a section type's content interface:
 - What content it expects from markdown
 - What parameters content authors can configure
 - What presets are available for quick setup
+- What data it receives — the `content.data` keys it declares
 
 **In `src/sections/`**, `meta.js` is optional at the root level. A bare file (`Hero.jsx`) or folder (`Hero/Hero.jsx`) is automatically an addressable section type with an implicit empty content interface. Add `meta.js` when you need params, content expectations, or presets. Deeper nesting within `src/sections/` requires `meta.js` for a component to be addressable.
 
@@ -50,7 +51,7 @@ When `meta.js` is present:
 | `inset` | No | `false` |
 | `visuals` | No | — |
 | `children` | No | — |
-| `data` | No | — |
+| `data` | No | — (the section receives no data of its own) |
 | `content` | No | — |
 | `params` | No | — |
 | `presets` | No | — |
@@ -74,7 +75,7 @@ export default {
   background: true,
 
   data: {
-    events: '@std/event',  // optional: declares the shape of content.data.events
+    events: '@std/event',  // the section receives content.data.events, shaped by @std/event
   },
 
   content: {
@@ -154,7 +155,7 @@ function Hero({ content, params, block, website }) {
   // ─── From frontmatter (params) ──────────────────────
   const { theme, layout } = params
 
-  // ─── From bound data (collection, tagged block, or form UI) ──
+  // ─── From a declared data key (a query's records) ──────
   const events = content.data?.events || []
 
   // ─── From structured author data (tagged blocks or form UI) ──
@@ -176,7 +177,7 @@ function Hero({ content, params, block, website }) {
 |--------|-------------|--------------|
 | Markdown content | `content: { ... }` | `content.title`, `content.paragraphs`, `content.items` |
 | Frontmatter params | `params: { ... }` | `params.paramName` |
-| Bound collection data | `data: { events: '@std/event' }` | `content.data.events` |
+| A query's records | `data: { events: '@std/event' }` | `content.data.events` |
 | Structured author data | `data: { 'nav-links': { ... } }` | `content.data['nav-links']` |
 
 > **Note:** `block.data` and `content.data` point at the same object at
@@ -269,9 +270,8 @@ These names are a **fixed vocabulary**—they map to what the semantic parser ex
 | `lists` | `- item` | Bullet or numbered lists |
 | `items` | Subsequent headings | Content groups within the markdown |
 | `insets` | `@Component` refs | Inline component references |
-| `subsections` | Child files | Nested section files (for composition) |
 
-Use these exact names. The meta.js describes which of these your component uses—you're not inventing new names, you're declaring which parsed elements you consume.
+Use these exact names. The meta.js describes which of these your component uses—you're not inventing new names, you're declaring which parsed elements you consume. Child sections from separate files are not content elements: they arrive as `block.childBlocks`, and a section type that accepts them declares [`children`](#children-composition).
 
 #### Image Roles
 
@@ -360,7 +360,7 @@ background:
 
 The `data` field declares **the `content.data` keys your component receives**, each with its schema. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
 
-A section's `content.data` holds the keys its component declares, and nothing else (plus any its foundation declares in `main.js`). A component that reads `content.data.events` declares `events`. Each key is filled from the fetches and tagged blocks that reach the section — by name, or, for a fetch under another name, by the query's schema — and a key nothing fills is `null`. The schema tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
+A section's `content.data` holds the keys its component declares, and nothing else (plus any its foundation declares in `main.js`). A component that reads `content.data.events` declares `events`. Each key is filled from the fetches and tagged blocks that reach the section — by name, or, for a fetch under another name, by the query's schema — and a key nothing fills is `null`. The schema tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
 
 ```javascript
 data: {
@@ -370,7 +370,7 @@ data: {
 }
 ```
 
-Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below), or `{}` for a key whose records have no schema — an external API's. The site, author, or editor decides *how* each key is filled — a fetched collection, a tagged code block, or an editor form — and the schema is the same regardless of source.
+Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below), or `{}` for a key whose records have no schema — an external API's. The site, author, or editor decides *how* each key is filled — a query's records, a tagged code block, or an editor form — and the schema is the same regardless of source.
 
 A component with no `data` field, or `data: false`, receives no keys of its own.
 
@@ -518,19 +518,19 @@ export default {
 
 The component reads the events from `content.data.events` and renders them alongside markdown content.
 
-#### Collections always arrive as arrays
+#### A query's records arrive as a list
 
-A `data:` binding describes the shape of *each item*. The runtime delivers a bound collection key as an **array**, always:
+A `data:` entry describes the shape of *each record*. The records a query delivers arrive as a **list**, always:
 
-- A list page receives the full collection array.
-- A dynamic `[slug]` detail page receives a **single-element array** — the route-matched record — under the same key. A detail section reads `content.data.events[0]`.
-- A detail page where nothing matches receives an empty array `[]`.
+- A section that shows a query's records receives every record it takes: `content.data.events`.
+- A section on a [parametric page](./dynamic-routes.md) receives the one record the URL names as a **list of one**, under the same kind of key. It reads `content.data.events[0]`.
+- When the URL names no record, the key is `[]` — an answer with no records — and the page is marked not found.
 
-The runtime never coerces an array to a single object and never synthesizes a separate singular key — reshaping to a single record is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Dynamic Routes](./dynamic-routes.md) for the detail-page flow.
+A key that holds a tagged data block's value or an editor form's holds whatever was written — a record or a list. A key nothing fills is `null`. The runtime never turns a list into a single object and never adds a singular key; reshaping is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
 
 #### Loading states
 
-When a data fetch runs at runtime (`prerender: false`), the component renders immediately — static content (title, paragraphs, items) is available on first render, while `content.data` populates when the fetch completes.
+When a data fetch runs at runtime, the component renders immediately — static content (title, paragraphs, items) is available on first render, and the declared key is `null` until the fetch completes.
 
 The component checks `block.dataLoading` to know whether a fetch is still in progress:
 
@@ -733,9 +733,11 @@ preset: glass
 
 ### Structured Author Data
 
-The same `data:` keys that bind collection schemas (above) also declare the
+The same `data:` keys that receive a query's records (above) also declare the
 shapes of structured data a component accepts directly from authors. There is
-no separate `schemas:` key — a `data:` entry is the one declaration surface.
+no separate `schemas:` key — a `data:` entry is the one declaration surface, and
+a tagged block under a key the component does not declare is left out of
+`content.data`.
 Two input paths converge on the same `content.data[key]`:
 
 1. **Tagged markdown blocks** — authors write YAML/JSON in a fenced block

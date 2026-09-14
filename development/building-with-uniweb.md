@@ -107,7 +107,7 @@ Without extra configuration, a Uniweb project gives you:
 - **Hot reload** on both content and component changes
 - **Pre-rendered static HTML** for every page, with client-side hydration
 - **Localization** — locale detection, locale-aware URLs, translation extraction and matching
-- **Dynamic routes** — `[slug]` folders expand into concrete pages from collection data
+- **Parametric pages** — a `[slug]` folder becomes one page per record of a query
 - **Records** — markdown, YAML or JSON files in `entities/` become structured data, with automatic i18n support
 - **Media processing** — image optimization, video poster generation, PDF preview thumbnails
 - **Search indexing** — content is indexed at build time for client-side search

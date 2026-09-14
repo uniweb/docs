@@ -120,8 +120,6 @@ colors:
 
 **Vivid**: Maximum saturation with dramatic chroma curves. Colors stay vibrant even at light and dark extremes.
 
-See the [color modes visual comparison](./color-modes-example.html) for a side-by-side view.
-
 ### Exact Brand Color Matching
 
 By default, shade 500 **is** your exact input color. The build redistributes surrounding shades proportionally to maintain a smooth, monotonic lightness scale.

@@ -336,7 +336,7 @@ The pattern: `person` is flat and independent; `course` **namespaces** its own f
 
 A schema isn't the destination — it's the contract that lets a **foundation** (the React component library that renders your content) turn records into pages. The last step is wiring data to components, and it reads the same whether or not you have a backend:
 
-- **Content-driven site.** A page declares `query: courses`; the runtime delivers the collection as `content.data.courses` to a `CourseGrid`; a `[slug]/` template page delivers the focused record as `content.data.courses[0]` to a `CoursePage` or `LessonViewer`. No `fetch()`, no loading state — see [Working with Data](./working-with-data.md).
+- **Content-driven site.** A page names `query: courses`; a `CourseGrid` whose component declares `courses` receives the query's records as `content.data.courses`; on a `[slug]/` parametric page, a `CoursePage` or `LessonViewer` receives the one course the URL names as `content.data.courses[0]`. No `fetch()`, no cache code — see [Working with Data](./working-with-data.md).
 - **App-based solution.** The same components read the same `content.data.courses` — only now the backend serves it, gated by accounts and purchases. A well-built foundation lights up extra affordances when a backend is present (a price tag, an "enroll" button, a progress bar) and degrades gracefully to read-only content when it isn't.
 
 The schema is the stable contract in the middle: design it once, and it drives validation, the editor's forms, runtime delivery, and — when you add a backend — dynamic serving and access control. Everything on either side can change; the content type stays put. ([Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) is the deeper *why*.)
@@ -358,7 +358,7 @@ The schema is the stable contract in the middle: design it once, and it drives v
 ## See also
 
 - [Data Schemas](./data-schemas.md) — the field-by-field authoring reference: types, `format`, `localized`, and the `@/` · `@std` · `@org` namespaces.
-- [Working with Data](./working-with-data.md) — how a declared schema's records reach your components at runtime (collections, template pages, detail queries).
+- [Working with Data](./working-with-data.md) — how a schema's records reach your components at runtime: queries, what a section receives, parametric pages.
 - [Entity Content Structure](../reference/entity-content.md) — how a record is written: sections become keys, subsections become inline fields.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — why one schema serves validation, editor forms, and delivery at once.
 </content>

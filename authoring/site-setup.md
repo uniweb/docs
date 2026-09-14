@@ -239,9 +239,9 @@ queries:
     sort: order asc
 ```
 
-Each markdown file in `entities/article/` becomes an item the `articles` query returns, sorted by date. Pages can then display this data using their template's components.
+Each markdown file in `entities/article/` that `records.yml` publishes — every one, if the site has no `records.yml` — is a record the `articles` query returns, sorted by date. A page names the query (`query: articles`), and its template's components display the records.
 
-For the full guide, see [Working with Records](./collections.md). For technical details, see [Content Records](../reference/content-collections.md).
+For the full guide, see [Working with Records](./collections.md). For technical details, see [Records](../reference/content-collections.md) and [Queries](../reference/queries.md).
 
 ---
 
@@ -268,13 +268,13 @@ This tells the site to prefix all URLs with `/docs/`. Navigation, links, assets,
 
 ## Global Data
 
-If your site's header, footer or top-level pages need shared data — like a shared collection or configuration from an API:
+If your site's header, footer or top-level pages need shared data — like shared records, or configuration from an API:
 
 ```yaml
 query: config
 ```
 
-If you have a `entities/config/` collection, this makes it available to the layout areas (header, footer, …) and to the sections of the pages directly under `pages/`. Components that expect `config` data will receive it automatically. A page further down, such as `/docs/setup`, doesn't receive it — a section there that needs the data names the query itself.
+If `config` is a query over records in `entities/config/`, this makes them available to the layout areas (header, footer, …) and to the sections of the pages directly under `pages/`. Components that expect `config` data will receive it automatically. A page further down, such as `/docs/setup`, doesn't receive it — a section there that needs the data names the query itself.
 
 If the data comes from a public API instead, declare `config` as an external query — a query with `url:` — and name it the same way:
 
@@ -392,7 +392,7 @@ If adding translations, get one additional language working before adding more. 
 | `languages` | Supported languages | `languages: [en, es, fr]` |
 | `search.enabled` | Turn on full-text search | `enabled: true` |
 | `build.prerender` | Generate static HTML (default: true) | `prerender: true` |
-| `queries` | Named queries over your records (or use `queries.yml`) | See [Content Records](../reference/content-collections.md) |
+| `queries` | Named queries over your records (or use `queries.yml`) | See [Queries](../reference/queries.md) |
 | `fetch` | Global data source | See [Data Fetching](../reference/data-fetching.md) |
 
 ---

@@ -518,14 +518,14 @@ uniweb i18n prune --freeform             # Remove orphaned files
 
 ---
 
-## Collections i18n
+## Records i18n
 
 Record data is translated alongside page content by default. The `extract` command processes both pages and all record JSON — whether generated from `entities/` or hand-written.
 
-### Extract Collection Strings
+### Extract Record Strings
 
 ```bash
-uniweb i18n extract                      # Pages + collections (default)
+uniweb i18n extract                      # Pages + records (default)
 uniweb i18n extract --records-only       # Records only
 uniweb i18n extract --no-records         # Pages only
 ```

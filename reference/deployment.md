@@ -29,7 +29,7 @@ site/dist/
 ├── assets/
 │   ├── index-[hash].js
 │   └── index-[hash].css
-├── data/                   # compiled collection JSONs
+├── data/                   # one JSON file per query
 └── search-index.json
 ```
 

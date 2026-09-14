@@ -42,7 +42,7 @@ export default function ArticleList({ content, block }) {
 
 The component works for *any* site's articles, not just one specific backend. That's the CCA payoff. The author drives; the component is a clean consumer.
 
-See [Working with Data](./working-with-data.md) for the mechanics — cascade, template pages, whole records, post-processing.
+See [Working with Data](./working-with-data.md) for the mechanics — queries, what a section receives, parametric pages, whole records.
 
 ---
 
@@ -109,54 +109,49 @@ If you find yourself wanting to pass `variables` from a component into a runtime
 
 A page can have sections of both kinds side by side. The runtime fetches `articles` for the top of the page; a search widget at the bottom does its own `fetch()` for live results. Nothing about Role 2 conflicts with Role 1. The runtime runs Role 1 fetches at block lifecycle; Role 2 components run their own fetches whenever their internal logic decides.
 
-```yaml
-# pages/dashboard/page.yml
-query: articles           # Role 1: runtime fetches this
-sections:
-  - type: ArticleList     # reads content.data.articles
-  - type: LiveSearch      # Role 2: fetches its own results
-    params:
-      endpoint: /api/search
+```text
+pages/dashboard/
+├── page.yml          # query: articles — Role 1: the runtime fetches this
+├── 1-articles.md     # type: ArticleList — reads content.data.articles
+└── 2-search.md       # type: LiveSearch, endpoint: /api/search — Role 2: fetches its own results
 ```
 
 ---
 
 ## Filter-in-place: the pattern that looks like Role 2 but isn't
 
-A common source of confusion: a page fetches a collection once (Role 1), and the user picks a filter that narrows the view. This looks like "user interaction drives a fetch," but it's *not* — the data was already loaded; the filter just reshapes what's visible.
+A common source of confusion: a page fetches a query's records once (Role 1), and the user picks a filter that narrows the view. This looks like "user interaction drives a fetch," but it's *not* — the data was already loaded; the filter just reshapes what's visible.
 
-This is the academic-metrics pattern. A site fetches a members collection once; a filter selector writes to `page.state`; subscribing components re-render and recompute filtered results client-side (typically with a helper like `@uniweb/core`'s `matchWhere`). No new fetch. The framework's `page.state` / `website.state` + kit hooks (`usePageState`, `useWebsiteState`) exist for exactly this.
+This is the academic-metrics pattern. A site fetches its members once; a filter selector writes to `page.state`; subscribing components re-render and recompute filtered results client-side (typically with a helper like `@uniweb/core`'s `matchWhere`). No new fetch. The framework's `page.state` / `website.state` + kit hooks (`usePageState`, `useWebsiteState`) exist for exactly this.
 
 If your filter can be satisfied by filtering the data you already have, this is the right tool. If it needs data the browser doesn't have yet, you're in Role 2 — switch to `useEffect + fetch` in a component that knows the endpoint.
 
 ---
 
-## What the runtime can do for Role 2 (if we want)
+## What the framework offers Role 2
 
 Role 2 components are free to do whatever they want with the browser's `fetch` API, `axios`, `@tanstack/react-query`, or anything else. They're not second-class citizens and they don't need the framework's permission.
 
-That said, a component that's doing its own fetching may want to benefit from **some** of the framework's plumbing:
+A component that fetches an address of its own can also use kit's [`useFetched`](../reference/kit-reference.md#usefetched--usecacheentry), which gives it some of the framework's plumbing:
 
-- **Shared cache across blocks.** Two components on the page fetching the same URL shouldn't each issue a request. The dispatcher's cache already exists; a kit-level `useFetch()` helper could participate in it.
-- **A site-configured base URL.** Components doing their own fetches could read a base the site sets, so they don't hardcode an environment-dependent host.
-- **Response unwrapping.** If the backend always wraps responses as `{ data: { items: [...] } }`, the dot-path an external query's `transform:` uses could apply to component-driven fetches too.
-- **Abort on unmount.** Every component writes the same `AbortController` boilerplate. A helper could handle it.
+- **The shared cache.** Two components asking for the same request share one fetch and one cache entry.
+- **Response unwrapping.** `transform: 'data.items'` picks the records out of a wrapped response, the way an external query's `transform:` does.
+- **Abort on unmount.** The request is cancelled when the component goes away — no `AbortController` boilerplate.
 
-None of this exists today. The open question is whether a kit helper like:
+```jsx
+import { useFetched } from '@uniweb/kit'
 
-```js
-import { useFetch } from '@uniweb/kit'
-
-function SearchBox() {
-  const fetch = useFetch()
-  // ... same useEffect + fetch, but `fetch()` prepends the site's base URL,
-  // participates in the cache, and auto-aborts on unmount.
+function SearchResults({ params, q }) {
+  const { data, loading, error } = useFetched(
+    q.length >= 2 ? { url: `${params.endpoint}?q=${encodeURIComponent(q)}`, transform: 'results' } : null,
+  )
+  if (loading) return <Spinner />
+  if (error) return <p>{error}</p>
+  return <ResultList items={data || []} />
 }
 ```
 
-would be a useful addition. It's not designed yet. The point of mentioning it here is: **Role 2 doesn't have to mean "fully on your own."** The framework could offer ergonomics without forcing anything. If this helper ever ships, it'll be an explicit opt-in — components that want full control over their own fetching remain free to reach for raw `fetch()`, `axios`, or whatever.
-
-For now: Role 2 components use plain React. If there's demand for a helper, we'll design one with the same care as the rest of the framework.
+It is an opt-in convenience, not a requirement: a component that wants full control over its own fetching remains free to reach for raw `fetch()` or anything else.
 
 ---
 
@@ -176,12 +171,12 @@ For clarity, because these come up:
 - **Role 2 (component-driven):** standard React. Domain-aware component fetches its own data. Fully supported; no framework machinery needed.
 - **The test:** does the component know what values to send to the backend? Yes → Role 2. No → Role 1.
 - **Filter-in-place:** looks like user-driven fetching but isn't. Client-side filtering of already-loaded Role 1 data via `page.state`.
-- **Future ergonomics:** a kit helper for Role 2 components to participate in the cache, a site-configured base URL and abort-on-unmount is possible. Not designed yet. Role 2 works fine without it.
+- **Kit's `useFetched`:** gives a Role 2 component the shared cache, response unwrapping and abort-on-unmount. Plain React works too.
 
 ---
 
 ## See also
 
-- [Working with Data](./working-with-data.md) — Role 1 mechanics: cascade, template pages, whole records.
+- [Working with Data](./working-with-data.md) — Role 1 mechanics: queries, what a section receives, parametric pages, whole records.
 - [Data Sources](./data-sources.md) — Role 1 beyond the site's own records: external queries, a host's live records, foundation transports.
 - [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths.

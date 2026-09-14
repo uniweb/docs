@@ -1,6 +1,8 @@
-# Content Records
+# Records
 
-Author content in markdown, YAML, or JSON and automatically generate data files. Records let you maintain blog posts, team members, schedules, or any structured data as individual files in `entities/` — `.md` for rich content with body text, `.yml`/`.yaml` for pure structural data, `.json` for existing JSON data or API responses.
+Blog posts, team members, schedules, references — any repeating structured content — are **records**: one file each in `entities/`, published by `records.yml`, and reached by a query. `.md` holds rich content with body text, `.yml`/`.yaml` pure structured data, `.json` data exported from another tool, and `.bib` bibliographic references.
+
+This page covers the records themselves: where they live, how they are published, and what a compiled record holds. What a query can say about them is [Queries](./queries.md); how a page names a query is [Data Fetching](./data-fetching.md).
 
 ## The Data Layer
 
@@ -10,34 +12,19 @@ Three files answer three separate questions, and keeping them apart is the whole
 |---|---|---|
 | `entities/{schema}/` | what does this site **have**? | one file per entity; the folder names its data schema |
 | `records.yml` | what is **published**? | a list — listing an entity makes it a record |
-| `queries.yml` | how is it **reached**? | named queries; a page asks one by name |
+| `queries.yml` | how is it **reached**? | named queries; a page names one |
 
-The build converts what a query returns to JSON in `public/data/`, which is an output directory — you don't need to interact with it directly. A page names the query, never that file: a site with no backend reads the generated file, and the same site published to a host that serves records live reads them from there, with nothing in the page changed.
+A page names a query, never a file. A site with no backend reads the file a build generates from the query in `public/data/`; the same site published to a host that serves records live reads them from there, with nothing in the page changed.
 
 There are two ways to provide data to components:
 
-**Records** (`entities/` + `records.yml`) — Author content as `.md`, `.yml`, or `.json` files. The build converts them to JSON. Markdown records get ProseMirror content bodies, excerpts, and co-located assets automatically. YAML and JSON records pass through as-is. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structural data (schedules, pricing tiers).
+**Records** (`entities/` + `records.yml`) — author content as files. Markdown records get ProseMirror content bodies, excerpts, and co-located assets automatically; YAML and JSON records pass through as they are. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structured data (schedules, pricing tiers).
 
-**External queries** (`url:` in `queries.yml`) — For records another system holds and serves as public JSON. A query with `url:` is fetched from that address; components receive it the same way as records (via `content.data`). See [Data Fetching → External queries](./data-fetching.md#external-queries).
+**External queries** (`url:` in `queries.yml`) — for records another system holds and serves as public JSON. Components receive them the same way, through `content.data`. See [Queries → External queries](./queries.md#external-queries).
 
-**Rule of thumb:** If authors maintain the content, use records in `entities/`. If it comes from an external system at request time, use an external query.
+**Rule of thumb:** if authors maintain the content, use records in `entities/`. If it comes from an external system at request time, use an external query.
 
 > **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `entities/` as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
-
----
-
-## Overview
-
-Records separate **content authoring** from **page structure**:
-
-- **Pages** (in `pages/`) define what components render where
-- **Entities** (in `entities/`) are the site's stored things, one file each
-- **`records.yml`** decides which of them are published
-- **`queries.yml`** names the queries pages ask for
-- At build time, each query's result becomes a JSON file in `public/data/`
-- Pages reference a query using `query: query-name`
-
-This keeps content portable and component-independent.
 
 ---
 
@@ -46,7 +33,7 @@ This keeps content portable and component-independent.
 ### 1. Put entities in a schema folder
 
 The folder names the data schema — `entities/article/` is `@/article`, your
-foundation's own; `entities/std/person/` is `@std/person`.
+foundation's own; `entities/std/article/` is `@std/article`, a shared standard.
 
 ```
 site/
@@ -76,8 +63,7 @@ First, create a new project...
 
 ### 3. Publish them in `records.yml`
 
-Listing an entity is what makes it a **record**. Leave one out and it stays a
-draft — it exists, but nothing can reach it.
+Listing an entity is what makes it a **record**.
 
 ```yaml
 # records.yml
@@ -86,8 +72,6 @@ draft — it exists, but nothing can reach it.
 
 ### 4. Declare a query in `queries.yml`
 
-A query names a schema; the published records of that schema are its rows.
-
 ```yaml
 # queries.yml
 articles:
@@ -95,7 +79,7 @@ articles:
   sort: date desc
 ```
 
-### 5. Use in pages
+### 5. Name the query on a page
 
 ```yaml
 # pages/blog/page.yml
@@ -103,100 +87,51 @@ title: Blog
 query: articles
 ```
 
-`query: articles` makes the query's records available to your components. On a site with no backend, the build generates `public/data/articles.json` from the query's result, and that is what the page reads.
-
-For more control, use the full fetch syntax: `fetch: { query: articles, limit: 10 }`. A string in `fetch:` is a query name too — `fetch: articles` — and `/data/articles.json` is never written in a fetch.
+The query's records reach the page's sections whose component declares `articles`. On a site with no backend, the build generates `public/data/articles.json` from the query, and that is what the page reads. To show fewer — `fetch: { query: articles, limit: 3 }` — see [Data Fetching → Narrowing a query](./data-fetching.md#narrowing-a-query).
 
 ---
 
-## Query Configuration
+## Entities
 
-### `queries.yml` syntax
+An entity is one file in `entities/`. **The folder it sits in names its data schema:**
 
-`queries.yml` is a **bare map** — name → query, with no root key. The same
-declarations can live under `queries:` in `site.yml` instead, if you prefer one
-file; `queries.yml` wins per key when both are present.
+| on disk | schema |
+|---|---|
+| `entities/article/getting-started.md` | `@/article` — the foundation's own |
+| `entities/std/person/alice.yml` | `@std/person` — the shared standard set |
+| `entities/acme/project/cinder.json` | `@acme/project` — an organization's |
 
-```yaml
-# Simple form — the query name IS the schema name
-articles:
+Keep schema folders flat. A folder two levels deep names an organization's schema, so `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records.yml` instead.
 
-# Naming a different schema
-recent:
-  schema: '@/article'
-
-# Extended form
-articles:
-  schema: '@/article'
-  sort: date desc           # Field + direction
-  where:
-    published: { ne: false }
-  limit: 100                # How many records it selects (0 = no limit)
-  excerpt:
-    maxLength: 160          # Auto-excerpt character limit
-    field: description      # Use this frontmatter field if present
-```
-
-> **A query names no path.** `entities/{schema}/` is the pool and `schema:`
-> addresses it, so there is no directory for a query to point at. An address means
-> something only for an **external** query — `url:` — whose source nothing local
-> can derive.
-
-### Several queries
-
-```yaml
-articles:
-  schema: '@/article'
-  sort: date desc
-
-products:
-  schema: '@/product'
-  sort: price asc
-
-team:
-  schema: '@/person'
-  sort: order asc
-```
-
-Each query generates its own JSON file: `/data/articles.json`, `/data/products.json`, `/data/team.json`. **More than one query may cover the same schema** — that is the usual way to show one set of records two ways.
+A data schema gives records a typed shape, used for validation, field defaults and i18n extraction. When a query's schema marks a section `brief: true`, lists of that query leave the other fields out — see [Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out).
 
 ---
 
-## Mapping a schema, and organizing the folder
+## Publishing: `records.yml`
 
-### Where a schema comes from
-
-**The path names it.** `entities/article/` is `@/article` — your foundation's own
-`schemas/article`; `entities/std/person/` is `@std/person`, a bundled standard
-schema; `entities/acme/project/` is `@acme/project`. A query then names the same
-ref, or leaves `schema:` out when its own name already matches.
-
-A data schema gives records a typed shape, used for validation and i18n
-extraction.
-
-> **The pool folder used to be the collection name, and the schema was config.**
-> That is why `schema:` existed on a declaration at all: the directory could not
-> carry a scoped ref. It can now, so a query naming `@std/person` and a folder at
-> `entities/std/person/` say the same thing once.
-
-**Lean lists come from the schema.** If a schema marks a section `brief: true`,
-that section *is* the list shape — the card, the row, the summary. Every other
-field is loaded only when one record is the focus: the list payload carries the
-brief fields, and the full record is fetched on demand (automatically on a
-`[slug]` page, or via `useWholeRecord` elsewhere).
-
-You don't configure this. Declaring `deferred:` by hand still works and takes
-precedence, but with a schema you rarely need it — the brief already says what a
-summary is, and saying it twice invites the two to disagree.
-
-### Organizing the folder — for querying, not for browsing
-
-`records.yml` can group records into folders. **They exist so a query can ask for
-a slice**, not to build a navigation tree, and most sites need none:
+`records.yml` says which entities are published. A bare string is a path under `entities/`, naming one file or matching many; `*` matches within one folder.
 
 ```yaml
 # records.yml
-- article/*.md                  # the pool, flat — path: ""
+- article/*.md
+- std/person/*.yml
+```
+
+| | on a build (`uniweb build`, `pnpm dev`) | on `uniweb push` |
+|---|---|---|
+| no `records.yml` | every entity is published | the host's published records are left as they are |
+| a `records.yml` | only the entities it lists | the listed entities are published |
+| an empty `records.yml` | nothing is published | everything published is removed — the CLI asks first |
+
+An entity left out of a `records.yml` stays a draft: it exists, but no query reaches it.
+
+### Folders
+
+`records.yml` can group records into folders. **They exist so a query can read a branch**, not to build a navigation tree, and most sites need none:
+
+```yaml
+# records.yml
+- article/*.md                  # at the root — path: ""
 
 - folder: archive
   label: The Archive            # only a folder takes a label; a record has its own title
@@ -204,453 +139,26 @@ a slice**, not to build a navigation tree, and most sites need none:
     - article/2019-*.md         # path: "archive"
 ```
 
-Each record carries the `path` of the folder it sits in, and a query reads one
-branch with `scope: archive`. The organization is yours to choose:
-it does **not** mirror the `entities/` layout, which names schemas and nothing
-else.
+Each record carries the `path` of the folder it sits in, and a query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder). The organization is yours to choose: it does **not** mirror the `entities/` layout, which names schemas and nothing else. Under a [`[...path]`](./dynamic-routes.md#multi-segment-routes--path) parametric page, a record's folder becomes part of its URL.
 
-⛔ **A record belongs to one folder.** Listing the same file twice is an error, and
-the build names both entries. A computed subset — "this year", "the five most
-recent" — is a **query**, not a second placement.
+**A record belongs to one folder.** Listing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 
 ---
 
-## Content Item Fields
+## File Formats
 
-Each `.md` file in `entities/` becomes a JSON object with the following fields. For `.yml`/`.yaml` and `.json` files, see [Data Items (YAML)](#data-items-yaml) and [Data Items (JSON)](#data-items-json) — they produce only `slug` plus whatever fields you declare.
-
-| Field | Source | Notes |
-|-------|--------|-------|
-| `slug` | Filename | `getting-started.md` → `"getting-started"`; a frontmatter `slug:` overrides it |
-| `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
-| `path` | `records.yml` | The folder the record is PLACED in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](../authoring/predicates.md#a-folder-branch-is-scope-not-a-predicate) |
-| `title` | Frontmatter | Typically required |
-| `date` | Frontmatter | ISO date string |
-| `author` | Frontmatter | String or object |
-| `tags` | Frontmatter | Array of strings |
-| `published` | Frontmatter | Boolean (default: `true`) |
-| `image` | Frontmatter or auto | First image in content if not specified |
-| `excerpt` | Frontmatter or auto | First ~160 chars if not specified |
-| `content` | Parsed body | ProseMirror JSON structure |
-| `lastModified` | File system | ISO timestamp |
-| *custom* | Frontmatter | All other fields pass through |
-
-### Example generated JSON
-
-```json
-[
-  {
-    "slug": "getting-started",
-    "title": "Getting Started with Uniweb",
-    "date": "2025-01-15",
-    "author": "Sarah Chen",
-    "tags": ["tutorial", "beginner"],
-    "published": true,
-    "excerpt": "Learn how to build your first site...",
-    "content": { "type": "doc", "content": [...] },
-    "lastModified": "2025-01-15T10:30:00.000Z"
-  }
-]
-```
-
----
-
-## Data Items (YAML)
-
-For records that are pure structural data — no body text, no excerpts, no images — use `.yml` or `.yaml` files instead of markdown. The file extension signals intent:
-
-| File type | What it means | Output |
+| File type | What it is | A compiled record holds |
 |-----------|---------------|--------|
-| `.md` | Content item (article-like) | slug + frontmatter + body + content + excerpt + image + lastModified |
-| `.yml`/`.yaml` | Data item (structural) | slug + YAML fields only |
-| `.json` | Data item or multi-item file | Object → slug + JSON fields. Array → all items directly |
+| `.md` | a content record (article-like) | `slug`, the frontmatter fields, `content`, `excerpt`, `image` |
+| `.yml`/`.yaml` | a data record | `slug` and the fields you write |
+| `.json` | a data record, or many | an object: `slug` and its fields. An array: each entry, as written |
+| `.bib` | bibliographic references | one record per `@entry`, its cite key as `slug` |
 
-A YAML item skips ProseMirror conversion, body extraction, excerpt generation, image detection, and file stat — its output is just `slug` plus the fields you declare.
+Every record also carries `path`, its folder in `records.yml`, and `$name`, its handle. A single schema folder can hold all of them: some team members with a markdown bio, others as plain YAML.
 
-### Example: Conference schedule
+### Markdown
 
-```
-site/
-└── entities/
-    └── schedule/
-        ├── keynote.yml
-        ├── workshop-react.yml
-        └── panel-ai.yml
-```
-
-```yaml
-# entities/schedule/keynote.yml
-title: Opening Keynote
-speaker: Ada Lovelace
-time: "09:00"
-room: Main Hall
-track: general
-```
-
-Generated JSON:
-
-```json
-[
-  {
-    "slug": "keynote",
-    "title": "Opening Keynote",
-    "speaker": "Ada Lovelace",
-    "time": "09:00",
-    "room": "Main Hall",
-    "track": "general"
-  }
-]
-```
-
-No `body`, `content`, `excerpt`, `image`, or `lastModified` — just the data you declared.
-
-### Mixing file types
-
-A single schema folder can contain `.md`, `.yml`, and `.json` files together. This is useful when some items need rich body content and others are purely structural:
-
-```
-site/
-└── entities/
-    └── team/
-        ├── alice.md       # Has a bio (rich content)
-        ├── bob.md         # Has a bio
-        └── vacant.yml     # Open position — just metadata
-```
-
-Filtering, sorting, and limiting work identically across both file types.
-
-### `published: false`
-
-Just like markdown items, YAML items with `published: false` are excluded from the output:
-
-```yaml
-# Excluded from generated JSON
-published: false
-title: Coming Soon
-```
-
----
-
-## Data Items (JSON)
-
-For existing JSON data — API responses, exports from other tools, or data you already have in JSON format — place `.json` files in the schema folder. JSON records work like YAML records: pure data, no ProseMirror conversion.
-
-### Single-item files
-
-A `.json` file containing an object is treated as a single item. The slug comes from the filename:
-
-```json
-// entities/person/alice.json
-{
-  "name": "Alice",
-  "role": "Engineer",
-  "avatar": "/images/alice.jpg"
-}
-```
-
-Output: `{ "slug": "alice", "name": "Alice", "role": "Engineer", ... }`
-
-### Multi-item files
-
-A `.json` file containing an array contributes all items directly — useful for importing existing datasets or API responses:
-
-```json
-// entities/product/catalog.json
-[
-  { "slug": "widget-a", "name": "Widget A", "price": 29 },
-  { "slug": "widget-b", "name": "Widget B", "price": 49 }
-]
-```
-
-Both records are added. Array entries should include their own `slug` field, since there is no filename to infer one from.
-
-### `published: false`
-
-Single-item JSON files with `published: false` are excluded, just like YAML items. For array entries, filtering is not applied per-entry — use the query's `where:` instead.
-
----
-
-## Filtering
-
-Filter items with a `where:` predicate — a structured object whose keys are field names. Bare values match by equality; operators nest as objects:
-
-```yaml
-queries:
-  articles:
-    schema: '@/article'
-    where:
-      published: { ne: false }
-```
-
-Common shapes:
-
-| Goal | `where:` |
-|---|---|
-| Only published | `{ published: { ne: false } }` |
-| After a date | `{ date: { gt: '2025-01-01' } }` |
-| Tagged "featured" | `{ tags: featured }` |
-| In a category | `{ category: tutorial }` |
-
-Operators: `eq` `ne` `gt` `gte` `lt` `lte` `in` `not_in` `exists` `contains` `starts_with` `ends_with`. Compose with `and:` / `or:` / `not:`. Full reference and the saved-views pattern: [Predicates](../authoring/predicates.md).
-
----
-
-## Sorting
-
-Sort by one field:
-
-```yaml
-queries:
-  articles:
-    schema: '@/article'
-    sort: date desc         # Newest first
-
-  products:
-    schema: '@/product'
-    sort: price asc         # Cheapest first
-
-  team:
-    schema: '@/person'
-    sort: order asc         # By their `order` field
-```
-
-A query sorts by one key. A comma-separated list (`order asc, name asc`) stops the build
-rather than being partly honoured.
-
-### Sort direction
-
-- `asc` — Ascending (A-Z, 1-9, oldest first)
-- `desc` — Descending (Z-A, 9-1, newest first)
-
----
-
-## Limiting
-
-A query's `limit:` is part of what it selects: the first N records in its `sort`.
-
-```yaml
-queries:
-  # The latest 10 articles
-  articles:
-    schema: '@/article'
-    sort: date desc
-    limit: 10
-```
-
-Use `limit: 0` (or omit) for no limit.
-
-Those N are the query's records everywhere it is used: a page listing the query shows at most
-N, and under a [dynamic route](./dynamic-routes.md) each of the N gets its page and an older
-article gets none. A page that names the query can show fewer —
-`fetch: { query: articles, limit: 3 }` — but never more than the query selects; see
-[Data Fetching](./data-fetching.md#adapting-a-query-where-sort-limit).
-
----
-
-## Unpublished Content
-
-Items with `published: false` in frontmatter are excluded from the generated JSON:
-
-```markdown
----
-title: Draft Post
-published: false
----
-
-This won't appear in the output.
-```
-
-By default, items without a `published` field are included (treated as `published: true`).
-
----
-
-## Excerpts
-
-Excerpts are automatically generated from content:
-
-```yaml
-queries:
-  articles:
-    schema: '@/article'
-    excerpt:
-      maxLength: 200        # Character limit (default: 160)
-      field: description    # Prefer this frontmatter field
-```
-
-### Excerpt precedence
-
-1. Explicit `excerpt` in frontmatter
-2. `field` specified in config (e.g., `description`)
-3. Auto-extracted from content body
-
-### Auto-extraction
-
-The first ~160 characters of plain text are extracted, truncated at a word boundary with `...` appended.
-
----
-
-## Images
-
-The `image` field is populated from:
-
-1. Explicit `image` in frontmatter
-2. First image found in the markdown content
-
-```markdown
----
-title: My Post
-image: /images/hero.jpg  # Explicit
----
-
-Or automatically extracted from:
-
-![Hero](images/auto-detected.jpg)
-```
-
----
-
-## Co-located Assets
-
-A record can reference assets stored alongside its markdown file using relative paths. This keeps related content together and makes it easy to manage.
-
-### Directory Structure
-
-```
-site/
-└── entities/
-    └── articles/
-        ├── getting-started.md
-        ├── getting-started-diagram.svg    # Co-located with article
-        ├── design-patterns.md
-        └── design-patterns-architecture.png
-```
-
-### Referencing Co-located Assets
-
-Use `./` to reference files in the same folder:
-
-```markdown
----
-title: Getting Started
----
-
-Here's how the architecture works:
-
-![Architecture Diagram](./getting-started-diagram.svg)
-
-The system consists of three main parts...
-```
-
-### Build Processing
-
-At build time, the record processor:
-
-1. **Detects relative paths** — Any `./` or `../` path in the content
-2. **Copies assets** — Files are copied to `public/records/<schema>/`
-3. **Updates paths** — References become site-root-relative (`/entities/article/diagram.svg`)
-
-This means your content stays portable—move an article and its assets together, and everything still works.
-
-### Supported Asset Types
-
-Co-located assets work for all media types:
-
-```markdown
-<!-- Images -->
-![Diagram](./architecture.svg)
-![Photo](./team-photo.jpg)
-
-<!-- Videos -->
-![Demo](./demo.mp4){role=video poster=./demo-poster.jpg}
-
-<!-- Documents -->
-![Download](./whitepaper.pdf){role=pdf preview=./whitepaper-preview.png}
-```
-
-### Path Resolution
-
-| Path Format | Resolution |
-|-------------|------------|
-| `./file.jpg` | Same folder as the markdown file |
-| `../shared/logo.svg` | Parent folder |
-| `/images/hero.jpg` | Site's `public/` folder (unchanged) |
-| `https://...` | External URL (unchanged) |
-
-### Output Location
-
-Co-located assets are copied to `public/records/<schema>/` — keyed by the record, so a record reachable by two queries has one copy at one URL:
-
-```
-public/
-└── entities/
-    └── articles/
-        ├── getting-started-diagram.svg
-        └── design-patterns-architecture.png
-```
-
-The JSON output references these processed paths:
-
-```json
-{
-  "slug": "getting-started",
-  "content": {
-    "type": "doc",
-    "content": [
-      {
-        "type": "image",
-        "attrs": {
-          "src": "/entities/article/getting-started-diagram.svg",
-          "alt": "Architecture Diagram"
-        }
-      }
-    ]
-  }
-}
-```
-
----
-
-## Complete Example: Blog
-
-### Directory structure
-
-```
-site/
-├── site.yml
-├── records.yml            # what is published
-├── queries.yml            # how it is reached
-├── entities/              # the pool — the folder names the data schema
-│   └── article/
-│       ├── getting-started.md
-│       ├── design-patterns.md
-│       └── advanced-features.md
-├── pages/
-│   └── blog/
-│       ├── page.yml
-│       ├── list.md
-│       └── [slug]/
-│           ├── page.yml
-│           └── article.md
-└── public/
-    └── data/
-        └── articles.json  # Auto-generated, one per query
-```
-
-### records.yml
-
-```yaml
-- article/*.md
-```
-
-### queries.yml
-
-```yaml
-articles:
-  schema: '@/article'
-  sort: date desc
-```
-
-### entities/article/getting-started.md
+The frontmatter holds the fields, and the body becomes the record's `content`:
 
 ```markdown
 ---
@@ -661,92 +169,228 @@ tags: [tutorial, beginner]
 ---
 
 Learn how to build your first site with Uniweb.
-
-## Installation
-
-First, create a new project:
-
-\`\`\`bash
-uniweb create my-site
-\`\`\`
-
-## Configuration
-
-Edit `site.yml` to set your site name...
 ```
 
-### pages/blog/page.yml
+### YAML
+
+For records that are pure structured data — no body text, no excerpts, no images:
 
 ```yaml
+# entities/schedule/keynote.yml
+title: Opening Keynote
+speaker: Ada Lovelace
+time: "09:00"
+room: Main Hall
+track: general
+```
+
+A YAML record skips ProseMirror conversion, excerpt generation and image detection: it compiles to `slug`, `path`, `$name` and the fields you wrote.
+
+### JSON
+
+A `.json` file holding an object is one record, its `slug` taken from the filename:
+
+```json
+// entities/person/alice.json
+{
+  "name": "Alice",
+  "role": "Engineer",
+  "avatar": "/images/alice.jpg"
+}
+```
+
+A `.json` file holding an array contributes each entry as a record — useful for importing an existing dataset. Array entries should carry their own `slug`, since there is no filename to infer one from:
+
+```json
+// entities/product/catalog.json
+[
+  { "slug": "widget-a", "name": "Widget A", "price": 29 },
+  { "slug": "widget-b", "name": "Widget B", "price": 49 }
+]
+```
+
+### `published: false`
+
+A markdown, YAML or single-object JSON record with `published: false` is left out of every query. A record without the field is published. Entries of a JSON array are not filtered this way — use the query's `where:`.
+
+---
+
+## What a Compiled Record Holds
+
+| Field | Source | Notes |
+|-------|--------|-------|
+| `slug` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` field overrides it |
+| `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
+| `path` | `records.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
+| `content` | Markdown body | ProseMirror JSON |
+| `excerpt` | Frontmatter or body | Markdown records — see [Excerpts](#excerpts) |
+| `image` | Frontmatter or body | Markdown records — see [Images](#images) |
+| *your fields* | Frontmatter / file | Everything you write passes through: `title`, `date`, `author`, `tags`, … |
+
+Once a query delivers a record to a component, it also carries `$route`, the URL of the page that shows it — see [Parametric Pages → Linking to a record](./dynamic-routes.md#linking-to-a-record).
+
+### Example
+
+```json
+[
+  {
+    "slug": "getting-started",
+    "title": "Getting Started with Uniweb",
+    "date": "2025-01-15",
+    "author": "Sarah Chen",
+    "tags": ["tutorial", "beginner"],
+    "excerpt": "Learn how to build your first site with Uniweb.",
+    "content": { "type": "doc", "content": [...] },
+    "path": "",
+    "$name": "getting-started"
+  }
+]
+```
+
+---
+
+## Excerpts
+
+A markdown record's `excerpt` is the first of these that exists, cut to 160 characters by default:
+
+1. the record's own `excerpt:` field;
+2. the frontmatter field the query's `excerpt.field` names, such as `description`;
+3. the body's plain text, cut at a word boundary with `...`.
+
+The query sets the length and the field — see [Queries → `excerpt`](./queries.md#excerpt--a-records-summary).
+
+## Images
+
+A markdown record's `image` is its `image:` field, or else the first image in its body:
+
+```markdown
+---
+title: My Post
+image: /images/hero.jpg  # explicit, from the site's public/ folder
+---
+
+Or automatically extracted from:
+
+![Hero](./auto-detected.jpg)
+```
+
+---
+
+## Co-located Assets
+
+A record can reference files stored beside it, with a relative path — the record and its images move together.
+
+```
+site/
+└── entities/
+    └── article/
+        ├── getting-started.md
+        ├── getting-started-diagram.svg
+        ├── design-patterns.md
+        └── design-patterns-architecture.png
+```
+
+```markdown
+---
+title: Getting Started
+---
+
+Here's how the architecture works:
+
+![Architecture Diagram](./getting-started-diagram.svg)
+```
+
+At build time a `./` or `../` path in a markdown body — or in a YAML or JSON record's field — is copied to `public/records/<schema folder>/` and rewritten to that URL:
+
+```
+public/
+└── records/
+    └── article/
+        ├── getting-started-diagram.svg
+        └── design-patterns-architecture.png
+```
+
+```json
+{
+  "slug": "getting-started",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "image",
+        "attrs": {
+          "src": "/records/article/getting-started-diagram.svg",
+          "alt": "Architecture Diagram"
+        }
+      }
+    ]
+  }
+}
+```
+
+The files are keyed by the record's schema folder, so a record reachable by two queries has one copy at one URL. They are named by their file name alone: give co-located files names that are unique within the schema folder.
+
+| Path | Resolution |
+|-------------|------------|
+| `./file.jpg` | The record's folder |
+| `../shared/logo.svg` | Relative to the record's folder |
+| `/images/hero.jpg` | The site's `public/` folder |
+| `https://...` | External URL (unchanged) |
+
+Co-located assets work for any media — images, `{role=video}` videos, `{role=pdf}` documents.
+
+---
+
+## Complete Example: Blog
+
+```
+site/
+├── records.yml            # what is published
+├── queries.yml            # how it is reached
+├── entities/              # the pool — the folder names the data schema
+│   └── article/
+│       ├── getting-started.md
+│       ├── design-patterns.md
+│       └── advanced-features.md
+└── pages/
+    └── blog/
+        ├── page.yml       # query: articles
+        ├── 1-list.md      # type: ArticleList
+        └── [slug]/
+            └── 1-article.md  # type: Article
+```
+
+```yaml
+# records.yml
+- article/*.md
+```
+
+```yaml
+# queries.yml
+articles:
+  schema: '@/article'
+  sort: date desc
+```
+
+```yaml
+# pages/blog/page.yml
 title: Blog
 query: articles
 ```
 
-### Using with Dynamic Routes
-
-Combine a query with [dynamic routes](./dynamic-routes.md) for individual article pages:
-
-```yaml
-# pages/blog/[slug]/page.yml
-title: Article
-```
-
-The parent's fetched data (`articles`) cascades to the dynamic route. Each generated page (`/blog/getting-started`, `/blog/design-patterns`, etc.) receives the matched record under the query key as a single-element array — the detail section reads `content.data.articles[0]`.
-
-See [Dynamic Routes](./dynamic-routes.md) for details.
-
-### Referencing a Query in Other Pages
-
-Use the `query:` shorthand to fetch a query's records anywhere in your site:
-
-```yaml
-# pages/home/teaser.md
----
-type: ArticleTeaser
-query: articles
----
-
-# Latest from the Blog
-```
-
-This makes the query's records available as `content.data.articles` — on a site with no backend, read from `/data/articles.json`, the file the build generated.
-
-For more control (filtering, sorting, limiting), use the full `fetch:` syntax:
-
-```yaml
-# pages/home/teaser.md
----
-type: ArticleTeaser
-fetch:
-  query: articles   # A query declared in queries.yml
-  limit: 3               # Only 3 articles
-  sort: date desc        # Most recent first
----
-
-# Latest from the Blog
-```
-
-See [Data Fetching](./data-fetching.md#collection-references) for details.
+The `[slug]` folder is a [parametric page](./dynamic-routes.md): it takes its parent's query, and each record gets a page — `/blog/getting-started`, `/blog/design-patterns`. Its sections receive the record the URL names as a list of one, `content.data.articles[0]`. Any other page can show a few of the same records — `fetch: { query: articles, limit: 3 }` — each linking to its page through `$route`.
 
 ---
 
-## Dev Mode
+## Development and Build
 
 During development (`pnpm dev`):
 
-- `entities/` is watched for changes
-- `/data/*.json` regenerates automatically when a record is added, edited, or removed
-- The browser reloads and the change appears — no dev-server restart needed. In dev the runtime fetches local records live, exactly like a remote data source, so what you see matches production behavior
+- `entities/` is watched: a record added, edited or removed regenerates the query files, and the page reloads.
+- The runtime fetches local records live, as it would from a host, so what you see matches production.
+- Changes to `records.yml` or `queries.yml` need a restart of the dev server.
 
----
-
-## Build Output
-
-During production build (`pnpm build`):
-
-1. Records are processed before the Vite build
-2. JSON files are written to `public/data/`
-3. They're included in the final `dist/` output
+During a production build (`pnpm build`), each query compiles to `public/data/<query>.json` before the Vite build, and the files are included in `dist/`.
 
 ---
 
@@ -754,31 +398,29 @@ During production build (`pnpm build`):
 
 | Situation | Behavior |
 |-----------|----------|
-| Missing schema folder | Warning logged, empty array generated |
-| Query matching no records | Warning logged, empty array `[]` generated |
-| Invalid frontmatter (`.md`) | Error with filename, file skipped |
-| Invalid YAML (`.yml`) | Error with filename, file skipped |
-| Invalid JSON (`.json`) | Error with filename, file skipped |
-| Unpublished items | Excluded from output (`.md`, `.yml`, and single-object `.json`) |
-| No date field with date sort | Items sorted by filename |
-| Mixed `.md`, `.yml`, and `.json` files | All processed; same filtering/sorting/limiting applies |
-| Nested folders | Not supported (flat structure only) |
+| A query's schema folder is missing | Warning logged, the query has no records |
+| A query matching no records | Warning logged, the query answers `[]` |
+| Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
+| Unpublished records | Left out (`.md`, `.yml`, and single-object `.json`) |
+| Sorting by a field some records lack | Those records sort last, in either direction |
+| A folder two levels deep in `entities/` | Names an organization's schema |
+| A folder three or more levels deep | Skipped, with a warning |
 
 ---
 
-## i18n for JSON Data
+## Translating Record Data
 
-The i18n extraction pipeline identifies translatable strings in record data using one of two strategies:
+Record text is extracted for translation alongside page content (see [Internationalization](../development/internationalization.md#records-i18n)), using one of two strategies to find translatable strings.
 
 ### Schema-guided extraction
 
-Provide a companion schema file beside the schema folder it describes. The schema tells the extractor exactly which fields contain translatable text:
+Provide a companion schema file in `entities/`, named for the query whose records it describes. It tells the extractor exactly which fields contain translatable text:
 
 ```
 entities/
 ├── events/
 │   └── events.json
-└── events.schema.js    # Companion schema, named for the schema folder
+└── events.schema.js    # for the `events` query
 ```
 
 ```js
@@ -820,27 +462,30 @@ export default {
 
 **Schema discovery order:**
 
-1. Companion file: `entities/<name>.schema.js`
-2. Standard schema: matching name in `@uniweb/schemas` (with automatic singularization — `events` matches the `event` schema)
+1. Companion file: `entities/<query name>.schema.js`
+2. Standard schema: a matching name in `@uniweb/schemas` (with simple singularization — `events` matches the `event` schema)
 3. No schema found → heuristic fallback
 
 ### Heuristic extraction (no schema)
 
-When no schema is found, the extractor recursively walks the JSON data and extracts all strings that look like human-readable text. It skips:
+When no schema is found, the extractor walks the record data and extracts every string that looks like human-readable text. It skips:
 
 - **Structural field names** — `slug`, `id`, `type`, `status`, `href`, `url`, `email`, `icon`, `target`, dates, etc.
 - **Structural string patterns** — URLs, email addresses, ISO dates, hex colors, file paths, currency codes, plain numbers
 
 This works well for most data but may occasionally include strings you don't want translated (or miss strings you do). For precise control, provide a companion schema.
 
-### Item identification
+### Record identification
 
-Records are identified by `slug`, `id`, or `name` (checked in that order). If none is found, the record is labeled `unknown` in the manifest. Make sure your JSON records have at least one of these fields for clear translation context.
+Records are identified by `slug`, `id`, or `name` (checked in that order). If none is found, the record is labeled `unknown` in the manifest. Make sure your records have at least one of these fields for clear translation context.
 
 ---
 
 ## See Also
 
-- [Dynamic Routes](./dynamic-routes.md) — Generate pages from a query's records
-- [Data Fetching](./data-fetching.md) — The `query:` shorthand and advanced `fetch:` syntax
-- [Content Structure](./content-structure.md) — How markdown content is parsed
+- [Queries](./queries.md) — which records a query selects: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`
+- [Data Fetching](./data-fetching.md) — naming a query from a page or section
+- [Parametric Pages](./dynamic-routes.md) — one page per record
+- [Working with Records](../authoring/collections.md) — the author's guide to records and queries
+- [Entity Content Structure](./entity-content.md) — how a record of a multi-section schema is written
+- [Content Structure](./content-structure.md) — how markdown content is parsed

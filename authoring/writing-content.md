@@ -598,7 +598,7 @@ If your section doesn't have images, that's fine. If it doesn't have links, that
 ## What's Next?
 
 - **[Recipes](./recipes.md)** — Copy-paste solutions for common content patterns
-- **[Collections](./collections.md)** — Manage repeating content like blog posts or team members
+- **[Working with Records](./collections.md)** — Manage repeating content like blog posts or team members
 - **[Translating Your Site](./translating.md)** — Add multiple languages
 - **[Linking](./linking.md)** — Stable internal links with the `page:` protocol
 - **[Search](./search.md)** — Adding search to your site

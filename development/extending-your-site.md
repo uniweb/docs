@@ -16,7 +16,7 @@ import { defineSiteConfig } from '@uniweb/build/site'
 export default defineSiteConfig()
 ```
 
-`defineSiteConfig()` returns a full Vite config with everything Uniweb needs — React, Tailwind, content collection, routing. It also accepts standard Vite options, including a `plugins` array. Your plugins run alongside the built-in ones:
+`defineSiteConfig()` returns a full Vite config with everything Uniweb needs — React, Tailwind, reading your pages and records, routing. It also accepts standard Vite options, including a `plugins` array. Your plugins run alongside the built-in ones:
 
 ```js
 import { defineSiteConfig } from '@uniweb/build/site'

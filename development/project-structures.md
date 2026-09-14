@@ -426,7 +426,7 @@ paths:
   pages/docs: ../../../docs
 ```
 
-This mounts the `docs/` directory as if it were `pages/docs/` inside the site. Pages, collections, and library files in the external directory are discovered normally.
+This mounts the `docs/` directory as if it were `pages/docs/` inside the site. Pages and library files in the external directory are discovered normally.
 
 The path is relative to the site directory. `defineSiteConfig()` in the site's `vite.config.js` reads `paths:` and auto-computes `server.fs.allow` so Vite can serve files from outside the project root — no manual `server.fs.allow` configuration needed.
 

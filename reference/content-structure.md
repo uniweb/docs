@@ -1175,7 +1175,7 @@ The `language` attribute is a display hint for syntax highlighting renderers, no
 
 Both also appear in `content.sequence` for document-order rendering.
 
-For structured data served as JSON collections (blog posts, team members, events), see [Content Collections](./content-collections.md). That guide covers markdown collections (`.md` for rich content, `.yml` for pure data), static JSON files, and runtime data — including how to choose the right approach for i18n.
+For repeating structured content that lives in its own files — blog posts, team members, events — see [Records](./content-collections.md): records in markdown (`.md` for rich content), YAML or JSON, reached by a [query](./queries.md), with i18n extraction included.
 
 ### Concept Blocks
 

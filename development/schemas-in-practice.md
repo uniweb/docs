@@ -251,5 +251,5 @@ Set `"uniweb": { "scope": "@acme" }` in `package.json` to drop the flag on later
 - [Data Schemas](./data-schemas.md) — writing the schema: fields, types, sections, registering
 - [Designing Data Schemas](./designing-data-schemas.md) — modeling decisions across a set of related types
 - [Working with Data](./working-with-data.md) — how data is fetched and delivered at runtime
-- [Component Metadata → Data](../reference/component-metadata.md#data) — the `data:` binding reference
+- [Component Metadata → Data](../reference/component-metadata.md#data) — the `data:` declaration reference
 - [CLI Commands](../reference/cli-commands.md) — `register`, `validate`, and the rest

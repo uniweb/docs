@@ -441,36 +441,39 @@ Some components use both: a Pricing section might use `content.items` for the ti
 
 ## Multi-Source Rendering
 
-CCA components can receive content from markdown items *or* from external data (API responses, collections, fetched profiles). The component adapts to whichever source is present.
+CCA components can receive content from markdown items *or* from data (a query's records, API responses, fetched profiles). The component adapts to whichever source is present.
 
-The Team component from the marketing template shows this clearly:
+The `Team` section type in the `international` template shows this clearly (trimmed):
+
+```js
+// meta.js — declaring the key is what lets fetched records reach content.data.team
+export default {
+  data: { team: '@/member' },
+}
+```
 
 ```jsx
 export default function Team({ content, params }) {
-  // Support both fetched data and markdown items
+  // Support both fetched records and markdown items
   const rawMembers = content.data.team || content.items || []
 
   // Normalize to consistent shape
   const members = rawMembers.map((member) => {
     if (member.name !== undefined) {
-      // Fetched data format: { name, role, bio, avatar, social }
+      // A record: { name, role, bio, avatar }
       return {
         name: member.name,
         role: member.role,
-        bio: member.bio || member.body,
-        photo: member.avatar ? { url: member.avatar } : null,
-        socialLinks: Object.entries(member.social || {})
-          .filter(([, url]) => url)
-          .map(([platform, url]) => ({ href: url, text: platform })),
+        bio: member.bio,
+        avatar: member.avatar ? { url: member.avatar } : null,
       }
     }
-    // Markdown items format: { title, paragraphs, images, links }
+    // A markdown item: H3 is the name, the H4 below it the role
     return {
       name: member.title,
-      role: member.paragraphs?.[0],
-      bio: member.paragraphs?.[1],
-      photo: member.images?.[0],
-      socialLinks: member.links || [],
+      role: member.subtitle,
+      bio: member.paragraphs?.[0],
+      avatar: member.images?.[0],
     }
   })
 
@@ -483,21 +486,20 @@ The content author doesn't choose the data source. They either write markdown:
 ```markdown
 ### Jane Smith
 
-Engineering Lead
+#### Engineering Lead
 
 Built the platform from scratch.
 
 ![](jane.jpg)
-
-[LinkedIn](https://linkedin.com/in/jane)
 ```
 
-Or configure a data fetch in `page.yml`:
+Or name a query in the section's frontmatter — records in `entities/`, or a public API declared as an external query:
 
-```yaml
-fetch:
-  url: /api/team
-  as: team
+```markdown
+---
+type: Team
+query: team
+---
 ```
 
 The component handles both. The rendering code after normalization is identical — it maps over `members` and renders cards.
@@ -892,7 +894,7 @@ As a page section: `type: Testimonial` in frontmatter. As an inset: `![Customer 
 
 These are the patterns we've found so far by building foundations with CCA. More will emerge — especially around:
 
-- **Data-driven composition**, where collections and fetched data create section structures that don't exist in the markdown
+- **Data-driven composition**, where records and fetched data create section structures that don't exist in the markdown
 - **Cross-section communication**, where one component's state (like a filter) affects what other sections display
 - **Adaptive complexity**, where a component scales its rendering based on how much content the author provided
 

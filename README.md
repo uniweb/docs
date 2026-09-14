@@ -8,7 +8,7 @@ Pure markdown files organized by topic — no build configuration, no dependenci
 
 ```
 getting-started/    Introduction, quickstart, templates
-authoring/          Writing content, theming, collections, translations
+authoring/          Writing content, theming, records, translations
 development/        Building foundations, component patterns, data fetching
 reference/          Configuration files, kit API, CLI commands
 ```

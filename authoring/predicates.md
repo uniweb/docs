@@ -1,6 +1,6 @@
 # Predicates and Saved Views
 
-When you want to show only *some* of a query's records — only featured articles, only members from one department, only events after a date — you write a **predicate** in the `where:` field of a fetch declaration. Predicates are structured YAML objects: no special grammar to learn beyond the field-name → value pattern you already use in frontmatter.
+When you want only *some* records — only featured articles, only members from one department, only events after a date — you write a **predicate** in a `where:` field: on a query in `queries.yml`, to decide which records the query selects, or on a fetch, to narrow a query for one page or section. Predicates are structured YAML objects: no special grammar to learn beyond the field-name → value pattern you already use in frontmatter.
 
 This guide covers the predicate format, the patterns for reusing predicates as saved views, and how foundations build filter UIs that compose predicates from reader interactions.
 
@@ -19,9 +19,9 @@ fetch:
     category: news
 ```
 
-This delivers articles where `published == true` AND `category == 'news'`.
+This delivers the query's articles where `published == true` AND `category == 'news'`. On a fetch, a predicate narrows the query: a record must meet the query's own `where:` and this one, so a fetch never shows a record its query leaves out.
 
-The same predicate works on any fetch declaration — block frontmatter, page-level, folder-level, site-level. It also works against any source: the site's own records, a host's live records, an external query's response.
+The same predicate works on a query and on any fetch — in section frontmatter, `page.yml` or `site.yml` — and against any source: the site's own records, a host's live records, an external query's response.
 
 ---
 
@@ -78,8 +78,8 @@ A predicate the language does not contain stops the build with a message naming 
 problem: an unknown operator, an empty `and:` or `or:`, a text operator with empty text.
 `like` and `nin` are retired — write `starts_with`, `ends_with` or `contains`, and `not_in`.
 
-Dotted field names (`tenure.start`) descend into a nested record and are evaluated on the
-compiled records; whether a backend can evaluate one depends on that backend.
+Dotted field names (`tenure.start`) descend into a nested record — see
+[Dotted field names](#dotted-field-names) below.
 
 ### A folder branch is `scope:`, not a predicate
 
@@ -97,12 +97,12 @@ queries:
 ```
 
 `scope:` works the same wherever the records come from: on a static site the compiled
-records are filtered by it, and a backend that answers queries takes it as the query's own
+records are filtered by it, and a host that answers queries takes it as the query's own
 scope. It belongs to the query alone — which branch a query reads decides what the query is —
 so a `fetch:` that names the query cannot carry one; the build stops and says where it goes.
 To read another branch, declare another query. On a parametric page, `scope: :dir` reads the
 branch the URL names (see
-[Dynamic Routes](../reference/dynamic-routes.md#multi-segment-routes--path)).
+[Parametric Pages](../reference/dynamic-routes.md#multi-segment-routes--path)).
 
 Plain equality on `path` still selects a single level:
 
@@ -194,7 +194,7 @@ If you find yourself writing the same predicate in multiple places, save it. A s
 ```
 site/
 └── entities/
-    └── views/
+    └── view/
         ├── tenured-biology.yml
         ├── recent-hires.yml
         └── professors-only.yml
@@ -222,7 +222,7 @@ queries:
     schema: '@/view'
 ```
 
-Foundations read the views query (e.g., on a `Cover` section) to populate a dropdown. When the reader picks a view, the foundation passes that record's `where:` value to its data-fetching code. The framework treats it identically to an inline `where:` — same evaluation semantics, same backend wire format if the backend supports predicate pushdown.
+A foundation reads the views query (e.g., on a `Cover` section) to populate a dropdown. When the reader picks a view, the foundation filters with that record's `where:` value — the same language, with the same meaning, as a `where:` you write on a query.
 
 There's no special framework feature for saved views. They're just records, and `where:` is just a field on each record. Authors who want curated named populations write them; foundations decide how to surface them.
 
@@ -256,7 +256,7 @@ queries:
         max: 2025
 ```
 
-You declare what's filterable; the foundation reads the metadata and renders the controls. When the reader picks values, the foundation composes a where-object — exactly the same shape you'd write by hand — and passes it to the framework's fetcher. The data updates without any author-side wiring.
+You declare what's filterable; the foundation reads the metadata and renders the controls. When the reader picks values, the foundation composes a where-object — exactly the same shape you'd write by hand — and filters the records with it. Nothing on your side changes.
 
 Field types in the starter set:
 
@@ -275,9 +275,10 @@ Foundations may add richer types as they need them. The framework passes the met
 
 You don't pick. The same `where: { department: biology, tenured: true }` is evaluated wherever the records come from:
 
-- **The site's own compiled records** (`/data/<name>.json`), a plain JSON `url:`, or a host's records address — the framework fetches the set and applies the predicate in the browser. Two pages with different predicates share one fetch.
-- **A host that answers queries** — the predicate travels with the query and the host returns only the matching records. Nothing changes in what you write.
-- **A backend reached through a foundation transport** — the transport decides. Write only what the spine table above covers if you want the same answer everywhere.
+- **The site's own records, on a static site** — the framework applies the predicate itself, over the file the build generates from the query: at build time for the pages it prerenders, in the browser for anything fetched later.
+- **An external query** — the framework applies it over the records the endpoint returned.
+- **A host that answers queries** — the predicate travels with the query, and the host returns only the matching records. Nothing changes in what you write.
+- **A backend reached through a foundation transport** — the transport decides what it evaluates.
 
 ---
 
@@ -288,8 +289,8 @@ The where-object format is deliberately small. It's a way to **select records**,
 These are intentionally out of scope:
 
 - **Aggregation.** `COUNT`, `SUM`, `AVG`, `GROUP BY`. Compute these in your component code (or in the backend) over the records the predicate returned.
-- **Projection.** "Give me only the title and excerpt fields." Records always come back whole. If you want lean records on list pages, declare [deferred fields](../reference/data-fetching.md#deferred-fields) on the collection.
-- **Joins.** Cross-collection references. The author embeds the relationship in the data (id references, embedded arrays).
+- **Projection.** "Give me only the title and excerpt fields." A predicate never changes which fields a record carries. For lean lists, declare [deferred fields](../reference/queries.md#deferred--fields-a-list-leaves-out) on the query.
+- **Joins.** Matching records of one query against another's. The author embeds the relationship in the data (id references, embedded arrays).
 - **Subqueries.** Predicates can compose with `and`/`or`/`not` but can't reference other queries.
 
 If you find yourself reaching for these, the answer is usually: precompute it during the build, or compute it in your component. The predicate's job is to narrow which records arrive — that's it.
@@ -361,6 +362,7 @@ fetch:
 
 ## What's next
 
-- **[Data Fetching](../reference/data-fetching.md)** — full reference for the `fetch:` declaration, including `deferred:` (lean records).
-- **[Working with Collections](./collections.md)** — records and queries in depth.
+- **[Queries](../reference/queries.md)** — everything a query can say, including the complete operator reference and `deferred:` (lean lists).
+- **[Data Fetching](../reference/data-fetching.md)** — the `fetch:` declaration, and how a fetch narrows a query.
+- **[Working with Records](./collections.md)** — records and queries in depth.
 - **[Data Sources](../development/data-sources.md)** — when your where-objects ship over the wire instead of running locally.

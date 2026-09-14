@@ -1,6 +1,6 @@
 # Data-Driven Sections
 
-A data-driven section is a section whose content comes from a data source — a YAML collection, a JSON file, an API — and is instantiated via Loom expressions. Instead of writing static text, the content author writes a template with `{placeholders}` that resolve against live data at runtime.
+A data-driven section is a section whose content comes from data — records in YAML or JSON, an API's response — and is instantiated via Loom expressions. Instead of writing static text, the content author writes a template with `{placeholders}` that resolve against live data at runtime.
 
 This guide builds progressively: simple substitution first, then aggregation, then repeated iteration, then filtering.
 
@@ -10,7 +10,7 @@ This guide builds progressively: simple substitution first, then aggregation, th
 
 ## The Setup
 
-Three things connect a section to its data:
+Four things connect a section to its data:
 
 **1. Records in `entities/`, published by `records.yml`, reached by a query:**
 
@@ -25,7 +25,7 @@ profile:
   schema: '@/profile'
 ```
 
-**2. A data reference in `page.yml`:**
+**2. The query, named in `page.yml`:**
 
 ```yaml
 # page.yml
@@ -33,7 +33,19 @@ title: Curriculum Vitae
 query: profile
 ```
 
-**3. Loom expressions in the markdown:**
+**3. The key the handler reads, declared in the foundation's `main.js`:**
+
+```js
+// src/main.js
+export default {
+  handlers: createLoomHandlers({ vars: (data) => data?.profile?.[0] }),
+  data: { profile: {} },   // every section receives `profile`
+}
+```
+
+A section receives only the data keys its component declares, and a content handler runs for every section — so the keys a handler reads are declared once, for all of them, in `main.js`. Without this line `{first_name}` stays unresolved. See [Content Handlers](./content-handlers.md#declare-the-keys-your-handlers-read).
+
+**4. Loom expressions in the markdown:**
 
 ```markdown
 ---
@@ -44,7 +56,7 @@ type: Header
 {title} -- {affiliation}
 ```
 
-The collection processor reads every `.yml` file in `entities/profile/` and makes it available as `data.profile`. The content handler resolves `{first_name}` against the profile data before the component sees the content.
+The `profile` query delivers the published records of `@/profile` — here, the one file in `entities/profile/` — under the `profile` key. The content handler resolves `{first_name}` against that record before the component sees the content.
 
 ---
 
@@ -194,12 +206,12 @@ The `cv-loom` template demonstrates the full pattern — a complete academic CV 
 npx uniweb create --template cv-loom
 ```
 
-The template includes: a profile collection (`entities/profile/darwin.yml`), a foundation with `createLoomHandlers`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
+The template includes: a profile record (`entities/profile/darwin.yml`), a foundation with `createLoomHandlers` and `data: { profile: {} }`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
 
 ---
 
 ## See Also
 
 - [Content Handlers](./content-handlers.md) -- Setting up the transform layer in main.js
-- [Working with Data](./working-with-data.md) -- Data fetching, collections, and auto-wiring
-- [Content Collections](../reference/content-collections.md) -- Building collections from YAML and markdown
+- [Working with Data](./working-with-data.md) -- Queries, and how their records reach a section
+- [Records](../reference/content-collections.md) -- Records in YAML, JSON and markdown

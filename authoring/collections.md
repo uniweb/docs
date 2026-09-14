@@ -54,7 +54,7 @@ Keep those folders flat. `entities/article/design-tips.md` works; `entities/arti
 
 A bare string is a path under `entities/`, naming one file or matching many.
 
-> ⚠️ **An empty `records.yml` is not the same as having none.** No file means "leave the published set alone." An empty file means "nothing is published", which **removes** what was. The CLI asks before it does that.
+> **An empty `records.yml` is not the same as having none.** Without the file, building the site publishes every entity in `entities/`, and `uniweb push` leaves the records already published where they are. An empty file means "nothing is published": the build publishes none, and a push **removes** what was — the CLI asks before it does that.
 
 **3. `queries.yml` — how content is reached.** A page never walks the pool; it asks a **named query** for a set of records. A query names a schema, and the published records of that schema are its rows:
 
@@ -70,7 +70,7 @@ team:
   sort: order asc
 ```
 
-The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Neither is *published* until `records.yml` lists it, and neither reaches a page until a query asks for it.
+The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Once the site has a `records.yml`, neither is *published* until it lists them, and neither reaches a page until a query asks for it.
 
 ---
 
@@ -127,7 +127,9 @@ set** rather than all of it. They are declared in `records.yml`, not on disk:
 
 Every record carries a `path` naming the folder it sits in, and they all stay in
 the same pool — a query over `@/news` still reaches all of them. Folders do not
-split anything and do not change a record's URL.
+split anything, and they change a record's URL only under a
+[`[...path]`](../reference/dynamic-routes.md#multi-segment-routes--path) page, which
+puts the folder in it.
 
 To ask for one branch, give the query a `scope:` — it belongs to the query, so a
 `fetch:` that names the query can't carry one:
@@ -154,9 +156,10 @@ See [Predicates](./predicates.md) for `scope:` and the rest of the query languag
 - **A record belongs to one folder.** Listing the same file twice is an error, and
   the build names both entries. If you want a computed subset — "everything from
   this year", "the five most recent" — that is a **query**, not a second placement.
-- **Slugs must stay unique across the pool.** A slug is what a detail page matches
-  on, so two files named `notes.md` in one schema folder both claim `/news/notes`
-  and only one can have it. The build warns and names both; rename one.
+- **Slugs must stay unique within a schema.** A slug is what a record's page matches
+  on, so two records with the same slug — a repeated `slug:` field, or the same entry in
+  two data files — both claim `/news/notes`, and only one can have it. The build warns
+  and names both; rename one.
 
 ---
 
@@ -308,9 +311,13 @@ recent:
 | `sort` | Order records by a field | `date desc` (newest first) |
 | `where` | Include only matching records (predicate) | `{ published: { ne: false } }` |
 | `limit` | How many records the query selects — the first N in its `sort`. Only those get pages | `100` |
-| `deferred` | Heavy fields stripped from list payloads (see below) | `[body]` |
+| `scope` | One folder of records, and everything inside it | `archive` |
+| `excerpt` | How a markdown record's summary is made | `{ maxLength: 200 }` |
+| `deferred` | Heavy fields left out of lists (see below) | `[body]` |
 | `queryable` | Fields a foundation can offer for filtering UI (see below) | (object) |
-| `url` | A remote source instead of the local pool | `/api/articles` |
+| `url` | A public JSON endpoint instead of the site's records | `https://api.example.com/articles` |
+
+Every key, in full: [Queries](../reference/queries.md).
 
 **Sorting:** Add `asc` (A→Z, oldest first) or `desc` (Z→A, newest first) after the field name. For example, `sort: date desc` shows newest articles first. `sort: title asc` sorts alphabetically.
 
@@ -347,9 +354,9 @@ team:
   sort: order asc
 ```
 
-### Lean list payloads with `deferred:`
+### Lean lists with `deferred:`
 
-If your records have heavy fields that bloat list pages — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. They're stripped from the cascade payload (`/data/<name>.json`) that list pages get, and emitted as per-record full files for on-demand fetching:
+If your records have heavy fields that bloat every list — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. Lists of the query leave them out, and each record's full version is fetched only where it is shown:
 
 ```yaml
 queries:
@@ -360,9 +367,9 @@ queries:
 
 What this changes:
 
-- The blog list page (`query: articles`) ships every article *without* the body. Cards stay light.
-- A `[slug]/` detail page automatically receives the *full* article (body included) as a single-element array under the query key — `content.data.articles[0]`. The framework knows where the per-record file lives; you don't configure anything else.
-- Components that want a body outside a slug page (a hover-card preview, an inline modal) use the `useWholeRecord` kit hook to fetch the whole record on demand.
+- The blog's list (`query: articles`) carries every article *without* the body. Cards stay light.
+- A `[slug]/` page — one page per article, [below](#individual-pages-for-records) — automatically receives the *full* article, body included. You don't configure anything else.
+- A component that wants a body anywhere else (a hover-card preview, an inline modal) fetches the whole record on demand with the `useWholeRecord` kit hook.
 
 Skip `deferred:` for records without heavy fields — the entire record ships, like always.
 
@@ -376,7 +383,7 @@ queries:
       url: https://api.example.com/articles/{slug}    # how to fetch one full record
 ```
 
-Both the `[slug]` page and `useWholeRecord` use `record:` when it's set. See [Data Fetching → External queries](../reference/data-fetching.md#external-queries).
+Both the `[slug]` page and `useWholeRecord` use `record:` when it's set. See [Data Fetching → External queries](../reference/queries.md#external-queries).
 
 > **Removed:** `detailUrl:` — its case is `record: { url }`.
 
@@ -443,11 +450,11 @@ fetch:
 
 This pulls just three articles, sorted newest first, for a teaser section. The full blog page still shows everything.
 
-A `fetch:` like this takes from the query's records for one section: its `where:` keeps the
-ones that also match, its `sort:` puts them in another order, and its `limit:` takes the first
-few. It can never add a record the query leaves out — a `limit:` larger than the query's still
-shows only what the query selects — and it cannot change the query's `scope:`: for another
-folder branch, declare another query.
+A `fetch:` like this narrows the query for one section: its `where:` keeps the records that also
+match, its `sort:` puts them in another order, and its `limit:` takes the first few. It can never
+add a record the query leaves out — a `limit:` larger than the query's still shows only what the
+query selects — and it cannot change the query's `scope:`: for another folder branch, declare
+another query.
 
 ---
 
@@ -457,12 +464,12 @@ Records become even more useful when each one gets its own page — like `/blog/
 
 ### The [slug] folder
 
-Create a folder with square brackets in the name:
+A folder with square brackets in its name is a **parametric page** — one page with a URL for each record (other tools call these dynamic routes). Create it inside the page that names the query:
 
 ```
 pages/
 └── blog/
-    ├── page.yml          ← The blog list page
+    ├── page.yml          ← The blog page: names the query
     ├── list.md
     └── [slug]/           ← Creates a page for each article
         ├── page.yml
@@ -477,6 +484,8 @@ query: articles
 
 The `[slug]` folder tells the site: "For each record the query returns, create a page." The article at `entities/article/design-tips.md` becomes the page `/blog/design-tips`. The one at `entities/article/getting-started.md` becomes `/blog/getting-started`.
 
+**The query decides which records get a page.** A query with `limit: 100` gives the 100 records it selects a page each, and no other; a `where:` on the query does the same. A `limit:` or `where:` on a section's `fetch:` only changes what that section shows.
+
 The section inside `[slug]/` receives the individual item's content automatically. You don't need to do anything special in the markdown file — just set the section type:
 
 ```markdown
@@ -486,9 +495,28 @@ type: Article
 ---
 ```
 
-These generated pages don't appear in navigation menus. They're meant to be reached through the list page or direct links.
+These generated pages don't appear in navigation menus. They're meant to be reached through the list or direct links — and every list of the query links each record to its page, wherever the list appears.
 
-For the full blog recipe with step-by-step setup, see [Recipes](./recipes.md).
+### More from the same query, beside a record
+
+A record's page often shows a few of its siblings — "more articles", "related posts". Add a section to the `[slug]` folder that names the same query and leaves out the record the page is about:
+
+```markdown
+<!-- pages/blog/[slug]/more.md -->
+---
+type: ArticleTeaser
+fetch:
+  query: articles
+  current: exclude   # every article except this page's
+  limit: 3
+---
+
+# More from the blog
+```
+
+`current: exclude` works on a section inside a `[slug]` folder. `current: include` shows all of them, this one included — for a previous / next pager.
+
+For the full blog recipe with step-by-step setup, see [Recipes](./recipes.md). For everything about these pages — nested folders, `[...path]`, what the URL matches — see [Parametric Pages](../reference/dynamic-routes.md).
 
 ---
 
@@ -694,7 +722,7 @@ queries:
 
 - **Use consistent frontmatter.** If your blog articles use `date`, `author`, and `tags`, add those fields to every article — even if some are optional. Consistency makes your content predictable and easier to maintain.
 
-- **Preview with `pnpm dev`.** Records update automatically during development. Add a file, list it in `records.yml`, and the site refreshes.
+- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `entities/` and the site refreshes. After changing `records.yml` or `queries.yml`, restart the dev server.
 
 ---
 
@@ -709,7 +737,8 @@ queries:
 | Filter them | `where: { published: { ne: false } }` on the query |
 | Show on a page | `query: articles` in `page.yml` |
 | Show a subset | `fetch: { query: articles, limit: 3 }` in section frontmatter |
-| Create detail pages | Add a `[slug]/` folder under the list page |
+| Give each record a page | Add a `[slug]/` folder inside the page that names the query |
+| Show more beside a record | `fetch: { query: articles, current: exclude, limit: 3 }` in a section of the `[slug]/` folder |
 | Hide a draft | `published: false` in item frontmatter |
 | Add an image | Store next to the `.md` file, reference with `./` |
 | Write an excerpt | Add `description:` to item frontmatter |
@@ -724,4 +753,4 @@ queries:
 - **[Site Setup](./site-setup.md)** — Site configuration, pages, locales, and more
 - **[Translating Your Site](./translating.md)** — Add multiple languages
 
-For technical details on record processing, see [Content Records](../reference/content-collections.md).
+For technical details, see [Records](../reference/content-collections.md) and [Queries](../reference/queries.md).

@@ -55,10 +55,10 @@ $devApi: ./mock/api.js               # what answers it locally (never published)
 build:
   prerender: true                    # Generate static HTML
 
-# Data Sources
-query: config                        # A query by name — see Global Data Fetching
+# Data
+query: config                        # The site's fetch — see Site-Level Data Fetching
 
-# Content Collections
+# Queries — or in queries.yml
 queries:
   articles:
     schema: '@/article'
@@ -191,7 +191,7 @@ layout: { hide: [] }
 
 That last line is worth noticing: `hide: []` is *"hide nothing"*, which is how a page opts out of an inherited `hide`. An absent `hide` inherits; an empty one overrides.
 
-See [page configuration](./page-configuration.md#layout) for the page-level form.
+See [page configuration](./page-configuration.md#layout-options) for the page-level form.
 
 ---
 
@@ -320,7 +320,6 @@ The configuration file for container folders in folder mode. Analogous to `page.
 title: Documentation
 description: API reference and guides
 pages: [getting-started, configuration, ...]
-index: getting-started
 label: Docs
 layout:
   left: true
@@ -331,7 +330,7 @@ layout:
 | `title` | string | Container title (for navigation, breadcrumbs) |
 | `description` | string | Meta description |
 | `pages` | array | Child page ordering with `...` wildcard support |
-| `index` | string | Which child becomes the index page |
+| `index` | string | At the site root (`pages/folder.yml`): which child is the homepage |
 | `label` | string | Short navigation label |
 | `hidden` | boolean | Hide from navigation |
 | `layout` | object | Layout panel overrides |
@@ -533,7 +532,7 @@ same. Matching is by whole segment — `/internal` excludes `/internal/pay` and 
 exclude `/internally-facing`. **Wildcards are not supported**: `/internal*` matches nothing
 and silently excludes nothing.
 
-`seo.noindex` pages, `hidden` pages, `_`-prefixed drafts, dynamic route templates and
+`seo.noindex` pages, `hidden` pages, `_`-prefixed drafts, parametric page templates and
 [knowledge pages](./page-configuration.md#agent-content-knowledge) are excluded already.
 
 ### Expected origins
@@ -1049,47 +1048,23 @@ When [view transitions](../development/view-transitions.md#interaction-with-spli
 
 ---
 
-## Global Data Fetching
+## Site-Level Data Fetching
 
-Load data for the site's layout areas and top-level pages.
-
-```yaml
-fetch:
-  query: config
-```
-
-Every section of a layout area (header, footer, …) and of a top-level page — the homepage included — receives this data automatically in `content.data.config`. The site is the root page, so its fetch reaches the pages directly under `pages/` and no further: a section on `/docs/setup` that needs the data names the query itself. See [Data Fetching → Cascade](./data-fetching.md#cascade).
-
-### The `query:` shorthand
-
-To fetch a saved query, name it:
+The site's own fetch, for data that belongs to the site rather than to one page:
 
 ```yaml
-query: articles             # same as fetch: { query: articles }
-query: [articles, team]     # one fetch each
+query: config               # same as fetch: { query: config }
 ```
 
-`query:` and `fetch:` are the same mechanism — `query:` is the short form for the common case of "just give me this query", and takes query names only; anything more is `fetch:`. They work identically at the site, folder, page and section levels. Write one or the other at a level — both is an error, and so is `data:`, the shorthand's former name.
+The site is the root page. Its fetch reaches what a page's fetch would if the site were the parent of the pages directly under `pages/`: the layout areas (header, footer, sidebars) and the sections of the top-level pages, the homepage included. A section there receives the data when its component declares the key — `config`, or a key of the query's schema. A page further down, such as `/docs/setup`, does not receive it; a section there that needs the data names the query itself.
 
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `query` | The query to read (required) |
-| `as` | Key in `content.data` (defaults to the query name) |
-| `where` | Keeps the query's records that also match |
-| `sort` / `limit` | Put the query's records in another order / take the first N of them — never more than the query selects |
-| `prerender` | Build-time vs runtime fetch |
-
-A fetch never names a file or a URL: `/data/<query>.json` is what the build generates from a query, and a public API is an external query — a query with `url:`.
-
-See [Data Fetching](./data-fetching.md) for the full reference.
+`query:` takes a query name or a list of names; anything more — `as`, `where`, `sort`, `limit`, `prerender` — is `fetch:`. Write one or the other, and not `data:`, the shorthand's former name. A site-level fetch cannot carry `current:`, which belongs to a section of a parametric page. See [Data Fetching](./data-fetching.md) for the full reference.
 
 ---
 
-## Content Collections
+## Queries
 
-Define collections of markdown content that generate JSON data files.
+Named questions over the site's records. The map can live here, under `queries:`, or in `queries.yml` at the site root; when both declare a query, `queries.yml` wins, key by key.
 
 ```yaml
 queries:
@@ -1104,27 +1079,13 @@ queries:
     sort: order asc
 ```
 
-### Collection Options
-
-| Option | Description |
-|--------|-------------|
-| `schema` | The schema whose records the query reads — `entities/{schema}/` |
-| `url` | Instead of `schema`, an external query's address — see [Data Fetching → External queries](./data-fetching.md#external-queries) |
-| `sort` | Sort expression (`field asc/desc`) |
-| `where` | Filter predicate (where-object) |
-| `limit` | Maximum items |
-| `excerpt.maxLength` | Auto-excerpt character limit |
-| `excerpt.field` | Frontmatter field for excerpt |
-
-Collections generate JSON files in `public/data/`. Use `query: collection-name` in pages to fetch them.
+A page or section names a query — `query: articles` — and never the file a build generates from it. Every key a query can carry — `schema`, `scope`, `where`, `sort`, `limit`, `excerpt`, `deferred`, `queryable`, and `url:` for an external query — is in [Queries](./queries.md).
 
 #### A record's link — `$route`
 
-A query declares no link. Every record it delivers carries `$route`, the URL of the parametric page that shows it — `/blog/my-post` for a `pages/blog/[slug]/` page whose route query is `articles` — and a component links a card with `item.$route` rather than composing the URL itself. See [Dynamic Routes → Linking to a record](./dynamic-routes.md#linking-to-a-record).
+A query declares no link. Every record it delivers carries `$route`, the URL of the parametric page that shows it — `/blog/my-post` for a `pages/blog/[slug]/` page whose route query is `articles` — and a component links a card with `item.$route` rather than composing the URL itself. See [Parametric Pages → Linking to a record](./dynamic-routes.md#linking-to-a-record).
 
 > **Removed:** `route:` on a query, which wrote a `route` field into every compiled record. The build stops on it.
-
-See [Content Collections](./content-collections.md) for details.
 
 ---
 
@@ -1164,10 +1125,11 @@ import { createLoomHandlers } from '@uniweb/loom'
 
 export default {
   handlers: createLoomHandlers({ vars: (data) => data?.profile?.[0] }),
+  data: { profile: {} },   // the data keys `vars` reads — see Content Handlers
 }
 ```
 
-Without one, nothing resolves `{…}` and your pages render the literal text `{vendor.email}`. The build warns when a site declares `placeholders:` under a foundation that has no content handler, so you find out at build time rather than on the page.
+`vars` supplies the data-driven variables — a CV's fields, say — and placeholders sit beneath them; see [Content Handlers](../development/content-handlers.md). Without a content handler, nothing resolves `{…}` and your pages render the literal text `{vendor.email}`. The build warns when a site declares `placeholders:` under a foundation that has no content handler, so you find out at build time rather than on the page.
 
 Once a foundation is wired, placeholders are the simplest thing you can write — but the same expressions can filter, sort, count and format live data. See [`@uniweb/loom`](https://www.npmjs.com/package/@uniweb/loom) for the full language.
 
@@ -1228,7 +1190,7 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 ### Use Cases
 
 - **Separate content repo** — Content in a git submodule, maintained by a different team
-- **Shared content** — Multiple sites reading from the same pages or collections
+- **Shared content** — Multiple sites reading from the same pages or records
 - **Existing docs** — Point `pages` at an existing folder of markdown files
 - **Mixed sources** — Some pages local, others from external repos via per-subfolder mounting
 
@@ -1324,10 +1286,10 @@ search:
 build:
   prerender: true
 
-# Global data
+# The site's fetch — layout areas and top-level pages
 query: config
 
-# Collections
+# Queries
 queries:
   articles:
     schema: '@/article'
@@ -1343,7 +1305,8 @@ queries:
 ## See Also
 
 - [Page Configuration](./page-configuration.md) — page.yml reference
-- [Content Collections](./content-collections.md) — Markdown-based data
-- [Data Fetching](./data-fetching.md) — Loading external data
+- [Queries](./queries.md) — Everything a query can say
+- [Records](./content-collections.md) — `entities/`, `records.yml`, and compiled records
+- [Data Fetching](./data-fetching.md) — Naming a query from a page or section
 - [Site Search](../authoring/search.md) — Full-text search setup
 - [Internationalization](../development/internationalization.md) — Multi-language support

@@ -1,6 +1,6 @@
 # Entity Content Structure
 
-The structure every content record — a collection item, a document, any
+The structure every content record — a blog post, a document, any
 content-as-data artifact — follows. It is **one shape across authoring and
 render**: what you write in a file (YAML, JSON, Markdown frontmatter, BibTeX) is
 the shape your component receives at render time.
@@ -84,9 +84,9 @@ For a localized field you can write the value as a bare string in your source fi
 ## Slugs
 
 Every record has a **slug** — a stable, human-readable handle, unique within its
-collection. It defaults to the natural slug of the source: the filename without
+schema. It defaults to the natural slug of the source: the filename without
 extension for a YAML/JSON/Markdown file, or the cite key for a BibTeX entry. The
-slug is what a dynamic `[slug]` route matches and what a `ref` field points at. Set
+slug is the record's handle (`$name`), which a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref` field points at. Set
 it explicitly with a `slug:` field (or frontmatter key) when you don't want the
 filename to decide.
 
@@ -180,4 +180,4 @@ modules:
 
 - **Within a section**, no field key may equal one of the section's child-section
   names — a name refers to either a field or a child section, never both.
-- A slug is **unique within its collection**.
+- A slug is **unique within its schema**.

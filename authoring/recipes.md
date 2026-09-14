@@ -537,11 +537,11 @@ Now `[Install guide](page:installation)` works no matter where the page lives.
 
 ---
 
-### Blog with Article List and Detail Pages
+### Blog with an Article List and a Page per Article
 
-Set up a blog with a list page and individual article pages.
+Set up a blog: a list of articles, a page for each one, and a few more articles at the bottom of each.
 
-**1. Create a collection** in `site.yml`:
+**1. Declare a query** in `site.yml` (or in `queries.yml`):
 
 ```yaml
 queries:
@@ -550,13 +550,18 @@ queries:
     sort: date desc
 ```
 
-**2. Add article files** in `entities/article/`:
+**2. Add article files** in `entities/article/`, and publish them in `records.yml`:
 
 ```
 entities/article/
 ├── hello-world.md
 ├── new-feature.md
 └── tips-and-tricks.md
+```
+
+```yaml
+# records.yml
+- article/*.md
 ```
 
 Each article has frontmatter:
@@ -566,13 +571,12 @@ Each article has frontmatter:
 title: Hello World
 date: 2025-01-15
 description: Our first blog post
-thumbnail: ./hello-thumb.jpg
 ---
 
 Welcome to our blog! Here's what we've been building...
 ```
 
-**3. Create the blog list page**:
+**3. Create the blog page**, which names the query:
 
 ```
 pages/blog/
@@ -597,14 +601,15 @@ type: ArticleList
 The latest from our team.
 ```
 
-**4. Create the article detail route**:
+**4. Give each article a page**, with a `[slug]` folder inside the blog:
 
 ```
 pages/blog/
 ├── page.yml
 ├── list.md
 └── [slug]/
-    └── article.md
+    ├── article.md
+    └── more.md
 ```
 
 ```markdown
@@ -614,12 +619,23 @@ type: Article
 ---
 ```
 
-- The `[slug]` folder creates a dynamic route (`/blog/my-post`).
-- The `query: articles` in `page.yml` makes article data available to the page.
-- Dynamic route pages don't appear in navigation — they're generated from data.
-- Every article now carries `$route: /blog/<slug>` — the page that shows it — which is what a list
-  component uses for the card's href, wherever the list appears. See
-  [Linking to a record](../reference/dynamic-routes.md#linking-to-a-record).
+```markdown
+<!-- pages/blog/[slug]/more.md -->
+---
+type: ArticleList
+fetch:
+  query: articles
+  current: exclude   # every article except the one this page shows
+  limit: 3
+---
+
+# More from the blog
+```
+
+- The `[slug]` folder is a parametric page: one page per article (`/blog/hello-world`). It takes the blog page's `query: articles`, and its `Article` section shows the article the URL names.
+- The `more.md` section names the same query, leaves out this page's article, and keeps three.
+- These pages don't appear in navigation — they're reached from the list, and from every list of the query: each article carries `$route`, the URL of its page, which list components use for the card's link. See [Linking to a record](../reference/dynamic-routes.md#linking-to-a-record).
+- To show the latest three on the home page, add a section there with `fetch: { query: articles, limit: 3 }`.
 
 ---
 
@@ -907,5 +923,5 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
 - **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
 - **[Linking](./linking.md)** — Stable `page:` links
-- **[Records](./collections.md)** — How records work, the `entities/` pool, `records.yml`, and detail pages
+- **[Records](./collections.md)** — How records work, the `entities/` pool, `records.yml`, and a page per record
 - **[Search](./search.md)** — Search configuration

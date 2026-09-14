@@ -75,7 +75,7 @@ function NavLink({ href, children }) {
 | Property | Type | Description |
 |----------|------|-------------|
 | `useLocation()` | function | Returns location object `{ pathname, search, hash }` |
-| `useParams()` | function | Returns route parameters for dynamic routes |
+| `useParams()` | function | Returns the route parameters of a parametric page |
 | `useNavigate()` | function | Returns navigate function for programmatic navigation |
 | `Link` | component | Router Link component (or `'a'` fallback) |
 | `isRoutingAvailable()` | function | Check if router context is available |
@@ -465,7 +465,7 @@ wrong.
 
 Every result carries a guaranteed core — `id`, `type`, `route`, `href`, `title`, `pageTitle`,
 `excerpt`, `snippetHtml` — so a component may render those unconditionally. Everything else
-(`matches`, `item`, `collection`, `sectionId`, …) is provider-optional and `null` where unavailable,
+(`matches`, `item`, `group`, `sectionId`, …) is provider-optional and `null` where unavailable,
 for the same reason `total` is. `snippetHtml` contains `<mark>` elements: render it through kit's
 `SafeHtml`, never as text.
 
@@ -474,9 +474,9 @@ For a count outside React, `createSearchClient(website).queryWithTotal(text, opt
 
 ---
 
-### block.dataLoading
+### block.dataLoading and block.dataError
 
-Check whether a block's runtime data fetch is in progress. This is a boolean property on the `block` instance, set by the runtime's `BlockRenderer`.
+A section's data arrives in `content.data`, under the keys its component declares in `meta.js` `data:`. Two properties on the `block` say where a fetch stands:
 
 ```jsx
 import { DataPlaceholder } from '@uniweb/kit'
@@ -485,18 +485,98 @@ function ArticleList({ content, block }) {
   if (block.dataLoading) {
     return <DataPlaceholder lines={4} />
   }
+  if (block.dataError?.articles) {
+    return <p>Could not load articles.</p>
+  }
 
-  const articles = content.data.articles || []
+  const articles = content.data.articles ?? []
   return <ArticleGrid articles={articles} />
 }
 ```
 
-| Value | Meaning |
+| Property | Value |
 |-------|---------|
-| `true` | A runtime fetch is in progress |
-| `false` / `undefined` | Data is available (or no fetch configured) |
+| `block.dataLoading` | `true` while a fetch the section waits on is in progress |
+| `block.dataError` | `null`, or an object keyed like `content.data` holding each failed fetch's message — `{ articles: 'HTTP 502: Bad Gateway' }` |
 
-This hook watches `block.dataLoading` and triggers a re-render when the fetch completes. See [Component Metadata](./component-metadata.md#loading-states) for details.
+A declared key is `null` while its fetch is pending, when it failed, and when nothing on the page fills it; `[]` is an answer with no records. The runtime re-renders the section when the fetch completes. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
+
+---
+
+### useWholeRecord
+
+Fetch one whole record, on demand, when a query's list carries less than the record — a query with `deferred:` fields, a host that lists briefs, an external query with `record:`. A parametric page already receives its record whole; this hook is for everywhere else: a hover card, a modal, an expanding row.
+
+```jsx
+import { useState } from 'react'
+import { useWholeRecord } from '@uniweb/kit'
+
+function ArticleCard({ article }) {
+  const [open, setOpen] = useState(false)
+  const { data: full, loading, error } = useWholeRecord(open ? article : null, {
+    query: 'articles',
+  })
+
+  return (
+    <div>
+      <h3>{article.title}</h3>
+      <button onClick={() => setOpen(true)}>Read more</button>
+      {open && (loading ? <Spinner /> : <ArticleBody article={full} />)}
+    </div>
+  )
+}
+```
+
+| Argument | Description |
+|-------|---------|
+| `record` | A record the section received. `null` or `undefined` skips the fetch |
+| `options.query` | The name of the query the record came from. Required with a record |
+| `options.param` | The record field its address is built from. Defaults to the one the query's parametric page matches, else `slug` |
+
+Returns `{ data, error, loading }`. When the query has no separate source for a whole record — nothing was left out of its list — `data` is the record you passed in, so a component can call the hook unconditionally. It shares the cache with section fetches.
+
+---
+
+### useQueryable
+
+Read the [`queryable:`](./queries.md#queryable--fields-a-foundation-can-filter-on) declaration of a query — the fields a site says a reader may filter on — to render filter controls.
+
+```jsx
+import { useQueryable } from '@uniweb/kit'
+
+function MemberFilters() {
+  const queryable = useQueryable('members')
+  if (!queryable) return null
+
+  return Object.entries(queryable).map(([field, def]) => (
+    <FilterControl key={field} field={field} def={def} />
+  ))
+}
+```
+
+Returns the declaration as the site wrote it, or `null` when the query declares none. Kit ships no filter UI: the foundation renders controls for the types it supports and composes a [where-object](./queries.md#where--which-records-match) from the reader's choices.
+
+---
+
+### useFetched / useCacheEntry
+
+Low-level hooks for a component that fetches an address of its own — a component that knows its endpoint, as described in [Component Data Patterns](../development/component-data-patterns.md). They go through the site's fetcher and share its cache, so a request another component already made is answered from memory.
+
+```jsx
+import { useFetched } from '@uniweb/kit'
+
+function ProductCard({ params }) {
+  const { data, error, loading } = useFetched({
+    url: params.productUrl,
+    transform: 'data.product',
+  })
+  if (loading) return <Skeleton />
+  if (error) return <p>{error}</p>
+  return <Product {...data} />
+}
+```
+
+`useFetched(request)` dispatches the request and returns `{ data, error, loading }`, aborting when the component unmounts. `useCacheEntry(request)` observes the same cache entry without fetching: `null` until someone fills it, then `{ data, meta }`. Pass `null` to either to skip. A request takes `url`, and optionally `transform`, `method` and `body`.
 
 ---
 
@@ -882,8 +962,9 @@ function Hero({ content, params, block }) {
 | `website` | Website | Parent website |
 | `childBlocks` | array | Nested blocks (file-based children) |
 | `insets` | array | Inline `@Component` references (separate from childBlocks) |
-| `data` | object | Fetched/cascaded data |
-| `dataLoading` | boolean | Runtime data fetch in progress |
+| `data` | object | The section's data — the same object as `content.data` |
+| `dataLoading` | boolean | A fetch the section waits on is in progress |
+| `dataError` | object \| null | Failed fetches' messages, keyed like `content.data` |
 | `hasBackground` | boolean | Engine renders a background behind this section |
 | `themeName` | string | Color context (`light`, `medium`, `dark`) |
 | `state` | any | Persistent component state |
@@ -912,8 +993,9 @@ function MyComponent({ content, params, block }) {
   // block - Block instance for navigation
   const { page, website } = block
 
-  // data - Form tagged blocks or dynamic content source (optional)
-  const { email, message } = data['schema-name'] || {}
+  // data - the keys the component declares in meta.js `data:` — fetched
+  // records, or a tagged data block's value; null when nothing fills a key
+  const { email, message } = data.contact || {}
 }
 ```
 
@@ -946,7 +1028,7 @@ content = {
   headings: [],      // Overflow headings
 
   // Data
-  data: {},          // Tagged blocks + fetched data
+  data: {},          // The declared keys: fetched records, tagged blocks
 
   // Document order
   sequence: []       // All elements in order

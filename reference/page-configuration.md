@@ -28,8 +28,7 @@ slug:                           # Localized URL segments (multilingual sites)
 order: 2                        # Sort position in navigation
 
 # Child Pages
-pages: [team, history, ...]     # Inclusive order (first is index, ... = rest)
-index: team                     # Or just set the index page
+pages: [team, history, ...]     # Order of child pages (... = the rest)
 
 # Page Visibility
 hidden: true                    # Draft: exclude from the published site (page + its subtree)
@@ -55,10 +54,10 @@ nest:                           # Declare parent-child relationships
   features: [card-a, card-b]   # features gets card-a and card-b as children
 
 # Data
-query: articles                 # A query by name (recommended; a list declares several)
+query: articles                 # A query by name (recommended; a list names several)
 fetch:                          # …or the full fetch config (one or the other, not both)
   query: team                   # A query declared in queries.yml
-  limit: 6                      # Adapted for this page: where, sort, limit
+  limit: 6                      # Narrowed for this page: where, sort, limit
 
 # Analytics
 trackSections: true             # Override the site's `emit` for this page (true or false)
@@ -149,7 +148,7 @@ order: 3    # Appears third
 # No order - appears after ordered pages, sorted by title
 ```
 
-This also affects index page selection: when no explicit `index` is set, the page with the lowest `order` becomes the index for that level.
+At the site root it also picks the homepage when `site.yml` names none: the top-level page with the lowest `order` — see [Site Configuration → Page Ordering](./site-configuration.md#page-ordering).
 
 ---
 
@@ -166,9 +165,10 @@ pages: [getting-started, guides, ...]
 
 The `...` wildcard means "all remaining pages here." Listed pages are pinned in position; everything else fills the gap.
 
-- First item becomes the index (route `/docs` shows `getting-started`)
-- Others get routes like `/docs/guides`, `/docs/api-reference`
+- Every child keeps its own route: `/docs/getting-started`, `/docs/guides`, `/docs/api-reference`
 - All unlisted pages still appear in navigation
+
+Only the site root promotes a page to its parent's route — the homepage. Below it, a page with no sections of its own, such as `/docs` here, takes a visitor to its first child that has content.
 
 ```yaml
 # getting-started first, api-reference last, rest in middle
@@ -183,17 +183,9 @@ pages: [getting-started, guides, api-reference]
 
 Without `...`, only listed pages appear in navigation. Unlisted pages are still built and accessible by URL, but hidden from navigation.
 
-### Just Set the Index
-
-```yaml
-index: getting-started
-```
-
-Designate which child page is the index. Others are auto-discovered.
-
 ### Auto-Discovery (Default)
 
-Omit `pages` and `index` to auto-discover children. They're sorted by their `order` property, and the lowest becomes the index.
+Omit `pages` to auto-discover children. They're sorted by their `order` property.
 
 ---
 
@@ -595,39 +587,36 @@ Pure route page with no content sections (useful for pages that only have child 
 
 ## Data Fetching
 
-Load external data for components on this page.
+Name the queries this page's sections use.
 
-### Simple Collection Reference
+### Naming a query
 
 ```yaml
 query: articles
 ```
 
-Names the `articles` query. All sections on the page receive its records in `content.data.articles` automatically. On a site with no backend they are read from `/data/articles.json`, the file the build generates from the query; a host that serves records live answers the same query.
+Names the `articles` query. Its records reach the sections of this page — and of its child pages — whose component declares `articles`, or a key of the query's schema. On a site with no backend they come from the file the build generates from the query; a host that serves records live answers the same query.
 
-A list declares several, each under its own key:
+A list names several, each under its own key:
 
 ```yaml
 query: [team, articles]
 ```
 
-Every section on the page receives both — as `content.data.team` and
-`content.data.articles` — and ignores the keys it does not use. That is how one
-page-level declaration serves sections that need different data.
+Each section receives the ones its component declares, so one page-level declaration serves sections that need different data.
 
-### Full Fetch Configuration
+### Narrowing a query
 
 ```yaml
 fetch:
   query: team
-  as: members                # Key in content.data (defaults to the query name)
+  as: members                # The content.data key it fills (defaults to the query name)
   where: { role: faculty }   # Only the query's records that also match
   sort: name asc             # Put them in another order
   limit: 12                  # The first 12 of them — never more than the query selects
 ```
 
-A fetch always names a query, and takes from the records it selects — never adding one.
-It never names a file or a URL.
+A fetch always names a query, and takes from the records it selects — never adding one. It never names a file or a URL. `current:`, which says how a section on a parametric page uses the page's record, belongs on a section's own `fetch:` and is refused here.
 
 ### External Data
 
@@ -645,7 +634,7 @@ apiData:
 query: apiData
 ```
 
-See [Data Fetching](./data-fetching.md) for all options.
+See [Data Fetching](./data-fetching.md) for all options, and [Queries](./queries.md) for what a query can say.
 
 ---
 
@@ -691,27 +680,20 @@ This page won't appear in search results or the search index.
 
 ---
 
-## Dynamic Routes
+## Parametric Pages
 
-For pages generated from data, use `[param]` folder naming:
+A folder named in brackets is a parametric page: one page, with a URL for each record of a query.
 
 ```
 pages/blog/
 ├── page.yml              # query: articles
-└── [slug]/               # Dynamic route
-    ├── page.yml
+└── [slug]/               # /blog/:slug — one URL per article
     └── article.md
 ```
 
-The child `page.yml` is minimal:
+The `[slug]` page needs no data configuration: it takes its parent's query, and each URL renders the record it names. The page's title and description come from that record. A `page.yml` inside `[slug]/` is only needed for what the record doesn't supply — an `id`, a layout.
 
-```yaml
-title: Article
-```
-
-Page metadata (title, description) comes from the data item at runtime.
-
-See [Dynamic Routes](./dynamic-routes.md) for the full guide.
+See [Parametric Pages](./dynamic-routes.md) for the full guide.
 
 ---
 
@@ -809,5 +791,5 @@ seo:
 - [Internationalization](../development/internationalization.md) — Multilingual content and localized URLs
 - [Content Structure](./content-structure.md) — Section content format
 - [Linking](../authoring/linking.md) — Stable page references with IDs
-- [Dynamic Routes](./dynamic-routes.md) — Data-driven pages
+- [Parametric Pages](./dynamic-routes.md) — One page per record of a query
 - [Versioning](./versioning.md) — Multi-version documentation

@@ -6,7 +6,7 @@ A Uniweb project's deployment shape depends on **who manages the content**. That
 
 Two paths today:
 
-- **Path 1: You manage the content.** You (or your dev team) write the markdown. Ship to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront — or to Uniweb's paid hosting (`uniweb publish`) if you need dynamic-page prerender or version propagation.
+- **Path 1: You manage the content.** You (or your dev team) write the markdown. Ship to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront — or to Uniweb's paid hosting (`uniweb publish`) if you need prerendered pages over live data or version propagation.
 - **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb apps. The repo's `site/` is a test harness, not a deploy target.
 
 A third path — git-style **content sync** with the Uniweb backend (`uniweb push`/`pull`/`clone`) — is available today; see **[Hybrid — git-style content sync](#hybrid--git-style-content-sync)**.
@@ -27,7 +27,7 @@ Five sub-options under this path. They differ in *who builds*, *who uploads*, an
 | **Dashboard connect (CF Pages, Netlify, Vercel)** | The host | The host | Same outcome, no workflow file and no secrets |
 | **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy from the CLI; the only path for S3 + CloudFront |
 | **Manual export (`uniweb export`)** | Your machine | You, by hand | Any host the framework doesn't have an adapter for |
-| **Uniweb Cloud (`uniweb publish`)** | Your machine | The platform | Dynamic-page prerender, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
+| **Uniweb Cloud (`uniweb publish`)** | Your machine | The platform | Prerender over live data, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
 
 Not sure? Run **`uniweb deploy`** with nothing configured and it walks you through the choice.
 
@@ -160,7 +160,7 @@ Free static hosts cover the typical case — markdown in your repo, push to depl
 | | Free static host | Uniweb hosting |
 |---|---|---|
 | Static-page prerender | Yes (at build time) | Yes (at build time + JIT at edge) |
-| Dynamic-page prerender (collections fetched at runtime) | No — runtime fetches are client-side | Yes — JIT prerender at the edge |
+| Prerender over live data (records fetched at runtime) | No — runtime fetches are client-side | Yes — JIT prerender at the edge |
 | Foundation/runtime updates without redeploying | No — rebuild on each foundation change | Yes — propagation gated by site policy |
 | Edge SSR for SEO on dynamic content | No | Yes |
 | Custom domain on free tier | Yes | n/a (always paid) |
@@ -168,7 +168,7 @@ Free static hosts cover the typical case — markdown in your repo, push to depl
 
 If your site's content lives in markdown and updates ship via git, free CI is the right call. Choose Uniweb hosting when:
 
-- Pages are dynamic — content from APIs, large collections updated independently of code, search results that need to be SEO-indexed.
+- Pages are dynamic — content from APIs, large sets of records updated independently of code, search results that need to be SEO-indexed.
 - You want to push foundation or runtime updates without rebuilding every site.
 - You need edge SSR for content that doesn't exist at build time.
 

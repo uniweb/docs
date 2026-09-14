@@ -1,22 +1,62 @@
 # Working with Data
 
-Your components need data — articles from a CMS, team members from JSON, products from an API. In a typical React app, you'd write a `useEffect`, manage loading states, handle errors, and figure out caching yourself. In Uniweb, you declare what data a page needs, and the runtime handles fetching, caching, and delivery. Your component reads it from `content.data` — no hooks, no loading logic, no cache management.
+Your components need data — articles, team members, products. In a typical React app you'd write a `useEffect`, manage loading state, handle errors and work out caching yourself. In Uniweb the content says which data a page uses, the component says which data it renders, and the runtime does the fetching, caching and delivery in between. Your component reads `content.data`.
 
-This guide covers how data flows from a query to your components, how template pages pick up their parent's data automatically, and how a template page gets a whole record when the list carries only a summary.
+This guide follows one site from its query to its components: a list, a page per record, a "more to read" section beside each record, and a teaser on the home page — four uses of one query. The reference for each piece is linked as it comes up.
 
-> **First, know which pattern you're in.** Uniweb supports two ways a component ends up with data: the author writes a `fetch:` config and the runtime fetches (this guide), or a domain-aware component fetches its own data with standard React. If your component has to know about backend-specific things (query parameters, pagination cursors, filter shapes), you're in the second pattern — see [Component Data Patterns](./component-data-patterns.md) for which is which and when each applies.
-
----
-
-## The model in one paragraph
-
-A page either has data or it doesn't. A page with a `fetch:` or `query:` declaration is a **dynamic page** — its data fills the `content.data` keys the components of its sections declare. A child page of a dynamic page with a `[param]/` folder name is a **template page** — it fills in from the URL. A component declares the keys it reads in its `meta.js` `data:`, and receives those and nothing else.
+> **First, know which pattern you're in.** Uniweb supports two ways a component ends up with data: the content names a query and the runtime fetches it (this guide), or a domain-aware component fetches its own data with standard React. If your component has to know about backend-specific things (query parameters, pagination cursors, filter shapes), you're in the second pattern — see [Component Data Patterns](./component-data-patterns.md) for which is which.
 
 ---
 
-## A page that fetches data
+## The site
 
-A page declares what data it needs in `page.yml`:
+A research station keeps every kind of article side by side — lab news, press releases, field notes, expedition reports — and has a blog for the ones from the field:
+
+```text
+site/
+├── entities/std/article/      # every article, one file each
+├── records.yml                # - std/article/*.md
+├── queries.yml
+└── pages/
+    ├── home/
+    │   └── 3-from-the-field.md
+    └── blog/
+        ├── page.yml
+        ├── 1-list.md
+        └── [slug]/
+            ├── 1-article.md
+            └── 2-more.md
+```
+
+The articles are **records**: files in `entities/`, published by `records.yml` ([Records](../reference/content-collections.md)). Pages never read them directly. They name a query.
+
+---
+
+## One query
+
+```yaml
+# queries.yml
+articles:
+  schema: '@std/article'
+  where: { tags: { in: [field-notes, expedition] } }
+  sort: date desc
+  limit: 100
+```
+
+A query selects a **set**: here, the 100 most recent field notes and expedition reports. It is defined once, and every use below takes from it:
+
+| where | what it takes from `articles` |
+|---|---|
+| `/blog` | all of it |
+| `/blog/:slug` | the one article the URL names, whole |
+| ↳ its "more to read" section | three others |
+| a section of the home page | the first three |
+
+Nothing outside the set can appear in any of them, and a change to the query reaches all four. Everything a query can say is in [Queries](../reference/queries.md).
+
+---
+
+## A page names the query — `/blog`
 
 ```yaml
 # pages/blog/page.yml
@@ -24,358 +64,252 @@ title: Blog
 query: articles
 ```
 
-That single line does three things:
+```markdown
+<!-- pages/blog/1-list.md -->
+---
+type: ArticleList
+---
 
-1. Names the `articles` query (declared in `queries.yml`, over `entities/article/`).
-2. Makes its records available as `content.data.articles` to every section of the page whose component declares `articles` — or a key of the query's schema.
-3. Caches the result — navigating away and back doesn't re-fetch.
+# From the field
+```
 
-The page names the query, never a file: while you develop, it reads the file generated locally from the query; once the site is published to a host that serves records live, it reads those records. Nothing in the page changes.
+The page names the query, never a file or a URL. While you develop, the records come from the file a local build generates from the query; once the site is published to a host that serves records live, they come from there. Nothing in the page changes.
 
-Your component declares the key in `meta.js`, and reads it:
+A page renders nothing itself — its sections do. A page's query reaches its own sections and the sections of its child pages. The component behind `type: ArticleList` says what it renders:
 
 ```js
 // src/sections/ArticleList/meta.js
 export default {
   title: 'Article List',
-  // 'articles' is the content.data key; '@/article' is this foundation's schema.
-  data: { articles: '@/article' },
+  data: { articles: '@std/article' },
 }
 ```
 
 ```jsx
-// src/sections/ArticleList/ArticleList.jsx
-export default function ArticleList({ content, block }) {
-  if (block.dataLoading) return <DataPlaceholder />
+// src/sections/ArticleList/index.jsx
+import { DataPlaceholder, Link } from '@uniweb/kit'
 
-  const articles = content.data.articles || []
+export default function ArticleList({ content, block }) {
+  if (block.dataLoading) return <DataPlaceholder lines={4} />
+
+  const articles = content.data.articles ?? []
 
   return (
     <ul>
-      {articles.map(a => (
-        <li key={a.slug}>{a.title}</li>
+      {articles.map((a) => (
+        <li key={a.$name}>
+          <Link href={a.$route}>{a.title}</Link>
+        </li>
       ))}
     </ul>
   )
 }
 ```
 
-That's the full wiring. No `fetch()` call, no `useState`, no `useEffect`.
+No `fetch()`, no `useState`, no cache. The component doesn't know which query, file or host its articles came from — which is what lets the same section type serve another site.
 
 ### The declaration is the delivery
 
-A section receives the keys its component declares, and nothing else: a component that reads `content.data.articles` without declaring `articles` receives nothing under it. The value is a named ref, an inline field map, an inline rich-form, or `{}` for records with no schema. A schema also shows hints in the editor, and the runtime applies its field defaults to each item. (`@/article` resolves to this foundation's `foundation/schemas/article.{js,json,yml}`; use `@std/<name>` for a shared standard schema.)
+`data: { articles: '@std/article' }` does two jobs.
 
-The key need not be the query's name. A component declaring `posts: '@/article'` on the same page receives the `articles` records under `posts`, because nothing else fills a key of that schema — see [Which fetch fills a key](../reference/data-fetching.md#which-fetch-fills-a-key).
+- **Its key is what the section receives.** A section's `content.data` holds the keys its component declares, and nothing else. A component that reads `content.data.articles` without declaring `articles` receives nothing there.
+- **Its value is the shape of each record.** The runtime applies the schema's field defaults, so `a.title` is a string even on a record without one, and the editor knows what an article looks like. `'@std/article'` is a shared standard schema; `'@/article'` would be one of your foundation's own ([Data Schemas](./data-schemas.md)).
+
+### `$route` — the link is already built
+
+Every record a query delivers carries `$route`, the URL of the page that shows it — here `/blog/<slug>`, because `/blog/:slug` (below) is the page for records of `articles`. Read it; don't compose `` `/blog/${a.slug}` ``. A composed URL is a second answer to a question the framework already answered, and the two drift apart on the first translated route or nested folder. A record with no page gets no `$route`, so a card can tell:
+
+```jsx
+const Card = a.$route ? Link : 'div'
+```
 
 ---
 
-## Template pages: data from the parent
-
-Here's the canonical blog setup:
+## A page for each record — `/blog/:slug`
 
 ```text
-pages/
-└── blog/
-    ├── page.yml              # query: articles ← dynamic page
-    ├── list.md               # type: ArticleList
-    └── [slug]/
-        ├── page.yml          # (nothing about data)
-        └── article.md        # type: Article
+pages/blog/[slug]/
+├── 1-article.md       # type: Article
+└── 2-more.md          # type: MoreToRead
 ```
 
-The `[slug]` page declares no data. It doesn't need to. The runtime walks the ancestor levels — block → page → parent page, and the site for a top-level page — looking for a fetch config. It finds `query: articles` on the parent `/blog` page, fetches it, extracts the item matching the current slug, and delivers it under the collection key as a single-element array:
+A folder named in brackets is a **parametric page**: one page, with a URL for each record. It declares no query of its own — it takes its parent's, `articles`, and each URL names one record of it. `/blog/bamboo-season` names the article whose handle is `bamboo-season`.
+
+**The set decides which URLs exist.** `/blog/:slug` has a page for each of the 100 articles in the set, and no other: a press release, or a field note older than the 100 most recent, is not found there — even though it is a record of the same schema. A condition that should decide which pages exist belongs on the query, never on a list's fetch.
+
+The full rules — which query a URL names, what the segment matches, `[...path]` for nested placements — are in [Parametric Pages](../reference/dynamic-routes.md).
+
+### The article section: the page's record
+
+```markdown
+<!-- pages/blog/[slug]/1-article.md -->
+---
+type: Article
+---
+```
 
 ```js
-content.data.articles      // [{ slug: 'my-post', title: '...' }]  — just the matched item on a detail page
-content.data.articles[0]   // { slug: 'my-post', title: '...' }
+// src/sections/Article/meta.js
+export default {
+  title: 'Article',
+  data: { article: '@std/article' },
+}
 ```
 
-The collection key is the same on the list page and the detail page — only the array length differs (the full collection on `/blog`, one element on `/blog/my-post`). There is no separate singular key.
+```jsx
+// src/sections/Article/index.jsx
+import { DataPlaceholder } from '@uniweb/kit'
 
-No component-side opt-in. The template page's Article component reads `content.data.articles[0]` directly.
+export default function Article({ content, block }) {
+  if (block.dataLoading) return <DataPlaceholder lines={8} />
+
+  const article = content.data.article?.[0]
+  if (!article) return <p>This article does not exist.</p>
+
+  return (
+    <article>
+      <h1>{article.title}</h1>
+      <p>{article.excerpt}</p>
+    </article>
+  )
+}
+```
+
+The section has no fetch of its own. The page's query reaches it narrowed to the record the URL names, so `content.data.article` holds a list of one — or `[]` when the URL names no record of the set, in which case the page is marked not found and titled "Not found". On a hit, the page takes its title from the record.
+
+The record arrives as a list, not an object, so the key means the same thing on every page. And it arrives under `article`, not `articles`: a fetch fills the key named after its query when the component declares that key, and otherwise fills the component's first key of the query's schema. `Article` declares one `@std/article` key, so the record lands there. A component declaring `articles` would receive it under `articles` — the rule is in [Which fetch fills a key](../reference/data-fetching.md#which-fetch-fills-a-key).
+
+### "More to read": the rest of the set
+
+```markdown
+<!-- pages/blog/[slug]/2-more.md -->
+---
+type: MoreToRead
+fetch:
+  query: articles
+  current: exclude
+  limit: 3
+---
+
+# More from the field
+```
+
+```js
+// src/sections/MoreToRead/meta.js
+export default {
+  title: 'More to Read',
+  data: { related: '@std/article' },
+}
+```
+
+This section names the same query and **narrows** it: `current: exclude` takes out the article the page is about, and `limit: 3` keeps three of the rest. The component receives them under `related`, its one key of that schema, and links each with `$route` exactly as the list does.
+
+`current:` says how a section on a parametric page uses the page's record:
+
+| `current:` | the section receives |
+|---|---|
+| `only` | the record, as a list of one — the default for the page's own query, which is what the article section got |
+| `exclude` | the set without it — "more to read", "related" |
+| `include` | all of it, the record among them — a previous / next pager |
 
 ---
 
-## The cache makes navigation cheap
+## Another page takes a few — the home page
 
-When a user visits `/blog`, the runtime fetches the articles collection and caches it. When they click through to `/blog/my-post`, the runtime finds the same articles query via the ancestor walk, hits the cache, and extracts the matching item. No second fetch. Navigating back to `/blog` — cache hit again.
+```markdown
+<!-- pages/home/3-from-the-field.md -->
+---
+type: ArticleList
+fetch:
+  query: articles
+  limit: 3
+---
 
-The cache is keyed by what is asked — the query's address or question, and the view a page takes of it (`where`, `sort`, `limit`) — not by page. Two pages that ask the same thing share one cache entry. The cache lives for the SPA session — a full page reload clears it.
+# From the field
+```
+
+The home page is not about articles; one of its sections shows three. It reuses `ArticleList` and names the same query, narrowed to three — and each card links to `/blog/<slug>`, because that is the page for records of `articles`, wherever the list appears.
+
+A fetch narrows its query with `where`, `sort` and `limit`, applied after the query's own, and never widens it. `{ query: articles, where: { featured: true }, limit: 3 }` shows the three newest featured articles **among the 100** — never an older one and never a press release, even when fewer than three of the 100 are featured. That is why one well-chosen query serves the whole site: pages don't declare queries of their own to show less. See [Narrowing a query](../reference/data-fetching.md#narrowing-a-query).
 
 ---
 
-## A whole record: when the list carries less
+## Where the records come from
 
-The ancestor walk handles the common case well. When the user lands directly on `/blog/my-post` — a bookmark, a shared link — the cache is empty, so the runtime fetches the articles query, caches it, and extracts the item. Either way, the query decides which records exist: a record it doesn't select renders as not found.
+The four uses are four questions about one set:
 
-Sometimes the list carries less than the page needs — a card's worth of fields, not the article body. Then the template page asks for the one record in full:
+| the section | asks for |
+|---|---|
+| `/blog`'s list | the set |
+| `/blog/bamboo-season`'s article | the set, narrowed to `bamboo-season`, whole |
+| its "more to read" | the set without `bamboo-season`, three of it |
+| the home page's section | the set, three of it |
 
-- **A query with `deferred:` fields** ships a lean list and the build writes one full file per record. The template page reads it automatically.
-- **A host that serves records live** answers the record's own question. Automatic too.
-- **An external query** — a query with `url:` — over an endpoint that lists summaries names the request for one full record with `record:`:
+Who answers depends on where the site runs, never on what the page says:
+
+- **A static site.** The build compiles the query into a file, and the framework evaluates the set and each narrowing over it — at build time for the pages it prerenders, in the browser for anything fetched later. The build also generates one page per record of the set: 100 article pages here.
+- **A host that answers queries.** Each question goes to the host, which evaluates the set and the narrowing at the source, so the home page's section receives three articles, not a hundred. A page's questions travel together.
+- **An external API.** The same site works over a public JSON endpoint: declare `articles` with `url:` instead of `schema:` ([below](#the-same-site-over-a-public-api)).
+
+In the browser, answers are cached by the question itself: a question already answered, or already on its way, is not asked again, so moving from `/blog` to an article and back asks only what hasn't been asked.
+
+---
+
+## Loading, failure and not found
+
+What a declared key holds tells a component where it stands:
+
+| `content.data.<key>` | means |
+|---|---|
+| a list | the records — `[]` means the question had no answers |
+| `null`, with `block.dataLoading` | its fetch has not answered yet |
+| `null`, with `block.dataError[key]` | its fetch failed; the message is there |
+| `null` | nothing on this page fills the key |
+
+```jsx
+if (block.dataLoading) return <DataPlaceholder />
+if (block.dataError?.related) return null
+const related = content.data.related ?? []
+if (related.length === 0) return null
+```
+
+A failure is never delivered as `[]`, because `[]` is an answer. On a parametric page whose URL names no record, the key is `[]`, `page.notFound` is `true` and the page's title is "Not found" — no `useEffect`, no `document.title`.
+
+---
+
+## When a list carries less than a record
+
+A list of a hundred articles doesn't need a hundred bodies. When the list carries less than the page shows, the parametric page gets the whole record anyway:
+
+- **A query with `deferred:` fields** — or one whose schema marks a brief section — leaves those fields out of lists. The record's page receives it whole, with nothing to configure ([Queries → `deferred`](../reference/queries.md#deferred--fields-a-list-leaves-out)).
+- **A host that serves records live** answers lists with each record's brief, and a record's page asks for the record whole.
+- **An external query** whose endpoint lists summaries names the request for one whole record with `record:` ([Queries → `record`](../reference/queries.md#one-record-record)).
+
+Anywhere else — a hover card, a modal — a component fetches the whole record on demand with [`useWholeRecord`](../reference/kit-reference.md#usewholerecord), which returns the record it was given when the query has nothing separate to fetch.
+
+---
+
+## The same site over a public API
+
+Nothing above depends on where the articles live. Point the query at a public JSON endpoint and every page and component stays as it is:
 
 ```yaml
 # queries.yml
 articles:
   url: https://api.example.com/articles
-  record:
-    url: https://api.example.com/articles/{slug}   # `{slug}` — the page's URL segment
-```
-
-The placeholder is named by the dynamic route folder (`[slug]` → `{slug}`, `[id]` → `{id}`). `record.url` and `record.method` default to the query's; `body` and `transform` never do, so a record response wrapped differently from the list says `record.transform`.
-
-### What the component sees
-
-The focused record always arrives under the collection key as a single-element array — whether it came from a record request or from the list:
-
-```js
-content.data.articles      // [{ slug: 'my-post', title: '...' }]
-content.data.articles[0]   // { slug: 'my-post', title: '...' }
-```
-
-The source only changes *how* the runtime obtains that one record. The component reads it the same way either way:
-
-```js
-const article = content.data.articles?.[0]
-if (!article) return <NotFound />
-```
-
-A "related articles" section that wants the other records (not just the focused one) declares `fetch: { query: articles, current: exclude }` in its frontmatter — the query's records minus the one the page is about, as a multi-element array.
-
-> **Removed:** `detail: rest`, `detail: query` and a `detail:` URL pattern on a fetch. An external query's `record:` says the same thing, on the query.
-
----
-
-## The fetch config
-
-A fetch names a query and says what this use takes of the records the query selects — never
-adding one:
-
-```yaml
-fetch:
-  query: articles                        # Required: a query declared in queries.yml
-  as: articles                           # Key in content.data (defaults to the query name)
-  limit: 6                               # The first 6 of the query's records — never more than it selects
-  sort: date desc                        # Put them in another order
-  where: { tags: featured }              # Only the query's records that also match
-  prerender: true                        # Build-time fetch (true) vs runtime-only (false)
-```
-
-Shorthands for common cases:
-
-```yaml
-# A query by name
-query: articles
-
-# The same, as a fetch — a string in `fetch:` is a query name
-fetch: articles
-
-# A query adapted for this use
-fetch:
-  query: articles
-  limit: 3
+  transform: data.items                          # the records sit under data.items
+  where: { tags: { in: [field-notes, expedition] } }
   sort: date desc
-```
-
-A fetch never names a file or a URL. `/data/articles.json` is what the build generates from the `articles` query, and a public API is an external query declared in `queries.yml` — see [Data Fetching → External queries](../reference/data-fetching.md#external-queries).
-
----
-
-## Per-section choices on a parametric page: `current:`
-
-Sometimes a specific section on a parametric page needs the data shaped differently — "give me the other records, not the matched one" (for a related-items panel), or "give me all of them, this one included" (for a previous / next pager). The section names the query and says how it uses the page's record:
-
-```yaml
-# pages/articles/[slug]/2-related.md
----
-type: RelatedArticles
-fetch:
-  query: articles
-  current: exclude   # the query's records, minus the one this page is about
-  limit: 3           # three others
----
-
-# More articles
-```
-
-`current: only` is the default (the record, as a list of one), `exclude` gives the others, and `include` gives all of them. `where`, `sort` and `limit` take from the query's records as on any fetch.
-
----
-
-## Putting it together: a product catalog
-
-Here's a complete example — a product catalog backed by an external API.
-
-**Site structure:**
-
-```text
-pages/
-└── products/
-    ├── page.yml
-    ├── grid.md               # type: ProductGrid
-    └── [id]/
-        ├── page.yml
-        └── product.md        # type: ProductPage
-```
-
-**The query, and the page that names it:**
-
-```yaml
-# queries.yml
-products:
-  url: https://api.example.com/products
-  transform: data.items
+  limit: 100
   record:
-    url: https://api.example.com/products/{id}
-    transform: data
+    url: https://api.example.com/articles/{slug} # one whole article, for /blog/:slug
 ```
 
-```yaml
-# pages/products/page.yml
-title: Products
-query: products
-```
-
-**Component metadata:**
-
-```js
-// src/sections/ProductGrid/meta.js
-export default {
-  title: 'Product Grid',
-  data: { products: '@/product' },
-}
-```
-
-```js
-// src/sections/ProductPage/meta.js
-export default {
-  title: 'Product Page',
-  data: { products: '@/product' },
-}
-```
-
-**What happens at runtime:**
-
-| Scenario | What the runtime does |
-|----------|----------------------|
-| User visits `/products` | Fetches the list from the API. Caches it. ProductGrid reads `content.data.products` (the full array). |
-| User clicks a product | Navigates to `/products/42`. Cache hit — finds the item, then fetches `GET /products/42` through `record:` for the whole product. ProductPage reads `content.data.products[0]`. |
-| User lands directly on `/products/42` | Cache empty. Fetches the list, finds 42, then fetches it through `record:`. ProductPage reads `content.data.products[0]`. |
-| User then visits `/products` | Cache hit. ProductGrid reads `content.data.products` (the full array). |
-
-Both components declare the same `data: { products: '@/product' }` schema. The collection always arrives under the `products` key as an array — the full collection on the list page, a single-element array on a detail page. ProductPage reads `content.data.products[0]`; ProductGrid maps over `content.data.products`.
+The framework fetches the endpoint in the visitor's browser and evaluates the query and each narrowing over what arrived. An API that needs a key, headers of its own, or paging is a foundation transport — see [Data Sources](./data-sources.md).
 
 ---
 
-## Opting out (rare)
-
-A component that should never receive cascaded data — a pure layout primitive, a debug component — declares `data: false`:
-
-```js
-export default {
-  data: false,
-}
-```
-
-It then receives `content.data = {}` regardless of what the page declared. This is uncommon; most components just read what they want from `content.data` and ignore the rest.
-
----
-
-## Custom fetchers: when the foundation owns transport
-
-Everything above works with the framework's built-in default fetcher — the site names a query, and the runtime reads the file the build generated from it, a host's live records, or an external query's URL, JSON-parses the response, and hands the result to your component.
-
-That's one point on a spectrum. The spectrum exists because foundations can sit in very different relationships to the data they render:
-
-| Position | The foundation knows | The site declares | Typical fit |
-| --- | --- | --- | --- |
-| 1 — No transport | Nothing about data | Queries over its records, or external queries the default fetcher handles | Demos, docs templates, file-backed sites |
-| 2 — Transport only | Auth, base URL, response shape. Forwards `where:` verbatim | Whatever the backend understands | Real-world foundations that target a specific backend |
-| 3 — Transport + query compiler | Parses a query language and compiles it for the backend | That language | A foundation translating between a site's DSL and a backend's native query format |
-| 4 — Bundled data | Exactly what to ask and render | Minimal | Site-specific foundation; may just call `fetch()` in components |
-
-Positions 1 and 2 are the common ones. A portable foundation that needs auth, a custom base URL, or a response shape a dot-path cannot reach writes a fetcher — declared on `main.js` — and keeps the author-visible surface unchanged.
-
-**The author-visible surface does not change.** Pages still write `query:` / `fetch:` in `page.yml`, components still read `content.data.<as>`. A site can't tell whether its data came from the default fetcher, a foundation-supplied REST fetcher, or a platform-specific backend.
-
-### Declaring a transport
-
-Full reference — object shape, cache-key knobs, extension merging — lives in [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports). The minimum:
-
-```js
-// src/main.js
-const myTransport = {
-  async resolve(request, ctx) {
-    const base = ctx.website.config?.fetcher?.myFoundation?.baseUrl
-    const res = await fetch(`${base}/${request.as}`, { signal: ctx.signal })
-    if (!res.ok) return { data: [], error: `HTTP ${res.status}` }
-    return { data: await res.json() }
-  },
-}
-
-export default {
-  defaultLayout: 'MarketingLayout',
-  transports: { myFoundation: myTransport },
-}
-```
-
-The site opts in per data key — a fetch's `as`:
-
-```yaml
-# site.yml
-fetcher:
-  transports:
-    members: myFoundation        # as → transport name
-    events: default              # reserved — framework default fetcher
-  myFoundation:                   # binding the transport reads
-    baseUrl: https://api.example.com
-```
-
-A foundation with multiple backends exports multiple named transports (`{ members: …, catalog: …, analytics: … }`); the site picks per data key. No `match()` predicates — selection is a name lookup the site controls.
-
-### Middleware: `@uniweb/fetchers`
-
-Most foundations that own transport end up writing the same cross-cutting code — injecting auth headers, retrying on 401, unwrapping responses, adding a timeout. The `@uniweb/fetchers` package ships these as middleware primitives (`withAuth` today; more as real foundations need them). It's middleware-only — wrap your own `resolve()` to compose behavior:
-
-```js
-import { withAuth } from '@uniweb/fetchers'
-
-const authed = withAuth(myFetcher, () => website.config?.fetcher?.apiKey)
-```
-
-### Filter state and re-rendering (not re-fetching)
-
-Foundations often need UI state that lives outside React — a filter selector, a date range, a toggle — so it survives SPA navigation and can be read by sibling components. Uniweb provides `page.state` (scoped to the current page) and `website.state` (site-wide), with `usePageState` / `useWebsiteState` as kit bridges.
-
-```jsx
-import { usePageState } from '@uniweb/kit'
-
-function QuerySelector() {
-  const [slug, setSlug] = usePageState('selectedQuery', 'all-members')
-  return (
-    <select value={slug} onChange={(e) => setSlug(e.target.value)}>
-      {/* ... */}
-    </select>
-  )
-}
-```
-
-When the user picks a new filter, `page.state.set()` fires → subscribing React components re-render → they recompute from the data that's already in `content.data`. Typical pattern: the page fetches a collection once at load time, a kit-side hook or utility (e.g. `@uniweb/core`'s `matchWhere`) narrows it in memory, and the filtered view appears.
-
-**Changing `page.state` does not re-run the fetch.** `BlockRenderer` runs the fetch once per block lifecycle. If a component genuinely needs new data on user action — a search box, pagination, a drill-down selector — it's a **domain-aware component** that owns its own fetches using standard React (`useEffect + fetch`). See [Component Data Patterns](./component-data-patterns.md) for the two-role framing.
-
-### When to skip a custom fetcher
-
-- The site's records come from `entities/`, or from public JSON endpoints an external query can express — the default path handles them.
-- The foundation is bundled with its site and components call `fetch()` directly inside `useEffect`.
-- A third-party SDK (e.g. a CMS client) handles transport entirely inside components.
-
-The fetcher contract is worth the ceremony when your foundation targets a real backend, needs auth or a non-trivial response shape, and is meant to serve more than one site.
-
----
-
-## Validating your data
+## Checking your data
 
 The `data:` schema is a contract — it says what shape `content.data.<key>` will have. `uniweb validate` checks your file-based data against that contract, so a misspelled field or a value outside an enum surfaces while you're working, not as a blank slot on a live page.
 
@@ -393,39 +327,17 @@ It reports the exact chain — route, section, data key, file, item, field — s
     • item "cinder" › status: 42 is not one of ["active", "archived"]
 ```
 
-This is deliberately a gate you run, not part of every build. The runtime stays tolerant — it applies defaults and ignores the rest — so a data mistake degrades gracefully in production instead of breaking the build. `validate` is where you catch it on purpose, before shipping. It's distinct from `uniweb doctor`, which checks your *project* against framework conventions; `validate` checks your *data* against the schemas you declared. Full reference: [CLI Commands → uniweb validate](../reference/cli-commands.md#uniweb-validate).
-
----
-
-## Sharing schemas across foundations
-
-Build more than one foundation — a few brands, a client's product line — and they tend to want the same shapes: a `person`, a `project`, an `article`. You don't copy the schema into each foundation. Define it once and reference it, two ways:
-
-- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you register) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
-- **A routed directory** — keep the schemas in a plain folder anywhere on disk and point each foundation's `schemas.config.js` at it. No package, no install:
-
-  ```js
-  // foundation/schemas.config.js
-  export default { '@acme': '../shared/acme-schemas' }
-  ```
-
-  `@acme/person` then resolves to `../shared/acme-schemas/person.{js,yml}`. The config is plain JS, so the path can be relative, absolute, or read from an environment variable — useful when one schema repo is shared across many client workspaces on your machine.
-
-Either way the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. Reference: [Component Metadata → Routing a scope](../reference/component-metadata.md#routing-a-scope-with-schemasconfigjs).
-
-A schema ref's `@acme` names an organization in the Uniweb registry, not an npm scope — the two look alike and aren't connected. For which delivery to pick, how a git repo works as a source, and when registering is required, see [Schemas in Practice](./schemas-in-practice.md).
+It also reports a section whose page fetches data none of which fills the keys its component declares. This is deliberately a gate you run, not part of every build: the runtime stays tolerant — it applies defaults and ignores the rest — so a data mistake degrades gracefully in production instead of breaking the build. Full reference: [CLI Commands → uniweb validate](../reference/cli-commands.md#uniweb-validate).
 
 ---
 
 ## See also
 
-- [Data Schemas](./data-schemas.md) — Authoring a schema, the three namespaces (`@/`, `@std`, `@org`), sharing across projects, and registering schemas as reusable content types.
-- [Dynamic Routes](../reference/dynamic-routes.md) — Folder naming, route expansion, and how the focused record arrives as `content.data.<collection>[0]`.
-- [Data Fetching](../reference/data-fetching.md) — Full fetch config reference, post-processing options, collection references.
-- [Content Collections](../reference/content-collections.md) — Building collections from markdown.
-- [Component Metadata](../reference/component-metadata.md) — The `data` field in meta.js.
-- [Component Data Patterns](./component-data-patterns.md) — The two fetch roles (author-driven vs component-driven) and when to use which. Read this first if you're unsure your component should even be using `fetch:` declarations.
-- [Foundation Configuration → Data Transports](../reference/foundation-config.md#data-transports) — Full `transports:` declaration reference (`cacheKey`, `prerenderable`, extensions).
-- [Kit Reference → `usePageState` / `useWebsiteState`](../reference/kit-reference.md#usepagestate--usewebsitestate) — Bridge hooks for observable state.
-- [Data Sources](./data-sources.md) — an external query over a public JSON endpoint, a host's live records, a foundation transport for a backend with its own conventions, and secrets.
-- [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — Dispatcher internals, cache keys, delivery paths, gotchas.
+- [Queries](../reference/queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`, external queries
+- [Data Fetching](../reference/data-fetching.md) — `query:` and `fetch:`, narrowing, what a section receives, `current:`
+- [Parametric Pages](../reference/dynamic-routes.md) — one page per record: which query a URL names, what it matches, `$route`
+- [Records](../reference/content-collections.md) — `entities/`, `records.yml`, and what a compiled record holds
+- [Component Metadata → Data](../reference/component-metadata.md#data) — the `data:` declaration and its three value forms
+- [Data Sources](./data-sources.md) — public APIs, a host's live records, foundation transports, and secrets
+- [Component Data Patterns](./component-data-patterns.md) — when a component should fetch its own data instead
+- [Data Fetcher Architecture](../architecture/data-fetcher-architecture.md) — dispatcher internals, cache keys, delivery modes

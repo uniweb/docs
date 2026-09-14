@@ -302,7 +302,7 @@ export default {
 }
 ```
 
-Each value is a schema ref, an inline field map, or `{}` for records with no schema. A section's own `data:` wins for a key both declare. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives-the-keys-its-component-declares).
+Each value is a schema ref, an inline field map, or `{}` for records with no schema. A section's own `data:` wins for a key both declare. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
 
 ---
 
@@ -639,7 +639,7 @@ fetcher:
 
 The transport reads its config via `ctx.website.config.fetcher.{transportName}`. The framework does no validation — document the keys your transport reads in the foundation's README.
 
-Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See the [Secrets section of the backend guide](../development/data-sources.md#secrets).
+Values under `fetcher:` are **client-visible** — they ride into the site's HTML or `__DATA__`. The framework does not offer a secret configuration channel. For private credentials, the pattern is same-origin proxying (the site fetches `/api/…`, a deployment-layer proxy attaches the secret server-side). See [Data Sources → Secrets](../development/data-sources.md#secrets).
 
 > **Removed:** the per-site default-fetcher vocabulary — `fetcher.baseUrl`, `headers`, `envelope`, `supports` and `request.*`. The build warns and drops them. A public, keyless endpoint is an external query; a backend that needs a base URL or headers is a transport.
 
