@@ -512,12 +512,17 @@ if (block.dataError?.articles) {
 When the URL names no record, the key is delivered as `[]`, so
 `content.data.articles?.[0]` is `undefined`. Handle it — and note the page title is
 set to `"Not found"` and `page.notFound` to `true` for you, just as the title is set
-from the record's `title` on a hit. No `useEffect`, no `document.title`.
+from the record on a hit. No `useEffect`, no `document.title`.
 
 | record field | page property |
 |---|---|
-| `title` | page title (browser tab) |
+| `title`, else `name`, else the record's handle | page title (browser tab) |
 | `description` / `excerpt` | meta description |
+
+The title rule is the same everywhere a record is named — the page in the browser, the
+prerendered page, and the record's entry in the search index — so a record with no
+`title` field, such as a person with a `name`, still titles its own page. Only text
+counts: a field holding an object is skipped for the next one.
 
 ---
 
