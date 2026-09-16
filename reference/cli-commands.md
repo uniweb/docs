@@ -9,6 +9,7 @@ uniweb create [name]           # Create a new project (default: starter)
 uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb dev                     # Start a dev server for a site
 uniweb build                   # Build the current project
+uniweb snapshot                # Compose a preview image of a site (its site.yml preview:)
 uniweb export                  # Build dist/ for any static host (no Uniweb account)
 uniweb inspect <path>          # Show the parsed content shape of a section or page
 uniweb rename <type> <old> <new>  # Rename a foundation, site, or extension workspace-wide
@@ -456,6 +457,70 @@ cd site && uniweb build --prerender
 
 # Build for Vercel deployment
 uniweb build --platform vercel
+```
+
+---
+
+## uniweb snapshot
+
+Compose a preview image of a site from the site itself. It opens the site in a headless browser, captures what a visitor sees, and arranges the captures on a background in the site's theme colors.
+
+```bash
+uniweb snapshot                     # build, capture, write site/public/preview.webp
+uniweb snapshot --dev               # capture the dev server instead (no build)
+uniweb snapshot --url https://example.com --out card.webp   # a site that is already running
+```
+
+By default the image becomes the site's card image. The command writes `site/public/preview.webp` and sets `preview: /preview.webp` in `site.yml` ([Site Configuration](site-configuration.md#identity)). It sets `preview` only when `site.yml` has none. If `preview` already points at an image of yours, it stays, and the command says so. `--no-set-preview` leaves `site.yml` alone.
+
+### Requirements
+
+The command uses the `@uniweb/snapshot` package, which a new project doesn't include. Add it once:
+
+```bash
+pnpm add -D -w @uniweb/snapshot
+```
+
+It drives a browser that is already installed, Google Chrome or Microsoft Edge, and downloads nothing. To use another Chromium, set `UNIWEB_SNAPSHOT_BROWSER` to its executable, or install one with `npx playwright-core install chromium --only-shell`.
+
+### Layouts
+
+| Layout | For | Shows |
+|--------|-----|-------|
+| `split` | pages that scroll | The first view in a browser window, overlapped by a long strip of the page |
+| `device` | pages that don't scroll as a page, such as a docs shell or an app | The page in a desktop browser window, with a phone showing it in front |
+
+With `--layout auto` (the default), a page at least 1.6 viewports tall gets `split` and anything shorter gets `device`. With `--tone auto`, a light page goes on a deep background and a dark page on a light one.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `<site>`, `--site <name>` | The site (default: the one you're in, or the only one) |
+| `--dev` | Capture the site's dev server instead of a build |
+| `--url <address>` | Capture a site that is already running |
+| `--no-build` | Capture the existing `dist/` without rebuilding |
+| `--route <path>` | The page to capture (default: the home page) |
+| `--layout <name>` | `auto` (default), `split`, `device` |
+| `--tone <name>` | `auto` (default), `light`, `deep` |
+| `--size <WxH>` | Image size (default `1600x1000`; `1200x630` suits social cards) |
+| `--scale <n>` | `1` (default), or `2` for a double-density image |
+| `--quality <n>` | Encoder quality, 1–100 (default 82) |
+| `--out <file>` | Where to write the image: `.webp`, `.png`, `.jpg` or `.avif` |
+| `--hide <selector>` | Hide matching elements before capturing, such as a cookie banner (repeatable) |
+| `--no-set-preview` | Write the image without changing `site.yml` |
+
+### Examples
+
+```bash
+# The card from a specific page
+uniweb snapshot --route /pricing
+
+# A social image, leaving site.yml alone
+uniweb snapshot --size 1200x630 --out site/public/og.png --no-set-preview
+
+# Without the chat widget
+uniweb snapshot --hide '#chat-launcher'
 ```
 
 ---
