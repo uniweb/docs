@@ -42,9 +42,8 @@ When `meta.js` is present:
 | Field | Required | Default |
 |-------|----------|---------|
 | `title` | No | Inferred from component name (`TeamRoster` → "Team Roster") |
-| `category` | No | — |
 | `description` | No | — |
-| `purpose` | No | — |
+| `family` | No | — (the editor falls back to a generic illustration) |
 | `hidden` | No | `false` |
 | `background` | No | `false` |
 | `inset` | No | `false` |
