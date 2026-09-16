@@ -816,7 +816,7 @@ Each file has its own `type:` in the frontmatter. The number prefix controls the
 |---------------|-----------------|
 | `# Heading` (first) | Main title |
 | `## Heading` (after title) | Subtitle |
-| `### Heading` (before title) | Pretitle / eyebrow text |
+| `#> Heading` (a label line) | Pretitle / eyebrow text |
 | Paragraphs | Body text |
 | `[text](url)` on its own line | Button / CTA |
 | `![alt](url)` | Image |

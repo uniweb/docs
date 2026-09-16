@@ -80,7 +80,7 @@ The runtime guarantees this structure:
 content = {
   // Headings
   title: '',           // H1
-  pretitle: '',        // Heading before H1
+  pretitle: '',        // `#>` label line above the title
   subtitle: '',        // Heading after H1
 
   // Body

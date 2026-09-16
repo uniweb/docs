@@ -966,7 +966,7 @@ The explicit spelling is the `#>` label line — it names the block that starts 
 
 Any number of leading `#`s spells the same label (`##>` and `#>` are identical); repeat label lines for a multi-line pretitle. A label directly above an item's heading becomes that item's pretitle, and a label opening an untitled block labels the block itself.
 
-A smaller ordinary heading directly above a more important one also becomes a pretitle — stacked smaller headings all join it:
+**Older content:** a smaller ordinary heading directly above a more important one is also read as a pretitle — stacked smaller headings all join it — so files written before label lines keep working. Prefer `#>` in anything new; it does not depend on what follows it.
 
 ```markdown
 ### Welcome to ← pretitle (H3 before H1)
@@ -1005,7 +1005,7 @@ content.title // ["Build the future", "<span accent=\"true\">with confidence</sp
 **With pretitle and subtitle:**
 
 ```markdown
-### Our Mission
+#> Our Mission
 # Build the future
 # with confidence
 ## The platform for modern teams

@@ -293,7 +293,7 @@ These names are a **fixed vocabulary**—they map to what the semantic parser ex
 | Element | Source | Description |
 |---------|--------|-------------|
 | `title` | H1 | Main headline |
-| `pretitle` | Heading before title | Eyebrow/kicker text |
+| `pretitle` | A `#>` label line | Eyebrow/kicker text |
 | `subtitle` | Heading after title | Secondary headline |
 | `paragraphs` | Body text | Description paragraphs |
 | `links` | `[text](url)` | Markdown links (become buttons/links) |

@@ -278,7 +278,7 @@ And the markdown becomes real content:
 type: Hero
 ---
 
-### The Component Content System
+#> The Component Content System
 
 # Manage how content becomes pages through components.
 
@@ -296,7 +296,7 @@ Notice `Hero.className = 'pt-32 md:pt-48'` at the bottom. The runtime wraps ever
 
 | Was in JSX                       | Now in markdown                       | Accessed via            |
 | -------------------------------- | ------------------------------------- | ----------------------- |
-| `"The Component Content System"` | `### ... ` (pretitle)                 | `content.pretitle`      |
+| `"The Component Content System"` | `#> ...` (a label line)               | `content.pretitle`      |
 | `"Manage how content..."`        | `# ...` (title)                       | `content.title`         |
 | `"You choose a collection..."`   | Paragraph text                        | `content.paragraphs[0]` |
 | `"Start from a Template"` + URL  | `[Start from a Template](/templates)` | `content.links[0]`      |

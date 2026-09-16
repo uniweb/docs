@@ -57,17 +57,25 @@ Here's how headings map to what appears on screen:
 | Next heading one level deeper | The subtitle |
 | Body text | Paragraphs |
 
-You can also add a **pretitle** — a small label above the title, sometimes called an "eyebrow." Just put a smaller heading before your main heading:
+You can also add a **pretitle** — a small label above the title, sometimes called an "eyebrow." Write it as a **label line**: a `#` (or `##`, or `###`) followed by `>`.
 
 ```
 What you write:              What visitors see:
 
-### V1.0.0 IS OUT            V1.0.0 IS OUT          ← small label
+#> V1.0.0 IS OUT             V1.0.0 IS OUT          ← small label
 # Build the system.          Build the system.       ← big title
 ## Not every page.            Not every page.         ← subtitle
 ```
 
-If you want a small label above your title, put a `###` line before it. The system detects the pattern automatically.
+The number of `#`s before the `>` doesn't matter — `#>`, `##>` and `###>` all mean the same thing. Use whichever matches the heading you're labelling, so the file reads naturally.
+
+A label line says "this is a label" wherever you put it, which is why it's the form to reach for. You can also label an item, or a block with no title at all:
+
+```markdown
+#> Now shipping
+```
+
+> **Writing older content?** A smaller ordinary heading placed directly above a bigger one (`### V1.0.0 IS OUT` above `# Build the system.`) is also read as a pretitle, so existing files keep working. Prefer `#>` in anything new: it doesn't depend on what comes after it.
 
 **Heading levels are relative, not absolute.** Whether you use `#` or `##` for your title, the result is the same — the visual size is determined by the section type, not by your heading level. Use headings to create the right *structure* (title, subtitle, items), not to control font size.
 
