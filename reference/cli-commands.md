@@ -456,7 +456,7 @@ uniweb docs [subcommand] [options]
 The `COMPONENTS.md` file includes for each component:
 
 - Title and description
-- Category and purpose
+- Family (the standard section type it claims, when declared)
 - Content expectations (what markdown elements it uses)
 - Parameters with types, options, and defaults
 - Available presets
