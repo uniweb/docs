@@ -53,6 +53,7 @@ When `meta.js` is present:
 | `content` | No | — |
 | `params` | No | — |
 | `presets` | No | — |
+| `starter` | No | — (the editor adds the section empty) |
 | `vars` | No | — |
 | `context` | No | — |
 | `initialState` | No | — |
@@ -757,6 +758,52 @@ type: Hero
 preset: glass
 ---
 ```
+
+---
+
+### Starter content
+
+`starter` is the sample content a visual editor inserts when an author adds this section type *with starter content*: a placeholder headline, a sentence, a button — something to overwrite rather than a blank section. Without it, the section is added empty.
+
+```javascript
+starter: {
+  pretitle: 'Introducing',
+  title: 'Your headline goes here',
+  paragraphs: ['One or two sentences on what you offer and who it is for.'],
+  links: [{ text: 'Get started', href: '#' }],
+}
+```
+
+It is written in the same flat shape a component receives as `content` — not markdown, not a document. Every value is **plain text**: no markdown, no HTML, no `{accent}` spans.
+
+| Field | Shape |
+|-------|-------|
+| `pretitle` | string |
+| `title` | string, or an array of strings for a multi-line title |
+| `subtitle` | string |
+| `paragraphs` | string[] |
+| `images` | `[{ src, alt, width, height }]` — `width` + `height` set the aspect ratio |
+| `links` | `[{ text, href, target }]` — note `text`, while `content.links` reports it as `label` |
+| `icons` | `[{ library, name }]`, e.g. `{ library: 'lu', name: 'zap' }` |
+| `videos` | `[{ src, caption }]` |
+| `lists` | `string[][]` — one array of item texts per bullet list |
+| `items` | an array of groups, each taking the fields above (except `items`) |
+
+Order is fixed, not the order you write the keys: a group becomes pretitle, title, subtitle, paragraphs, images, links, icons, videos, lists; `items` follow, each one separated the way a `---` divider separates them in markdown. So the starter above reaches the component exactly as this markdown would:
+
+```markdown
+### Introducing
+
+# Your headline goes here
+
+One or two sentences on what you offer and who it is for.
+
+[Get started](#)
+```
+
+Keep it short and obviously a placeholder, and write it against your own `content` expectations: if `items` is `'Feature cards [3-6]'`, a starter with three items shows the author the pattern. Prefer no image over one that will not resolve — a starter is inserted into whatever site uses the foundation, so a path to your own test site's `public/` folder is a broken image anywhere else.
+
+`@uniweb/semantic-parser` exports the conversion as `buildDoc(starter)`; `parseContent(buildDoc(starter))` gives back the starter's fields.
 
 ---
 
