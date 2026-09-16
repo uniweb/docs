@@ -235,14 +235,14 @@ your sections resolved to and what it would suggest for the rest.
 
 | Group | Families |
 |-------|----------|
-| **Opening** — say what this page is | `hero` · `profile` · `statement` · `announcement` · `countdown` · `marquee` |
-| **Explaining** — your own words and pictures | `article` · `rich-text` · `story` · `editorial` · `figure` · `gallery` · `video` · `code-block` · `callout` · `steps` · `accordion` · `process` · `roadmap` · `faq` |
+| **Opening** — say what this page is | `hero` · `profile` · `statement` · `announcement` · `countdown` · `marquee` · `canvas` |
+| **Explaining** — your own words and pictures | `article` · `rich-text` · `story` · `editorial` · `figure` · `gallery` · `video` · `code-block` · `callout` · `steps` · `process` · `roadmap` · `faq` |
 | **Listing** — show many of something | `card-grid` · `team` · `products` · `jobs` · `schedule` · `menu` · `social-feed` · `changelog` · `downloads` · `bibliography` · `teaser` · `recommendations` |
 | **Convincing** — evidence and proof | `features` · `testimonials` · `evidence` · `logo-cloud` · `integrations` · `spotlight` · `hotspots` · `pricing` · `stats` · `metrics` · `data-table` · `comparison` |
-| **Acting** — get the visitor to do something | `cta` · `contact` · `newsletter` · `booking` · `wizard` · `quiz` · `calculator` · `estimate` · `search` · `auth` · `paywall` |
-| **Navigating** — help them get around | `header` · `footer` · `tabs` · `pathways` · `toc` |
+| **Acting** — get the visitor to do something | `cta` · `contact` · `newsletter` · `booking` · `wizard` · `quiz` · `calculator` · `estimate` · `search` · `auth` · `paywall` · `app` |
+| **Navigating** — help them get around | `header` · `footer` · `pathways` · `toc` |
 | **Embedding** — bring in something external | `map` · `embed` · `raw-code` · `widget` |
-| **Building** — you supply the substance | `grid` · `scene` · `app` |
+| **Organizing** — arrange other content on the page | `grid` · `tabs` · `accordion` |
 
 <!-- families:end -->
 
