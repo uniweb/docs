@@ -471,7 +471,7 @@ uniweb snapshot --dev               # capture the dev server instead (no build)
 uniweb snapshot --url https://example.com --out card.webp   # a site that is already running
 ```
 
-By default the image becomes the site's card image. The command writes `site/public/preview.webp` and sets `preview: /preview.webp` in `site.yml` ([Site Configuration](site-configuration.md#identity)). It sets `preview` only when `site.yml` has none. If `preview` already points at an image of yours, it stays, and the command says so. `--no-set-preview` leaves `site.yml` alone.
+By default the image becomes the site's card image. The command writes `site/public/preview.webp` and sets `preview: /preview.webp` in `site.yml` ([Site Configuration](site-configuration.md#identity)). It sets `preview` when `site.yml` has none, or has only the value the app records for a card image it generated. A URL or image path you wrote stays, and the command says so. `--no-set-preview` leaves `site.yml` alone.
 
 ### Requirements
 
