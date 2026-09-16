@@ -30,7 +30,6 @@ When you need params or content expectations, add a `meta.js`:
 ```javascript
 export default {
   title: 'Text Section',    // Optional — inferred from component name if omitted
-  category: 'structure',
 }
 ```
 
@@ -70,8 +69,6 @@ When `meta.js` is absent (only at root of `src/sections/`), the section type has
 export default {
   title: 'Hero Banner',
   description: 'Bold hero section with headline and call-to-action',
-  category: 'impact',
-  purpose: 'Impress',
   background: true,
 
   data: {
@@ -192,32 +189,66 @@ function Hero({ content, params, block, website }) {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `title` | string | Display name in the editor. If omitted, inferred from component name (`TeamRoster` → "Team Roster") |
+| `title` | string | Display name in the editor. If omitted, inferred from the component name (`TeamRoster` → "Team Roster") |
 | `description` | string | What the component does |
-| `category` | string | Free-form grouping label for the editor. A suggested vocabulary is below — nothing validates the value |
-| `purpose` | string | Free-form; a single verb reads well (Introduce, Express, Explain, …) |
+| `family` | string | The standard section family this component belongs to. Picks the editor's illustration and a label it can translate. Optional — see below |
 | `hidden` | boolean | If true, component is excluded from export entirely (internal helpers, not-yet-ready components) |
 | `inset` | boolean | If true, available for `@ComponentName` references in markdown |
 
-#### Categories
+#### Family
 
-`category` is a free-form string. The build neither validates it nor derives
-behaviour from it — it exists so an editor can group a foundation's section
-types into something more navigable than one long list.
+An editor that lets an author add a section has to draw something for each one.
+`family` is how it knows what to draw, and which translated label to show.
 
-The three below are a **suggested** vocabulary rather than a fixed set, offered
-so foundations that want a shared grouping can converge on one. Use them if they
-fit; use your own if they don't.
+**Most components need no declaration.** The section type *is* the component
+name, so a component called `Hero`, `Footer` or `Pricing` already says what it
+is and resolves on its own. `family` is for the ones whose name does not give it
+away:
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| `impact` | High-impact elements to introduce and express ideas | Hero, CTA, Statement |
-| `showcase` | Explain value, provide evidence, answer questions | Features, Pricing, FAQ, Testimonials |
-| `structure` | Flexible functional elements for layouts | Header, Footer, Grid, Section, Gallery |
+```javascript
+// sections/ProfileHero/meta.js
+export default {
+  title: 'Researcher Profile',
+  family: 'profile',
+}
+```
 
-Whatever you choose, it describes the **kind of component** — not the kind of
-site it suits. A genre like `marketing` or `docs` belongs to a template, not to
-a section type.
+`ProfileHero`, `CvEntry` and `PublicationsByYear` are all good names that no
+standard list will ever contain. One line says which family they belong to.
+
+**A name of your own is fine.** An unrecognized value — or none at all — falls
+back to a generic illustration. Nothing breaks, nothing is gated, and you are
+never waiting for a name to be added before you can ship. Plenty of sections are
+a thing your site has and nobody else's, and those should stay undeclared.
+
+**One value, the dominant shape.** A `HeroWithEstimate` is in the `hero` family;
+the picker draws one picture, so name the shape that dominates.
+
+`family` is a claim about **shape** and nothing else. No part of the build, the
+runtime or the delivered site reads it — a foundation that declares none renders
+identically.
+
+Run `uniweb families` to see the list, or `uniweb doctor` to see what each of
+your sections resolved to and what it would suggest for the rest.
+
+<!-- families:begin — generated, do not edit by hand -->
+
+| Group | Families |
+|-------|----------|
+| **Opening** — say what this page is | `hero` · `profile` · `statement` · `announcement` · `countdown` · `marquee` |
+| **Explaining** — your own words and pictures | `article` · `rich-text` · `story` · `editorial` · `figure` · `gallery` · `video` · `code-block` · `callout` · `steps` · `accordion` · `process` · `roadmap` · `faq` |
+| **Listing** — show many of something | `card-grid` · `team` · `products` · `jobs` · `schedule` · `menu` · `social-feed` · `changelog` · `downloads` · `bibliography` · `teaser` · `recommendations` |
+| **Convincing** — evidence and proof | `features` · `testimonials` · `evidence` · `logo-cloud` · `integrations` · `spotlight` · `hotspots` · `pricing` · `stats` · `metrics` · `data-table` · `comparison` |
+| **Acting** — get the visitor to do something | `cta` · `contact` · `newsletter` · `booking` · `wizard` · `quiz` · `calculator` · `estimate` · `search` · `auth` · `paywall` |
+| **Navigating** — help them get around | `header` · `footer` · `tabs` · `pathways` · `toc` |
+| **Embedding** — bring in something external | `map` · `embed` · `raw-code` · `widget` |
+| **Building** — you supply the substance | `grid` · `scene` · `app` |
+
+<!-- families:end -->
+
+Whatever you pick describes the **kind of section** — not the kind of site it
+suits. A genre like `marketing` or `docs` belongs to a template, not to a
+section type.
 
 ---
 
@@ -496,7 +527,6 @@ export default {
 ```javascript
 export default {
   title: 'Event Grid',
-  category: 'showcase',
 
   // Renders event-shaped data; field defaults come from the standard event schema.
   data: { events: '@std/event' },
@@ -950,7 +980,6 @@ The `inset` flag declares that a component is available for inline `@ComponentNa
 // sections/insets/NetworkDiagram/meta.js
 export default {
   title: 'Network Diagram',
-  category: 'visualization',
   inset: true,
   params: {
     variant: {
@@ -969,7 +998,6 @@ A component can be both a standalone section and an inset:
 ```javascript
 // sections/Testimonial/meta.js
 export default {
-  category: 'showcase',
   inset: true,               // also available for @ references
 }
 ```
@@ -1016,8 +1044,6 @@ The `children` field declares that a section type accepts file-based child secti
 export default {
   title: 'Grid',
   description: 'Arrange components in a responsive layout',
-  category: 'structure',
-  purpose: 'Arrange',
   children: {
     label: 'Grid items',
     hint: 'Each child section becomes a grid cell. Use any component type.',
