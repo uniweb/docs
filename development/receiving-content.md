@@ -209,9 +209,31 @@ consult before writing. That makes the description your half of a two-way contra
   content than `full` is an established pattern, not a bug.
 - **Authors may over-provide on purpose.** The content is the superset; params select.
 
-Being honest about the seam: the description is documentation, not validation. Nothing
-rejects content that ignores it — a section renders with whatever arrived. `uniweb inspect`
-is the shared instrument when the two sides disagree about what a document contains.
+Being honest about the seam: the description is not validation. Nothing rejects content that
+ignores it — a section renders with whatever arrived. `uniweb inspect` is the shared instrument
+when the two sides disagree about what a document contains.
+
+It is not only documentation either, and that changed recently. The visual editor reads your
+`content:` declaration twice: to show an author **what this section expects** before they pick it,
+and to fill a new section with **starter content** so it opens with something to edit rather than
+an empty box. The counts are what decide how much. So the third bullet above — *authors may
+over-provide on purpose* — is the rule the editor follows on their behalf: it generates for the
+**upper** bound of a range, because you may ignore what you did not ask for, and a shortfall would
+leave a hole that surplus does not.
+
+⭐ **What this buys you is concrete.** `items: { label: 'Feature cards [3-6]', hint: 'Each H3
+becomes a card' }` gets an author three to six real cards and your hint beside them;
+`items: 'Cards'` gets them a generic guess. The `hint` is worth writing for the same reason — it is
+shown, not just stored. You can see exactly what an author would get:
+
+```bash
+uniweb add section <Name> --starter
+```
+
+⛔ **There is no key for authoring sample content yourself, deliberately.** It would drift against
+the declaration it is meant to match, and it could never be translated — your string is your own
+words, shown verbatim in every interface language. Deriving it from `content:` is what lets it be
+localized.
 
 ---
 

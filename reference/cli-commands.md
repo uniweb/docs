@@ -163,6 +163,8 @@ uniweb add project [name] [options]
 uniweb add foundation [name] [options]
 uniweb add site [name] [options]
 uniweb add extension <name> [options]
+uniweb add section <Name> [options]
+uniweb add ci [options]
 ```
 
 Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If there's no workspace yet, create one with `uniweb create --blank`.
@@ -192,6 +194,38 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 | Option | Description |
 |--------|-------------|
 | `--site <name>` | Site to wire the extension URL into |
+
+### Section Options
+
+Adds a section type to a foundation — a component file and a `meta.js` beside it.
+
+| Option | Description |
+|--------|-------------|
+| `--foundation <name>` | Foundation to add the section to (prompted if several exist) |
+| `--starter` | Generate starter content for the section type from its `content:` declaration — what an author would begin editing |
+| `--preset <name>` | With `--starter`: use that preset's params as the frontmatter |
+| `--write <file>` | With `--starter`: write the markdown to a file instead of printing it |
+| `--json` | With `--starter`: emit the parsed declaration, the content structure and the ProseMirror document |
+
+`--starter` works two ways. On a section type that **already exists** it generates content
+from that section's real declaration and writes nothing. On a **new** one it scaffolds the
+section and gives its `meta.js` a `content:` declaration derived from the family the name
+resolves to, so the three pieces agree: a declaration, a component, and content that fills it.
+
+```bash
+uniweb add section Hero --starter          # an existing section — nothing is written
+uniweb add section Pricing --starter       # scaffold it, plus content that fills it
+uniweb add section Hero --starter --json   # the declaration and the content, pipeable
+```
+
+The content is derived from what the component says it expects — there is no key to author
+it in. See [Component Metadata → Content](./component-metadata.md#content).
+
+### CI Options
+
+`uniweb add ci` scaffolds a deploy workflow for a host, and PR-preview workflows where the
+host supports them. Its options are listed by `uniweb add --help`; the deployment guides
+cover the hosts themselves — [Deploying](../development/deploying.md).
 
 ### Placement
 

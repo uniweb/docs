@@ -284,7 +284,15 @@ Append count in brackets at the end of the label:
 | `'Label [1-3]'` | 1 to 3 |
 | `'Label [2+]'` | 2 or more |
 
-This is guidance for content authors, not validation.
+Nothing rejects content that ignores a count — a section renders with whatever arrived. But a
+count is not inert: it is what the visual editor reads to decide **how much starter content** to
+put in a new section, and what it shows an author as the section's expectations. Writing `[3-6]`
+on a card grid is therefore worth doing.
+
+⭐ **The editor generates for the upper bound.** A component need not render everything it is
+handed, and a param that reduces (`layout: compact`) simply renders less — so surplus content costs
+nothing, while a shortfall leaves a visible hole. `[0-2]` produces two, and a floor of `0` still
+produces one: the floor is the author's option to delete, not an instruction to start empty.
 
 #### Standard Content Elements
 
