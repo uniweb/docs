@@ -487,10 +487,50 @@ It drives a browser that is already installed, Google Chrome or Microsoft Edge, 
 
 | Layout | For | Shows |
 |--------|-----|-------|
-| `split` | pages that scroll | The first view in a browser window, overlapped by a long strip of the page |
+| `split` | pages that scroll | The first view in a browser window, beside a long strip of the page |
 | `device` | pages that don't scroll as a page, such as a docs shell or an app | The page in a desktop browser window, with a phone showing it in front |
 
 With `--layout auto` (the default), a page at least 1.6 viewports tall gets `split` and anything shorter gets `device`. With `--tone auto`, a light page goes on a deep background and a dark page on a light one.
+
+### The look
+
+How the two frames sit together. Lengths are pixels on a 1600×1000 image, and scale with it.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--gap <px>` | `48` for `split` | Space between the two frames |
+| `--overlap <px>` | `31` for `device` | How far they overlap instead; use `--gap` or `--overlap`, not both |
+| `--strip <width>` | `fit` | `split` only: `fit`, or `1:N` for a strip one wide by N tall. A narrower strip shows more of a long page, and a short page as a smaller card |
+| `--side <side>` | `right` | Where the strip or the phone goes: `right`, `left` |
+| `--frame <style>` | `browser` | `browser`, a window with a title bar, or `plain` |
+| `--tone <name>` | `auto` | The background: `auto`, `light`, `deep` |
+
+### Choosing a look
+
+What looks best depends on the site, so compare before you choose:
+
+```bash
+uniweb snapshot --compare
+```
+
+This captures the site once and puts several looks on one sheet: the current look, then one change each (spacing, strip width, side, frame, tone, and the other layout). Each look is captioned with the flags that produce it. The sheet goes to `site/.uniweb/snapshot/compare.webp`, which a new project already ignores. `site.yml` isn't touched.
+
+Take the look you like with its flags, and add `--save` to keep it:
+
+```bash
+uniweb snapshot --strip 1:2.5 --save
+```
+
+`--save` writes this run's flags into `site/snapshot.yml`. Later runs start from that file, and flags still override it. Keep the file with the site, and anyone who runs `uniweb snapshot` gets the same look.
+
+```yaml
+# site/snapshot.yml
+route: /research
+strip: '1:2.5'
+side: left
+```
+
+It takes the same settings as the flags, without the dashes: `route`, `layout`, `tone`, `gap`, `overlap`, `strip`, `side`, `frame`, `size`, `scale`, `quality`, `hide` (a list), and `out` (relative to the site folder). Nothing else reads this file: building and publishing the site leave it alone.
 
 ### Options
 
@@ -502,11 +542,13 @@ With `--layout auto` (the default), a page at least 1.6 viewports tall gets `spl
 | `--no-build` | Capture the existing `dist/` without rebuilding |
 | `--route <path>` | The page to capture (default: the home page) |
 | `--layout <name>` | `auto` (default), `split`, `device` |
-| `--tone <name>` | `auto` (default), `light`, `deep` |
+| `--gap`, `--overlap`, `--strip`, `--side`, `--frame`, `--tone` | [The look](#the-look) |
+| `--compare` | Put several looks on one sheet instead of writing the image |
+| `--save` | Keep this run's flags in `site/snapshot.yml` |
 | `--size <WxH>` | Image size (default `1600x1000`; `1200x630` suits social cards) |
 | `--scale <n>` | `1` (default), or `2` for a double-density image |
 | `--quality <n>` | Encoder quality, 1–100 (default 82) |
-| `--out <file>` | Where to write the image: `.webp`, `.png`, `.jpg` or `.avif` |
+| `--out <file>` | Where to write the image, or with `--compare` the sheet: `.webp`, `.png`, `.jpg` or `.avif` |
 | `--hide <selector>` | Hide matching elements before capturing, such as a cookie banner (repeatable) |
 | `--no-set-preview` | Write the image without changing `site.yml` |
 
@@ -515,6 +557,9 @@ With `--layout auto` (the default), a page at least 1.6 viewports tall gets `spl
 ```bash
 # The card from a specific page
 uniweb snapshot --route /pricing
+
+# A narrower strip on the left, kept for next time
+uniweb snapshot --strip 1:3 --side left --save
 
 # A social image, leaving site.yml alone
 uniweb snapshot --size 1200x630 --out site/public/og.png --no-set-preview
