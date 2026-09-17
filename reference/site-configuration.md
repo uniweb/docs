@@ -21,6 +21,7 @@ description: A brief description for SEO
 preview: /images/card.png            # The site's card image in the Uniweb apps (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
+  baseUrl: https://my-site.com       # Turns on sitemap.xml, robots.txt, absolute llms.txt links
   image: /og-default.png             # Default Open Graph / social-sharing image
   ogTitle: My Site
 
@@ -204,19 +205,28 @@ Site-level metadata for the homepage's social card and search — and the defaul
 ```yaml
 keywords: [components, react, cms]   # Default keywords (pages can override)
 seo:
+  baseUrl: https://acme.com          # Where the site lives — turns on sitemap.xml + robots.txt
   image: /og-default.png             # Default Open Graph / social-card image
   ogTitle: Acme — Build with Components
   ogDescription: The component content platform.
   noindex: false                     # Set true to keep the whole site out of search
+  robots:                            # robots.txt contents
+    disallow: [/private]
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `keywords` | string[] | Default meta keywords; a page's own `keywords` override |
+| `seo.baseUrl` | string | The site's public origin. **Setting it turns on `sitemap.xml` and `robots.txt`, and makes `llms.txt` links absolute** — all three are skipped or root-relative without it, because none of them can be written without knowing where the site lives. `uniweb doctor` warns when it is unset |
+| `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`. Only emitted alongside `seo.baseUrl` |
 | `seo.image` | string | Default Open Graph / social-sharing image (the site's social card) |
 | `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
 | `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
 | `seo.noindex` | boolean | Keep the entire site out of search engines (cascades to every page) |
+
+`sitemap.xml` and `robots.txt` are **static-host artifacts**: `uniweb export` and
+`uniweb deploy --host <adapter>` write them into `dist/`. A site published to a
+backend does not get them from the build — what that host serves is the host's.
 
 **Cascade:** site-level `seo` and `keywords` are *defaults*. Each page overrides any field it sets — the page wins, the site fills the gaps. The social image is the field most worth setting once at the site level.
 
