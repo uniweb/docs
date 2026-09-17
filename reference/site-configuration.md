@@ -84,13 +84,15 @@ paths:
 ```yaml
 name: My Site
 description: Build modern websites with components
+tags: [business, landing-page]
 preview: /images/card.png
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Site name (used in `<title>`, metadata) |
-| `description` | string | Default meta description |
+| `name` | string | Site name (used in `<title>`, metadata), and the title on the site's card in the Uniweb apps |
+| `description` | string | Default meta description, and the line under the title on the site's card |
+| `tags` | list | What the site is for, as standard ids — [the site tags](https://github.com/uniweb/schemas#site-tags). Apps use them to filter and label sites, such as in a template picker. An id that is not on the list is kept, and simply has no label. |
 | `preview` | string | The image on the site's card in the Uniweb apps — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
 
 Once the site is published, `uniweb pull` also records where it went live, as `$url`. Like `$uuid`, it is written for you rather than by hand.

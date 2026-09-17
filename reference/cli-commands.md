@@ -70,7 +70,7 @@ uniweb create . --template marketing
 uniweb add ci --host=github-pages   # Optional: add CI for GitHub Pages
 ```
 
-**Naming.** The project name comes from the cwd basename, slugified to a valid npm name (`MyProject` → `myproject`, `my_site` → `my-site`). If the slug is empty, the verb errors and asks you to pass `--name=<slug>` explicitly.
+**Naming.** The project name comes from the cwd basename, slugified to a valid npm name (`MyProject` → `myproject`, `my_site` → `my-site`). If the slug is empty, the verb errors and asks you to pass `--name=<slug>` explicitly. The *site* is named after the project too, unless the template gives its site a name of its own in `site.yml` — the official templates do, so a site made from `marketing` starts as `Product Launch`.
 
 **Conflict handling.** Pre-existing `README.md` and `.gitignore` are overwritten — the scaffold's versions (project-shaped README, Vite/Node-aware ignores) are more useful than what `gh repo create` puts in a fresh repo. Any other collision aborts with the list of conflicting files; move or remove them and re-run. Files outside the scaffold's write set (e.g. `LICENSE`) are left alone.
 
