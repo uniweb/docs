@@ -104,6 +104,29 @@ languages: '*'
 
 Automatically discovers languages from the `locales/` folder. Any `.json` file in the locales directory (other than `manifest.json` and `_memory.json`) is treated as a language.
 
+### The default language belongs in `languages`
+
+List it, alongside the others:
+
+```yaml
+defaultLanguage: en
+languages: [en, fr]
+```
+
+Its pages are built at the **site root**, not under `dist/en/` — the root tree
+*is* the default language, and `hreflang="x-default"` already points there. So
+listing it changes what the site *declares*, never what it *emits*: a language
+switcher needs it as a choice, and a site that never names it can end up with no
+switcher at all.
+
+> **Declare it even if translations are auto-discovered.** The build finds
+> locales on disk, but a page's links are resolved at render from what the site
+> declares. A site with `locales/fr.json` and no `languages:` builds a complete
+> French tree whose every internal link points back into the default-language
+> tree — the pages exist and nothing reaches them. Recent versions stamp the
+> resolved set onto the build output so this can't happen silently; declaring it
+> is still the clearer form.
+
 ### Custom Locales Directory
 
 ```yaml
