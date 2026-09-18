@@ -99,6 +99,37 @@ Open each language file and replace the values with translations:
 
 You don't need to translate everything at once. Any string you skip stays in the original language until you provide a translation.
 
+#### Keep the links and formatting
+
+A translation value is **Markdown**, not plain text. If a sentence has a link, bold
+text or emphasis, write it the same way in the translation:
+
+```json
+{
+  "32476724": "That's controlled by your role. See [Roles and permissions](page:docs/roles).",
+  "9f1c0ab3": "Cela dépend de votre rôle. Voir [Rôles et permissions](page:docs/roles)."
+}
+```
+
+Whatever you write becomes the translated paragraph, exactly as written. So a
+translation with the link left out produces a paragraph with **no link** — the
+original formatting is not put back for you, because only you know where it belongs
+in the new wording.
+
+Links keep working the same way: `page:` references, `/paths` and full URLs all
+behave as they do in your content.
+
+`uniweb i18n status` will tell you when a translation has dropped formatting its
+source had:
+
+```
+Loses markup: 12  (links/bold in the source, plain in the translation)
+```
+
+Note that **coverage cannot catch this** — a translation with the link missing still
+counts as translated, so a site can report 100% and render with no links at all.
+Read the `Loses markup` line, not just the percentage.
+
 ### 5. Build with translations
 
 ```bash

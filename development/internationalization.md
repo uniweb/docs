@@ -310,12 +310,24 @@ Generates `locales/manifest.json` with all translatable content:
       "source": "Welcome to Our Company",
       "field": "title",
       "contexts": [{ "page": "/about", "section": "intro" }]
+    },
+    "32476724": {
+      "source": "That's controlled by your role. See Roles and permissions.",
+      "markup": "That's controlled by your role. See [Roles and permissions](page:docs/roles).",
+      "field": "paragraph.12",
+      "contexts": [{ "page": "/docs/reference/faq", "section": "body" }]
     }
   }
 }
 ```
 
-Each unit is keyed by a hash of the source string. The `contexts` array shows where the string appears, and `field` indicates the content type (title, paragraph, link label, etc.).
+One unit per block element — a heading, a paragraph, a list item — never a fragment of one, and never two joined. A `\n` inside a `source` is a line break *within* one paragraph.
+
+**`source` is the key; `markup` is the prompt.** The hash is computed over `source`, the element's flattened plain text, so adding a link or bolding a phrase does **not** move the hash and does not orphan the existing translation. `markup` is that same element as inline Markdown, and appears only when the element carries formatting the plain text has lost. It is what `uniweb i18n init` seeds a language file with, and what a translator should work from.
+
+The `contexts` array shows where the string appears, and `field` indicates the content type (title, paragraph, link label, etc.).
+
+> **Why both.** A translation value is parsed as inline Markdown at merge time, so the value channel carries links and marks losslessly. Before `markup` existed, the *source* channel did not: a translator was shown the flattened text and could only produce flattened text. A fully translated site would report 100% coverage and render with every inline link gone.
 
 **Options:**
 - `--verbose` — Show extracted strings in output
@@ -362,6 +374,24 @@ Edit language files, replacing source text (or empty strings) with translations:
   "e5f6g7h8": "Aprende Más"
 }
 ```
+
+**A value is inline Markdown.** At build time the merge parses it and replaces the element's inline content with the result — it does not re-apply the source's marks, and there is no placeholder or tag convention. So links, bold and emphasis have to be written into the translation:
+
+```json
+{
+  "32476724": "Cela dépend de votre rôle. Voir [Rôles et permissions](page:docs/roles)."
+}
+```
+
+A plain-text value produces a plain-text paragraph, exactly and only. `page:` references, root-relative paths and full URLs are all carried through verbatim as hrefs.
+
+`uniweb i18n status` reports the entries where this has been lost:
+
+```
+Loses markup: 12  (links/bold in the source, plain in the translation)
+```
+
+⚠️ Coverage cannot see this class — a flattened translation still counts as translated — so check that line as well as the percentage.
 
 For strings that appear in multiple contexts and need different translations, use the override format:
 
@@ -412,6 +442,15 @@ uniweb i18n sync
 ```
 
 Reports what changed (new strings, removed strings, modified strings). Use `--dry-run` to preview without writing changes.
+
+It also reports **remarked** strings — an element whose words are unchanged but whose inline Markdown is not, typically an author adding a link to an existing sentence:
+
+```
+  ✎ 3 strings kept their words but changed inline markup (links/bold)
+    Existing translations still count as valid — update them or the markup is lost.
+```
+
+The hash cannot detect this on its own — that is the point of keying on the flattened text — so without this line an added link would silently never reach any translation.
 
 ---
 
