@@ -281,6 +281,16 @@ Only specify which page is the homepage. Other pages are auto-discovered and sor
 
 Omit `pages`, `index`, and `order` to auto-discover all pages. They're sorted by the `order` property in each page's `page.yml`, and the lowest `order` becomes the homepage.
 
+### From the Pages Directory
+
+`pages:` and `index:` can also live in the config of the pages directory itself — `pages/folder.yml`, or `pages/page.yml` — where they order the top level the way a folder's config orders its children. This is the place for content that travels: a docs repository that carries its own order keeps it whether it is [mounted below the root](#per-subfolder-mounting) or used as the whole pages directory ([Custom Content Paths](#custom-content-paths)).
+
+`site.yml` wins. Its `pages:` replaces theirs, and a homepage it names — with either key — replaces the one they name, so a `site.yml` `index:` decides the homepage even when the pages directory lists an order.
+
+Only these two keys are read there. The top level has no container page, so a title or an SEO block there describes nothing, and the site's layout is `site.yml`'s `layout:`.
+
+In [folder mode](#folder-mode) — a `folder.yml` in `pages/` — nothing is promoted to `/` unless one of these names it.
+
 ---
 
 ## Content Mode
@@ -309,7 +319,7 @@ pages/docs/
 
 Page titles come from the H1 heading in each markdown file. Frontmatter remains section configuration (`type:`, `background:`, etc.).
 
-To activate folder mode for the entire site, place a `folder.yml` in the `pages/` directory itself.
+To activate folder mode for the entire site, place a `folder.yml` in the `pages/` directory itself. Its `pages:` and `index:` then order the top level and name the homepage — see [From the Pages Directory](#from-the-pages-directory).
 
 ### Mode Cascade
 
@@ -340,7 +350,7 @@ layout:
 | `title` | string | Container title (for navigation, breadcrumbs) |
 | `description` | string | Meta description |
 | `pages` | array | Child page ordering with `...` wildcard support |
-| `index` | string | At the site root (`pages/folder.yml`): which child is the homepage |
+| `index` | string | In the pages directory's own `folder.yml` only: which top-level page is the homepage, unless `site.yml` names one. Deeper in the tree it has no effect — only the top level has a homepage |
 | `label` | string | Short navigation label |
 | `hidden` | boolean | Hide from navigation |
 | `layout` | object | Layout panel overrides |
@@ -1157,6 +1167,8 @@ paths:
 ```
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
+
+A `pages` directory with its own `folder.yml` or `page.yml` keeps the order and the homepage it declares there, exactly as it would mounted below the root — see [From the Pages Directory](#from-the-pages-directory).
 
 ### Per-Subfolder Mounting
 
