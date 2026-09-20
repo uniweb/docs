@@ -311,7 +311,7 @@ Turning ideas into shipped features. 10 years in SaaS.
 
 ### Image Gallery
 
-A collection of images displayed in a grid.
+A set of images displayed in a grid.
 
 ```markdown
 ---
