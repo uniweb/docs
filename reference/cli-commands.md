@@ -940,6 +940,8 @@ uniweb login [options]
 
 Without a method flag, `login` asks which one to use. Without a terminal it needs `UNIWEB_USERNAME` and `UNIWEB_PASSWORD`, or `--token`.
 
+**In CI or a script**, sign in once with `uniweb login --backend <url> --token $TOKEN` — the token is checked against that backend before it is stored. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead (with `UNIWEB_REGISTER_URL` for a backend other than the default). The backend commands themselves take no `--backend` or `--token`.
+
 ### Examples
 
 ```bash
@@ -978,7 +980,6 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
 | `--json` | Porcelain: one compact JSON line on stdout (`{ok,scope,origin,entities:[{name,uuid,version,unchanged}]}`); human output to stderr. |
-| `--token <bearer>` | Submit with this bearer; skips `uniweb login`. |
 
 > Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; to register on a local backend, log in to it (`uniweb login --backend <url>`).
 
@@ -1180,7 +1181,6 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
-| `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
 | `--no-validate` | Skip the content-conformance check (it only warns; see below) |
 
 `uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward. (`uniweb publish` can also bring everything along itself — foundation, content, go-live — in one step.)
@@ -1212,7 +1212,6 @@ To keep your local work instead, use `--merge`. It three-way merges your changes
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
-| `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
 
 ---
 
@@ -1232,7 +1231,6 @@ It runs `git pull` first, then `uniweb pull --merge`, and ends by reporting what
 |--------|-------------|
 | `--no-git` | Skip the git remote; backend only |
 | `--no-backend` | Skip the backend; git only |
-| `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
 
 ---
 
@@ -1254,7 +1252,6 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 |--------|-------------|
 | `--no-git` | Skip the git remote half of the refresh |
 | `--force` | Passed to the push only: overwrite changes made on the backend since your last pull |
-| `--token <bearer>` | Auth bearer (skips `uniweb login`) |
 
 ---
 
@@ -1311,9 +1308,8 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--no-validate` | Skip the content-conformance check (it only warns). |
 | `--org @org` | Own the new site under `@org` (first publish only). Alias: `--as-org`. |
 | `--personal` | Own the new site under your personal account, deliberately. |
-| `--token <bearer>` | Auth bearer; skips `uniweb login`. |
 
-> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--token` used to disappear silently and run the command as whoever was logged in. (`--backend` is not a flag of these commands — they go to the backend you are logged in to — and passing it is rejected with a pointer to `uniweb login --backend`.)
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. `--backend` and `--token` are not flags of these commands: they go to the backend you are logged in to, with that login's session, and passing either is rejected with a pointer to `uniweb login`.
 
 ---
 
