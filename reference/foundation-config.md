@@ -13,7 +13,7 @@ src/                       # the foundation package
 ├── components/            # Internal components
 ├── layouts/               # Layout components (auto-discovered)
 ├── styles.css             # Global styles
-├── package.json           # name: "src"
+├── package.json           # name: "src" — the workspace name, not the foundation's
 └── vite.config.js
 ```
 
@@ -21,17 +21,24 @@ src/                       # the foundation package
 
 ## Identity
 
-By default, the foundation's `name` and `description` come from `package.json`. You can override them in `main.js` — useful when the npm package name differs from the display name you want in visual editors:
+A foundation's **name** is what it registers as — `@org/<name>` — and what sites pin (`foundation: '@acme/marketing@1.2.0'`). Set it in `main.js`:
 
 ```js
 // src/main.js
 export default {
-  name: 'Marketing Template',
-  description: 'A modern marketing site template with hero, features, and pricing sections.',
+  name: 'marketing',
+  description: 'A modern marketing site with hero, features, and pricing sections.',
 }
 ```
 
-If omitted, the values fall back to `package.json`. The `version` always comes from `package.json`.
+`uniweb create` and `uniweb add` write it for you — the project's name, or the name you gave `add` — and `uniweb register` asks for one when a foundation has none.
+
+- **Form:** lowercase letters, digits and hyphens (`marketing`, `acme-docs`). A scoped name (`@acme/marketing`) keeps its own scope, whatever `--scope` says.
+- **Not `src` or `foundation`.** Those name the folder the code lives in, and every project in an org would register the same one. `uniweb register` refuses them and asks for a real name (or, when it cannot ask, prints the line to add).
+- **Fallback:** with no `name` in `main.js`, the name is `package.json`'s `name`.
+- The `version` always comes from `package.json`, and so does the `description` unless `main.js` sets one.
+
+The `name` in the foundation's `package.json` is a **workspace** name: it is how the site depends on the foundation (`"src": "file:../src"`) and how `site.yml` refers to it (`foundation: src`). It can stay `src`. Once `main.js` names the foundation, the two are independent — `uniweb rename foundation` renames the workspace package without changing what the foundation registers as, and changing `main.js`'s `name` touches nothing in the workspace.
 
 ---
 
@@ -44,7 +51,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
   "name": "src",
   "version": "1.0.0",
   "uniweb": {
-    "id": "marketing"
+    "scope": "@acme"
   },
   "dependencies": {
     "@uniweb/core": "0.7.8",
@@ -53,27 +60,22 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 }
 ```
 
-(`uniweb.id` is the foundation's registered name, separate from the workspace package name.)
-
 ### Supported fields
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `id` | string | (the bare segment of `package.json::name`, or an explicit `uniweb.id`) | The foundation's id on the registry — the bare name segment in `@org/<id>`. Decoupled from `package.json::name` (which is a workspace concern); renaming `uniweb.id` only affects the registry identity, not the workspace. |
-| `namespace` | string | (none — see scope resolution below) | Legacy explicit org-namespace override. Equivalent to writing `"name": "@<namespace>/<base>"`. Rarely needed; modern foundations set a scoped name (`@org/x`) directly. |
+| `scope` | string | (none — `uniweb register` derives one from your login and saves it here) | The organization the foundation registers under: `@acme` (or `acme`). A bare `main.js` name `marketing` registers as `@acme/marketing`. `--scope @org` overrides it for one run. |
 | `runtimePolicy` | `"exact"` | (unset) | **Escape hatch, rarely needed.** Sites using this foundation are given a compatible runtime automatically; compatibility is the framework's determination, not a per-foundation setting. Set `"exact"` only if the foundation depends on undocumented runtime internals or was audited against exactly one runtime build — it freezes sites on the recorded version and they stop receiving runtime fixes. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy). |
 
-### Identity (scope + id) resolution
+> **Removed:** `uniweb.id`, which set the registered name from `package.json`. The name lives in `main.js` now; `uniweb register` refuses a leftover `uniweb.id` and says what to write instead (`name: '<the id>'` in `main.js`).
 
-A registered foundation has two identity pieces — a **scope** (where it's stored) and an **id** (what it's called). They live in different places and resolve independently. Full details and examples in [`uniweb register` → Identity](./cli-commands.md#identity-scope--id). The summary:
+### Identity (scope + name) resolution
 
-**Scope** priority: `--scope @org` → scoped `package.json::name` (`@org/x`) → `package.json::uniweb.scope`. Cataloging requires an org scope; a bare or unscoped name isn't cataloged. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog under your `@org` automatically — so set a scope before publishing too.
+A registered foundation's name has two pieces — a **scope** (the org it's registered under) and its **name**. Full details in [`uniweb register` → Identity](./cli-commands.md#identity-scope--name). The summary:
 
-**ID**: the bare (sigil-stripped) segment of `package.json::name` (or an explicit `uniweb.id`).
+**Name**: `main.js`'s `name`, else `package.json`'s `name` — never `src` or `foundation`.
 
-To rename the foundation's workspace package and update its dependent sites, run `uniweb rename foundation <old> <new>`. The workspace name and the registered id (`uniweb.id`) are independent.
-
-The reason `uniweb.id` exists alongside `package.json::name` is isolation. `package.json::name` is a workspace concern (pnpm linking, `file:` deps, `site.yml::foundation`). Renaming it cascades through several files. `uniweb.id` is register-only — changing it affects only the registry identity. It lets you keep the scaffold default `"name": "src"` for the workspace while giving the foundation a distinct registered id — the org scope still comes from a scoped name or `uniweb.namespace`.
+**Scope**: a scoped name carries its own. Otherwise `--scope @org` → `package.json::uniweb.scope` → derived from your login membership (and saved to `uniweb.scope`). Cataloging requires an org scope. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog under your `@org` automatically — so the same rules apply there.
 
 ### Why a separate `uniweb` block
 

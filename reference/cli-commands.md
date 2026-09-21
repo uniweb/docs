@@ -259,11 +259,13 @@ Extensions always go in `extensions/{name}/` and require a name.
 
 ### Package Naming
 
-The package name equals the name you provide (or the default `src` for foundations, `site` for sites). For `add project`, names are suffixed for workspace uniqueness: `{name}-src` and `{name}-site`. If a package name already exists in the workspace, the CLI stops with guidance instead of auto-renaming.
+The package name equals the name you provide (or the default `src` for foundations, `site` for sites). For `add project`, names are suffixed for workspace uniqueness: `{name}-src` and `{name}-site`. A foundation whose name a site already uses becomes `{name}-src`, and an extension whose name is taken becomes `{name}-ext`; any other collision stops the command with guidance.
+
+A package name is a workspace name. What a foundation or extension **registers as** is `name` in its `main.js`, which `add` writes too: the name you gave, before any suffix — or, for `add foundation` with no name, the workspace's. If another foundation in the workspace already registers as that, it gets the suffixed package name instead, so no two register as one. See [`uniweb register` → Identity](#identity-scope--name).
 
 ### The `--from` Flag
 
-The `--from` flag applies content from a template after scaffolding structure. Structural files (`package.json`, `vite.config.js`, `main.js`) come from the CLI; content (section types, pages, theme) comes from the template.
+The `--from` flag applies content from a template after scaffolding structure. Structural files (`package.json`, `vite.config.js`) come from the CLI; content (section types, pages, theme, and a foundation's `main.js`) comes from the template. A template's `main.js` that names no foundation is given the name `add` would have written.
 
 ```bash
 # Scaffold a foundation with marketing sections
@@ -986,34 +988,43 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 
 > Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; to register on a local backend, log in to it (`uniweb login --backend <url>`).
 
-### Identity (scope + id)
+### Identity (scope + name)
 
-A registered foundation has two identity pieces — a **scope** (the org it's registered under) and an **id** (its name). They resolve independently.
+A registered foundation's name has two pieces — a **scope** (the org it's registered under) and its **name**: `@acme/marketing`. Sites pin it by that name.
+
+#### Name
+
+The name is **`name` in the foundation's `main.js`**, else `package.json`'s `name`:
+
+```js
+// src/main.js
+export default {
+  name: 'marketing',
+}
+```
+
+`uniweb create` and `uniweb add` write one — the project's name, or the name you gave `add`. Lowercase letters, digits and hyphens; a scoped name (`@acme/marketing`) keeps its own scope.
+
+**`src` and `foundation` are refused** — they name the folder the code lives in, and every project in an org would register the same one. A foundation with no other name (a project scaffolded before names moved to `main.js` has `package.json` name `src`) is asked for one the first time you register, with a suggestion made from its folder; the answer is written to `main.js`, so it is asked once. Non-interactively (`--non-interactive`, CI, `--json`) and in a preview (`--dry-run`, `-o`), `register` refuses before anything is built or sent, and prints the line to add. The same holds when `uniweb push` or `uniweb publish` releases a local foundation, since they release through `register`.
+
+`package.json::uniweb.id`, which used to set the name, is no longer read: `register` refuses it and prints the `main.js` line that replaces it.
 
 #### Scope
 
-`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to:
+`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to. A scoped name carries its own; otherwise:
 
 1. **`--scope @org` flag** — explicit.
 2. **`package.json::uniweb.scope`** — the persisted default.
-3. *(real submit only)* derived from your login membership.
+3. *(real submit only)* derived from your login membership, and saved to `uniweb.scope`.
 
-A foundation with no resolvable scope is rejected — bare `@/…` names can't be registered. Set `uniweb.scope`, pass `--scope @org`, or use a scoped `package.json::name`.
-
-#### ID
-
-The id is the bare name segment — what comes after the slash in `@org/<id>`. It is the **sigil-stripped `package.json::name`**: a scoped name like `@acme/marketing` carries both id and scope; a bare name like the scaffold default `src` gets the chosen scope prepended. `package.json::uniweb.id` records the registered id when you want it to differ from the workspace name.
-
-There is **no interactive name prompt and no `--name` flag** — the id follows `package.json`.
+A foundation with no resolvable scope is rejected — bare `@/…` names can't be registered.
 
 #### Renaming
 
 A registered version is immutable, so there is **no registry-rename flag**. To rename:
 
-- The **workspace package** (pnpm links, `file:` deps, `site.yml::foundation` refs) → `uniweb rename foundation <old> <new>`.
-- The **registered identity** → register under the new name; consuming sites repoint their `foundation:` ref, and the old versions stay reachable.
-
-`package.json::name` is a workspace concern; the registered id is a registry concern — keeping them separate (via `uniweb.id`) means a workspace rename never disturbs the registry, and vice versa.
+- The **workspace package** (pnpm links, `file:` deps, `site.yml::foundation` refs) → `uniweb rename foundation <old> <new>`. It does not change what the foundation registers as, once `main.js` names it.
+- The **registered name** → change `name` in `main.js` and register again; consuming sites repoint their `foundation:` ref, and the old versions stay reachable under the old name.
 
 ### Foundation runtime policy
 
