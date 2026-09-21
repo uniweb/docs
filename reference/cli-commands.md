@@ -31,6 +31,7 @@ uniweb refresh                 # Catch up with the git remote and the backend (n
 uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
 uniweb status                  # Show a site's sync state (unpushed content)
+uniweb forget --backend <url>  # Forget one backend (--all: make a copied project a new one)
 ```
 
 ---
@@ -1149,6 +1150,21 @@ A project can sync with more than one backend — say, a local development serve
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
+### Copying a project
+
+A copy made with `cp -r` carries the original's `sync.json`, so its first push would update the **original's** site. To start a new site from a copy, run [`uniweb forget --all`](#uniweb-forget) in the copy first.
+
+Until you do, a push or publish from either of the two is refused when both are in the same workspace:
+
+```
+✗ Another project in this workspace holds the same site on https://uniweb.app:
+    ../my-site
+  One of them is a copy of the other, so a push from either one updates that site.
+  In the copy, run:  uniweb forget --all
+```
+
+A copy placed outside the workspace cannot be told apart from a teammate's clone — both hold the same site, and for the clone that is correct — so there, running the command is up to you. `uniweb create --template` never copies a template's `sync.json` or `deploy.yml`: a project made from a template always starts as a new site.
+
 ### Options
 
 | Option | Description |
@@ -1293,7 +1309,7 @@ The **first** publish of a site also creates it on the backend, which decides wh
 | `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
 
-> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, and `status` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
 
 ---
 
@@ -1309,6 +1325,33 @@ uniweb status --json     # { synced, uuid, foundation, changed, unchanged }
 Run from a site, or a workspace with one site. The content diff is exactly what `uniweb push` would send — so `changed: 0` means a `push` would be a no-op.
 
 *(Richer signals — whether a newer foundation version is registered, and whether the synced draft differs from what's live — are added as the backend exposes them.)*
+
+---
+
+## uniweb forget
+
+Remove what this project recorded about where it synced — **local files only**. Every site stays where it is on its backend.
+
+```bash
+uniweb forget --backend <url>    # one backend
+uniweb forget --all              # everything — for a copy that should become a new project
+```
+
+**`--backend <url>`** removes that backend's section of `sync.json` and of the local cache, and the records of past publishes to it in `deploy.yml`. Its targets in `deploy.yml` stay — a target is where you chose to ship — so the next push or publish there creates a new site. Other backends are untouched. Use it when you are done with a backend: a scratch server you pushed a template to, or one you will start over on.
+
+**`--all`** deletes `sync.json`, `deploy.yml` and the local cache: everything that names the sites and destinations of the project this one was copied from. `deploy.yml` goes whole, targets included, because a copy's targets are the original's destinations. To duplicate a project:
+
+```bash
+cp -r my-site my-site-2
+cd my-site-2
+uniweb forget --all
+```
+
+The next push from the copy creates a new site. Neither form touches `site.yml` or your record files — a record's `$uuid` is its own id, not a backend's.
+
+`--backend` is required even when the project has synced with only one backend: forgetting a backend you still use means its next push creates a second site there, so you name it. Both forms are safe to repeat; nothing recorded means nothing to do.
+
+⚠️ `sync.json` and `deploy.yml` are committed files. If you run `--all` in the original by mistake, restore them from git.
 
 ---
 
