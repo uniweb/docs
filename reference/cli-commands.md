@@ -926,7 +926,7 @@ uniweb login [options]
 
 `--backend <url>` names it. Without the flag, `login` picks the backend of the project you are in (from its `sync.json`); outside a project, the one you are already logged in to, and when this machine knows several, it asks.
 
-⭐ **The backend you log in to last is where [`uniweb publish`](#uniweb-publish) goes.** Naming a backend you are already logged in to switches to it without asking you to log in again. `push` and `pull` follow the project first: a project synced with one backend pushes there, whoever you are logged in to.
+⭐ **The backend you log in to last is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — unless you pass `--backend`. Naming a backend you are already logged in to switches to it without asking you to log in again. Inside a project, a bare `uniweb login` picks the project's backend, so it is also how you point the CLI back at it.
 
 ### Options
 
@@ -946,7 +946,7 @@ Without a method flag, `login` asks which one to use. Without a terminal it need
 # Log in to the default backend, or the one your project uses
 uniweb login
 
-# Log in to a local development server — publish now goes there
+# Log in to a local development server — push, pull and publish now go there
 uniweb login --backend http://localhost:8080
 
 # Switch back to a backend you are already logged in to
@@ -1149,7 +1149,7 @@ uniweb push --personal      # your personal account, deliberately
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
 
-A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `push` and `pull` use the one on record; with several on record and no default target in `deploy.yml`, they ask you to name one with `--backend <url>`. `publish` goes to the backend you are logged in to — see [Where it goes](#where-it-goes-the-backend-you-are-logged-in-to).
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login) — or to `--backend <url>` for one run. Logged in nowhere, they use the one on record; with several on record and no default target in `deploy.yml`, they ask you to name one. If you are logged in to a backend where this project has no site while it has one elsewhere, `push` and `publish` say so before creating a new site there.
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
@@ -1299,7 +1299,7 @@ The **first** publish of a site also creates it on the backend, which decides wh
 
 ### Where it goes: the backend you are logged in to
 
-`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login). To go live somewhere else, log in there (`uniweb login --backend <url>`), or pass `--backend <url>` for one run. If you are not logged in anywhere, the project decides: the backend in its `sync.json`, or its default target in `deploy.yml`.
+`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --backend <url>`), or pass `--backend <url>` for one run. If you are not logged in anywhere, the project decides: the backend in its `sync.json`, or its default target in `deploy.yml`.
 
 The publish is recorded in `deploy.yml` under the target for that backend. If no target names it, one is added, named after the backend (`localhost:8080`, say); your `default:` and other targets are left alone. `uniweb deploy` with a Uniweb target goes to **that target's** backend instead — a target is an explicit destination.
 
