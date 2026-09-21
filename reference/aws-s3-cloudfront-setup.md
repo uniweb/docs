@@ -322,7 +322,7 @@ targets:
 
 Replace the four substitutions with your real values. Optional fields like `cacheRules` and `invalidationPaths` have sensible defaults; see [Deployment reference](deployment.md) for the full schema.
 
-The `lastDeploy:` block at the bottom of `deploy.yml` is auto-managed by `uniweb deploy` after each successful deploy. Don't edit it by hand.
+The `deploys:` block at the bottom of `deploy.yml` is auto-managed by `uniweb deploy` after each successful deploy. Don't edit it by hand.
 
 ---
 
@@ -333,7 +333,7 @@ cd path/to/your-site
 uniweb deploy
 ```
 
-The CLI runs build → preflight → S3 sync → CloudFront invalidation → writes `lastDeploy.<target>` to `deploy.yml`. You should see the distribution domain printed in the success output. Hit it in a browser:
+The CLI runs build → preflight → S3 sync → CloudFront invalidation → writes `deploys.<target>` to `deploy.yml`. You should see the distribution domain printed in the success output. Hit it in a browser:
 
 ```
 https://YOUR-DISTRIBUTION.cloudfront.net/

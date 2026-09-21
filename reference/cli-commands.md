@@ -1115,7 +1115,7 @@ uniweb login
 uniweb push
 ```
 
-Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` writes it into `site.yml::$uuid`); later pushes update it.
+Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` records it in [`sync.json`](#which-site-this-is--syncjson)); later pushes update it.
 
 **A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
 
@@ -1132,7 +1132,7 @@ The push that **creates** a site also decides which organization owns it, and th
   A new organization…
 ```
 
-Answer once and it is recorded in `site.yml::$org`, committed, and reused — you are never asked again for that site, on any machine. Skip the question by naming the owner up front:
+Answer once and it is recorded in `sync.json`, committed, and reused — you are never asked again for that site, on any machine. Skip the question by naming the owner up front:
 
 ```bash
 uniweb push --org @acme     # an organization
@@ -1140,6 +1140,14 @@ uniweb push --personal      # your personal account, deliberately
 ```
 
 **Without a terminal — CI, scripts, agents — the command refuses rather than choosing for you** (and `--yes` refuses too; it promises not to block, and guessing an owner is not an answer). Pass `--org` or `--personal`. Sites that already exist are never affected: their ownership is settled, so no prompt appears.
+
+### Which site this is — `sync.json`
+
+The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
+
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `--backend <url>` picks one; when only one is on record, it is picked for you.
+
+Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
 ### Options
 
@@ -1244,7 +1252,7 @@ uniweb login
 uniweb clone <site-uuid> [name|.]
 ```
 
-`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), seeds `site.yml::$uuid`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Sites are private — authenticate with `uniweb login` first.
+`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Sites are private — authenticate with `uniweb login` first.
 
 ### Options
 
@@ -1471,7 +1479,7 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 | `--host` (no value) | Open the wizard, even when `deploy.yml` records a target. |
 | `--target <name>` | Pick a named target from `deploy.yml` (default: its `default:` field). |
 | `--dry-run` | Show what would be deployed without deploying. |
-| `--no-save` | Skip the auto-save of `lastDeploy` in `deploy.yml`. |
+| `--no-save` | Skip recording this deploy under `deploys:` in `deploy.yml`. |
 | `--no-validate` | Skip the content-conformance check (it only warns; see [`uniweb validate`](#uniweb-validate)). |
 
 ### How the destination is resolved
@@ -1530,7 +1538,7 @@ Each adapter reads its own keys: `bucket` / `distributionId` / `region` for `s3-
 
 **Credentials are never read from `deploy.yml`** — it's a committed file. Host tokens come from the environment (`CLOUDFLARE_API_TOKEN`, `NETLIFY_AUTH_TOKEN`, `VERCEL_TOKEN`, the AWS credential chain) or from that host's own login session.
 
-`deploy` also maintains a `lastDeploy:` block recording when each target was last shipped to, and its URL where the host reports one. Turn that off per-run with `--no-save`, or permanently with `autoSave: off`.
+`deploy` also maintains a `deploys:` block recording when each target was last shipped to, and its URL where the host reports one. Turn that off per-run with `--no-save`, or permanently with `saveDeploys: false`.
 
 ### Static Hosting Alternative
 

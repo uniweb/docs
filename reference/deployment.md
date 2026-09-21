@@ -89,10 +89,10 @@ targets:
     # site publishes to (default: https://uniweb.app). `uniweb publish` records
     # it here on first publish; it overrides the logged-in backend for this site.
 
-autoSave: lastDeploy               # off | lastDeploy | full
+saveDeploys: true                  # false to stop recording deploys
 
 # Auto-managed by uniweb deploy on success — do not edit by hand.
-lastDeploy:
+deploys:
   production:
     at: 2026-05-05T18:22:11Z
     url: https://example.com
@@ -106,11 +106,11 @@ The `--host=<adapter>` CLI flag overrides the resolved target's host for one-off
 
 Static hosts come in three flavors. All are first-class, and most hosts support more than one — pick by who you want doing the building:
 
-- **CLI-push.** You run `uniweb deploy --host=<adapter>` locally; the CLI builds, then drives that host's own tool to upload (`wrangler`, `netlify`, `vercel`, `aws`, or `git` for GitHub Pages). State of record: `deploy.yml`'s `lastDeploy` block. Auth: your machine. **Every adapter except `generic-static` supports this.**
+- **CLI-push.** You run `uniweb deploy --host=<adapter>` locally; the CLI builds, then drives that host's own tool to upload (`wrangler`, `netlify`, `vercel`, `aws`, or `git` for GitHub Pages). State of record: `deploy.yml`'s `deploys` block. Auth: your machine. **Every adapter except `generic-static` supports this.**
 - **Scaffolded CI.** `uniweb add ci --host=<adapter>` commits a GitHub Actions workflow that builds and deploys on each push, plus a per-PR preview workflow where the host has a preview concept. State of record: your repo. Auth: repository secrets. Available for `github-pages`, `cloudflare-pages`, `netlify`, `vercel`.
 - **Git-driven (dashboard).** You connect the repo through the host's UI; the host runs `npx uniweb build` itself on each push. State of record: the host's dashboard. Auth: the host's GitHub integration. No workflow file, no secrets. Available for Vercel, Cloudflare Pages, and Netlify.
 
-For dashboard-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `lastDeploy:` block stays empty for dashboard-driven targets — the host's dashboard is the truth.
+For dashboard-driven hosts, `deploy.yml` is still useful — it declares which adapter the build uses, so the right `_redirects` / `.nojekyll` / etc. land in `dist/`. The build also auto-detects the CI host (`VERCEL=1`, `CF_PAGES=1`, `NETLIFY=true`) and picks the matching adapter without needing `--host`. The `deploys:` block stays empty for dashboard-driven targets — the host's dashboard is the truth.
 
 If you don't know which you want, run `uniweb deploy` with nothing configured; it lists the destinations and asks.
 

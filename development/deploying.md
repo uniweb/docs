@@ -405,7 +405,7 @@ targets:
     domain: staging.acme.com
 ```
 
-`uniweb deploy` resolves the target by precedence: `--target=<name>` flag → `default:` field → first key under `targets:`. `--host=<name>` overrides the resolved target's host for one-off experiments (no save). `--no-save` skips the auto-save of `lastDeploy` provenance.
+`uniweb deploy` resolves the target by precedence: `--target=<name>` flag → `default:` field → first key under `targets:`. `--host=<name>` overrides the resolved target's host for one-off experiments (no save). `--no-save` skips recording the deploy under `deploys:`.
 
 ### Combining hosts
 
