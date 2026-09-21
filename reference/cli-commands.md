@@ -1146,7 +1146,7 @@ uniweb push --personal      # your personal account, deliberately
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
 
-A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `--backend <url>` picks one; when only one is on record, it is picked for you.
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `--backend <url>` picks one; when only one is on record, it is picked for you. With several on record and no default target in `deploy.yml`, `push`, `pull` and `publish` stop and ask you to name one.
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
