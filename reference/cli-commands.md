@@ -916,7 +916,7 @@ uniweb i18n sync
 
 ## uniweb login
 
-Log in to a Uniweb backend. Each backend gets its own session, stored in `~/.uniweb/registry-auth.json`, so logging in to a second one — a local development server, say — keeps the first.
+Log in to a Uniweb backend. **You are logged in to one backend at a time:** logging in to another logs you out of the first, once the new login succeeds — a cancelled or failed login leaves you where you were. The session is stored in `~/.uniweb/registry-auth.json`; `uniweb logout` removes it.
 
 ```bash
 uniweb login [options]
@@ -926,7 +926,7 @@ uniweb login [options]
 
 `--backend <url>` names it. Without the flag, `login` logs in to **https://uniweb.app** (or `UNIWEB_REGISTER_URL`, when set) — to work with any other backend, name it.
 
-⭐ **The backend you log in to last is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — and logging in is how you switch between backends. Naming a backend you are already logged in to switches to it without logging in again; add `--password`, `--browser`, `--token-paste` or `--token` to log in again anyway. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_REGISTER_URL`, without touching the login.
+⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing; add `--password`, `--browser`, `--token-paste` or `--token` to log in again. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_REGISTER_URL`, without touching the login.
 
 ### Options
 
@@ -951,8 +951,11 @@ uniweb login
 # Log in to a local development server — push, pull and publish now go there
 uniweb login --backend http://localhost:8080
 
-# Switch back to a backend you are already logged in to
-uniweb login --backend https://uniweb.app
+# Switch back to the default backend (this logs you out of the local server)
+uniweb login
+
+# Log out — of the one backend you are logged in to
+uniweb logout
 ```
 
 ### When It's Needed
