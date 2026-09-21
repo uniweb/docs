@@ -335,7 +335,7 @@ It also reports a section whose page fetches data none of which fills the keys i
 - [Queries](../reference/queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`, external queries
 - [Data Fetching](../reference/data-fetching.md) — `query:` and `fetch:`, narrowing, what a section receives, `current:`
 - [Parametric Pages](../reference/dynamic-routes.md) — one page per record: which query a URL names, what it matches, `$route`
-- [Records](../reference/content-collections.md) — `records/`, `records.yml`, and what a compiled record holds
+- [Records](../reference/content-collections.md) — `records/`, its `folder.yml`, and what a compiled record holds
 - [Component Metadata → Data](../reference/component-metadata.md#data) — the `data:` declaration and its three value forms
 - [Data Sources](./data-sources.md) — public APIs, a host's live records, foundation transports, and secrets
 - [Component Data Patterns](./component-data-patterns.md) — when a component should fetch its own data instead

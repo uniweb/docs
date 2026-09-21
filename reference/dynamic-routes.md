@@ -574,7 +574,7 @@ by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
 `content.data.posts[0]`.
 
 **Where a record's URL comes from.** Its **placement** is the directory: the folder
-`records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record), or
+`records/folder.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record), or
 the top of the folder for a record no folder names.
 A record's `$route` and the static build's pages both compose `<placement>/<slug>`, so
 a record at the folder root is `/blog/my-post` and one placed under `rust/2025` is

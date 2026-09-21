@@ -20,17 +20,17 @@ site/
 │   ├── home/
 │   ├── about/
 │   └── blog/
-├── records/             ← 1. YOUR RECORDS — every file here is one
+├── records/             ← 1. YOUR RECORDS — every file in a schema folder is one
 │   ├── article/
 │   │   ├── getting-started.md
 │   │   ├── design-tips.md
 │   │   └── our-roadmap.md
-│   └── person/
-│       ├── alice.md
-│       ├── bob.md
-│       └── carol.md
+│   ├── person/
+│   │   ├── alice.md
+│   │   ├── bob.md
+│   │   └── carol.md
+│   └── folder.yml       ← 3. OPTIONAL — folders a query can read one of
 ├── queries.yml          ← 2. HOW THEY ARE REACHED
-├── records.yml          ← 3. OPTIONAL — folders a query can read one of
 └── site.yml
 ```
 
@@ -58,7 +58,7 @@ team:
   sort: order asc
 ```
 
-**3. `records.yml` — folders, when a query needs a slice.** Most sites have none. It sorts records into folders so a query can read one of them — see [Organizing Records into Folders](#organizing-records-into-folders).
+**3. `records/folder.yml` — folders, when a query needs a slice.** Most sites have none. It sits in `records/` beside the schema folders, the one file there that is not a record, and sorts records into folders so a query can read one of them — see [Organizing Records into Folders](#organizing-records-into-folders).
 
 The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Neither reaches a page until a query asks for it.
 
@@ -98,12 +98,12 @@ Most sites need none of this. The records are usually flat, and **queries do the
 organizing** — a `sort:`, a `where:`, a `limit:` is how you show one slice of them.
 
 Folders exist for one thing: so a query can ask for a **slice of the site's
-records** rather than all of them. They are declared in `records.yml`, not on disk.
-Every record sits at the top — `path: ""` — unless `records.yml` places it in a
+records** rather than all of them. They are declared in `records/folder.yml`, not as directories.
+Every record sits at the top — `path: ""` — unless `folder.yml` places it in a
 folder, so a record that belongs at the top needs no line:
 
 ```yaml
-# records.yml — news/announcement.md sits at the top, path: ""
+# records/folder.yml — news/announcement.md sits at the top, path: ""
 - folder: 2024
   label: 2024                   # a folder may carry a label; a record never does
   records:
@@ -697,13 +697,13 @@ queries:
 
 - **Filenames become URLs.** The file `design-tips.md` creates the slug `design-tips`, which becomes part of the URL (`/blog/design-tips`). Use lowercase, hyphen-separated names.
 
-- **Keep schema folders flat.** Put every file directly in its schema folder. `records/article/design-tips.md` works; `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. Group in `records.yml` instead.
+- **Keep schema folders flat.** Put every file directly in its schema folder. `records/article/design-tips.md` works; `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. Group in `records/folder.yml` instead.
 
 - **Items vs. records — a rule of thumb.** If you're writing content that fits naturally in one section (a few feature cards, a short FAQ), use items in a single markdown file. If the content is a growing catalog (blog posts, team members, products), use records.
 
 - **Use consistent frontmatter.** If your blog articles use `date`, `author`, and `tags`, add those fields to every article — even if some are optional. Consistency makes your content predictable and easier to maintain.
 
-- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `records/`, or change `records.yml` or `queries.yml`, and the site refreshes.
+- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `records/`, or change `records/folder.yml` or `queries.yml`, and the site refreshes.
 
 ---
 
@@ -713,7 +713,7 @@ queries:
 |---------------------|-------------|
 | Add records | Put files in `records/<schema>/` — every file there is a record |
 | Keep a file out | Start its name with `_` |
-| Organize them into folders | `- folder: archive` in `records.yml` (optional) |
+| Organize them into folders | `- folder: archive` in `records/folder.yml` (optional) |
 | Reach them | Add a query to `queries.yml` — `recent: { schema: '@/article' }` |
 | Sort them | `sort: date desc` or `sort: title asc` on the query |
 | Filter them | `where: { tags: featured }` on the query |

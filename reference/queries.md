@@ -123,7 +123,7 @@ defaults to the query name ([What a section receives](./data-fetching.md#what-a-
 
 ## `scope` — a branch of the folder
 
-`records.yml` can place records in folders ([Records → Folders](./content-collections.md#folders)),
+`records/folder.yml` can place records in folders ([Records → Folders](./content-collections.md#folders)),
 and each record carries the folder it sits in as `path`. `scope:` reads one branch:
 
 ```yaml
@@ -440,6 +440,6 @@ The build stops on each, with a message naming the replacement.
 
 - [Data Fetching](./data-fetching.md) — naming a query from a page or section, narrowing it, and what a section receives
 - [Parametric Pages](./dynamic-routes.md) — one page per record of a query
-- [Records](./content-collections.md) — `records/`, `records.yml`, and what a compiled record holds
+- [Records](./content-collections.md) — `records/`, its `folder.yml`, and what a compiled record holds
 - [Predicates](../authoring/predicates.md) — the `where` language by example, and saved views
 - [Data Sources](../development/data-sources.md) — external queries, a host's live records, and foundation transports

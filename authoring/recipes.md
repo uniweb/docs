@@ -918,5 +918,5 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
 - **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
 - **[Linking](./linking.md)** — Stable `page:` links
-- **[Records](./collections.md)** — How records work, the `records/` folder, `records.yml`, and a page per record
+- **[Records](./collections.md)** — How records work, the `records/` folder and its `folder.yml`, and a page per record
 - **[Search](./search.md)** — Search configuration

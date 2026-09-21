@@ -11,7 +11,7 @@ Three files answer three separate questions, and keeping them apart is the whole
 | | question | answer |
 |---|---|---|
 | `records/{schema}/` | what does this site **have**? | one file per record; the folder names its data schema |
-| `records.yml` | how is it **organized**? | optional — folders a query can read one of |
+| `records/folder.yml` | how is it **organized**? | optional — folders a query can read one of |
 | `queries.yml` | how is it **reached**? | named queries; a page names one |
 
 A page names a query, never a file. A site with no backend reads the file a build generates from the query in `public/data/`; the same site published to a host that serves records live reads them from there, with nothing in the page changed.
@@ -85,7 +85,7 @@ The query's records reach the page's sections whose component declares `articles
 
 ## The `records/` Folder
 
-Every file in `records/` is a record — putting it there is what makes it one. **The folder it sits in names its data schema:**
+Every file in a schema folder of `records/` is a record — putting it there is what makes it one. **The folder it sits in names its data schema:**
 
 | on disk | schema |
 |---|---|
@@ -93,20 +93,20 @@ Every file in `records/` is a record — putting it there is what makes it one. 
 | `records/std/person/alice.yml` | `@std/person` — the shared standard set |
 | `records/acme/project/cinder.json` | `@acme/project` — an organization's |
 
-A file whose name starts with `_` is not a record, and neither is anything in a folder whose name does — a place for work in progress. `site.yml` can move the folder: `paths: { records: ../shared/records }`.
+A file whose name starts with `_` is not a record, and neither is anything in a folder whose name does — a place for work in progress. The one file at the top of `records/` is [`folder.yml`](#folders), its organization; any other file there names no schema and is reported. `site.yml` can move the folder, `folder.yml` included: `paths: { records: ../shared/records }`.
 
-Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records.yml` instead.
+Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records/folder.yml` instead.
 
 A data schema gives records a typed shape, used for validation, field defaults and i18n extraction. When a query's schema marks a section `brief: true`, lists of that query leave the other fields out — see [Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out).
 
 ---
 
-## Folders: `records.yml`
+## Folders: `records/folder.yml`
 
-`records.yml` is optional. **Folders exist so a query can read a branch**, not to build a navigation tree, and most sites need none. Every record sits at the top of the site's records folder unless `records.yml` places it in one:
+`records/folder.yml` is optional. **Folders exist so a query can read a branch**, not to build a navigation tree, and most sites need none. Every record sits at the top of the site's records folder unless `folder.yml` places it in one:
 
 ```yaml
-# records.yml
+# records/folder.yml
 - folder: archive
   label: The Archive            # only a folder takes a label; a record has its own title
   records:
@@ -117,7 +117,9 @@ A path under a folder is relative to `records/`, naming one file or matching man
 
 **A record sits in one folder.** Placing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 
-`records.yml` never lists records at the top level — every file in `records/` is a record already — so a path there is reported as an error. A `records.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
+`folder.yml` never lists records at the top level — every record in `records/` is one already — so a path there is reported as an error. A `folder.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
+
+It lives in the directory it organizes, the way a pages folder's `folder.yml` does: it moves with `paths.records`, and a records directory that several sites share brings its folders with it. A `records.yml` at the site root — where this file lived before — stops the build and names the move: `git mv records.yml records/folder.yml`.
 
 ### With a backend
 
@@ -141,7 +143,7 @@ Records pushed to a backend are served once the site is published.
 | `.json` | a data record, or many | an object: `slug` and its fields. An array: each entry, as written |
 | `.bib` | bibliographic references | one record per `@entry`, its cite key as `slug` |
 
-Every record also carries `path`, its folder in `records.yml`, and `$name`, its handle. A single schema folder can hold all of them: some team members with a markdown bio, others as plain YAML.
+Every record also carries `path`, its folder in `records/folder.yml`, and `$name`, its handle. A single schema folder can hold all of them: some team members with a markdown bio, others as plain YAML.
 
 ### Markdown
 
@@ -210,7 +212,7 @@ A record with `draft: true` is still a record — it stays in `records/` and in 
 |-------|--------|-------|
 | `slug` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` field overrides it |
 | `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
-| `path` | `records.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
+| `path` | `records/folder.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
 | `content` | Markdown body | ProseMirror JSON |
 | `excerpt` | Frontmatter or body | Markdown records — see [Excerpts](#excerpts) |
 | `image` | Frontmatter or body | Markdown records — see [Images](#images) |
@@ -371,7 +373,7 @@ During development (`pnpm dev`):
 
 - `records/` is watched: a record added, edited or removed regenerates the query files, and the page reloads.
 - The runtime fetches local records live, as it would from a host, so what you see matches production.
-- `site.yml`, `queries.yml` and `records.yml` are watched too: an edit regenerates the query files and reloads, including a `records.yml` created while the server runs.
+- `site.yml`, `queries.yml` and `records/folder.yml` are watched too: an edit regenerates the query files and reloads, including a `folder.yml` created while the server runs.
 
 During a production build (`pnpm build`), each query compiles to `public/data/<query>.json` before the Vite build, and the files are included in `dist/`.
 
@@ -384,12 +386,13 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 | A query's schema folder is missing | Warning logged, the query has no records |
 | A query matching no records | Warning logged, the query answers `[]` |
 | Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
-| A `records.yml` that is not a list | The build stops, naming the problem |
+| A `records/folder.yml` that is not a list | The build stops, naming the problem |
+| A `records.yml` at the site root | The build stops, naming the move to `records/folder.yml` |
 | A record with `draft: true` | Left out of a build for hosting, kept in `pnpm dev`; `uniweb push` stops at it |
 | A record with `published: false` | The build stops, naming `draft: true` |
 | Sorting by a field some records lack | Those records sort last, in either direction |
 | A folder two levels deep in `records/` | Names an organization's schema |
-| A path at the top level of `records.yml` | Reported as an error; every record in `records/` is one already |
+| A path at the top level of `records/folder.yml` | Reported as an error; every record in `records/` is one already |
 | A folder three or more levels deep | Skipped, with a warning |
 
 ---
