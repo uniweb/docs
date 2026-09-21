@@ -447,6 +447,6 @@ Secrets do not belong in `site.yml` — values here are public to the browser. S
 - [Queries](./queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`, `queryable`, external queries
 - [Parametric Pages](./dynamic-routes.md) — one page per record of a query
 - [Working with Data](../development/working-with-data.md) — one query used across a site, section by section
-- [Records](./content-collections.md) — `entities/`, `records.yml`, and what a compiled record holds
+- [Records](./content-collections.md) — `records/`, `records.yml`, and what a compiled record holds
 - [Component Metadata](./component-metadata.md) — the `meta.js` reference, `data:` included
 - [Data Sources](../development/data-sources.md) — an external query, a host's records, a transport, secrets

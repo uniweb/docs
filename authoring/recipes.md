@@ -550,18 +550,13 @@ queries:
     sort: date desc
 ```
 
-**2. Add article files** in `entities/article/`, and publish them in `records.yml`:
+**2. Add article files** in `records/article/` — every file there is a record:
 
 ```
-entities/article/
+records/article/
 ├── hello-world.md
 ├── new-feature.md
 └── tips-and-tricks.md
-```
-
-```yaml
-# records.yml
-- article/*.md
 ```
 
 Each article has frontmatter:
@@ -923,5 +918,5 @@ You can put as many scripts as you need in `head.html`. Just paste them one afte
 - **[Writing Content](./writing-content.md)** — Full guide to writing content
 - **[Layout Areas](../reference/layout-areas.md)** — Header, footer, and sidebar details
 - **[Linking](./linking.md)** — Stable `page:` links
-- **[Records](./collections.md)** — How records work, the `entities/` pool, `records.yml`, and a page per record
+- **[Records](./collections.md)** — How records work, the `records/` folder, `records.yml`, and a page per record
 - **[Search](./search.md)** — Search configuration

@@ -20,7 +20,7 @@ A theming environment applied per-section. The runtime wraps each section in a c
 The shape of a content type — the fields a `person` or an `article` has. A component names a schema for each `content.data` key it declares (`data: { team: '@std/person' }`), and a query names the schema whose records it reads. The runtime applies its field defaults, `uniweb validate` checks records against it, and the editor builds its form from it. Refs name a namespace: `@/name` (the foundation's own), `@std/name` (the shared standards), `@org/name` (an organization's). See [Data Schemas](../development/data-schemas).
 
 **Entity**
-One stored thing — an article, a person, a product — written as a file in `entities/`, in the folder named for its data schema (`entities/std/article/`). An entity `records.yml` publishes is a record. See [Records](./content-collections).
+What a backend calls one stored thing of a data schema. In a site the word is [record](#record): a file in `records/`.
 
 **Extension**
 A secondary foundation loaded at runtime via URL. Contributes section types but doesn't provide layouts or theme variables. Declared in `site.yml` under `extensions:`. See [Extending Your Site](../development/extending-your-site).
@@ -62,7 +62,7 @@ Who or what supplies a service — often the host, sometimes a third party, some
 A named question over the site's records, declared in `queries.yml` (or under `queries:` in `site.yml`): which records (`schema`, `scope`, `where`), in what order (`sort`), how many (`limit`) — or a public JSON endpoint (`url:`). The records it selects are its set. Pages and sections name queries; they never read a file or a URL. See [Queries](./queries).
 
 **Record**
-An entity the site publishes — listed in `records.yml` — and what a query returns: a blog post, a team member, a product. A component receives records as a list under a `content.data` key, each carrying `$route`, the URL of the page that shows it. See [Records](./content-collections).
+One item of the site's repeating content — a blog post, a team member, a product — written as a file in `records/`, in the folder named for its data schema (`records/std/article/`). Putting a file there is what makes it a record, and records are what a query returns. A component receives records as a list under a `content.data` key, each carrying `$route`, the URL of the page that shows it. See [Records](./content-collections).
 
 **Route query**
 The query whose records a parametric page's URLs name — the page's own, else its parent page's, else the site's for a top-level page. A parametric page has a URL for each record of its route query's set and no other. See [Parametric Pages](./dynamic-routes#which-query-the-url-names).

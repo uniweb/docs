@@ -493,7 +493,7 @@ Built the platform from scratch.
 ![](jane.jpg)
 ```
 
-Or name a query in the section's frontmatter — records in `entities/`, or a public API declared as an external query:
+Or name a query in the section's frontmatter — records in `records/`, or a public API declared as an external query:
 
 ```markdown
 ---

@@ -193,7 +193,7 @@ If you find yourself writing the same predicate in multiple places, save it. A s
 
 ```
 site/
-└── entities/
+└── records/
     └── view/
         ├── tenured-biology.yml
         ├── recent-hires.yml
@@ -203,7 +203,7 @@ site/
 Each file is a record:
 
 ```yaml
-# entities/view/tenured-biology.yml
+# records/view/tenured-biology.yml
 name: Tenured Biology
 description: Tenured members of the Department of Biology.
 where:

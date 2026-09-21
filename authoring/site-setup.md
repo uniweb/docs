@@ -239,7 +239,7 @@ queries:
     sort: order asc
 ```
 
-Each markdown file in `entities/article/` that `records.yml` publishes — every one, if the site has no `records.yml` — is a record the `articles` query returns, sorted by date. A page names the query (`query: articles`), and its template's components display the records.
+Each markdown file in `records/article/` is a record the `articles` query returns, sorted by date. A page names the query (`query: articles`), and its template's components display the records.
 
 For the full guide, see [Working with Records](./collections.md). For technical details, see [Records](../reference/content-collections.md) and [Queries](../reference/queries.md).
 
@@ -274,7 +274,7 @@ If your site's header, footer or top-level pages need shared data — like share
 query: config
 ```
 
-If `config` is a query over records in `entities/config/`, this makes them available to the layout areas (header, footer, …) and to the sections of the pages directly under `pages/`. Components that expect `config` data will receive it automatically. A page further down, such as `/docs/setup`, doesn't receive it — a section there that needs the data names the query itself.
+If `config` is a query over records in `records/config/`, this makes them available to the layout areas (header, footer, …) and to the sections of the pages directly under `pages/`. Components that expect `config` data will receive it automatically. A page further down, such as `/docs/setup`, doesn't receive it — a section there that needs the data names the query itself.
 
 If the data comes from a public API instead, declare `config` as an external query — a query with `url:` — and name it the same way:
 

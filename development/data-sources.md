@@ -1,6 +1,6 @@
 # Data Sources
 
-Most Uniweb sites start with records in `entities/`, named by queries in `queries.yml`. That is enough for blogs, docs and marketing sites: a static build turns each query into a file the site reads, and a site published to a host that serves records live reads the same queries from there, without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.
+Most Uniweb sites start with records in `records/`, named by queries in `queries.yml`. That is enough for blogs, docs and marketing sites: a static build turns each query into a file the site reads, and a site published to a host that serves records live reads the same queries from there, without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.
 
 > ⛔ **Not what you want if you mean accounts.** This guide is about **content** — records the
 > same for every visitor. If you want members who sign in, per-visitor data, or content your
@@ -17,7 +17,7 @@ This guide says which of four shapes you are in, and what each one asks of you. 
 
 | your records come from | what you write | who evaluates `where:` / `sort:` / `limit:` |
 |---|---|---|
-| **the site itself** — `entities/`, compiled to `/data/*.json` | a query, named by a `fetch:` or `query:`; nothing else | the framework, in the browser |
+| **the site itself** — `records/`, compiled to `/data/*.json` | a query, named by a `fetch:` or `query:`; nothing else | the framework, in the browser |
 | **a Uniweb host** that serves records live | the same query and the same `fetch:`; the host stamps where its records are | the host, which answers the query |
 | **a public JSON endpoint** | an **external query** — a query with `url:` — named the same way | the framework, in the browser, over what arrived |
 | **an API with its own base, headers, wire or query language** | a **transport** in the foundation, selected by the site | the transport |

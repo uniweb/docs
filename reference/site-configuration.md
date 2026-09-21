@@ -75,7 +75,7 @@ placeholders:
 paths:
   pages: ../docs/pages             # Default: pages/
   layout: ../docs/layout           # Default: layout/
-  entities: ../content             # Default: entities/
+  records: ../content              # Default: records/
 ```
 
 ---
@@ -1157,13 +1157,13 @@ Once a foundation is wired, placeholders are the simplest thing you can write �
 
 ## Custom Content Paths
 
-By default, site content is read from standard directories relative to the site root: `pages/`, `layout/`, and `entities/`. You can override these locations using the `paths:` group in `site.yml`:
+By default, site content is read from standard directories relative to the site root: `pages/`, `layout/`, and `records/`. You can override these locations using the `paths:` group in `site.yml`:
 
 ```yaml
 paths:
   pages: ../shared-content/pages
   layout: ../shared-content/layout
-  entities: ../shared-content/entities
+  records: ../shared-content/records
 ```
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
@@ -1216,7 +1216,7 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 - **Existing docs** — Point `pages` at an existing folder of markdown files
 - **Mixed sources** — Some pages local, others from external repos via per-subfolder mounting
 
-When `paths.entities` is set, every query reads its records from that pool instead of `entities/` at the site root.
+When `paths.records` is set, every file in that directory is a record — for a build and for `uniweb push` and `pull` alike — instead of `records/` at the site root.
 
 ### Editing external content in dev
 
@@ -1328,7 +1328,7 @@ queries:
 
 - [Page Configuration](./page-configuration.md) — page.yml reference
 - [Queries](./queries.md) — Everything a query can say
-- [Records](./content-collections.md) — `entities/`, `records.yml`, and compiled records
+- [Records](./content-collections.md) — `records/`, `records.yml`, and compiled records
 - [Data Fetching](./data-fetching.md) — Naming a query from a page or section
 - [Site Search](../authoring/search.md) — Full-text search setup
 - [Internationalization](../development/internationalization.md) — Multi-language support

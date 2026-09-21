@@ -12,15 +12,10 @@ This guide builds progressively: simple substitution first, then aggregation, th
 
 Four things connect a section to its data:
 
-**1. Records in `entities/`, published by `records.yml`, reached by a query:**
+**1. Records in `records/`, reached by a query** — every file in `records/profile/` is a `@/profile` record:
 
 ```yaml
-# records.yml — listing an entity is what makes it a record
-- profile/*.yml
-```
-
-```yaml
-# queries.yml — a query names a schema; the published records of that schema are its rows
+# queries.yml — a query names a schema; the site's records of that schema are its rows
 profile:
   schema: '@/profile'
 ```
@@ -56,7 +51,7 @@ type: Header
 {title} -- {affiliation}
 ```
 
-The `profile` query delivers the published records of `@/profile` — here, the one file in `entities/profile/` — under the `profile` key. The content handler resolves `{first_name}` against that record before the component sees the content.
+The `profile` query delivers the site's records of `@/profile` — here, the one file in `records/profile/` — under the `profile` key. The content handler resolves `{first_name}` against that record before the component sees the content.
 
 ---
 
@@ -65,7 +60,7 @@ The `profile` query delivers the published records of `@/profile` — here, the 
 Any `{field_name}` in the markdown is replaced with the corresponding value from the data. Given this data:
 
 ```yaml
-# entities/profile/darwin.yml
+# records/profile/darwin.yml
 first_name: Charles
 family_name: Darwin
 role: Naturalist
@@ -206,7 +201,7 @@ The `cv-loom` template demonstrates the full pattern — a complete academic CV 
 npx uniweb create --template cv-loom
 ```
 
-The template includes: a profile record (`entities/profile/darwin.yml`), a foundation with `createLoomHandlers` and `data: { profile: {} }`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
+The template includes: a profile record (`records/profile/darwin.yml`), a foundation with `createLoomHandlers` and `data: { profile: {} }`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
 
 ---
 

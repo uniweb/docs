@@ -75,7 +75,7 @@ A query over the site's records:
 
 | key | says |
 |---|---|
-| `schema` | which records — the data schema whose entities the query reads. Defaults to `@/<query name>` ([below](#schema--which-records)) |
+| `schema` | which records — the data schema whose records the query reads. Defaults to `@/<query name>` ([below](#schema--which-records)) |
 | `scope` | a branch of the site's folder: records placed in it and below ([below](#scope--a-branch-of-the-folder)) |
 | `where` | a condition the records must meet ([below](#where--which-records-match)) |
 | `sort` | the order, by one field ([below](#sort--in-what-order)) |
@@ -104,13 +104,13 @@ refused without it.
 ## `schema` — which records
 
 `schema:` names the data schema whose records the query reads. The records of a schema are the
-files in `entities/` under the folder the schema names, and published by `records.yml`:
+files in `records/` under the folder the schema names:
 
 | `schema` | its records sit in | the schema comes from |
 |---|---|---|
-| `@/article` | `entities/article/` | the foundation's own `schemas/article` |
-| `@std/person` | `entities/std/person/` | the shared standard schemas, `@uniweb/schemas` |
-| `@acme/project` | `entities/acme/project/` | the `@acme` organization's schemas |
+| `@/article` | `records/article/` | the foundation's own `schemas/article` |
+| `@std/person` | `records/std/person/` | the shared standard schemas, `@uniweb/schemas` |
+| `@acme/project` | `records/acme/project/` | the `@acme` organization's schemas |
 
 Leave `schema:` out when the query's name is the schema's: `events:` reads `@/events`. Any number of
 queries can read one schema — that is how one set of records is shown two ways.
@@ -440,6 +440,6 @@ The build stops on each, with a message naming the replacement.
 
 - [Data Fetching](./data-fetching.md) — naming a query from a page or section, narrowing it, and what a section receives
 - [Parametric Pages](./dynamic-routes.md) — one page per record of a query
-- [Records](./content-collections.md) — `entities/`, `records.yml`, and what a compiled record holds
+- [Records](./content-collections.md) — `records/`, `records.yml`, and what a compiled record holds
 - [Predicates](../authoring/predicates.md) — the `where` language by example, and saved views
 - [Data Sources](../development/data-sources.md) — external queries, a host's live records, and foundation transports

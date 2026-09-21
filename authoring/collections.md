@@ -1,6 +1,6 @@
 # Working with Records
 
-Records let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each one in its own file (or, for BibTeX, drop in the file your reference manager already exports), say which ones are published, and the framework delivers them to your components as structured data.
+Records let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each one in its own file (or, for BibTeX, drop in the file your reference manager already exports) in your site's `records/` folder, and the framework delivers them to your components as structured data.
 
 This guide covers everything you need to know as a content author. No coding required.
 
@@ -20,7 +20,7 @@ site/
 │   ├── home/
 │   ├── about/
 │   └── blog/
-├── entities/            ← 1. THE POOL — everything this site has
+├── records/             ← 1. YOUR RECORDS — every file here is one
 │   ├── article/
 │   │   ├── getting-started.md
 │   │   ├── design-tips.md
@@ -29,34 +29,22 @@ site/
 │       ├── alice.md
 │       ├── bob.md
 │       └── carol.md
-├── records.yml          ← 2. WHAT IS PUBLISHED
-├── queries.yml          ← 3. HOW IT IS REACHED
+├── queries.yml          ← 2. HOW THEY ARE REACHED
+├── records.yml          ← 3. OPTIONAL — folders a query can read one of
 └── site.yml
 ```
 
-**1. `entities/{schema}/` — the pool.** Each file is one entity, and the folder it sits in names its **data schema**:
+**1. `records/{schema}/` — your records.** Putting a file here is what makes it a record; nothing else lists it. The folder it sits in names its **data schema**:
 
 | on disk | schema |
 |---|---|
-| `entities/article/…` | `@/article` — your foundation's own |
-| `entities/std/person/…` | `@std/person` — the shared standard set |
-| `entities/acme/project/…` | `@acme/project` — an organization's |
+| `records/article/…` | `@/article` — your foundation's own |
+| `records/std/person/…` | `@std/person` — the shared standard set |
+| `records/acme/project/…` | `@acme/project` — an organization's |
 
-Keep those folders flat. `entities/article/design-tips.md` works; `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant.
+Keep those folders flat. `records/article/design-tips.md` works; `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. A file whose name starts with `_` is not a record — somewhere to keep work in progress.
 
-**2. `records.yml` — what is published.** A file in `entities/` exists; **listing it here is what makes it a record.** Anything you leave out is a draft, with no flag to set. The common case is two or three lines:
-
-```yaml
-# records.yml
-- article/*.md
-- person/*.md
-```
-
-A bare string is a path under `entities/`, naming one file or matching many.
-
-> **An empty `records.yml` is not the same as having none.** Without the file, building the site publishes every entity in `entities/`, and `uniweb push` leaves the records already published where they are. An empty file means "nothing is published": the build publishes none, and a push **removes** what was — the CLI asks before it does that.
-
-**3. `queries.yml` — how content is reached.** A page never walks the pool; it asks a **named query** for a set of records. A query names a schema, and the published records of that schema are its rows:
+**2. `queries.yml` — how content is reached.** A page never walks the records; it asks a **named query** for a set of them. A query names a schema, and the site's records of that schema are its rows:
 
 ```yaml
 # queries.yml
@@ -70,7 +58,11 @@ team:
   sort: order asc
 ```
 
-The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Once the site has a `records.yml`, neither is *published* until it lists them, and neither reaches a page until a query asks for it.
+**3. `records.yml` — folders, when a query needs a slice.** Most sites have none. It sorts records into folders so a query can read one of them — see [Organizing Records into Folders](#organizing-records-into-folders).
+
+The file `getting-started.md` becomes the article "Getting Started." The file `alice.md` becomes the team member "Alice." Neither reaches a page until a query asks for it.
+
+> **With a backend**, `uniweb push` sends every record in `records/`, and they are served once the site is published. A site with no `records/` folder leaves the backend's records alone; an *empty* `records/` folder removes them — the CLI asks before it does that.
 
 ---
 
@@ -102,16 +94,16 @@ Format-specific niceties: markdown items get auto-generated excerpts and first-i
 
 ## Organizing Records into Folders
 
-Most sites need none of this. The pool is usually flat, and **queries do the
-organizing** — a `sort:`, a `where:`, a `limit:` is how you show one slice of it.
+Most sites need none of this. The records are usually flat, and **queries do the
+organizing** — a `sort:`, a `where:`, a `limit:` is how you show one slice of them.
 
-Folders exist for one thing: so a query can ask for a **slice of the published
-set** rather than all of it. They are declared in `records.yml`, not on disk:
+Folders exist for one thing: so a query can ask for a **slice of the site's
+records** rather than all of them. They are declared in `records.yml`, not on disk.
+Every record sits at the top — `path: ""` — unless `records.yml` places it in a
+folder, so a record that belongs at the top needs no line:
 
 ```yaml
-# records.yml
-- news/announcement.md          # at the root — path: ""
-
+# records.yml — news/announcement.md sits at the top, path: ""
 - folder: 2024
   label: 2024                   # a folder may carry a label; a record never does
   records:
@@ -125,8 +117,8 @@ set** rather than all of it. They are declared in `records.yml`, not on disk:
     - news/retrospective.md     # path: "2023"
 ```
 
-Every record carries a `path` naming the folder it sits in, and they all stay in
-the same pool — a query over `@/news` still reaches all of them. Folders do not
+Every record carries a `path` naming the folder it sits in, and they all stay
+records of the site — a query over `@/news` still reaches all of them. Folders do not
 split anything, and they change a record's URL only under a
 [`[...path]`](../reference/dynamic-routes.md#multi-segment-routes--path) page, which
 puts the folder in it.
@@ -254,7 +246,7 @@ Previously at Figma and Google. Speaker at Config and SmashingConf.
 For a team member, the bio is short and there's no long-form prose — YAML is often cleaner:
 
 ```yaml
-# entities/person/alice-park.yml
+# records/person/alice-park.yml
 title: Alice Park
 role: Lead Designer
 image: ./alice.jpg
@@ -266,24 +258,11 @@ Notice the differences: the article has `date`, `tags`, and `author`; the team m
 
 ---
 
-## Publishing Records, and Declaring Queries
-
-Two files, two questions.
-
-### `records.yml` — which entities are published
-
-```yaml
-- article/*.md
-- person/*.md
-```
-
-That's it. Each line is a path under `entities/`, naming one file or matching
-many. Listing an entity is what makes it a **record**; leave one out and it stays
-a draft that nothing can reach.
+## Declaring Queries
 
 ### `queries.yml` — how pages ask for records
 
-A query names a schema, and the published records of that schema are its rows:
+A query names a schema, and the site's records of that schema are its rows:
 
 ```yaml
 recent:
@@ -482,7 +461,7 @@ title: Blog
 query: articles
 ```
 
-The `[slug]` folder tells the site: "For each record the query returns, create a page." The article at `entities/article/design-tips.md` becomes the page `/blog/design-tips`. The one at `entities/article/getting-started.md` becomes `/blog/getting-started`.
+The `[slug]` folder tells the site: "For each record the query returns, create a page." The article at `records/article/design-tips.md` becomes the page `/blog/design-tips`. The one at `records/article/getting-started.md` becomes `/blog/getting-started`.
 
 **The query decides which records get a page.** A query with `limit: 100` gives the 100 records it selects a page each, and no other; a `where:` on the query does the same. A `limit:` or `where:` on a section's `fetch:` only changes what that section shows.
 
@@ -551,7 +530,7 @@ When you're ready to publish, change `published: false` to `published: true` or 
 You can store images and other files right next to your markdown files. This keeps everything for one item in the same place.
 
 ```
-entities/article/
+records/article/
 ├── design-tips.md
 ├── design-tips-cover.jpg     ← Cover image for the article
 ├── spacing-diagram.svg       ← Diagram used in the article
@@ -572,7 +551,7 @@ image: ./design-tips-cover.jpg
 
 The `./` means "in the same folder as this file." The build processes these references automatically — you don't need to worry about where the files end up in the final site.
 
-**Tip:** Name your images to match the markdown file they belong to. `design-tips-cover.jpg` clearly belongs to `design-tips.md`. This keeps things organized as your pool grows.
+**Tip:** Name your images to match the markdown file they belong to. `design-tips-cover.jpg` clearly belongs to `design-tips.md`. This keeps things organized as your records grow.
 
 ---
 
@@ -583,7 +562,7 @@ Records work for any repeating content, not just articles. Here are a few common
 ### Team directory
 
 ```
-entities/person/
+records/person/
 ├── alice-park.md
 ├── bob-silva.md
 └── carol-wu.md
@@ -611,7 +590,7 @@ queries:
 ### Product catalog
 
 ```
-entities/product/
+records/product/
 ├── starter-plan.md
 ├── pro-plan.md
 └── enterprise-plan.md
@@ -640,7 +619,7 @@ queries:
 ### Case studies
 
 ```
-entities/case/
+records/case/
 ├── acme-corp.md
 ├── globex.md
 └── initech.md
@@ -716,13 +695,13 @@ queries:
 
 - **Filenames become URLs.** The file `design-tips.md` creates the slug `design-tips`, which becomes part of the URL (`/blog/design-tips`). Use lowercase, hyphen-separated names.
 
-- **Keep schema folders flat.** Put every file directly in its schema folder. `entities/article/design-tips.md` works; `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. Group in `records.yml` instead.
+- **Keep schema folders flat.** Put every file directly in its schema folder. `records/article/design-tips.md` works; `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization, which is not what you meant. Group in `records.yml` instead.
 
 - **Items vs. records — a rule of thumb.** If you're writing content that fits naturally in one section (a few feature cards, a short FAQ), use items in a single markdown file. If the content is a growing catalog (blog posts, team members, products), use records.
 
 - **Use consistent frontmatter.** If your blog articles use `date`, `author`, and `tags`, add those fields to every article — even if some are optional. Consistency makes your content predictable and easier to maintain.
 
-- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `entities/`, or change `records.yml` or `queries.yml`, and the site refreshes.
+- **Preview with `pnpm dev`.** Records update automatically during development: add or edit a file in `records/`, or change `records.yml` or `queries.yml`, and the site refreshes.
 
 ---
 
@@ -730,8 +709,9 @@ queries:
 
 | What you want to do | How to do it |
 |---------------------|-------------|
-| Add records | Put files in `entities/<schema>/` |
-| Publish them | List them in `records.yml` — `- article/*.md` |
+| Add records | Put files in `records/<schema>/` — every file there is a record |
+| Keep a file out | Start its name with `_` |
+| Organize them into folders | `- folder: archive` in `records.yml` (optional) |
 | Reach them | Add a query to `queries.yml` — `recent: { schema: '@/article' }` |
 | Sort them | `sort: date desc` or `sort: title asc` on the query |
 | Filter them | `where: { published: { ne: false } }` on the query |

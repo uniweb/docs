@@ -97,7 +97,7 @@ The same structure, four authoring formats.
 ### YAML
 
 ```yaml
-# entities/product/widget-x.yml   → slug "widget-x"
+# records/product/widget-x.yml    → slug "widget-x"
 title: "Widget X"
 price: 9.99
 published: 2026-04-12

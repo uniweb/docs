@@ -39,11 +39,12 @@ URL names one record of it.
 
 ### 1. Write the records
 
-Markdown files under `entities/`, in the folder the schema names — `entities/std/article/`
-for the standard `@std/article`. The filename stem becomes the `slug`.
+Markdown files under `records/`, in the folder the schema names — `records/std/article/`
+for the standard `@std/article`. Every file there is a record, and its filename stem
+becomes the `slug`.
 
 ```markdown
-<!-- entities/std/article/getting-started.md -->
+<!-- records/std/article/getting-started.md -->
 ---
 title: Getting Started with Uniweb
 excerpt: Learn the basics...
@@ -55,7 +56,7 @@ Your article content here...
 ```
 
 ```markdown
-<!-- entities/std/article/advanced-features.md -->
+<!-- records/std/article/advanced-features.md -->
 ---
 title: Advanced Features
 excerpt: Deep dive into...
@@ -64,14 +65,6 @@ date: 2025-01-20
 ---
 
 Your article content here...
-```
-
-`records.yml` says which entities are published. Without it, a build publishes every
-entity in `entities/`; with it, only what it lists:
-
-```yaml
-# records.yml
-- std/article/*.md
 ```
 
 ### 2. Declare the query
@@ -261,7 +254,7 @@ The folder's name says what the segment matches:
 | `[id]` | `/products/:id` | the record's own `id` field |
 | `[username]` | `/users/:username` | the record's own `username` field |
 
-Records compiled from `entities/` carry `$name`, the same value as their `slug`:
+Records compiled from `records/` carry `$name`, the same value as their `slug`:
 the filename, unless frontmatter sets `slug:`. A host that answers queries serves
 `$name` too, so a `[slug]` page matches the same way on every site. Values compare
 as strings — `/products/42` matches a record whose `id` is the number `42`.
@@ -581,7 +574,8 @@ by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
 `content.data.posts[0]`.
 
 **Where a record's URL comes from.** Its **placement** is the directory: the folder
-`records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record).
+`records.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record), or
+the top of the folder for a record no folder names.
 A record's `$route` and the static build's pages both compose `<placement>/<slug>`, so
 a record at the folder root is `/blog/my-post` and one placed under `rust/2025` is
 `/blog/rust/2025/my-post`.
@@ -658,9 +652,8 @@ no longer read (the build warns). `uniweb validate` reports a section on a page 
 fetches data none of which fills its keys.
 
 **The query delivers nothing at all.**
-A query must be declared in `queries.yml` or `site.yml::queries`. Records on disk
-are not reachable until a query names their Model — and, when the site has a
-`records.yml`, until it lists them.
+A query must be declared in `queries.yml` or `site.yml::queries`. Records in
+`records/` are not reachable until a query names their Model.
 
 **`/articles` shows an article instead of the list.**
 The list's sections are in a subfolder. `pages/articles/index/` is the page

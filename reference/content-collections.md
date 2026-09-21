@@ -1,8 +1,8 @@
 # Records
 
-Blog posts, team members, schedules, references — any repeating structured content — are **records**: one file each in `entities/`, published by `records.yml`, and reached by a query. `.md` holds rich content with body text, `.yml`/`.yaml` pure structured data, `.json` data exported from another tool, and `.bib` bibliographic references.
+Blog posts, team members, schedules, references — any repeating structured content — are **records**: one file each in `records/`, reached by a query. `.md` holds rich content with body text, `.yml`/`.yaml` pure structured data, `.json` data exported from another tool, and `.bib` bibliographic references.
 
-This page covers the records themselves: where they live, how they are published, and what a compiled record holds. What a query can say about them is [Queries](./queries.md); how a page names a query is [Data Fetching](./data-fetching.md).
+This page covers the records themselves: where they live, how they are organized, and what a compiled record holds. What a query can say about them is [Queries](./queries.md); how a page names a query is [Data Fetching](./data-fetching.md).
 
 ## The Data Layer
 
@@ -10,34 +10,35 @@ Three files answer three separate questions, and keeping them apart is the whole
 
 | | question | answer |
 |---|---|---|
-| `entities/{schema}/` | what does this site **have**? | one file per entity; the folder names its data schema |
-| `records.yml` | what is **published**? | a list — listing an entity makes it a record |
+| `records/{schema}/` | what does this site **have**? | one file per record; the folder names its data schema |
+| `records.yml` | how is it **organized**? | optional — folders a query can read one of |
 | `queries.yml` | how is it **reached**? | named queries; a page names one |
 
 A page names a query, never a file. A site with no backend reads the file a build generates from the query in `public/data/`; the same site published to a host that serves records live reads them from there, with nothing in the page changed.
 
 There are two ways to provide data to components:
 
-**Records** (`entities/` + `records.yml`) — author content as files. Markdown records get ProseMirror content bodies, excerpts, and co-located assets automatically; YAML and JSON records pass through as they are. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structured data (schedules, pricing tiers).
+**Records** (`records/`) — author content as files. Markdown records get ProseMirror content bodies, excerpts, and co-located assets automatically; YAML and JSON records pass through as they are. Use `.md` for content with body text (blog posts, case studies), `.yml` or `.json` for purely structured data (schedules, pricing tiers).
 
 **External queries** (`url:` in `queries.yml`) — for records another system holds and serves as public JSON. Components receive them the same way, through `content.data`. See [Queries → External queries](./queries.md#external-queries).
 
-**Rule of thumb:** if authors maintain the content, use records in `entities/`. If it comes from an external system at request time, use an external query.
+**Rule of thumb:** if authors maintain the content, use records in `records/`. If it comes from an external system at request time, use an external query.
 
-> **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `entities/` as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
+> **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `records/` as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
 
 ---
 
 ## Quick Start
 
-### 1. Put entities in a schema folder
+### 1. Put records in a schema folder
 
-The folder names the data schema — `entities/article/` is `@/article`, your
-foundation's own; `entities/std/article/` is `@std/article`, a shared standard.
+Every file in `records/` is a record. The folder names the data schema —
+`records/article/` is `@/article`, your foundation's own; `records/std/article/`
+is `@std/article`, a shared standard.
 
 ```
 site/
-└── entities/
+└── records/
     └── article/
         ├── getting-started.md
         ├── design-patterns.md
@@ -61,16 +62,7 @@ Learn how to build your first site with Uniweb.
 First, create a new project...
 ```
 
-### 3. Publish them in `records.yml`
-
-Listing an entity is what makes it a **record**.
-
-```yaml
-# records.yml
-- article/*.md
-```
-
-### 4. Declare a query in `queries.yml`
+### 3. Declare a query in `queries.yml`
 
 ```yaml
 # queries.yml
@@ -79,7 +71,7 @@ articles:
   sort: date desc
 ```
 
-### 5. Name the query on a page
+### 4. Name the query on a page
 
 ```yaml
 # pages/blog/page.yml
@@ -91,58 +83,53 @@ The query's records reach the page's sections whose component declares `articles
 
 ---
 
-## Entities
+## The `records/` Folder
 
-An entity is one file in `entities/`. **The folder it sits in names its data schema:**
+Every file in `records/` is a record — putting it there is what makes it one. **The folder it sits in names its data schema:**
 
 | on disk | schema |
 |---|---|
-| `entities/article/getting-started.md` | `@/article` — the foundation's own |
-| `entities/std/person/alice.yml` | `@std/person` — the shared standard set |
-| `entities/acme/project/cinder.json` | `@acme/project` — an organization's |
+| `records/article/getting-started.md` | `@/article` — the foundation's own |
+| `records/std/person/alice.yml` | `@std/person` — the shared standard set |
+| `records/acme/project/cinder.json` | `@acme/project` — an organization's |
 
-Keep schema folders flat. A folder two levels deep names an organization's schema, so `entities/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records.yml` instead.
+A file whose name starts with `_` is not a record, and neither is anything in a folder whose name does — a place for work in progress. `site.yml` can move the folder: `paths: { records: ../shared/records }`.
+
+Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records.yml` instead.
 
 A data schema gives records a typed shape, used for validation, field defaults and i18n extraction. When a query's schema marks a section `brief: true`, lists of that query leave the other fields out — see [Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out).
 
 ---
 
-## Publishing: `records.yml`
+## Folders: `records.yml`
 
-`records.yml` says which entities are published. A bare string is a path under `entities/`, naming one file or matching many; `*` matches within one folder.
-
-```yaml
-# records.yml
-- article/*.md
-- std/person/*.yml
-```
-
-| | on a build (`uniweb build`, `pnpm dev`) | on `uniweb push` |
-|---|---|---|
-| no `records.yml` | every entity is published | the host's published records are left as they are |
-| a `records.yml` | only the entities it lists | the listed entities are published |
-| an empty `records.yml` | nothing is published | everything published is removed — the CLI asks first |
-
-An entity left out of a `records.yml` stays a draft: it exists, but no query reaches it. A `records.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build rather than publishing everything.
-
-### Folders
-
-`records.yml` can group records into folders. **They exist so a query can read a branch**, not to build a navigation tree, and most sites need none:
+`records.yml` is optional. **Folders exist so a query can read a branch**, not to build a navigation tree, and most sites need none. Every record sits at the top of the site's records folder unless `records.yml` places it in one:
 
 ```yaml
 # records.yml
-- article/*.md                  # at the root — path: ""
-
 - folder: archive
   label: The Archive            # only a folder takes a label; a record has its own title
   records:
     - article/2019-*.md         # path: "archive"
 ```
 
-Each record carries the `path` of the folder it sits in, and a query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder). The organization is yours to choose: it does **not** mirror the `entities/` layout, which names schemas and nothing else. Under a [`[...path]`](./dynamic-routes.md#multi-segment-routes--path) parametric page, a record's folder becomes part of its URL.
+A path under a folder is relative to `records/`, naming one file or matching many; `*` matches within one folder. Each record carries the `path` of the folder it sits in — `""` at the top — and a query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder). The organization is yours to choose: it does **not** mirror the `records/` layout, which names schemas and nothing else. Under a [`[...path]`](./dynamic-routes.md#multi-segment-routes--path) parametric page, a record's folder becomes part of its URL.
 
-**A record belongs to one folder.** Listing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
+**A record sits in one folder.** Placing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 
+`records.yml` never lists records at the top level — every file in `records/` is a record already — so a path there is reported as an error. A `records.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
+
+### With a backend
+
+`uniweb push` sends the site's records, and the backend holds them in the site's folder:
+
+| | on a build (`uniweb build`, `pnpm dev`) | on `uniweb push` |
+|---|---|---|
+| no `records/` folder | no records | the backend's records are left as they are |
+| a `records/` folder | every record in it | every record in it is sent |
+| an empty `records/` folder | no records | the backend's records are removed — the CLI asks first |
+
+Records pushed to a backend are served once the site is published.
 ---
 
 ## File Formats
@@ -176,7 +163,7 @@ Learn how to build your first site with Uniweb.
 For records that are pure structured data — no body text, no excerpts, no images:
 
 ```yaml
-# entities/schedule/keynote.yml
+# records/schedule/keynote.yml
 title: Opening Keynote
 speaker: Ada Lovelace
 time: "09:00"
@@ -191,7 +178,7 @@ A YAML record skips ProseMirror conversion, excerpt generation and image detecti
 A `.json` file holding an object is one record, its `slug` taken from the filename:
 
 ```json
-// entities/person/alice.json
+// records/person/alice.json
 {
   "name": "Alice",
   "role": "Engineer",
@@ -202,7 +189,7 @@ A `.json` file holding an object is one record, its `slug` taken from the filena
 A `.json` file holding an array contributes each entry as a record — useful for importing an existing dataset. Array entries should carry their own `slug`, since there is no filename to infer one from:
 
 ```json
-// entities/product/catalog.json
+// records/product/catalog.json
 [
   { "slug": "widget-a", "name": "Widget A", "price": 29 },
   { "slug": "widget-b", "name": "Widget B", "price": 49 }
@@ -211,7 +198,7 @@ A `.json` file holding an array contributes each entry as a record — useful fo
 
 ### `published: false`
 
-A markdown, YAML or single-object JSON record with `published: false` is left out of every query. A record without the field is published. Entries of a JSON array are not filtered this way — use the query's `where:`.
+A markdown, YAML or single-object JSON record with `published: false` is left out of every query the build compiles. A record without the field is included. Entries of a JSON array are not filtered this way — use the query's `where:`.
 
 ---
 
@@ -282,7 +269,7 @@ A record can reference files stored beside it, with a relative path — the reco
 
 ```
 site/
-└── entities/
+└── records/
     └── article/
         ├── getting-started.md
         ├── getting-started-diagram.svg
@@ -300,7 +287,7 @@ Here's how the architecture works:
 ![Architecture Diagram](./getting-started-diagram.svg)
 ```
 
-At build time a `./` or `../` path in a markdown record's body or frontmatter — or in a YAML or JSON record's field — is copied to `public/records/`, at its path under `entities/`, and rewritten to that URL:
+At build time a `./` or `../` path in a markdown record's body or frontmatter — or in a YAML or JSON record's field — is copied to `public/records/`, at its path under `records/`, and rewritten to that URL:
 
 ```
 public/
@@ -328,7 +315,7 @@ public/
 }
 ```
 
-A file keeps its place under `entities/`: beside its record it is `/records/article/pic.png`, in a subfolder `/records/article/img/pic.png`, and a `../shared/logo.svg` elsewhere in `entities/` is `/records/shared/logo.svg` — so two files that share a name never collide, and a record reachable by two queries has one copy at one URL. A file outside `entities/` is published under `/records/_external/`, with a short hash of its path in front of its name.
+A file keeps its place under `records/`: beside its record it is `/records/article/pic.png`, in a subfolder `/records/article/img/pic.png`, and a `../shared/logo.svg` elsewhere in `records/` is `/records/shared/logo.svg` — so two files that share a name never collide, and a record reachable by two queries has one copy at one URL. A file outside `records/` is copied to `/records/_external/`, with a short hash of its path in front of its name.
 
 | Path | Resolution |
 |-------------|------------|
@@ -345,9 +332,8 @@ Co-located assets work for any media — images, `{role=video}` videos, `{role=p
 
 ```
 site/
-├── records.yml            # what is published
 ├── queries.yml            # how it is reached
-├── entities/              # the pool — the folder names the data schema
+├── records/               # every file is a record — the folder names the data schema
 │   └── article/
 │       ├── getting-started.md
 │       ├── design-patterns.md
@@ -358,11 +344,6 @@ site/
         ├── 1-list.md      # type: ArticleList
         └── [slug]/
             └── 1-article.md  # type: Article
-```
-
-```yaml
-# records.yml
-- article/*.md
 ```
 
 ```yaml
@@ -386,7 +367,7 @@ The `[slug]` folder is a [parametric page](./dynamic-routes.md): it takes its pa
 
 During development (`pnpm dev`):
 
-- `entities/` is watched: a record added, edited or removed regenerates the query files, and the page reloads.
+- `records/` is watched: a record added, edited or removed regenerates the query files, and the page reloads.
 - The runtime fetches local records live, as it would from a host, so what you see matches production.
 - `site.yml`, `queries.yml` and `records.yml` are watched too: an edit regenerates the query files and reloads, including a `records.yml` created while the server runs.
 
@@ -402,9 +383,10 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 | A query matching no records | Warning logged, the query answers `[]` |
 | Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
 | A `records.yml` that is not a list | The build stops, naming the problem |
-| Unpublished records | Left out (`.md`, `.yml`, and single-object `.json`) |
+| A record with `published: false` | Left out (`.md`, `.yml`, and single-object `.json`) |
 | Sorting by a field some records lack | Those records sort last, in either direction |
-| A folder two levels deep in `entities/` | Names an organization's schema |
+| A folder two levels deep in `records/` | Names an organization's schema |
+| A path at the top level of `records.yml` | Reported as an error; every record in `records/` is one already |
 | A folder three or more levels deep | Skipped, with a warning |
 
 ---
@@ -415,10 +397,10 @@ Record text is extracted for translation alongside page content (see [Internatio
 
 ### Schema-guided extraction
 
-Provide a companion schema file in `entities/`, named for the query whose records it describes. It tells the extractor exactly which fields contain translatable text:
+Provide a companion schema file in `records/`, named for the query whose records it describes. It tells the extractor exactly which fields contain translatable text:
 
 ```
-entities/
+records/
 ├── events/
 │   └── events.json
 └── events.schema.js    # for the `events` query
@@ -463,7 +445,7 @@ export default {
 
 **Schema discovery order:**
 
-1. Companion file: `entities/<query name>.schema.js`
+1. Companion file: `records/<query name>.schema.js`
 2. Standard schema: a matching name in `@uniweb/schemas` (with simple singularization — `events` matches the `event` schema)
 3. No schema found → heuristic fallback
 
