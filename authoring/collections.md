@@ -186,7 +186,7 @@ Frontmatter is the block between `---` lines at the top of the file. It holds st
 | `tags` | Categories or labels | `tags: [tutorial, beginner]` |
 | `image` | A thumbnail or hero image | `image: ./hero.jpg` |
 | `description` | A short summary | `description: Learn the basics` |
-| `published` | Whether to include it (default: yes) | `published: false` |
+| `draft` | Keep it off the live site (default: no) | `draft: true` |
 | `author` | Who wrote it | `author: Sarah Chen` |
 
 You can add any other fields you need — `price`, `role`, `location`, `order` — whatever makes sense for your content. The site will pass them through.
@@ -280,7 +280,7 @@ recent:
   schema: '@/article'
   sort: date desc
   where:
-    published: { ne: false }
+    tags: featured
   limit: 100
 ```
 
@@ -288,7 +288,7 @@ recent:
 |--------|-------------|---------|
 | `schema` | Which records this query is over | `'@/article'`, `'@std/person'` |
 | `sort` | Order records by a field | `date desc` (newest first) |
-| `where` | Include only matching records (predicate) | `{ published: { ne: false } }` |
+| `where` | Include only matching records (predicate) | `{ tags: featured }` |
 | `limit` | How many records the query selects — the first N in its `sort`. Only those get pages | `100` |
 | `scope` | One folder of records, and everything inside it | `archive` |
 | `excerpt` | How a markdown record's summary is made | `{ maxLength: 200 }` |
@@ -304,8 +304,8 @@ Every key, in full: [Queries](../reference/queries.md).
 
 | Goal | `where:` |
 |---|---|
-| Only published (skip drafts) | `{ published: { ne: false } }` |
 | Tagged "featured" | `{ tags: featured }` |
+| Written by one author | `{ author: 'Sarah Chen' }` |
 | From 2025 onward | `{ date: { gte: '2025-01-01' } }` |
 
 To read one folder of records and everything inside it, the query takes a
@@ -499,29 +499,31 @@ For the full blog recipe with step-by-step setup, see [Recipes](./recipes.md). F
 
 ---
 
-## Drafts and Unpublished Items
+## Drafts
 
-To hide an item from your site without deleting it, set `published: false` in the frontmatter:
+To keep a record off your live site without deleting it, set `draft: true` in its frontmatter:
 
 ```markdown
 ---
 title: Upcoming Feature Announcement
 date: 2025-07-01
-published: false
+draft: true
 ---
 
-This article won't appear anywhere on the site.
+This article won't appear on the site until it's no longer a draft.
 ```
 
-Items without a `published` field are included by default — you only need to add it when you want to hide something.
+A draft is still a record — it stays in `records/`, and `pnpm dev` shows it, so you can preview it where it will appear. It's left out of what the site delivers: a build for hosting leaves it out of every query. Records without `draft:` are delivered.
 
 This is useful for:
 
 - **Drafts** you're still writing
 - **Scheduled content** you've prepared ahead of time
-- **Archived items** you want to keep on disk but remove from the site
+- **Archived items** you want to keep but take off the site
 
-When you're ready to publish, change `published: false` to `published: true` or just remove the line entirely.
+When it's ready, remove the line (or set `draft: false`).
+
+To keep a file out of the site's records altogether — work that isn't a record yet — start its name with `_`: `_new-idea.md` is never read.
 
 ---
 
@@ -714,12 +716,12 @@ queries:
 | Organize them into folders | `- folder: archive` in `records.yml` (optional) |
 | Reach them | Add a query to `queries.yml` — `recent: { schema: '@/article' }` |
 | Sort them | `sort: date desc` or `sort: title asc` on the query |
-| Filter them | `where: { published: { ne: false } }` on the query |
+| Filter them | `where: { tags: featured }` on the query |
 | Show on a page | `query: articles` in `page.yml` |
 | Show a subset | `fetch: { query: articles, limit: 3 }` in section frontmatter |
 | Give each record a page | Add a `[slug]/` folder inside the page that names the query |
 | Show more beside a record | `fetch: { query: articles, current: exclude, limit: 3 }` in a section of the `[slug]/` folder |
-| Hide a draft | `published: false` in item frontmatter |
+| Keep a record off the live site | `draft: true` in its frontmatter |
 | Add an image | Store next to the `.md` file, reference with `./` |
 | Write an excerpt | Add `description:` to item frontmatter |
 

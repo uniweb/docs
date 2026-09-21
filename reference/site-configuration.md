@@ -1092,7 +1092,7 @@ queries:
     schema: '@/article'
     sort: date desc
     where:
-      published: { ne: false }
+      featured: true
 
   team:
     schema: '@/person'

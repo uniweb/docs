@@ -196,9 +196,11 @@ A `.json` file holding an array contributes each entry as a record — useful fo
 ]
 ```
 
-### `published: false`
+### `draft: true`
 
-A markdown, YAML or single-object JSON record with `published: false` is left out of every query the build compiles. A record without the field is included. Entries of a JSON array are not filtered this way — use the query's `where:`.
+A record with `draft: true` is still a record — it stays in `records/` and in its folder — but it is not delivered: a build for hosting leaves it out of every query, in every format, entries of a YAML or JSON array included, and copies none of its files. `pnpm dev` keeps it, so you can preview it, and `uniweb validate` checks it. A record without the field is delivered.
+
+`uniweb push` stops at a draft, naming it: remove `draft: true` to push it as a record, or start its name with `_` to keep it off the backend. (`published: false`, an older spelling, is refused.)
 
 ---
 
@@ -383,7 +385,8 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 | A query matching no records | Warning logged, the query answers `[]` |
 | Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
 | A `records.yml` that is not a list | The build stops, naming the problem |
-| A record with `published: false` | Left out (`.md`, `.yml`, and single-object `.json`) |
+| A record with `draft: true` | Left out of a build for hosting, kept in `pnpm dev`; `uniweb push` stops at it |
+| A record with `published: false` | The build stops, naming `draft: true` |
 | Sorting by a field some records lack | Those records sort last, in either direction |
 | A folder two levels deep in `records/` | Names an organization's schema |
 | A path at the top level of `records.yml` | Reported as an error; every record in `records/` is one already |

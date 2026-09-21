@@ -15,11 +15,11 @@ A predicate is a YAML object whose top-level keys are field names. Bare values a
 fetch:
   query: articles
   where:
-    published: true
+    featured: true
     category: news
 ```
 
-This delivers the query's articles where `published == true` AND `category == 'news'`. On a fetch, a predicate narrows the query: a record must meet the query's own `where:` and this one, so a fetch never shows a record its query leaves out.
+This delivers the query's articles where `featured == true` AND `category == 'news'`. On a fetch, a predicate narrows the query: a record must meet the query's own `where:` and this one, so a fetch never shows a record its query leaves out.
 
 The same predicate works on a query and on any fetch — in section frontmatter, `page.yml` or `site.yml` — and against any source: the site's own records, a host's live records, an external query's response.
 
@@ -46,7 +46,7 @@ compiled records, or a host that answers queries.
 | Operator | Meaning | Example |
 |---|---|---|
 | `eq` | Equal (also implicit when the value is bare) | `{ status: { eq: 'active' } }` |
-| `ne` | Not equal | `{ draft: { ne: true } }` |
+| `ne` | Not equal | `{ status: { ne: 'archived' } }` |
 | `gt`, `gte` | Greater than / greater than or equal | `{ year: { gte: 2020 } }` |
 | `lt`, `lte` | Less than / less than or equal | `{ price: { lt: 100 } }` |
 | `in` | Equal to one of the listed values | `{ tag: { in: [news, events] } }` |
@@ -139,7 +139,7 @@ Top-level keys are combined with implicit AND. For OR or NOT, use explicit compo
 ```yaml
 where:
   # Implicit AND across these keys.
-  published: true
+  featured: true
   department: biology
 
   # Explicit OR for this one.
