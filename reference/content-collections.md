@@ -202,7 +202,7 @@ A `.json` file holding an array contributes each entry as a record — useful fo
 
 A record with `draft: true` is still a record — it stays in `records/` and in its folder — but it is not delivered: a build for hosting leaves it out of every query, in every format, entries of a YAML or JSON array included, and copies none of its files. `pnpm dev` keeps it, so you can preview it, and `uniweb validate` checks it. A record without the field is delivered.
 
-`uniweb push` stops at a draft, naming it: remove `draft: true` to push it as a record, or start its name with `_` to keep it off the backend. (`published: false`, an older spelling, is refused.)
+`uniweb push` sends a draft as a draft: a backend keeps it in the site's folder and does not deliver it, and `uniweb pull` writes `draft: true` back into a record kept off the site. Remove the line to deliver it again. (`published: false`, an older spelling, is refused.)
 
 ---
 
@@ -388,7 +388,8 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 | Invalid frontmatter, YAML or JSON | Error naming the file, the file skipped |
 | A `records/folder.yml` that is not a list | The build stops, naming the problem |
 | A `records.yml` at the site root | The build stops, naming the move to `records/folder.yml` |
-| A record with `draft: true` | Left out of a build for hosting, kept in `pnpm dev`; `uniweb push` stops at it |
+| Two folders with one name at one level of `records/folder.yml` | The build stops, naming both entries — merge them into one |
+| A record with `draft: true` | Left out of a build for hosting, kept in `pnpm dev`; pushed to a backend, kept there without being delivered |
 | A record with `published: false` | The build stops, naming `draft: true` |
 | Sorting by a field some records lack | Those records sort last, in either direction |
 | A folder two levels deep in `records/` | Names an organization's schema |
