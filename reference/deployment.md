@@ -86,8 +86,9 @@ targets:
                                    # delegate to `uniweb publish` (Uniweb hosting).
     # adapter-specific fields below — see the per-host sections.
     # For host: uniweb, an optional `backend:` pins which Uniweb backend this
-    # site publishes to (default: https://uniweb.app). `uniweb publish` records
-    # it here on first publish; it overrides the logged-in backend for this site.
+    # target publishes to (default: https://uniweb.app) — `uniweb deploy` goes
+    # there. A bare `uniweb publish` goes to the backend you are logged in to,
+    # and records itself under the target naming that backend (adding one).
 
 saveDeploys: true                  # false to stop recording deploys
 

@@ -916,38 +916,41 @@ uniweb i18n sync
 
 ## uniweb login
 
-Authenticate with the Uniweb platform. Stores credentials at `~/.uniweb/auth.json`.
+Log in to a Uniweb backend. Each backend gets its own session, stored in `~/.uniweb/registry-auth.json`, so logging in to a second one — a local development server, say — keeps the first.
 
 ```bash
 uniweb login [options]
 ```
 
+### Which backend
+
+`--backend <url>` names it. Without the flag, `login` picks the backend of the project you are in (from its `sync.json`); outside a project, the one you are already logged in to, and when this machine knows several, it asks.
+
+⭐ **The backend you log in to last is where [`uniweb publish`](#uniweb-publish) goes.** Naming a backend you are already logged in to switches to it without asking you to log in again. `push` and `pull` follow the project first: a project synced with one backend pushes there, whoever you are logged in to.
+
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--token-paste` | Skip browser, paste token manually |
+| `--backend <url>` | The backend to log in to |
+| `--browser` | Log in through the browser |
+| `--password` | Log in with a username and password |
+| `--token-paste` | Paste a token instead of opening a browser |
+| `--token <bearer>` | Store this token, after the backend confirms it |
 
-### How It Works
-
-The CLI uses a browser-based login flow:
-
-1. Starts a temporary HTTP server on a random localhost port
-2. Opens your browser to the Uniweb login page
-3. You log in using any method (email/password, Google, or Microsoft)
-4. After login, the browser redirects to the CLI's localhost callback with a JWT
-5. The CLI stores the token at `~/.uniweb/auth.json`
-
-If the browser can't open, falls back to manual token paste. Tokens are valid for 30 days.
+Without a method flag, `login` asks which one to use. Without a terminal it needs `UNIWEB_USERNAME` and `UNIWEB_PASSWORD`, or `--token`.
 
 ### Examples
 
 ```bash
-# Log in via browser (default)
+# Log in to the default backend, or the one your project uses
 uniweb login
 
-# Fall back to manual token paste
-uniweb login --token-paste
+# Log in to a local development server — publish now goes there
+uniweb login --backend http://localhost:8080
+
+# Switch back to a backend you are already logged in to
+uniweb login --backend https://uniweb.app
 ```
 
 ### When It's Needed
@@ -1146,7 +1149,7 @@ uniweb push --personal      # your personal account, deliberately
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
 
-A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `--backend <url>` picks one; when only one is on record, it is picked for you. With several on record and no default target in `deploy.yml`, `push`, `pull` and `publish` stop and ask you to name one.
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. `push` and `pull` use the one on record; with several on record and no default target in `deploy.yml`, they ask you to name one with `--backend <url>`. `publish` goes to the backend you are logged in to — see [Where it goes](#where-it-goes-the-backend-you-are-logged-in-to).
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
@@ -1293,6 +1296,12 @@ uniweb publish
 `publish` pushes your local content first — the same push as `uniweb push`, refused the same way if the site changed on the backend since your last pull — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
 
 The **first** publish of a site also creates it on the backend, which decides who owns it — see [Who owns the site](#who-owns-the-site--asked-once-on-the-first-push) under `uniweb push`. You are asked once, or you can answer up front with `--org` / `--personal`.
+
+### Where it goes: the backend you are logged in to
+
+`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login). To go live somewhere else, log in there (`uniweb login --backend <url>`), or pass `--backend <url>` for one run. If you are not logged in anywhere, the project decides: the backend in its `sync.json`, or its default target in `deploy.yml`.
+
+The publish is recorded in `deploy.yml` under the target for that backend. If no target names it, one is added, named after the backend (`localhost:8080`, say); your `default:` and other targets are left alone. `uniweb deploy` with a Uniweb target goes to **that target's** backend instead — a target is an explicit destination.
 
 ### Options
 
