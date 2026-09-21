@@ -85,10 +85,11 @@ targets:
                                    # vercel, netlify, generic-static), or 'uniweb' to
                                    # delegate to `uniweb publish` (Uniweb hosting).
     # adapter-specific fields below — see the per-host sections.
-    # For host: uniweb, an optional `backend:` pins which Uniweb backend this
-    # target publishes to (default: https://uniweb.app) — `uniweb deploy` goes
-    # there. A bare `uniweb publish` goes to the backend you are logged in to,
-    # and records itself under the target naming that backend (adding one).
+    # For host: uniweb, `backend:` records which Uniweb backend this target's
+    # publishes went to — `uniweb publish` writes it. It routes nothing: Uniweb
+    # hosting goes to the backend you are logged in to (`uniweb login
+    # --backend <url>`), and each publish is recorded under the target naming
+    # that backend (one is added when none does).
 
 saveDeploys: true                  # false to stop recording deploys
 

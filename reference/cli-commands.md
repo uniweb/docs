@@ -926,7 +926,7 @@ uniweb login [options]
 
 `--backend <url>` names it. Without the flag, `login` logs in to **https://uniweb.app** (or `UNIWEB_REGISTER_URL`, when set) — to work with any other backend, name it.
 
-⭐ **The backend you log in to last is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — unless you pass `--backend`. No command talks to a backend you are not logged in to. Naming a backend you are already logged in to switches to it without asking you to log in again.
+⭐ **The backend you log in to last is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — and logging in is how you switch between backends. Naming a backend you are already logged in to switches to it without logging in again; add `--password`, `--browser`, `--token-paste` or `--token` to log in again anyway. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_REGISTER_URL`, without touching the login.
 
 ### Options
 
@@ -978,10 +978,9 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
 | `--json` | Porcelain: one compact JSON line on stdout (`{ok,scope,origin,entities:[{name,uuid,version,unchanged}]}`); human output to stderr. |
-| `--backend <url>` | Submit to a specific backend origin. |
 | `--token <bearer>` | Submit with this bearer; skips `uniweb login`. |
 
-> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; target a local backend with `--backend <url>` or `UNIWEB_REGISTER_URL`.
+> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; to register on a local backend, log in to it (`uniweb login --backend <url>`).
 
 ### Identity (scope + id)
 
@@ -1094,8 +1093,9 @@ uniweb register --schema-only
 # Preview the .uwx (and the code-file plan); submit nothing
 uniweb register --dry-run
 
-# Submit to a specific registry origin
-uniweb register --backend http://localhost:8080
+# Register on a local backend: log in there first
+uniweb login --backend http://localhost:8080
+uniweb register
 ```
 
 ### After Registering
@@ -1149,7 +1149,7 @@ uniweb push --personal      # your personal account, deliberately
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
 
-A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login) — or to `--backend <url>` for one run. They never talk to a backend you are not logged in to: logged in nowhere, they ask you to log in first, to https://uniweb.app unless you name another. If the backend they go to has no site for this project while it has one elsewhere, `push` and `publish` say so before creating a new site there.
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login); a script can aim a single run with `UNIWEB_REGISTER_URL`. They never talk to a backend you are not logged in to: logged in nowhere, they ask you to log in first, to https://uniweb.app unless you name another. If the backend they go to has no site for this project while it has one elsewhere, `push` and `publish` say so before creating a new site there.
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
@@ -1180,7 +1180,6 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
-| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Submit with this bearer (skips `uniweb login`) |
 | `--no-validate` | Skip the content-conformance check (it only warns; see below) |
 
@@ -1213,7 +1212,6 @@ To keep your local work instead, use `--merge`. It three-way merges your changes
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
-| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
 
 ---
@@ -1234,7 +1232,6 @@ It runs `git pull` first, then `uniweb pull --merge`, and ends by reporting what
 |--------|-------------|
 | `--no-git` | Skip the git remote; backend only |
 | `--no-backend` | Skip the backend; git only |
-| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Read with this bearer (skips `uniweb login`) |
 
 ---
@@ -1257,7 +1254,6 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 |--------|-------------|
 | `--no-git` | Skip the git remote half of the refresh |
 | `--force` | Passed to the push only: overwrite changes made on the backend since your last pull |
-| `--backend <url>` | Override the backend origin |
 | `--token <bearer>` | Auth bearer (skips `uniweb login`) |
 
 ---
@@ -1299,9 +1295,9 @@ The **first** publish of a site also creates it on the backend, which decides wh
 
 ### Where it goes: the backend you are logged in to
 
-`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --backend <url>`), or pass `--backend <url>` for one run. Not logged in, it asks you to log in first — to https://uniweb.app unless you pass `--backend`.
+`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --backend <url>`); a script can aim a single run with `UNIWEB_REGISTER_URL`. Not logged in, it asks you to log in first — to https://uniweb.app unless you pass `--backend`.
 
-The publish is recorded in `deploy.yml` under the target for that backend. If no target names it, one is added, named after the backend (`localhost:8080`, say); your `default:` and other targets are left alone. `uniweb deploy` with a Uniweb target goes to **that target's** backend instead — a target is an explicit destination.
+The publish is recorded in `deploy.yml` under the target for that backend. If no target names it, one is added, named after the backend (`localhost:8080`, say); your `default:` and other targets are left alone. `uniweb deploy --host=uniweb` is `uniweb publish`, so it goes to the same place. A Uniweb target's `backend:` in `deploy.yml` records where that target's publishes went; it does not route. Naming one whose backend is not the one you are logged in to (`uniweb deploy --target staging`) is refused — log in there first.
 
 ### Options
 
@@ -1315,10 +1311,9 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--no-validate` | Skip the content-conformance check (it only warns). |
 | `--org @org` | Own the new site under `@org` (first publish only). Alias: `--as-org`. |
 | `--personal` | Own the new site under your personal account, deliberately. |
-| `--backend <url>` | Override the backend origin. |
 | `--token <bearer>` | Auth bearer; skips `uniweb login`. |
 
-> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--backend` used to disappear silently and let the command fall back to the default backend — which could mean publishing to production when you meant your own instance.
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. A mistyped `--token` used to disappear silently and run the command as whoever was logged in. (`--backend` is not a flag of these commands — they go to the backend you are logged in to — and passing it is rejected with a pointer to `uniweb login --backend`.)
 
 ---
 
