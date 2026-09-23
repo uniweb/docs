@@ -58,14 +58,28 @@ import { createMockBackend } from '@uniweb/api/mock'
 export default createMockBackend({
   seed: {
     accounts: [
-      { username: 'ada', password: 'ada', units: ['staff'], roles: ['member'] },
-      { username: 'guest', password: 'guest', units: [] },
+      { username: 'ada', password: 'ada', operator: true },  // runs the site
+      { username: 'guest', password: 'guest' },              // a member
     ],
-    // What the mock ENFORCES — who may create, and which sections are insert-only.
-    schemas: { '@/session': { creatable_by: 'unit_members' } },
+    // A Model's sections, so writes are checked the way production checks them —
+    // `append_only` included. Who may edit an entry is enforced either way.
+    schemas: {
+      '@/track': {
+        sections: {
+          identity: { kind: 'single', brief: true, fields: { name: { type: 'string', required: true } } },
+          sessions: { kind: 'multi', fields: { title: { type: 'string', required: true } } },
+        },
+      },
+    },
     entities: [
-      { uuid: 'track-main', model: '@/track', data: { name: 'Main hall' },
-        items: [{ id: 's1', section: 'sessions', data: { title: 'Opening keynote' } }] },
+      {
+        uuid: '01926d5e-0000-7000-8000-000000000001',  // a UUID, as on the wire
+        model: '@/track',
+        items: [
+          { section: 'identity', data: { name: 'Main hall' } },
+          { section: 'sessions', data: { title: 'Opening keynote' } },
+        ],
+      },
     ],
   },
 }).fetch

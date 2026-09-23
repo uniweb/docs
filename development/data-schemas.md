@@ -46,7 +46,6 @@ label: Session                # a display name, for people
 description: A conference talk.
 source_locale: en             # the language the inline text is written in
 linkable: true                # may other schemas reference this one? (default: yes)
-creatable_by: unit_members    # who may create entries (default: anyone signed in)
 ```
 
 `label` and `description` are plain strings in the source language — translations live in
@@ -59,20 +58,14 @@ shows. A schema with no brief has nothing to show and is never linkable — aski
 `linkable: true` there is an error rather than a silent no-op, since the reference would fail at
 the point someone tried to use it.
 
-**`creatable_by`** matters only when a backend stores your content, and it is the one key here
-with teeth. Entries are creatable by **anyone with an account** unless you say otherwise:
+**There is no key for who may create entries.** When a backend stores your content, anyone
+signed in may create entries of any schema. What protects content is the entry itself: who may
+see or edit an entry is decided by the entry — its owner, and what they share — never by who may
+create one. `creatable_by` is no longer accepted: a schema carrying it is refused, so a
+restriction you believe you declared is never silently absent.
 
-| value | who may create entries |
-|---|---|
-| `any_user` | anyone signed in — **the default** |
-| `unit_members` | only members of the owning unit |
-
-Naming specific people is not something a schema can express — that is granted per account, where
-it can change without a new schema version. Use `creatable_by` to set the general rule, and grants
-for the exceptions.
-
-> An unrecognised key here is reported as a warning and not carried, so a typo like `creatabe_by`
-> tells you rather than leaving you with a restriction that does not apply.
+> An unrecognised key here is reported as a warning and not carried, so a typo like `lable`
+> tells you rather than leaving you with a key that does nothing.
 
 A section type names the schema in its `meta.js`, under the key it reads:
 
