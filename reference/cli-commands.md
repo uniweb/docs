@@ -1165,6 +1165,8 @@ uniweb push --personal      # your personal account, deliberately
 
 **Without a terminal — CI, scripts, agents — the command refuses rather than choosing for you** (and `--yes` refuses too; it promises not to block, and guessing an owner is not an answer). Pass `--org` or `--personal`. Sites that already exist are never affected: their ownership is settled, so no prompt appears.
 
+After that, every command — `push`, `pull`, `publish`, `status --remote` — works in the site's organization without being told. Passing `--org` to one of them is a check: if the backend keeps the site under another organization, the command stops and says which, rather than acting in the wrong one. A project that has no record yet (a copy made before the record existed, say) takes the organization the backend names, records it in `sync.json`, and says so.
+
 ### Which site this is — `sync.json`
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
@@ -1194,7 +1196,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 |--------|-------------|
 | `--dry-run` | Report what would be pushed; submit nothing |
 | `-o <file>` | Write the `.uwx` package(s) instead of submitting |
-| `--org @org` | Own the new site under `@org` (membership-gated). Alias: `--as-org` |
+| `--org @org` | Own the new site under `@org` (membership-gated). On a site that exists, a check: see below |
 | `--personal` | Own the new site under your personal account, deliberately |
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
@@ -1231,6 +1233,7 @@ To keep your local work instead, use `--merge`. It three-way merges your changes
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
+| `--org @org` | Check the site is in `@org`: stop if the backend keeps it elsewhere |
 
 ---
 
@@ -1293,6 +1296,7 @@ uniweb clone <site-uuid> [name|.]
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
 | `--project <dir>` | Co-locate as `<dir>/site` |
 | `--no-records` | Pull pages only; skip records |
+| `--org @org` | Read the site as `@org`: stop if the backend keeps it elsewhere. Without it, the organization the backend names is recorded in `sync.json` |
 
 ---
 
@@ -1325,7 +1329,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
 | `--no-validate` | Skip the content-conformance check (it only warns). |
-| `--org @org` | Own the new site under `@org` (first publish only). Alias: `--as-org`. |
+| `--org @org` | Own the new site under `@org` (first publish only). On a site that exists, a check — as `uniweb push --org`. |
 | `--personal` | Own the new site under your personal account, deliberately. |
 
 > **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. `--backend` and `--token` are not flags of these commands: they go to the backend you are logged in to, with that login's session, and passing either is rejected with a pointer to `uniweb login`.
