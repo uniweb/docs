@@ -402,6 +402,8 @@ cd foundation
 uniweb register --scope @acme
 ```
 
+The scope becomes part of the foundation's name — `register` writes `name: '@acme/<name>'` into its `main.js` — so later runs need no flag, and the foundation and its schemas always register under the same organization.
+
 It submits **only the schemas you own** — the `@/`-refs, resolved into your scope (`@/product` → `@acme/product`). Schemas you merely *reference* from another scope are **named, not re-submitted**: a foundation that renders `@std/person` and `@std/event` ships neither definition — it names them, and they resolve to the live standards already in the registry.
 
 That split matters in practice. You don't re-upload the standards every publish (wasteful), and you don't need membership in the `@std` org to reference its schemas — registration authorizes against the artifacts you *publish* (`@acme/*` and the foundation), not against what they reference. The `@/` prefix is the signal for "mine, publish it"; every concrete scope (`@std/x`, another org's `@org/x`) is a reference by name.

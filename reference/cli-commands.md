@@ -980,7 +980,7 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 
 | Option | Description |
 |--------|-------------|
-| `--scope @org` | Register under organization `@org` (resolves `@/x` → `@org/x`). Default: `package.json::uniweb.scope`. |
+| `--scope @org` | A foundation whose name has no scope yet: register it under organization `@org` (resolves `@/x` → `@org/x`) and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@org`; default `package.json::uniweb.scope`. |
 | `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
@@ -1003,28 +1003,33 @@ export default {
 }
 ```
 
-`uniweb create` and `uniweb add` write one — the project's name, or the name you gave `add`. Lowercase letters, digits and hyphens; a scoped name (`@acme/marketing`) keeps its own scope.
+`uniweb create` and `uniweb add` write one — the project's name, or the name you gave `add`. Lowercase letters, digits and hyphens, and — once it has one — the organization it registers under: `@acme/marketing` (see [Scope](#scope)).
 
 **`src` and `foundation` are refused** — they name the folder the code lives in, and every project in an org would register the same one. A foundation with no other name (a project scaffolded before names moved to `main.js` has `package.json` name `src`) is asked for one the first time you register, with a suggestion made from its folder; the answer is written to `main.js`, so it is asked once. Non-interactively (`--non-interactive`, CI, `--json`) and in a preview (`--dry-run`, `-o`), `register` refuses before anything is built or sent, and prints the line to add. The same holds when `uniweb push` or `uniweb publish` releases a local foundation, since they release through `register`.
 
-`package.json::uniweb.id`, which used to set the name, is no longer read: `register` refuses it and prints the `main.js` line that replaces it.
+`package.json::uniweb.id` and `uniweb.scope`, which used to set the name and the scope, are no longer read for a foundation: `register` refuses them and prints the `main.js` line that replaces them.
 
 #### Scope
 
-`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to. A scoped name carries its own; otherwise:
+`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to, and **the scope is part of the name**: a foundation named `@acme/marketing` registers under `@acme`. So do the data schemas it defines — `@/article` registers as `@acme/article` — which is the name a site's records and queries use for them.
+
+A name with no scope has not been registered yet. The first `register` chooses one:
 
 1. **`--scope @org` flag** — explicit.
-2. **`package.json::uniweb.scope`** — the persisted default.
-3. *(real submit only)* derived from your login membership, and saved to `uniweb.scope`.
+2. *(real submit only)* derived from your login membership.
+
+…and writes it into the name in `main.js` (`name: '@acme/marketing'`), so it is chosen once and later runs need no flag. A `--scope` that names a different organization than the name's is refused; to move a foundation to another organization, change its name. A preview (`--dry-run`, `-o`) writes nothing: a name with no scope previews under `--scope`, or unscoped.
 
 A foundation with no resolvable scope is rejected — bare `@/…` names can't be registered.
+
+A **schemas-only package** has no `main.js` to carry a scope: it registers under `--scope @org`, else `package.json::uniweb.scope`, else one derived from your login membership, which is then saved to `uniweb.scope`.
 
 #### Renaming
 
 A registered version is immutable, so there is **no registry-rename flag**. To rename:
 
 - The **workspace package** (pnpm links, `file:` deps, `site.yml::foundation` refs) → `uniweb rename foundation <old> <new>`. It does not change what the foundation registers as, once `main.js` names it.
-- The **registered name** → change `name` in `main.js` and register again; consuming sites repoint their `foundation:` ref, and the old versions stay reachable under the old name.
+- The **registered name** → change `name` in `main.js` and register again; consuming sites repoint their `foundation:` ref, and the old versions stay reachable under the old name. Moving a foundation to another organization is the same act — its scope is part of its name.
 
 ### Foundation runtime policy
 
@@ -1087,8 +1092,8 @@ Automatic **propagation** — a gated rollout that moves consenting sites forwar
 
 ### What Happens
 
-1. Builds-if-stale, then reads `dist/meta/schema.json` for the foundation version and the data schemas it declares.
-2. Resolves the scope (`--scope` → `uniweb.scope` → login membership) and the id (the scoped `package.json::name`).
+1. Settles the name and its scope — the scope in `main.js`'s name, else `--scope`, else one derived from your login membership, written into the name — before anything is built, so the build carries the name the foundation registers as.
+2. Builds-if-stale, then reads `dist/meta/schema.json` for the foundation version and the data schemas it declares.
 3. Submits a names-only `.uwx`; the registry authorizes the org scope against your membership.
 4. A version already registered is **immutable** — the schema submit no-ops (the CLI resumes any unfinished code delivery; completed files are idempotent).
 5. Delivers the foundation's `dist/` code (skipped by `--schema-only`).
@@ -1099,7 +1104,7 @@ Automatic **propagation** — a gated rollout that moves consenting sites forwar
 # Register the foundation + its data schemas under an org you belong to
 uniweb register --scope @myorg
 
-# With "@myorg/marketing" as package.json::name (or uniweb.scope set), no flag is needed
+# Once main.js names it '@myorg/marketing' — the first register writes that — no flag is needed
 uniweb register
 
 # Register just the data schemas (from a foundation or a schemas-only package)

@@ -31,9 +31,9 @@ export default {
 }
 ```
 
-`uniweb create` and `uniweb add` write it for you — the project's name, or the name you gave `add` — and `uniweb register` asks for one when a foundation has none.
+`uniweb create` and `uniweb add` write it for you — the project's name, or the name you gave `add` — and `uniweb register` asks for one when a foundation has none. The first time you register, it also writes the organization the foundation registers under into the name: `name: '@acme/marketing'`.
 
-- **Form:** lowercase letters, digits and hyphens (`marketing`, `acme-docs`). A scoped name (`@acme/marketing`) keeps its own scope, whatever `--scope` says.
+- **Form:** lowercase letters, digits and hyphens (`marketing`, `acme-docs`), with the organization it registers under once it has one (`@acme/marketing`). The scope is part of the name — see [Identity](#identity-scope--name-resolution).
 - **Not `src` or `foundation`.** Those name the folder the code lives in, and every project in an org would register the same one. `uniweb register` refuses them and asks for a real name (or, when it cannot ask, prints the line to add).
 - **Fallback:** with no `name` in `main.js`, the name is `package.json`'s `name`.
 - The `version` always comes from `package.json`, and so does the `description` unless `main.js` sets one.
@@ -44,38 +44,23 @@ The `name` in the foundation's `package.json` is a **workspace** name: it is how
 
 ## `package.json` configuration
 
-The `uniweb` block in `package.json` carries platform-specific configuration that doesn't belong in the npm-standard fields. All fields are optional; the platform falls back to sensible defaults when they're omitted.
-
-```json
-{
-  "name": "src",
-  "version": "1.0.0",
-  "uniweb": {
-    "scope": "@acme"
-  },
-  "dependencies": {
-    "@uniweb/core": "0.7.8",
-    "@uniweb/runtime": "0.8.9"
-  }
-}
-```
+The `uniweb` block in `package.json` carries platform-specific configuration that doesn't belong in the npm-standard fields. It is optional, and most foundations need none: the platform falls back to sensible defaults when a field is omitted. What a foundation *is* — its name and the organization it registers under — lives in `main.js`, above.
 
 ### Supported fields
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `scope` | string | (none — `uniweb register` derives one from your login and saves it here) | The organization the foundation registers under: `@acme` (or `acme`). A bare `main.js` name `marketing` registers as `@acme/marketing`. `--scope @org` overrides it for one run. |
 | `runtimePolicy` | `"exact"` | (unset) | **Escape hatch, rarely needed.** Sites using this foundation are given a compatible runtime automatically; compatibility is the framework's determination, not a per-foundation setting. Set `"exact"` only if the foundation depends on undocumented runtime internals or was audited against exactly one runtime build — it freezes sites on the recorded version and they stop receiving runtime fixes. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy). |
 
-> **Removed:** `uniweb.id`, which set the registered name from `package.json`. The name lives in `main.js` now; `uniweb register` refuses a leftover `uniweb.id` and says what to write instead (`name: '<the id>'` in `main.js`).
+> **Removed:** `uniweb.id`, which set the registered name from `package.json`, and `uniweb.scope`, which set the organization it registers under. Both live in `main.js`'s `name` now (`name: '@acme/marketing'`); `uniweb register` refuses a leftover and says what to write instead. (A schemas-only package, which has no `main.js`, still records its scope in `uniweb.scope` — see [`uniweb register`](./cli-commands.md#scope).)
 
 ### Identity (scope + name) resolution
 
-A registered foundation's name has two pieces — a **scope** (the org it's registered under) and its **name**. Full details in [`uniweb register` → Identity](./cli-commands.md#identity-scope--name). The summary:
+A registered foundation's name has two pieces — a **scope** (the org it's registered under) and its **name** — written together in `main.js`: `@acme/marketing`. Full details in [`uniweb register` → Identity](./cli-commands.md#identity-scope--name). The summary:
 
 **Name**: `main.js`'s `name`, else `package.json`'s `name` — never `src` or `foundation`.
 
-**Scope**: a scoped name carries its own. Otherwise `--scope @org` → `package.json::uniweb.scope` → derived from your login membership (and saved to `uniweb.scope`). Cataloging requires an org scope. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog under your `@org` automatically — so the same rules apply there.
+**Scope**: the one in the name. A name without one has not been registered yet: the first `uniweb register` takes `--scope @org`, else derives one from your login membership, and writes it into the name. A `--scope` naming a different organization than the name's is refused. The foundation's own data schemas register under the same scope (`@/article` → `@acme/article`), which is the name a site's records and queries use for them. Cataloging requires an org scope. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog automatically — so the same rules apply there.
 
 ### Why a separate `uniweb` block
 
