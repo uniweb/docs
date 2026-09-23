@@ -930,11 +930,17 @@ uniweb login [options]
 
 ⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing; add `--password`, `--browser`, `--token-paste` or `--token` to log in again. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_REGISTER_URL`, without touching the login.
 
+### Which workspace
+
+A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` switches workspace without logging in again.
+
 ### Options
 
 | Option | Description |
 |--------|-------------|
 | `--backend <url>` | The backend to log in to |
+| `--org @org` | Work in `@org`, an organization you belong to |
+| `--personal` | Work in your personal workspace |
 | `--browser` | Log in through the browser |
 | `--password` | Log in with a username and password |
 | `--token-paste` | Paste a token instead of opening a browser |
@@ -942,7 +948,7 @@ uniweb login [options]
 
 Without a method flag, `login` asks which one to use. Without a terminal it needs `UNIWEB_USERNAME` and `UNIWEB_PASSWORD`, or `--token`.
 
-**In CI or a script**, sign in once with `uniweb login --backend <url> --token $TOKEN` — the token is checked against that backend before it is stored. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead (with `UNIWEB_REGISTER_URL` for a backend other than the default). The backend commands themselves take no `--backend` or `--token`.
+**Without a terminal** — an agent, a script — sign in with `uniweb login --backend <url> --token $TOKEN --org @acme` (or `--personal`): the token is checked against that backend before it is stored, and a login that belongs to organizations must name its workspace. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead — with `UNIWEB_REGISTER_URL` for a backend other than the default, and `UNIWEB_WORKSPACE=@acme` (or `personal`) for its workspace. The backend commands themselves take no `--backend` or `--token`.
 
 ### Examples
 
@@ -952,6 +958,9 @@ uniweb login
 
 # Log in to a local development server — push, pull and publish now go there
 uniweb login --backend http://localhost:8080
+
+# Work in an organization's workspace (switches without logging in again)
+uniweb login --org @acme
 
 # Switch back to the default backend (this logs you out of the local server)
 uniweb login
@@ -1145,27 +1154,19 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — releasing the new version before the content goes up (or asking first) — because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
-### Who owns the site — asked once, on the first push
+### The workspace you work in — and who owns a new site
 
-The push that **creates** a site also decides which organization owns it, and that choice is not editable from the CLI afterwards. So when a site is about to be created and you have not said who owns it, you are asked:
+Every push, pull and publish works in **one workspace**: your personal one, or an organization's. It is chosen when you log in (see [`uniweb login`](#uniweb-login)), and it decides two things:
 
-```
-? Create this site under which owner?
-❯ @acme
-  Personal — no organization
-  A new organization…
-```
+- **A site a push or publish creates is created there** — owned by it, with its storage billed to it — and that is not editable from the CLI afterwards. The command says where before it creates anything.
+- **A site kept in another workspace stops the command**, which names that workspace and how to switch — rather than acting in the wrong one.
 
-Answer once and it is recorded in `sync.json`, committed, and reused — you are never asked again for that site, on any machine. Skip the question by naming the owner up front:
+To work in another workspace for a single command, name it:
 
 ```bash
-uniweb push --org @acme     # an organization
-uniweb push --personal      # your personal account, deliberately
+uniweb push --org @acme     # work in @acme for this push
+uniweb push --personal      # work in your personal workspace for this push
 ```
-
-**Without a terminal — CI, scripts, agents — the command refuses rather than choosing for you** (and `--yes` refuses too; it promises not to block, and guessing an owner is not an answer). Pass `--org` or `--personal`. Sites that already exist are never affected: their ownership is settled, so no prompt appears.
-
-After that, every command — `push`, `pull`, `publish`, `status --remote` — works in the site's organization without being told. Passing `--org` to one of them is a check: if the backend keeps the site under another organization, the command stops and says which, rather than acting in the wrong one. A project that has no record yet (a copy made before the record existed, say) takes the organization the backend names, records it in `sync.json`, and says so.
 
 ### Which site this is — `sync.json`
 
@@ -1196,8 +1197,8 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 |--------|-------------|
 | `--dry-run` | Report what would be pushed; submit nothing |
 | `-o <file>` | Write the `.uwx` package(s) instead of submitting |
-| `--org @org` | Own the new site under `@org` (membership-gated). On a site that exists, a check: see below |
-| `--personal` | Own the new site under your personal account, deliberately |
+| `--org @org` | Work in `@org` for this push, instead of your login's workspace — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) |
+| `--personal` | Work in your personal workspace for this push |
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
@@ -1233,7 +1234,7 @@ To keep your local work instead, use `--merge`. It three-way merges your changes
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
-| `--org @org` | Check the site is in `@org`: stop if the backend keeps it elsewhere |
+| `--org @org` | Work in `@org` for this pull, instead of your login's workspace |
 
 ---
 
@@ -1296,7 +1297,7 @@ uniweb clone <site-uuid> [name|.]
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
 | `--project <dir>` | Co-locate as `<dir>/site` |
 | `--no-records` | Pull pages only; skip records |
-| `--org @org` | Read the site as `@org`: stop if the backend keeps it elsewhere. Without it, the organization the backend names is recorded in `sync.json` |
+| `--org @org` | Work in `@org` for this clone, instead of your login's workspace |
 
 ---
 
@@ -1311,7 +1312,7 @@ uniweb publish
 
 `publish` pushes your local content first — the same push as `uniweb push`, refused the same way if the site changed on the backend since your last pull — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
 
-The **first** publish of a site also creates it on the backend, which decides who owns it — see [Who owns the site](#who-owns-the-site--asked-once-on-the-first-push) under `uniweb push`. You are asked once, or you can answer up front with `--org` / `--personal`.
+The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
 ### Where it goes: the backend you are logged in to
 
@@ -1329,8 +1330,8 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
 | `--no-validate` | Skip the content-conformance check (it only warns). |
-| `--org @org` | Own the new site under `@org` (first publish only). On a site that exists, a check — as `uniweb push --org`. |
-| `--personal` | Own the new site under your personal account, deliberately. |
+| `--org @org` | Work in `@org` for this publish, instead of your login's workspace. |
+| `--personal` | Work in your personal workspace for this publish. |
 
 > **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. `--backend` and `--token` are not flags of these commands: they go to the backend you are logged in to, with that login's session, and passing either is rejected with a pointer to `uniweb login`.
 
