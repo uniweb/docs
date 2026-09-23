@@ -60,7 +60,7 @@ A registered foundation's name has two pieces — a **scope** (the org it's regi
 
 **Name**: `main.js`'s `name`, else `package.json`'s `name` — never `src` or `foundation`.
 
-**Scope**: the one in the name. A name without one has not been registered yet: the first `uniweb register` takes `--scope @org`, else derives one from your login membership, and writes it into the name. A `--scope` naming a different organization than the name's is refused. The foundation's own data schemas register under the same scope (`@/article` → `@acme/article`), which is the name a site's records and queries use for them. Cataloging requires an org scope. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog automatically — so the same rules apply there.
+**Scope**: the one in the name — a namespace, either your personal scope (`@<your handle>`, no organization needed) or an organization's. A name without one has not been registered yet: the first `uniweb register` takes `--scope @scope`, else derives one from your login, and writes it into the name. A `--scope` naming a different scope than the name's is refused. The foundation's own data schemas register under the same scope (`@/article` → `@acme/article`), which is the name a site's records and queries use for them. Cataloging requires an org scope. When you publish a site whose local foundation changed, `uniweb publish` releases it to the catalog automatically — so the same rules apply there.
 
 ### Why a separate `uniweb` block
 

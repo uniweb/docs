@@ -980,7 +980,7 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 
 | Option | Description |
 |--------|-------------|
-| `--scope @org` | A foundation whose name has no scope yet: register it under organization `@org` (resolves `@/x` → `@org/x`) and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@org`; default `package.json::uniweb.scope`. |
+| `--scope @scope` | A foundation whose name has no scope yet: register it under `@scope` — your personal scope or an organization's (resolves `@/x` → `@scope/x`) — and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@scope`; default `package.json::uniweb.scope`. |
 | `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
@@ -1011,18 +1011,18 @@ export default {
 
 #### Scope
 
-`register` catalogs the foundation under an **organization scope** (`@org/`) you belong to, and **the scope is part of the name**: a foundation named `@acme/marketing` registers under `@acme`. So do the data schemas it defines — `@/article` registers as `@acme/article` — which is the name a site's records and queries use for them.
+A **scope** is a namespace, and **it is part of the name**: a foundation named `@acme/marketing` registers under `@acme`. So do the data schemas it defines — `@/article` registers as `@acme/article` — which is the name a site's records and queries use for them. A scope is either **your personal scope**, `@<your handle>`, which needs no organization and only you can publish into, or an **organization's**, which its members can publish into.
 
 A name with no scope has not been registered yet. The first `register` chooses one:
 
-1. **`--scope @org` flag** — explicit.
-2. *(real submit only)* derived from your login membership.
+1. **`--scope @scope` flag** — explicit.
+2. *(real submit only)* derived from your login: your personal scope when you belong to no organization — without asking, in CI too — else a choice between it and your organizations (in CI, your personal scope, said).
 
-…and writes it into the name in `main.js` (`name: '@acme/marketing'`), so it is chosen once and later runs need no flag. A `--scope` that names a different organization than the name's is refused; to move a foundation to another organization, change its name. A preview (`--dry-run`, `-o`) writes nothing: a name with no scope previews under `--scope`, or unscoped.
+…and writes it into the name in `main.js` (`name: '@acme/marketing'`), so it is chosen once and later runs need no flag. A `--scope` that names a different scope than the name's is refused; to move a foundation to another scope, change its name and register it there. A preview (`--dry-run`, `-o`) writes nothing: a name with no scope previews under `--scope`, or unscoped.
 
 A foundation with no resolvable scope is rejected — bare `@/…` names can't be registered.
 
-A **schemas-only package** has no `main.js` to carry a scope: it registers under `--scope @org`, else `package.json::uniweb.scope`, else one derived from your login membership, which is then saved to `uniweb.scope`.
+A **schemas-only package** has no `main.js` to carry a scope: it registers under `--scope @scope`, else `package.json::uniweb.scope`, else one derived from your login as above, which is then saved to `uniweb.scope`.
 
 #### Renaming
 
