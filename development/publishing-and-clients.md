@@ -53,6 +53,8 @@ Each version can only be registered once. To register an update, bump the versio
 { "name": "src", "version": "1.0.1" }
 ```
 
+When a site's `uniweb push` or `uniweb publish` brings the foundation along, `--bump` does this for you: it releases changed code under the next version above the registered one and writes that version into `package.json`.
+
 ### Edit Access
 
 By default, only clients you explicitly invite can create sites with your foundation (`restricted` access). To allow anyone to use it:

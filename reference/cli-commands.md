@@ -1156,6 +1156,8 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — releasing the new version before the content goes up (or asking first) — because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
+A registered version is immutable, so a change is released under a new version. When the foundation's code changed and its `package.json` still names a version the registry already holds, `--bump` releases the change under the next version above the registered one (`1.4.2` → `1.4.3`) and writes that version into the foundation's `package.json` — commit it. At a terminal, push offers the same bump before anything else. `--bump` does nothing when the code is unchanged, so a script can pass it on every run. If the registry holds a version *newer* than yours, `--bump` says so: when that is a teammate's release, pull their change first.
+
 ### The workspace you work in — and who owns a new site
 
 Every push, pull and publish works in **one workspace**: your personal one, or an organization's. It is chosen when you log in (see [`uniweb login`](#uniweb-login)), and it decides two things:
@@ -1204,6 +1206,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
+| `--bump` | Release a changed local foundation under the next version above the registered one, written into its `package.json`. Does nothing when the code is unchanged |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
 | `--no-validate` | Skip the content-conformance check, which stops a push whose records do not conform — see [`uniweb validate`](#uniweb-validate) |
 
@@ -1330,6 +1333,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--yes` | Skip confirmations (CI); never block on a prompt. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
+| `--bump` | Release a changed local foundation under the next version above the registered one, written into its `package.json` — as [`uniweb push --bump`](#uniweb-push). Does nothing when the code is unchanged. |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
 | `--no-validate` | Skip the content-conformance check, which stops a publish whose records do not conform — see [`uniweb validate`](#uniweb-validate). |
 | `--org @org` | Work in `@org` for this publish, instead of your login's workspace. |
