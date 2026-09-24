@@ -1154,9 +1154,11 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
 
-When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — releasing the new version before the content goes up (or asking first) — because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
+When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
-A registered version is immutable, so a change is released under a new version. When the foundation's code changed and its `package.json` still names a version the registry already holds, `--bump` releases the change under the next version above the registered one (`1.4.2` → `1.4.3`) and writes that version into the foundation's `package.json` — commit it. At a terminal, push offers the same bump before anything else. `--bump` does nothing when the code is unchanged, so a script can pass it on every run. If the registry holds a version *newer* than yours, `--bump` says so: when that is a teammate's release, pull their change first.
+A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json` — commit it. Unchanged code is not released again.
+
+If the registry holds a version *newer* than yours — released from another copy of the project — push stops before sending anything, since your copy may not have that release's code. Pull the change first, or pass `--bump` to release yours above it.
 
 ### The workspace you work in — and who owns a new site
 
@@ -1206,7 +1208,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
-| `--bump` | Release a changed local foundation under the next version above the registered one, written into its `package.json`. Does nothing when the code is unchanged |
+| `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
 | `--no-validate` | Skip the content-conformance check, which stops a push whose records do not conform — see [`uniweb validate`](#uniweb-validate) |
 
@@ -1333,7 +1335,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--yes` | Skip confirmations (CI); never block on a prompt. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
-| `--bump` | Release a changed local foundation under the next version above the registered one, written into its `package.json` — as [`uniweb push --bump`](#uniweb-push). Does nothing when the code is unchanged. |
+| `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping — as [`uniweb push --bump`](#uniweb-push). |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
 | `--no-validate` | Skip the content-conformance check, which stops a publish whose records do not conform — see [`uniweb validate`](#uniweb-validate). |
 | `--org @org` | Work in `@org` for this publish, instead of your login's workspace. |
