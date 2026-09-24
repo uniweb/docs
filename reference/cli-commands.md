@@ -1156,7 +1156,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
-A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json` — commit it. Unchanged code is not released again.
+A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json` — commit it. Unchanged code is not released again. The version picked is always the next patch (a pre-release gets its next pre-release); for a change that is not backwards compatible, set a higher minor or major version in `package.json` yourself before you push.
 
 If the registry holds a version *newer* than yours — released from another copy of the project — push stops before sending anything, since your copy may not have that release's code. Pull the change first, or pass `--bump` to release yours above it.
 
