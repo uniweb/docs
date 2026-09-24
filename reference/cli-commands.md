@@ -701,7 +701,9 @@ It does not flag unknown or extra fields, and it does not flag an absent optiona
 
 ### Deferred
 
-Inputs that can't be resolved from static files are reported as **deferred**, never silently skipped: remote (`url:`) sources, entity references (`ref` / `options`), and a schema whose root is a list when a query feeds it — a query delivers records, not one list. Validate these by pointing the source at live data.
+Data that isn't in your project is reported as **deferred**, never silently skipped: a remote (`url:`) source, fetched where the page renders. Validate it by pointing the source at live data. A data block whose component declares its schema inline is reported as deferred too.
+
+Everything else with a schema is checked — a schema whose root is a list, like `@std/nav`, as the list: the records a query delivers, a data block's array, or the list a record file holds under its section's key. The value of a reference field (`ref` / `options`) is not checked against the entity it names.
 
 ### Options
 

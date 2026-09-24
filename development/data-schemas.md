@@ -331,9 +331,9 @@ modules:
 
 Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD` day, and a `datetime` a day and a time.
 
-One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list, fed by a query, is deferred too — a query delivers records, not one list.
+One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list is checked as the list: the records a query delivers, or the list a record file holds under its section's key.
 
-An inline schema in a section's `data:` is reported too, rather than guessed at.
+An inline schema in a section's `data:` is reported too, rather than guessed at. The value of a reference field is not checked against the entity it names.
 
 **What is never checked, by design:** a visitor's answers to a form, an API response shape, or anything else that only exists at runtime. `validate` is a pre-ship gate over content you can see, not a runtime guard — the runtime stays tolerant, applying defaults and ignoring the rest.
 
