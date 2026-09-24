@@ -313,10 +313,10 @@ A schema only earns its keep where something runs it, so it's worth knowing exac
 
 | Where the data lives | Checked against |
 |---|---|
-| **Records a query delivers** (`query: articles`) | The schema of the key they fill in the section's `meta.js` — each record |
+| **Records a query delivers** (`query: articles`) | The schema of the key they fill in the section's `meta.js` — each record, or all of them as one list when that schema's root is a list |
 | **Every record file** in `records/` | The schema its folder names (`records/member/` → `@/member`) — whether or not a section reads it, since a push sends every record |
 | A **tagged data block** (```` ```yaml:form ````) | The schema the section declares for that *tag*, whether the value is a record or a list |
-| A **concept block** (```` ```md:faq ````) | `@std/faq`, if such a standard exists — resolved by name, never by a registry |
+| A **concept block** (```` ```md:faq ````) | Nothing — its structure comes from the markdown itself, one item per heading |
 
 A violation **fails** `uniweb validate` (exit `1`); `--lax` reports without failing. `uniweb push` and `uniweb publish` run the same check and stop before sending anything, because the backend checks your records against the same schemas; `uniweb deploy` to a static host warns and carries on.
 
