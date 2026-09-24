@@ -314,7 +314,7 @@ The `data:` schema is a contract — it says what shape `content.data.<key>` wil
 
 ```bash
 uniweb validate            # warn about any record that doesn't match its schema
-uniweb validate --strict   # non-zero exit — wire this into CI
+uniweb validate            # fails (exit 1) on a violation — wire this into CI
 ```
 
 It reports the exact chain — route, section, data key, file, item, field — so you fix the record directly:

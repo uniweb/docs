@@ -683,50 +683,52 @@ Check a project's file-based data against the data schemas your foundation decla
 uniweb validate [path]
 ```
 
-Where `doctor` checks your project against framework conventions, `validate` checks your *data* against the contracts you declared in `meta.js` (`data: { … }`) — "does my content match what I said it should be?" It warns by default and never blocks a build on its own: the live render path stays tolerant (applies field defaults, ignores the rest), so this is a pre-ship / CI gate you run on purpose.
+Where `doctor` checks your project against framework conventions, `validate` checks your *data* against the contracts you declared in `meta.js` (`data: { … }`) — "does my content match what I said it should be?" A violation fails it (exit `1`); `--lax` reports without failing. It never blocks a build: the live render path stays tolerant (applies field defaults, ignores the rest), so this is a pre-ship / CI gate you run on purpose — and the one `uniweb push` and `uniweb publish` run before they send anything.
 
 ### What It Checks
 
-For each section with a file-based data input, it resolves the schema bound to that input and checks every record for:
+For each section with a file-based data input, it resolves the schema bound to that input and checks every record — and it checks **every record file in `records/`** against the schema its folder names (`records/member/` → `@/member`), whether or not a section reads it, since a push sends them all. Each record is checked for:
 
 - Missing **required** fields
 - **Type** mismatches against the field's declared type
 - Values outside an **enum**
-- **Format** violations (`url`, `email`)
+- **Format** violations (`url`, `email`, and a `date` that is not a real `YYYY-MM-DD` day or a `datetime` that is not a day and a time)
 - Nested object and array fields, recursively
+
+A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — its single sections' fields at the top of the file, the brief's first — or **written by section**, each section under its own key, a list section as a list of records and child sections included.
 
 It does not flag unknown or extra fields, and it does not flag an absent optional field that has a default — the runtime fills those.
 
 ### Deferred
 
-Inputs that can't be resolved from static files are reported as **deferred**, never silently skipped: remote (`url:`) sources, entity references (`ref` / `options`), and rich `sections`-form schemas. Validate these by pointing the source at live data.
+Inputs that can't be resolved from static files are reported as **deferred**, never silently skipped: remote (`url:`) sources, entity references (`ref` / `options`), and a schema whose root is a list when a query feeds it — a query delivers records, not one list. Validate these by pointing the source at live data.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--strict` | Treat findings as errors (non-zero exit) — for CI |
+| `--lax` | Report violations without failing (exit `0`) |
 | `--json` | Machine-readable output for CI annotations |
 | `--site <name>` | Check one site in a multi-site workspace |
 
-Exit codes: `0` clean (or warnings only), `1` violations under `--strict`, `2` setup error (e.g. not in a workspace).
+Exit codes: `0` clean (or `--lax`), `1` violations, `2` setup error (e.g. not in a workspace).
 
 ### It also runs when you ship
 
-`uniweb publish`, `uniweb push` and `uniweb deploy` run the same check and print a short summary if anything doesn't conform. **They warn and carry on** — the ship is never blocked, and the full report stays here.
+`uniweb push` and `uniweb publish` run the same check first and **stop before sending anything** if a record doesn't conform. They register your foundation before sending content, so the backend checks the records against the very schemas checked here — a record that does not conform would be refused on arrival, or lose a value on the way. They also refuse what a push cannot carry: a field the record's schema does not declare, a markdown body with no field in the schema to hold it, and a record written by section.
 
-That split is deliberate. A schema can be newer than the content that was valid when it was authored, so a finding means the two disagree, not that your content is wrong; refusing to publish over that would make your site hostage to a schema release. The gate is `--strict`, and CI is where it belongs.
+`uniweb deploy` to a static host runs the check too, and **warns and carries on**. Nothing downstream enforces a schema there, and a schema can be newer than the content that was valid when it was authored — refusing to deploy over that would make your site hostage to a schema release.
 
-The check is silent when everything conforms, and also when there's nothing to check against — a site whose `foundation:` is a registry ref or a URL has no schemas on disk. Pass `--no-validate` to any of those commands to skip it.
+The check is silent when everything conforms, and also when there's nothing to check against — a site whose `foundation:` is a registry ref or a URL has no schemas on disk. Pass `--no-validate` to any of those commands to skip it; on `push` and `publish` that leaves the records to the backend to accept or refuse.
 
 ### Examples
 
 ```bash
-# Check every site in the workspace
+# Check every site in the workspace — fails (exit 1) on any violation; wire into CI
 uniweb validate
 
-# Fail (exit 1) on any violation — wire into CI
-uniweb validate --strict
+# Report violations without failing
+uniweb validate --lax
 
 # Machine-readable output
 uniweb validate --json
@@ -1203,7 +1205,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
-| `--no-validate` | Skip the content-conformance check (it only warns; see below) |
+| `--no-validate` | Skip the content-conformance check, which stops a push whose records do not conform — see [`uniweb validate`](#uniweb-validate) |
 
 `uniweb push` sends content but does **not** make it live — run `uniweb publish` afterward. (`uniweb publish` can also bring everything along itself — foundation, content, go-live — in one step.)
 
@@ -1329,7 +1331,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
-| `--no-validate` | Skip the content-conformance check (it only warns). |
+| `--no-validate` | Skip the content-conformance check, which stops a publish whose records do not conform — see [`uniweb validate`](#uniweb-validate). |
 | `--org @org` | Work in `@org` for this publish, instead of your login's workspace. |
 | `--personal` | Work in your personal workspace for this publish. |
 
@@ -1547,7 +1549,7 @@ Run from a site directory or workspace root. If the workspace has multiple sites
 | `--target <name>` | Pick a named target from `deploy.yml` (default: its `default:` field). |
 | `--dry-run` | Show what would be deployed without deploying. |
 | `--no-save` | Skip recording this deploy under `deploys:` in `deploy.yml`. |
-| `--no-validate` | Skip the content-conformance check (it only warns; see [`uniweb validate`](#uniweb-validate)). |
+| `--no-validate` | Skip the content-conformance check. For a static host it only warns; `--host=uniweb` is `uniweb publish`, which stops on it — see [`uniweb validate`](#uniweb-validate). |
 
 ### How the destination is resolved
 

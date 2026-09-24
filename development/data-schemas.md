@@ -314,15 +314,24 @@ A schema only earns its keep where something runs it, so it's worth knowing exac
 | Where the data lives | Checked against |
 |---|---|
 | **Records a query delivers** (`query: articles`) | The schema of the key they fill in the section's `meta.js` — each record |
+| **Every record file** in `records/` | The schema its folder names (`records/member/` → `@/member`) — whether or not a section reads it, since a push sends every record |
 | A **tagged data block** (```` ```yaml:form ````) | The schema the section declares for that *tag*, whether the value is a record or a list |
 | A **concept block** (```` ```md:faq ````) | `@std/faq`, if such a standard exists — resolved by name, never by a registry |
 
-Findings are **warnings by default**; `uniweb validate --strict` exits non-zero for CI.
+A violation **fails** `uniweb validate` (exit `1`); `--lax` reports without failing. `uniweb push` and `uniweb publish` run the same check and stop before sending anything, because the backend checks your records against the same schemas; `uniweb deploy` to a static host warns and carries on.
 
-Two things are reported as **deferred** rather than checked, and both for the same honest reason — the data isn't there to look at:
+A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — the single sections' fields at the top, the brief's first (a `many: true` section has no flat form) — or **written by section**, each section under its own key, a list section as a list of records:
 
-- an **external query** (`url:`), which isn't fetched at build time;
-- a **`sections:`-form schema describing a multi-section entity**, which no single flat file reproduces. (A `sections:` schema whose root is *a list* — see [When the content is a list](#when-the-content-is-a-list) — is checked normally, records and all.)
+```yaml
+# records/course/rust.yml — written by section
+identity: { title: "Rust 101" }
+modules:
+  - title: "Getting Started"
+```
+
+Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD` day, and a `datetime` a day and a time.
+
+One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list, fed by a query, is deferred too — a query delivers records, not one list.
 
 An inline schema in a section's `data:` is reported too, rather than guessed at.
 
@@ -397,7 +406,7 @@ uniweb register --scope @acme
 
 The scope becomes part of the foundation's name — `register` writes `name: '@acme/<name>'` into its `main.js` — so later runs need no flag, and the foundation and its schemas always register under the same organization.
 
-It submits **only the schemas you own** — the `@/`-refs, resolved into your scope (`@/product` → `@acme/product`). Schemas you merely *reference* from another scope are **named, not re-submitted**: a foundation that renders `@std/person` and `@std/event` ships neither definition — it names them, and they resolve to the live standards already in the registry.
+It submits **the schemas you own**: every schema file in your foundation's `schemas/` folder, resolved into your scope (`@/product` → `@acme/product`) — whether or not a section binds it, so a type only your app uses (a lesson, a quiz, a learner's progress) registers too. Placing the file in the folder is what makes it yours; a file whose name starts with `_` is a draft and is left out. Schemas you merely *reference* from another scope are **named, not re-submitted**: a foundation that renders `@std/person` and `@std/event` ships neither definition — it names them, and they resolve to the live standards already in the registry.
 
 That split matters in practice. You don't re-upload the standards every publish (wasteful), and you don't need membership in the `@std` org to reference its schemas — registration authorizes against the artifacts you *publish* (`@acme/*` and the foundation), not against what they reference. The `@/` prefix is the signal for "mine, publish it"; every concrete scope (`@std/x`, another org's `@org/x`) is a reference by name.
 
