@@ -97,7 +97,7 @@ A file whose name starts with `_` is not a record, and neither is anything in a 
 
 Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records/folder.yml` instead.
 
-A data schema gives records a typed shape, used for validation, field defaults and i18n extraction. When a query's schema marks a section `brief: true`, lists of that query leave the other fields out — see [Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out).
+A data schema gives records a typed shape, used for validation, field defaults and i18n extraction — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives the brief's fields at the top with every other section under its own name ([Entity Content](./entity-content.md)). Lists of such a query leave the sections other than the brief out — see [Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out).
 
 ---
 
@@ -147,7 +147,7 @@ Every record also carries `path`, its folder in `records/folder.yml`, and `$name
 
 ### Markdown
 
-The frontmatter holds the fields, and the body becomes the record's `content`:
+The frontmatter holds the fields, and the body becomes the record's `content` — or, when the query's schema declares a content field, that field's value, in the section that declares it ([Entity Content → Markdown](./entity-content.md#markdown-frontmatter--body)):
 
 ```markdown
 ---
@@ -213,10 +213,12 @@ A record with `draft: true` is still a record — it stays in `records/` and in 
 | `slug` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` field overrides it |
 | `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
 | `path` | `records/folder.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
-| `content` | Markdown body | ProseMirror JSON |
+| `content` | Markdown body | ProseMirror JSON. When the query's schema declares a content field, the body is that field's value instead, where the schema puts it |
 | `excerpt` | Frontmatter or body | Markdown records — see [Excerpts](#excerpts) |
 | `image` | Frontmatter or body | Markdown records — see [Images](#images) |
 | *your fields* | Frontmatter / file | Everything you write passes through: `title`, `date`, `author`, `tags`, … |
+
+A record of a schema with more than one section is compiled in the shape a component receives it: the brief's fields at the top, every other section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)).
 
 Once a query delivers a record to a component, it also carries `$route`, the URL of the page that shows it — see [Parametric Pages → Linking to a record](./dynamic-routes.md#linking-to-a-record).
 

@@ -280,7 +280,7 @@ A failure is never delivered as `[]`, because `[]` is an answer. On a parametric
 
 A list of a hundred articles doesn't need a hundred bodies. When the list carries less than the page shows, the parametric page gets the whole record anyway:
 
-- **A query with `deferred:` fields** — or one whose schema marks a brief section — leaves those fields out of lists. The record's page receives it whole, with nothing to configure ([Queries → `deferred`](../reference/queries.md#deferred--fields-a-list-leaves-out)).
+- **A query with `deferred:` fields** — or one whose schema has more than one section, which defers every section but its brief — leaves those fields out of lists. The record's page receives it whole, with nothing to configure ([Queries → `deferred`](../reference/queries.md#deferred--fields-a-list-leaves-out)).
 - **A host that serves records live** answers lists with each record's brief, and a record's page asks for the record whole.
 - **An external query** whose endpoint lists summaries names the request for one whole record with `record:` ([Queries → `record`](../reference/queries.md#one-record-record)).
 

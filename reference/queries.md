@@ -272,12 +272,13 @@ names, then the body's plain text, cut at a word boundary with `...`.
 ## `deferred` — fields a list leaves out
 
 Some records carry fields too heavy for every list — an article's body, a long nested list.
-`deferred:` names them:
+`deferred:` names them, by their key in the record a component receives: a field, or the name
+of a section ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)):
 
 ```yaml
 articles:
   schema: '@std/article'
-  deferred: [body]
+  deferred: [article_body]
 ```
 
 - **A list** of the query carries each record without those fields.
@@ -289,10 +290,11 @@ articles:
 On a static build, the generated `/data/articles.json` leaves the fields out and one file per
 record, `/data/articles/<slug>.json`, carries it whole.
 
-**A schema can say it for you.** When a query's schema is written in sections and marks one
-`brief: true` — the card, the row, the summary — every field outside the brief is deferred, and
-`deferred:` is rarely needed. The build works this out from the foundation's schemas, so it applies
-when the site builds with its foundation at hand. A `deferred:` you write takes precedence. See
+**A schema can say it for you.** When a query's schema has more than one section, its brief — the
+card, the row, the summary — is what a list needs, so every other section is deferred and
+`deferred:` is rarely needed. `@std/article`'s is `[article_body]`, the example above. The build
+works this out from the foundation's schemas, so it applies when the site builds with its
+foundation at hand. A `deferred:` you write takes precedence. See
 [Data Schemas](../development/data-schemas.md).
 
 An external query cannot declare `deferred:`: its list is whatever the endpoint returns. It names

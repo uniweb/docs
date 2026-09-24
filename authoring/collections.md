@@ -335,7 +335,7 @@ team:
 
 ### Lean lists with `deferred:`
 
-If your records have heavy fields that bloat every list — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**. Lists of the query leave them out, and each record's full version is fetched only where it is shown:
+If your records have heavy fields that bloat every list — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**, by their key in the record a component receives: a field, or a section's name. Lists of the query leave them out, and each record's full version is fetched only where it is shown:
 
 ```yaml
 queries:

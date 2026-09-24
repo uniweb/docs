@@ -1,13 +1,12 @@
 # Entity Content Structure
 
 The structure every content record — a blog post, a document, any
-content-as-data artifact — follows. It is **one shape across authoring and
-render**: what you write in a file (YAML, JSON, Markdown frontmatter, BibTeX) is
-the shape your component receives at render time.
+content-as-data artifact — follows: how you write one in a file (YAML, JSON,
+Markdown frontmatter, BibTeX), and the shape your component receives it in.
 
 A data-schema (see [Data Schemas](../development/data-schemas.md)) is the **typed
 skeleton** of this structure: the schema describes what a record of that type looks
-like; this page describes how an actual record is written out.
+like; this page describes how an actual record is written out, and read.
 
 ## At a glance
 
@@ -15,7 +14,8 @@ A record is a single object. Its keys come from the **sections** declared in the
 record's schema, and each section's value follows the section's *kind*: a `single`
 section is an **object**, a `multi` section is an **array** of records.
 
-A simple, single-section schema produces a flat record — fields at the top level:
+A schema with one section — the `fields:` form, or `sections:` with a single one —
+has a flat record, fields at the top level:
 
 ```yaml
 title: "Rust 101"
@@ -23,7 +23,8 @@ summary: "Learn Rust from scratch"
 published: 2026-05-01
 ```
 
-A multi-section schema makes each section a key:
+A schema with more than one section is written **by section**, each section under
+its own name:
 
 ```yaml
 identity:                    # a `single` section → object
@@ -43,6 +44,38 @@ modules:                     # a `multi` section → array (index = order)
 Sections become object keys; their kind decides whether the value is an object or
 an array; a nested section (a child section declared under a parent) becomes an
 **inline field** on the parent's records.
+
+Only a schema with one section is written flat. In any other, every field goes under
+the name of its section — a field written at the top of such a record stops the build
+and a push, with a message that names the section it belongs in. A section is a
+namespace: two sections may declare fields of the same name.
+
+## What a component receives
+
+A component reads a record in one shape, whether the site is built to static files
+or its records come from a backend:
+
+- the fields of the schema's **brief** — the section marked `brief: true`, else the
+  first `single` section — at the top of the record;
+- every other section under its own name;
+- `$name`, the record's handle ([below](#slugs)).
+
+```js
+// records/std/article/hello.md, as a component receives it
+{
+  $name: 'hello',
+  title: 'Hello',                  // the brief, `article`, at the top
+  date: '2026-05-01',
+  article_body: {                  // another section, under its name
+    content: { type: 'doc', … },   // the markdown body
+  },
+}
+```
+
+A flat record arrives as it is written. A list of records may carry only each
+record's brief — a query leaves the other sections out of lists unless you say
+otherwise ([Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out)) — while the
+page that shows one record receives it whole.
 
 ## Sections and nesting
 
@@ -88,7 +121,9 @@ schema. It defaults to the natural slug of the source: the filename without
 extension for a YAML/JSON/Markdown file, or the cite key for a BibTeX entry. The
 slug is the record's handle (`$name`), which a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref` field points at. Set
 it explicitly with a `slug:` field (or frontmatter key) when you don't want the
-filename to decide.
+filename to decide. In a record written by section, write it at the top, beside the
+sections — a `slug` inside a section is one of that section's fields (`@std/article`'s
+brief has one), not the handle.
 
 ## Per-format authoring
 
@@ -123,8 +158,25 @@ published: 2026-04-12
 
 # Welcome
 
-The body becomes the value of the schema's content field (typically a `text` field
-with `format: markdown`).
+The body becomes the value of the schema's content field.
+```
+
+The frontmatter is the record's data, written flat or by section like any other
+record; the body is the value of the schema's **content field** — a `markdown` field,
+which holds the markdown source, or a `richtext` one, which holds it as a rich
+document — in whichever section declares it. `@std/article` declares `content` in its
+`article_body` section:
+
+```markdown
+---
+article:
+  title: "Hello, World"
+  date: 2026-04-12
+---
+
+# Welcome
+
+The body is `article_body.content`.
 ```
 
 ### BibTeX

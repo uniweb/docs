@@ -99,6 +99,24 @@ sections:
 
 The flat `fields:` form is the common case; reach for `sections:` only when a single record genuinely can't express the content.
 
+**The `fields:` form is one section.** It is `sections:` with a single section named `brief`, marked `brief: true` — the whole record is its own card. When a schema outgrows it, write that section out and add the others beside it:
+
+```yaml
+# foundation/schemas/product.yml — what `fields:` was, plus a section
+name: product
+sections:
+  brief:
+    brief: true
+    fields:
+      name:  { type: string, required: true }
+      price: { type: number }
+  specs:
+    fields:
+      weight: { type: string }
+```
+
+Keep the name `brief` if records of the schema are already stored in a backend: a section's name is where its data is kept. The record files change with the schema — a schema of more than one section is written by section, so each record's fields move under `brief:` ([Entity Content](../reference/entity-content.md)); the build names every field that is left at the top. Naming a schema's brief section `brief` is a good habit in any schema: whoever reads a record knows at a glance which section is its card.
+
 ### Append-only sections
 
 A `multi` section can be marked **insert-only** with `append_only: true` — records may be added, but never edited or deleted:
@@ -320,7 +338,7 @@ A schema only earns its keep where something runs it, so it's worth knowing exac
 
 A violation **fails** `uniweb validate` (exit `1`); `--lax` reports without failing. `uniweb push` and `uniweb publish` run the same check and stop before sending anything, because the backend checks your records against the same schemas; `uniweb deploy` to a static host warns and carries on.
 
-A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — the single sections' fields at the top, the brief's first (a `many: true` section has no flat form) — or **written by section**, each section under its own key, a list section as a list of records:
+A record file is checked as it is written: flat for a schema of one section, **by section** for any other — each section under its own key, a list section as a list of records. A field written at the top of a record of a schema with more than one section is reported, naming the section it belongs in:
 
 ```yaml
 # records/course/rust.yml — written by section
@@ -328,6 +346,8 @@ identity: { title: "Rust 101" }
 modules:
   - title: "Getting Started"
 ```
+
+The records a query delivers are checked in the shape a component receives them: the brief's fields at the top, each other section under its name ([Entity Content → What a component receives](../reference/entity-content.md#what-a-component-receives)).
 
 Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD` day, and a `datetime` a day and a time.
 
