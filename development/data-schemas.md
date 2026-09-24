@@ -248,6 +248,8 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 
 You can always write the canonical kind directly; the friendly names just save you the folding.
 
+**References.** A `ref` field points at a record of another schema. In a record's file, write the name of the record it points at — its file's name, or its `slug:` — so `speaker: ada` points at `records/speaker/ada.yml`; a `many: true` reference is a list of names. A component receives the record it points at reduced to its brief, as `{ entity, brief }` — so `talk.speaker.brief.name` — with `entity` the record's id where it has one ([Entity Content](../reference/entity-content.md#what-a-component-receives)). With a backend, `uniweb push` sends each reference to the record it names, in a second pass when that record is new in the same push, and `uniweb pull` writes the name back.
+
 **Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). List-level flags like `required` ride on the list; the type describes each item.
 
 Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
@@ -353,7 +355,7 @@ Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD
 
 One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list is checked as the list: the records a query delivers, or the list a record file holds under its section's key.
 
-An inline schema in a section's `data:` is reported too, rather than guessed at. The value of a reference field is not checked against the entity it names.
+An inline schema in a section's `data:` is reported too, rather than guessed at. A reference must name a record of its schema: one that names none is reported, and a push refuses it. An `options` value is not checked against the list it names.
 
 **What is never checked, by design:** a visitor's answers to a form, an API response shape, or anything else that only exists at runtime. `validate` is a pre-ship gate over content you can see, not a runtime guard — the runtime stays tolerant, applying defaults and ignoring the rest.
 

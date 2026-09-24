@@ -58,6 +58,8 @@ or its records come from a backend:
 - the fields of the schema's **brief** — the section marked `brief: true`, else the
   first `single` section — at the top of the record;
 - every other section under its own name;
+- a reference as the record it points at, reduced to its brief: `{ entity, brief }`,
+  `entity` being that record's id where it has one;
 - `$name`, the record's handle ([below](#slugs)).
 
 ```js
@@ -107,7 +109,7 @@ no wrappers, no encoding:
 | `date`, `datetime` | ISO-8601 string (e.g. `2026-05-01`, `2026-05-01T12:00:00Z`) |
 | `file` | A path or URL to the file |
 | `array` (of scalars) | The native array (`[a, b, c]`) |
-| `ref` | The referenced record's slug |
+| `ref` | The name of the record it points at — its [slug](#slugs); a list of names for a `many` reference |
 | A `localized` field of any text kind | `{ <locale>: value }` — e.g. `title: { en: "Hello", fr: "Bonjour" }` |
 
 For a localized field you can write the value as a bare string in your source file
