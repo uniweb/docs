@@ -35,6 +35,11 @@ declare a query, `queries.yml` wins, key by key.
 | `team: '@/person'` | a query over `@/person` |
 | a map | a query with the keys below |
 
+A bare name that is not a data schema takes the type your foundation's sections declare for the
+data key of the same name. With `data: { team: '@/member' }` in a section's `meta.js` and no `team`
+schema, `team:` is a query over `@/member` records: pushed to a backend they are `@/member`
+entities, while their files stay in `records/team/`.
+
 A page names a query with `query: articles`, or with `fetch:` when it narrows it — see
 [Data Fetching](./data-fetching.md).
 
