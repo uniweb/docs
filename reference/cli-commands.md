@@ -323,6 +323,16 @@ with a notice pointing at `--site` for explicit selection.
 Markdown, `theme.yml`, and component edits hot-reload. New section types are
 picked up without restarting.
 
+**A site whose foundation is a released version** — `foundation: '@org/name@1.2.0'`,
+as in every [`uniweb clone`](#uniweb-clone) — has no build of that foundation in the
+project. `uniweb dev` asks the backend the site is on (the one you are logged in to)
+where that version is served, and runs the dev server against it for that run only:
+nothing is written, and `site.yml` keeps the version. Images the site keeps as the
+backend's own URLs are fetched from that backend as well. When the backend does not
+say where the version is served, `uniweb dev` says so and does not start — pushing,
+pulling and publishing do not need it. Running `vite` directly skips the question,
+and the site's build stops at the version it cannot resolve.
+
 ---
 
 ## uniweb inspect
@@ -1297,6 +1307,8 @@ uniweb clone <site-uuid> [name|.]
 ```
 
 `clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Sites are private — authenticate with `uniweb login` first.
+
+Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where the site's foundation version is served.
 
 ### Options
 
