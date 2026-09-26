@@ -447,7 +447,8 @@ A few practical notes:
 
 - Set `"uniweb": { "scope": "@acme" }` in the package's `package.json` and you can drop `--scope` on every run.
 - You register under a scope you belong to — membership over the declared scope is what authorizes the registration. (That's why you can register `@acme` but not `@std`.)
-- Re-registering is safe: an unchanged schema is a no-op (no new version), and a changed one registers a new version. Re-running `register` on a repo you haven't edited costs nothing.
+- Re-registering an unchanged schema is a no-op, so re-running `register` on a repo you haven't edited costs nothing.
+- A name has one shape once records use it. A backend that holds records of a schema refuses a change that would invalidate them — a field's type changed, say — and asks for the new shape under a new name (`@acme/product-v2`). Settle a schema's fields before its records reach a backend.
 
 ---
 

@@ -31,7 +31,7 @@ That indirection is what makes the schema shareable rather than copied:
 - A foundation writes `@/product` in its source and never hard-codes its own org. The same foundation can be registered under any scope — the name resolves relative to where it's registered.
 - A reference to `@std/person`, or to a schema another organization registered, is a name the registry resolves. The foundation declares *what shape it renders*, not *where the definition lives*.
 
-Because identity is the name, you register a schema by declaring it under a scope you own — not by minting an id or managing a version yourself. Re-declaring an unchanged schema is a no-op; a changed one becomes a new version. The producer never tracks versions; the name stays stable while the definition behind it evolves.
+Because identity is the name, you register a schema by declaring it under a scope you own — not by minting an id or managing a version yourself. Re-declaring an unchanged schema is a no-op, and the producer never tracks versions. The name is the contract: once a backend holds records of a schema, a change that would invalidate them is refused there, and the new shape takes a new name (`@acme/product-v2`).
 
 ---
 
