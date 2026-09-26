@@ -594,7 +594,11 @@ uniweb i18n status --records-only        # Coverage of the record translations
 uniweb i18n audit --records-only         # Stale and missing record translations
 ```
 
-Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record rather than by any query that returns it. Extraction covers all record data using schema-guided or heuristic field detection. Provide a companion `.schema.js` file for precise control over which fields are translatable. A record's handles — `slug`, `path`, and system fields such as `$name` — are never extracted. The per-record files a query writes for [`deferred:`](../reference/queries.md#deferred--fields-a-list-leaves-out) fields are translated with the same strings as the list, so a translated record page shows its translated body.
+Record strings are stored in a separate manifest at `locales/records/manifest.json`, keyed by the record (`std/article/habitat-protection`) rather than by any query that returns it.
+
+A record whose query has a [data schema](./data-schemas.md) is translated as its schema says: its text and rich-text fields are, and a field that is an enum, a URL or an email, a number, a date, a file, a reference, or marked `translatable: false` is not — the same fields a push to a backend carries in each language. A referenced record's card, shown inside another record, is translated as that record is. An excerpt the build derives from a record's body is derived again in each language from the translated body, so it is never a string to translate. A record with no data schema is read by a heuristic, or by a companion `.schema.js` file.
+
+A record's handles — `slug`, `path`, and system fields such as `$name` — are never extracted. The per-record files a query writes for [`deferred:`](../reference/queries.md#deferred--fields-a-list-leaves-out) fields are translated with the same strings as the list, so a translated record page shows its translated body.
 
 ---
 
@@ -615,6 +619,8 @@ When the same source string appears in multiple places and needs different trans
 ```
 
 The `default` value is used everywhere except the specified overrides. Override keys use the format `{page}:{section}` matching the `contexts` in the manifest: the page's route, and the section's id — its file name without a number prefix (`2-cta.md` is `cta`), or the `id:` in its frontmatter. The id stays the same when files are renumbered, and an override survives pushing the site to a backend and pulling it back.
+
+A page's own `title`, `label`, `description` and `keywords` use the section id `_meta` — `"/about:_meta"`. In `locales/records/`, an override names a record by the identity the records manifest lists in its `contexts` — `"std/article/habitat-protection"`.
 
 ---
 
