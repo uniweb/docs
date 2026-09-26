@@ -448,7 +448,7 @@ A few practical notes:
 - Set `"uniweb": { "scope": "@acme" }` in the package's `package.json` and you can drop `--scope` on every run.
 - You register under a scope you belong to — membership over the declared scope is what authorizes the registration. (That's why you can register `@acme` but not `@std`.)
 - Re-registering an unchanged schema is a no-op, so re-running `register` on a repo you haven't edited costs nothing.
-- A backend that holds records of a schema accepts a change that keeps them valid — a label or description reworded, a field or a section added — and refuses one that would invalidate them — a field's type changed, a field removed, a required field added — asking for the new shape under a new name (`@acme/product-v2`).
+- A backend that holds records of a schema accepts a change that keeps them valid — a label or description reworded, a field or a section added, a value added to a field's options — and refuses one that would invalidate or lose what they hold: a field's type changed, a field removed, an option some record uses dropped, a field made required that some record leaves empty. The refusal names the change and how many records it breaks; add the new shape beside what records hold, or publish it under a new name (`@acme/product-v2`).
 
 ---
 
