@@ -26,22 +26,10 @@ languages: [en, es, fr]
 
 That's it. The `defaultLanguage` is whatever language your content is written in.
 
-### Adding display names
+### Language names
 
-If you want language names to appear nicely in a language switcher:
-
-```yaml
-defaultLanguage: en
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
-  - code: fr
-    label: Français
-```
-
-Without labels, the site uses built-in display names for common languages.
+A language switcher shows each language in its own name — `English`, `Español`, `Français` — from its
+code, so you only list codes. Any language gets its name this way; there is nothing to write.
 
 ---
 

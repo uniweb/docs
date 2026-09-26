@@ -80,20 +80,20 @@ languages: [en, es, fr]
 
 The default language has no URL prefix (`/about`), while other languages get prefixed (`/es/about`, `/fr/about`).
 
-### With Custom Labels
+### Language Names
+
+A language is named by its code — list codes, not labels:
 
 ```yaml
 defaultLanguage: en
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
-  - code: fr
-    label: Français
+languages: [en, es, fr]
 ```
 
-Labels appear in language switchers. Without explicit labels, `@uniweb/kit` provides common display names.
+Language switchers show each language in its own name: `English`, `Español`, `Français`. Common
+languages come from a built-in table, and any other code is named by the platform (`ca` is `Català`,
+`eu` is `Euskara`), so a site never writes a label. The older `{ code, label }` entries are an error:
+a label cannot travel when the site is pushed to a backend, so a site that used them showed different
+names depending on where it was served.
 
 ### Auto-Discovery
 
@@ -294,18 +294,16 @@ function MyComponent() {
 
 ### Display Names Utility
 
-When languages don't have explicit labels:
+The name a switcher shows for a code:
 
 ```jsx
 import { getLocaleLabel, LOCALE_DISPLAY_NAMES } from '@uniweb/kit'
 
-// From locale object with label
-getLocaleLabel({ code: 'es', label: 'Spanish' })  // 'Spanish'
+getLocaleLabel('es')  // 'Español' — the built-in table
+getLocaleLabel('ca')  // 'Català' — the language's own name, where the platform knows it
+getLocaleLabel('xx')  // 'XX' — the code, when nothing names it
 
-// From locale object without label
-getLocaleLabel({ code: 'es' })  // 'Español' (built-in)
-
-// Access built-in names directly
+// The built-in names
 console.log(LOCALE_DISPLAY_NAMES.fr)  // 'Français'
 ```
 
@@ -616,7 +614,7 @@ When the same source string appears in multiple places and needs different trans
 }
 ```
 
-The `default` value is used everywhere except the specified overrides. Override keys use the format `{page}:{section}` matching the `contexts` in the manifest.
+The `default` value is used everywhere except the specified overrides. Override keys use the format `{page}:{section}` matching the `contexts` in the manifest: the page's route, and the section's id — its file name without a number prefix (`2-cta.md` is `cta`), or the `id:` in its frontmatter. The id stays the same when files are renumbered, and an override survives pushing the site to a backend and pulling it back.
 
 ---
 

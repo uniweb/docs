@@ -1219,6 +1219,9 @@ getLocaleLabel({ code: 'es' })  // 'Español' (from built-in names)
 // From string
 getLocaleLabel('es')  // 'Español'
 
+// A code the built-in names don't list — its own name, where the platform knows it
+getLocaleLabel('ca')  // 'Català'
+
 // Unknown code
 getLocaleLabel({ code: 'xx' })  // 'XX'
 

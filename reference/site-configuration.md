@@ -393,24 +393,16 @@ languages: [en, es, fr]
 ### Language Formats
 
 ```yaml
-# Just codes (display names from @uniweb/kit)
+# Codes — each language is named from its code
 languages: [en, es, fr]
-
-# With custom labels
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
-  - code: fr
-    label: Français
 
 # Auto-discover from locales/ folder
 languages: '*'
 ```
 
-Plain string codes are the canonical form; the object form is legacy and only
-affects switcher labels (`@uniweb/kit` provides display names for plain codes).
+A language is named by its code: a switcher shows `Español` for `es`, from a built-in table, and any
+other code in its own language where the platform knows it (`ca` is `Català`). A `{ code, label }`
+entry is an error — a label cannot travel when a site is pushed to a backend.
 
 ### Draft Languages (`publishLanguages`)
 
@@ -1289,11 +1281,7 @@ pages: [home, products, about, ..., contact]
 
 # Languages
 defaultLanguage: en
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
+languages: [en, es]
 
 # Layout — cascades to every page; folder.yml and page.yml override per field
 layout:

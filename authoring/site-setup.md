@@ -151,20 +151,10 @@ languages: [en, es, fr]
 
 The `defaultLanguage` is whatever language your content is written in. It gets no URL prefix — visitors see `/about`. Other languages get a prefix — `/es/about`, `/fr/about`.
 
-### Adding Display Names
+### Language Names
 
-By default, the site uses built-in labels for common languages. To customize what appears in a language switcher:
-
-```yaml
-defaultLanguage: en
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
-  - code: fr
-    label: Français
-```
+A language switcher shows each language in its own name — `English`, `Español`, `Français` — from its
+code. List codes only; a `{ code, label }` entry is an error.
 
 ### Auto-Discovering Languages
 
@@ -324,11 +314,7 @@ index: home
 
 # Languages
 defaultLanguage: en
-languages:
-  - code: en
-    label: English
-  - code: es
-    label: Español
+languages: [en, es]
 
 # Features
 search:
