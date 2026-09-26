@@ -620,7 +620,7 @@ When the same source string appears in multiple places and needs different trans
 
 The `default` value is used everywhere except the specified overrides. Override keys use the format `{page}:{section}` matching the `contexts` in the manifest: the page's route, and the section's id — its file name without a number prefix (`2-cta.md` is `cta`), or the `id:` in its frontmatter. The id stays the same when files are renumbered, and an override survives pushing the site to a backend and pulling it back.
 
-A page's own `title`, `label`, `description` and `keywords` use the section id `_meta` — `"/about:_meta"`. In `locales/records/`, an override names a record by the identity the records manifest lists in its `contexts` — `"std/article/habitat-protection"`.
+A page's own `title`, `label`, `description`, `keywords`, `seo.ogTitle` and `seo.ogDescription` use the section id `_meta` — `"/about:_meta"`. The site's own `seo.ogTitle` and `seo.ogDescription`, in `site.yml`, use `"/:_site"`. In `locales/records/`, an override names a record by the identity the records manifest lists in its `contexts` — `"std/article/habitat-protection"`.
 
 ---
 
