@@ -320,7 +320,9 @@ fields:
   country: { type: string, options: '@/countries' }              # curated, shared
 ```
 
-- **`enum:`** — an **inline** list of allowed values. Best for a short, fixed set.
+- **`enum:`** — an **inline** list of allowed values. Best for a short, fixed set. An entry can also
+  be `{ value, label }` — `{ value: published, label: Live }` — to give an editor a label to show;
+  a record stores the `value`.
 - **`options:`** — a **`@/<name>` ref** to a curated options schema. Best when the choices are a managed list reused across fields or foundations.
 
 An inline array always belongs on `enum:`; `options:` always takes a ref.
