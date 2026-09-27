@@ -1073,18 +1073,37 @@ export default {
   children: {
     label: 'Grid items',
     hint: 'Each child section becomes a grid cell. Use any component type.',
-  },
-
-  params: {
-    columns: {
-      type: 'select',
-      label: 'Columns',
-      options: ['2', '3', '4', 'auto'],
-      default: 'auto',
-    },
+    grid: [3, 2, 4, '40/60', '60/40'],
   },
 }
 ```
+
+The object form takes `label`, `hint` (each a string, or an `{ en, fr, … }` map), `min`, `max`, `types` (the section types allowed as children), and `grid`. Shorthands: `children: true` (any number, any type) or `children: 3` (up to three).
+
+### Grid layouts
+
+`grid` lists the layouts a component offers for its children. Each is a column count (`3` — equal columns) or relative widths (`'40/60'` — two columns, the part count being the column count). **The first is the layout a section gets when it chooses none.**
+
+A section chooses one with the `grid` key in its frontmatter — a section key like `type`, never a param:
+
+```markdown
+---
+type: Grid
+grid: '40/60'
+---
+```
+
+Lay the children out with kit's `ChildGrid`, which reads that choice from `block.grid` and uses your default when there is none:
+
+```jsx
+import { ChildGrid } from '@uniweb/kit'
+
+export default function Grid({ block }) {
+  return <ChildGrid from={block} fallback={3} />
+}
+```
+
+`ChildGrid` shows one column on narrow screens, a layout of up to two columns from the `md` breakpoint (a wider one as two equal columns), and the chosen layout from `lg`. `headerRow` makes the first child span every column; `className` replaces the default `gap-8`. Don't declare a param named `grid` — the section key takes the name, so the param would never receive it.
 
 In markdown, child sections use the `@` prefix and `nest:` in page.yml:
 

@@ -1112,6 +1112,30 @@ function SplitContent({ content, block }) {
 
 **Resolution order:** inset > video > image. Only tries candidates you pass.
 
+### ChildGrid
+
+Lays a section's child sections out in the columns the section chose with its `grid` key — `3` (equal columns) or `'40/60'` (relative widths) — one of the layouts the component offers in `meta.js` `children.grid` ([Grid layouts](./component-metadata.md#grid-layouts)). From `@uniweb/kit`.
+
+```jsx
+import { ChildGrid } from '@uniweb/kit'
+
+function Grid({ block, params }) {
+  return <ChildGrid from={block} fallback={3} headerRow={params.headerRow} className="gap-6" />
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `from` | Block | — | The section whose `childBlocks` are laid out |
+| `fallback` | number \| string | `null` | The layout when the section chose none, or chose something that is not a layout — list it first in `children.grid` |
+| `headerRow` | boolean | `false` | The first child spans every column |
+| `className` | string | — | Classes on the grid; replaces the default `gap-8` |
+| `cellClassName` | string | — | Classes on each child's cell |
+
+One column on narrow screens; from `md`, a layout of up to two columns as chosen and a wider one as two equal columns; from `lg`, the chosen layout. With no layout at all, the children stack. The columns are computed by `gridTemplate` from `@uniweb/schemas/grid`, so a visual editor drawing with the same function draws what renders.
+
 Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
 
 ### Render vs Prose
