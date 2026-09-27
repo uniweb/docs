@@ -73,8 +73,8 @@ articles:
     query: |
       query Articles { articles { id slug title excerpt } }
   transform: data.articles
-  # each article's `slug` names it — its `$name`, which /articles/[slug] matches
-  name_field: slug
+  # /articles/[slug] names each article by its `slug` field — on the list page the clause drops
+  where: { slug: :slug }
 
   # the record on /articles/[slug] — url and method are the query's; body and transform are its own
   record:

@@ -24,7 +24,7 @@ There are two ways to provide data to components:
 
 **Rule of thumb:** if authors maintain the content, use records in `records/`. If it comes from an external system at request time, use an external query.
 
-> **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `records/` as well: a `.json` or `.yml` file containing a top-level array becomes one record per entry.
+> **Don't write to `public/data/`.** It is the build's output directory. A file you put there is overwritten without warning as soon as a query takes the same name, and it gets none of what a record provides — no i18n extraction, no schema validation, no per-record files, no editor support. Data exported from another tool belongs in `records/` as well, one file per record (a `.bib` file holds its entries, each named by its cite key).
 
 ---
 
@@ -210,7 +210,7 @@ A record with `draft: true` is still a record — it stays in `records/` and in 
 
 | Field | Source | Notes |
 |-------|--------|-------|
-| `$name` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` key in the file overrides it. The record carries no `slug` |
+| `$name` | Filename | `getting-started.md` → `"getting-started"`. A `slug:` key in the file stops the build — rename the file instead |
 | `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
 | `path` | `records/folder.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
 | `content` | Markdown body | ProseMirror JSON. When the query's schema declares a content field, the body is that field's value instead, where the schema puts it |

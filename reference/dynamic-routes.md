@@ -258,17 +258,18 @@ The folder's name says what the segment matches:
 
 | folder | URL pattern | matched against |
 |---|---|---|
-| `[slug]` | `/blog/:slug` | the record's name, `$name` |
+| `[slug]` | `/blog/:slug` | the record's name, `$name` — or the field its route query binds `:slug` to |
 | `[...path]` | `/blog/:path*` | the handle, by the last segment ([below](#multi-segment-routes--path)) |
 | `[uuid]` | `/items/:uuid` | the record's identity, `$uuid` — a plain `uuid` field when it has none |
 | `[id]` | `/products/:id` | the record's own `id` field |
 | `[username]` | `/users/:username` | the record's own `username` field |
 
-Records compiled from `records/` carry `$name`: the filename, unless the file sets
-`slug:`. A host that answers queries serves `$name` too, and an
-[external query](./queries.md#external-queries) names its records with
-`name_field:` — so a `[slug]` page matches the same way on every site, by `$name`
-alone. A record's `slug` field, if it has one, is its own data. Values compare
+Records compiled from `records/` carry `$name`: the file's name. A host that answers
+queries serves `$name` too, so a `[slug]` page matches the same way on every site. An
+[external query](./queries.md#external-queries)'s records are entries in no folder and
+have no `$name`: its query binds the URL's last segment to one of their fields —
+`where: { slug: :slug }` ([Queries → Which field the URL names](./queries.md#which-field-the-url-names-slug)) —
+and the page matches that field instead. Values compare
 as strings — `/products/42` matches a record whose `id` is the number `42`.
 
 A field that holds **several values** matches **any member**: a record with
@@ -678,7 +679,7 @@ with content. Put the list's sections in `pages/articles/` itself, beside `page.
 
 **Records missing from the output.**
 Every record needs the field the folder names. `[slug]` and `[...path]` need a
-`$name` on each record — an external query's come from its `name_field:` — and
+`$name` on each record — or the field their route query binds `:slug` to — and
 records without it get no page, and
 the build says how many — *"3 of 5 records have no "slug""* — once per page. A record
 outside the route query's set — excluded by its `where`, or past its `limit` — has no

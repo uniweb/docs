@@ -83,12 +83,12 @@ All four produce the same shape at runtime — the foundation components see rec
 
 For the three pure-data formats (YAML, JSON, BibTeX), the same authoring choice applies:
 
-- **One record per file** — write a single mapping at the top of the file. The framework uses the filename stem as `slug`. This is the typical pattern when authors hand-edit each entry: `team/alice.yml`, `team/bob.yml`, …
-- **Many records per file** — write a top-level array (YAML or JSON) or a `.bib` file with multiple `@entry{...}` blocks. Each record carries its own `slug` (the BibTeX cite key for `.bib`; an explicit `slug:` field for YAML/JSON arrays). This is the typical pattern when the data comes from another tool — a Zotero `.bib` export, a JSON dump from a backend, a YAML file your scripts emit.
+- **One record per file** — write a single mapping at the top of the file. The file's name is the record's name: `team/alice.yml` is `alice`, and so is its URL on a `[slug]` page. To rename a record, rename its file — a `slug:` key inside it stops the build, and so does a file holding a list of records.
+- **BibTeX** — a `.bib` file holds many entries, each named by its cite key. This is the typical pattern for an exported bibliography (a Zotero `.bib`).
 
-Within a single schema folder you can mix and match: array-form files contribute many records each, mapping-form files contribute one each, and the framework merges everything into one combined list. So a `bibliography/` folder can hold an exported `refs.bib` next to a hand-written `extras.yml`; a `team/` folder can hold a bulk `roster.yml` array alongside a single `alice.md` markdown bio for someone who needs a long prose introduction.
+Within a single schema folder you can mix formats, and the framework merges everything into one list. So a `bibliography/` folder can hold an exported `refs.bib` next to a hand-written `extras.yml`; a `team/` folder can hold a YAML file per member alongside an `alice.md` markdown bio for someone who needs a long prose introduction.
 
-Format-specific niceties: markdown items get auto-generated excerpts and first-image extraction. BibTeX entries are normalized to CSL-JSON fields (`author`, `title`, `issued`, `container-title`, `DOI`, …); LaTeX accents (`\"u`, `\'e`) are converted to Unicode automatically. (Configuration files — `site.yml`, `page.yml`, `folder.yml` — are always single mappings; the array-form is a *record* affordance, not a YAML-anywhere one.)
+Format-specific niceties: markdown items get auto-generated excerpts and first-image extraction. BibTeX entries are normalized to CSL-JSON fields (`author`, `title`, `issued`, `container-title`, `DOI`, …); LaTeX accents (`\"u`, `\'e`) are converted to Unicode automatically.
 
 ---
 
@@ -346,12 +346,12 @@ all brief — ships it in every list; the developer moves it to a section of its
 queries:
   articles:
     url: https://api.example.com/articles             # an external query
-    name_field: slug                                   # each article's name, which a [slug] page matches
+    where: { slug: :slug }                             # a [slug] page names each article by its slug
     record:
       url: https://api.example.com/articles/{slug}    # how to fetch one full record
 ```
 
-`name_field:` says which field names each record — the site's own records are named by their files.
+`where: { slug: :slug }` says which field the page's URL names — the site's own records are named by their files, and an API's are named by nothing until the query says so.
 Both the `[slug]` page and `useWholeRecord` use `record:` when it's set. See [Data Fetching → External queries](../reference/queries.md#external-queries).
 
 > **Removed:** `detailUrl:` — its case is `record: { url }`.

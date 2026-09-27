@@ -135,13 +135,13 @@ For a localized field you can write the value as a bare string in your source fi
 ## Names
 
 Every record has a **name**, unique within its schema, which a component reads as
-`$name`: the filename without extension for a YAML/JSON/Markdown file, or the cite
-key for a BibTeX entry. It is what a `[slug]` [parametric page](./dynamic-routes.md)
-matches, and what a `ref` field points at. A file can state another with a `slug:`
-key at its top — beside the sections, in a record written by section — and each
-entry of an array-form file names itself that way. The record a component receives
-carries its name as `$name` only: a `slug` inside a section is one of that section's
-fields, the author's data like any other.
+`$name`: the file's name without its extension — or, for a BibTeX entry, its cite key.
+It is what a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref`
+field points at. A file holds one record, and nothing inside it renames the record: a
+`slug:` key at its top, or a list of records, stops the build — to rename a record,
+rename its file. The record a component receives carries its name as `$name` only; a
+`slug` inside a section is one of that section's fields, the author's data like any
+other.
 
 ## Per-format authoring
 

@@ -95,14 +95,13 @@ A query over a public JSON endpoint — an [external query](#external-queries):
 | `url` | the address. Its presence is what makes the query external |
 | `method`, `body` | `POST` with a JSON body, for an endpoint that takes its question in the body. `GET` is the default |
 | `transform` | a dot-path to the records in the response |
-| `name_field` | the field each record is named by — its `$name`, which a `[slug]` page matches ([below](#naming-records-name_field)) |
 | `where`, `sort`, `limit` | the query's own set, evaluated over the records `transform` picked |
 | `record` | the request for one whole record, for a parametric page |
 | `queryable` | as on any query |
 
 The build stops on a query that mixes the two: `schema`, `scope` and `excerpt` describe
-the site's records and are refused beside `url:`, and `method`, `body`, `transform`, `name_field` and
-`record` are refused without it.
+the site's records and are refused beside `url:`, and `method`, `body`, `transform` and `record` are
+refused without it.
 
 ---
 
@@ -365,23 +364,26 @@ articles:
   transform: data.articles
 ```
 
-### Naming records: `name_field`
+### Which field the URL names: `:slug`
 
-A record's name is its `$name` — what a `[slug]` [parametric page](./dynamic-routes.md) matches, and
-what `{slug}` in `record.url` fills. The site's own records are named by their files; an external
-query says which of its records' fields names them:
+A `[slug]` [parametric page](./dynamic-routes.md) names a record by its `$name` — the name it has as
+an entry in its folder. An external API's records are entries in no folder, so they have none: the
+query binds the URL's last segment to one of their fields in its own `where`, and the page matches
+that field:
 
 ```yaml
 articles:
   url: https://api.example.com/articles
-  name_field: slug          # each article's `slug` becomes its `$name`
+  where: { slug: :slug }        # the URL's last segment is each article's `slug`
   record:
     url: https://api.example.com/articles/{slug}
 ```
 
-Each record arrives with `$name` set from that field, beside the field itself. Without `name_field`,
-an external query's records have no `$name`: a page routed by one of their own fields names it
-instead — `[id]` matches a record's `id`.
+On the query's own page no URL binds `:slug`, so the clause drops and every record is listed; on the
+parametric page it selects the one the URL names. The query's records link to their page by the same
+field (`$route`), and a static build expands a page for each value. Only a clause whose whole value is
+`:slug`, at the top of the `where`, names the field. A page routed as `[id]` needs no binding: it
+matches a record's `id` field by name.
 
 ### One record: `record`
 
@@ -410,7 +412,7 @@ articles:
   body:
     query: "{ articles { id slug title excerpt } }"
   transform: data.articles
-  name_field: slug          # a [slug] page matches each article's `slug`
+  where: { slug: :slug }    # a [slug] page matches each article's `slug`
   record:
     body:
       query: "query Article($slug: String!) { article(slug: $slug) { id title body } }"
