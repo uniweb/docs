@@ -105,7 +105,7 @@ that belongs at the top needs no line:
 ```yaml
 # records/folder.yml — news/announcement.md sits at the top
 - folder: 2024
-  label: 2024                   # a folder may carry a label; a record never does
+  label: 2024                   # a folder's display text
   records:
     - news/spring.md            # in 2024
     - folder: q1
@@ -119,6 +119,21 @@ that belongs at the top needs no line:
 
 They all stay records of the site — a query over `@/news` still reaches all of them.
 Folders do not split anything, and a folder is never part of a record's URL.
+
+A record's entry can also say something about the record: write it as
+`{ path, tags, label }` rather than a path.
+
+```yaml
+- folder: 2024
+  records:
+    - path: news/spring.md
+      tags: [featured]          # the entry's own labels, in the order written
+      label: Spring update      # its display text
+```
+
+A component receives them beside the record as `$tags` and `$label`, and a query can
+ask for them: `where: { $tags: featured }`. A record that sits at the top can be
+listed at the top level for this, and only for this.
 
 To ask for one branch, give the query a `scope:` — it belongs to the query, so a
 `fetch:` that names the query can't carry one:

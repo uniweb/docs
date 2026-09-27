@@ -138,7 +138,8 @@ spring:
 
 A scope holds the named folder and everything below it, at segment boundaries. A record does not
 carry its folder, so a `where` cannot name one: `path` in a `where` is a field of the record's own,
-like any other name.
+like any other name. What a record's entry in `folder.yml` says about it, a query reads like any
+field — `where: { $tags: featured }`, `sort: $label` ([Records → Folders](./content-collections.md#folders)).
 
 On a parametric page, `scope: :dir` reads the branch the URL names — see
 [route variables](#route-variables).

@@ -63,9 +63,10 @@ expects, per `content.data` key, in its `meta.js`
 - **The record whole** — `data: { articles: '@std/article/*' }`: the record as it is
   stored, each section under its own name, the brief's included.
 
-Both carry `$name`, the record's name ([below](#names)), and a reference as the
-record it points at, reduced to its brief: `{ entity, brief }`, `entity` being that
-record's id where it has one.
+Both carry `$name`, the record's name ([below](#names)); `$tags` and `$label` when its
+entry in `records/folder.yml` gives them ([Folders](./content-collections.md#folders));
+and a reference as the record it points at, reduced to its brief: `{ entity, brief }`,
+`entity` being that record's id where it has one.
 
 ```js
 // records/std/article/hello.md as a brief — '@std/article'
@@ -134,10 +135,12 @@ For a localized field you can write the value as a bare string in your source fi
 
 ## Names
 
-Every record has a **name**, unique within its schema, which a component reads as
-`$name`: the file's name without its extension — or, for a BibTeX entry, its cite key.
-It is what a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref`
-field points at. A file holds one record, and nothing inside it renames the record: a
+Every record has a **name**, which a component reads as `$name`: the file's name
+without its extension — or, for a BibTeX entry, its cite key. Names may repeat; what
+identifies a record is its `$uuid`. By default a `[slug]` [parametric page](./dynamic-routes.md)
+places its URL's `:slug` in its query as a condition on `$name`, and when several records
+match, it takes one of them. A `ref` field can name a record by it. A file holds one
+record, and nothing inside it renames the record: a
 `slug:` key at its top, or a list of records, stops the build — to rename a record,
 rename its file. The record a component receives carries its name as `$name` only; a
 `slug` inside a section is one of that section's fields, the author's data like any

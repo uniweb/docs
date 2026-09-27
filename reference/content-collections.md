@@ -108,16 +108,21 @@ A data schema gives records a typed shape, used for validation, field defaults a
 ```yaml
 # records/folder.yml
 - folder: archive
-  label: The Archive            # only a folder takes a label; a record has its own title
+  label: The Archive            # a folder's display text
   records:
     - article/2019-*.md         # in archive
+    - path: article/2020-launch.md
+      tags: [featured, press]   # what the folder says about this record
+      label: The launch
 ```
 
 A path under a folder is relative to `records/`, naming one file or matching many; `*` matches within one folder. A query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder); a record does not carry its folder, and a folder is never part of a record's URL. The organization is yours to choose: it does **not** mirror the `records/` layout, which names schemas and nothing else.
 
+**What the folder says about a record.** A record's entry can be `{ path, tags, label }` rather than a path. `tags` are the entry's own labels, kept in the order written, and `label` is its display text. A component receives them beside the record as `$tags` and `$label` — absent when the entry gives none — and a query reads them like any other key: `where: { $tags: featured }`. A pattern gives every record it matches the same tags. A folder takes `tags:` too.
+
 **A record sits in one folder.** Placing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 
-`folder.yml` never lists records at the top level — every record in `records/` is one already — so a path there is reported as an error. A `folder.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
+`folder.yml` never lists records at the top level — every record in `records/` is one already — so a path there is reported as an error. The exception is an entry that gives a record `tags:` or a `label:`: `- path: news/welcome.md` with `tags: [pinned]` keeps the record at the top and says what the folder knows about it. A `folder.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
 
 It lives in the directory it organizes, the way a pages folder's `folder.yml` does: it moves with `paths.records`, and a records directory that several sites share brings its folders with it. A `records.yml` at the site root — where this file lived before — stops the build and names the move: `git mv records.yml records/folder.yml`.
 
