@@ -66,9 +66,9 @@ or its records come from a backend:
 // records/std/article/hello.md, as a component receives it
 {
   $name: 'hello',
-  title: 'Hello',                  // the brief, `article`, at the top
+  title: 'Hello',                  // the brief, `brief`, at the top
   date: '2026-05-01',
-  article_body: {                  // another section, under its name
+  body: {                          // another section, under its name
     content: { type: 'doc', … },   // the markdown body
   },
 }
@@ -167,18 +167,18 @@ The frontmatter is the record's data, written flat or by section like any other
 record; the body is the value of the schema's **content field** — a `markdown` field,
 which holds the markdown source, or a `richtext` one, which holds it as a rich
 document — in whichever section declares it. `@std/article` declares `content` in its
-`article_body` section:
+`body` section:
 
 ```markdown
 ---
-article:
+brief:
   title: "Hello, World"
   date: 2026-04-12
 ---
 
 # Welcome
 
-The body is `article_body.content`.
+The body is `body.content`.
 ```
 
 ### BibTeX

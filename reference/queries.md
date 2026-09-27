@@ -283,7 +283,7 @@ of a section ([Entity Content → What a component receives](./entity-content.md
 ```yaml
 articles:
   schema: '@std/article'
-  deferred: [article_body]
+  deferred: [body]
 ```
 
 - **A list** of the query carries each record without those fields.
@@ -297,7 +297,7 @@ record, `/data/articles/<slug>.json`, carries it whole.
 
 **A schema can say it for you.** When a query's schema has more than one section, its brief — the
 card, the row, the summary — is what a list needs, so every other section is deferred and
-`deferred:` is rarely needed. `@std/article`'s is `[article_body]`, the example above. The build
+`deferred:` is rarely needed. `@std/article`'s is `[body]`, the example above. The build
 works this out from the foundation's schemas, so it applies when the site builds with its
 foundation at hand. A `deferred:` you write takes precedence. See
 [Data Schemas](../development/data-schemas.md).

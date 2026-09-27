@@ -41,18 +41,18 @@ URL names one record of it.
 
 Markdown files under `records/`, in the folder the schema names — `records/std/article/`
 for the standard `@std/article`. Every file there is a record, and its filename stem
-becomes the `slug`. `@std/article` has two sections — `article`, its card, and
-`article_body` — so a record is written by section, and its body is
-`article_body.content` ([Entity Content](./entity-content.md)):
+becomes the `slug`. `@std/article` has two sections — `brief`, its card, and
+`body` — so a record is written by section, and its body is
+`body.content` ([Entity Content](./entity-content.md)):
 
 ```markdown
 <!-- records/std/article/getting-started.md -->
 ---
-article:
+brief:
   title: Getting Started with Uniweb
   excerpt: Learn the basics...
   date: 2025-01-15
-article_body:
+body:
   author: Jane Doe
 ---
 
@@ -62,11 +62,11 @@ Your article content here...
 ```markdown
 <!-- records/std/article/advanced-features.md -->
 ---
-article:
+brief:
   title: Advanced Features
   excerpt: Deep dive into...
   date: 2025-01-20
-article_body:
+body:
   author: John Smith
 ---
 
@@ -178,11 +178,11 @@ export default function Article({ content, block }) {
     )
   }
 
-  // The card's fields are at the top of the record; the rest of it is under `article_body`.
+  // The card's fields are at the top of the record; the rest of it is under `body`.
   return (
     <article>
       <h1>{article.title}</h1>
-      <p>By {article.article_body?.author} on {article.date}</p>
+      <p>By {article.body?.author} on {article.date}</p>
       <p>{article.excerpt}</p>
     </article>
   )
