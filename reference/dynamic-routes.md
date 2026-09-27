@@ -141,7 +141,7 @@ export default function ArticleList({ content, block }) {
   return (
     <ul>
       {articles.map(a => (
-        <li key={a.slug}>
+        <li key={a.$name}>
           {/* a.$route is the page that shows this record — never rebuild it */}
           <a href={a.$route}>{a.title}</a>
         </li>
@@ -258,15 +258,17 @@ The folder's name says what the segment matches:
 
 | folder | URL pattern | matched against |
 |---|---|---|
-| `[slug]` | `/blog/:slug` | the record's handle, `$name` — its `slug` when it has no `$name` |
+| `[slug]` | `/blog/:slug` | the record's name, `$name` |
 | `[...path]` | `/blog/:path*` | the handle, by the last segment ([below](#multi-segment-routes--path)) |
 | `[uuid]` | `/items/:uuid` | the record's identity, `$uuid` — a plain `uuid` field when it has none |
 | `[id]` | `/products/:id` | the record's own `id` field |
 | `[username]` | `/users/:username` | the record's own `username` field |
 
-Records compiled from `records/` carry `$name`, the same value as their `slug`:
-the filename, unless frontmatter sets `slug:`. A host that answers queries serves
-`$name` too, so a `[slug]` page matches the same way on every site. Values compare
+Records compiled from `records/` carry `$name`: the filename, unless the file sets
+`slug:`. A host that answers queries serves `$name` too, and an
+[external query](./queries.md#external-queries) names its records with
+`name_field:` — so a `[slug]` page matches the same way on every site, by `$name`
+alone. A record's `slug` field, if it has one, is its own data. Values compare
 as strings — `/products/42` matches a record whose `id` is the number `42`.
 
 A field that holds **several values** matches **any member**: a record with
@@ -376,7 +378,7 @@ The `$` marks a field the framework fills, as `$name` does — so the link never
 on a field of your own. A record's own `route` field (a trail's, a bus line's) is left
 exactly as it is.
 
-Rebuilding the link in a component (`` `/articles/${a.slug}` ``) makes a second
+Rebuilding the link in a component (`` `/articles/${a.$name}` ``) makes a second
 producer of a value that already exists — and the two disagree exactly where the
 normalization differs, on a field nobody checks until a visitor clicks it.
 
@@ -471,7 +473,7 @@ export default function RelatedArticles({ content, block }) {
       <h2>More Articles</h2>
       <ul>
         {related.map(a => (
-          <li key={a.slug}><a href={a.$route}>{a.title}</a></li>
+          <li key={a.$name}><a href={a.$route}>{a.title}</a></li>
         ))}
       </ul>
     </section>
@@ -676,7 +678,8 @@ with content. Put the list's sections in `pages/articles/` itself, beside `page.
 
 **Records missing from the output.**
 Every record needs the field the folder names. `[slug]` and `[...path]` need a
-handle — `$name`, or `slug` — on each record; records without it get no page, and
+`$name` on each record — an external query's come from its `name_field:` — and
+records without it get no page, and
 the build says how many — *"3 of 5 records have no "slug""* — once per page. A record
 outside the route query's set — excluded by its `where`, or past its `limit` — has no
 page either.

@@ -96,13 +96,14 @@ A query over a public JSON endpoint — an [external query](#external-queries):
 | `url` | the address. Its presence is what makes the query external |
 | `method`, `body` | `POST` with a JSON body, for an endpoint that takes its question in the body. `GET` is the default |
 | `transform` | a dot-path to the records in the response |
+| `name_field` | the field each record is named by — its `$name`, which a `[slug]` page matches ([below](#naming-records-name_field)) |
 | `where`, `sort`, `limit` | the query's own set, evaluated over the records `transform` picked |
 | `record` | the request for one whole record, for a parametric page |
 | `queryable` | as on any query |
 
 The build stops on a query that mixes the two: `schema`, `scope`, `deferred` and `excerpt` describe
-the site's records and are refused beside `url:`, and `method`, `body`, `transform` and `record` are
-refused without it.
+the site's records and are refused beside `url:`, and `method`, `body`, `transform`, `name_field` and
+`record` are refused without it.
 
 ---
 
@@ -382,6 +383,24 @@ articles:
   transform: data.articles
 ```
 
+### Naming records: `name_field`
+
+A record's name is its `$name` — what a `[slug]` [parametric page](./dynamic-routes.md) matches, and
+what `{slug}` in `record.url` fills. The site's own records are named by their files; an external
+query says which of its records' fields names them:
+
+```yaml
+articles:
+  url: https://api.example.com/articles
+  name_field: slug          # each article's `slug` becomes its `$name`
+  record:
+    url: https://api.example.com/articles/{slug}
+```
+
+Each record arrives with `$name` set from that field, beside the field itself. Without `name_field`,
+an external query's records have no `$name`: a page routed by one of their own fields names it
+instead — `[id]` matches a record's `id`.
+
 ### One record: `record`
 
 On a [parametric page](./dynamic-routes.md) the record the URL names is found in the query's list.
@@ -409,6 +428,7 @@ articles:
   body:
     query: "{ articles { id slug title excerpt } }"
   transform: data.articles
+  name_field: slug          # a [slug] page matches each article's `slug`
   record:
     body:
       query: "query Article($slug: String!) { article(slug: $slug) { id title body } }"

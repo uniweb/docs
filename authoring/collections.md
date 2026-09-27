@@ -367,10 +367,12 @@ Skip `deferred:` for records without heavy fields — the entire record ships, l
 queries:
   articles:
     url: https://api.example.com/articles             # an external query
+    name_field: slug                                   # each article's name, which a [slug] page matches
     record:
       url: https://api.example.com/articles/{slug}    # how to fetch one full record
 ```
 
+`name_field:` says which field names each record — the site's own records are named by their files.
 Both the `[slug]` page and `useWholeRecord` use `record:` when it's set. See [Data Fetching → External queries](../reference/queries.md#external-queries).
 
 > **Removed:** `detailUrl:` — its case is `record: { url }`.

@@ -63,7 +63,7 @@ expects, per `content.data` key, in its `meta.js`
 - **The record whole** — `data: { articles: '@std/article/*' }`: the record as it is
   stored, each section under its own name, the brief's included.
 
-Both carry `$name`, the record's handle ([below](#slugs)), and a reference as the
+Both carry `$name`, the record's name ([below](#names)), and a reference as the
 record it points at, reduced to its brief: `{ entity, brief }`, `entity` being that
 record's id where it has one.
 
@@ -125,22 +125,23 @@ no wrappers, no encoding:
 | `date`, `datetime` | ISO-8601 string (e.g. `2026-05-01`, `2026-05-01T12:00:00Z`) |
 | `file` | A path or URL to the file |
 | `array` (of scalars) | The native array (`[a, b, c]`) |
-| `ref` | The name of the record it points at — its [slug](#slugs); a list of names for a `many` reference |
+| `ref` | The name of the record it points at ([Names](#names)); a list of names for a `many` reference |
 | A `localized` field of any text kind | `{ <locale>: value }` — e.g. `title: { en: "Hello", fr: "Bonjour" }` |
 
 For a localized field you can write the value as a bare string in your source file
 (in the site's source locale); translations live in the `locales/` folder (see
 [Internationalization](../development/internationalization.md)).
 
-## Slugs
+## Names
 
-Every record has a **slug** — a stable, human-readable handle, unique within its
-schema. It defaults to the natural slug of the source: the filename without
-extension for a YAML/JSON/Markdown file, or the cite key for a BibTeX entry. The
-slug is the record's handle (`$name`), which a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref` field points at. Set
-it explicitly with a `slug:` field (or frontmatter key) when you don't want the
-filename to decide. In a record written by section, write it at the top, beside the
-sections — a `slug` inside a section is one of that section's fields, not the handle.
+Every record has a **name**, unique within its schema, which a component reads as
+`$name`: the filename without extension for a YAML/JSON/Markdown file, or the cite
+key for a BibTeX entry. It is what a `[slug]` [parametric page](./dynamic-routes.md)
+matches, and what a `ref` field points at. A file can state another with a `slug:`
+key at its top — beside the sections, in a record written by section — and each
+entry of an array-form file names itself that way. The record a component receives
+carries its name as `$name` only: a `slug` inside a section is one of that section's
+fields, the author's data like any other.
 
 ## Per-format authoring
 

@@ -104,7 +104,7 @@ This is the central modeling decision. You have a second type — say `instructo
 instructor: { ref: '@/person' }   # points at a separate person record
 ```
 
-A `ref` field stores a pointer to a record of another type, by its slug — the two records stay separate. Choose between embed and reference by asking **"does this thing exist on its own?"**
+A `ref` field stores a pointer to a record of another type, by its name — the two records stay separate. Choose between embed and reference by asking **"does this thing exist on its own?"**
 
 | Embed (subsection) | Reference (`ref`) |
 |---|---|

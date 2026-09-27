@@ -210,7 +210,7 @@ A record with `draft: true` is still a record — it stays in `records/` and in 
 
 | Field | Source | Notes |
 |-------|--------|-------|
-| `slug` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` field overrides it |
+| `$name` | Filename | `getting-started.md` → `"getting-started"`; a `slug:` key in the file overrides it. The record carries no `slug` |
 | `$name` | `slug` | The record's handle — the same value as its final `slug`. A `[slug]` or `[...path]` page matches it, on every site |
 | `path` | `records/folder.yml` | The folder the record is placed in — `""` at the root, `"archive"` inside a `folder: archive`. A query reads a branch with [`scope:`](./queries.md#scope--a-branch-of-the-folder) |
 | `content` | Markdown body | ProseMirror JSON. When the query's schema declares a content field, the body is that field's value instead, where the schema puts it |

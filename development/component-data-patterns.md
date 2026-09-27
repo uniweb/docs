@@ -36,7 +36,7 @@ query: articles           # author says what to fetch
 export default function ArticleList({ content, block }) {
   if (block.dataLoading) return <DataPlaceholder />
   const articles = content.data.articles || []
-  return <ul>{articles.map((a) => <li key={a.slug}>{a.title}</li>)}</ul>
+  return <ul>{articles.map((a) => <li key={a.$name}>{a.title}</li>)}</ul>
 }
 ```
 
