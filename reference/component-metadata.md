@@ -1016,14 +1016,17 @@ export default {
 
 Where an inset is offered is a concern of the section it is placed in — its [`visuals`](#visual-expectations) declaration, or `insets` in its `content:` — not a property of the inset itself. (`children` is about child sections, not insets.) Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components), so a hidden component is not a section type and `@ComponentName` cannot resolve to it.
 
-A component can be both a standalone section and an inset:
+A component with `inset: true` is meant to be placed as an inset: a visual editor offers it among insets and leaves it out of the list of sections. A component meant for both adds `section: true`:
 
 ```javascript
 // sections/Testimonial/meta.js
 export default {
-  inset: true,               // also available for @ references
+  inset: true,               // available for @ references
+  section: true,             // and still offered as a section
 }
 ```
+
+This guides editors; it does not restrict markdown. The runtime renders any section type in either position.
 
 Inset components receive `content.title` (from the `[description]` text) and `params` (from `{key=value}` attributes). At runtime, the parent section accesses insets via `block.insets` (separate from `block.childBlocks`).
 
