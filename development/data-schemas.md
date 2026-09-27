@@ -52,11 +52,10 @@ linkable: true                # may other schemas reference this one? (default: 
 `locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
 quietly accepted.
 
-**`linkable`** controls whether another schema may point at this one with a `ref` field. It is
-`true` by default for any schema with a `brief:` section, because the brief *is* what a reference
-shows. A schema with no brief has nothing to show and is never linkable — asking for
-`linkable: true` there is an error rather than a silent no-op, since the reference would fail at
-the point someone tried to use it.
+**`linkable`** controls whether this schema's entries may be referenced — by another schema's `ref`
+field, and, on a backend, as a site's records. It is `true` unless you write `linkable: false`, with
+or without a `brief:` section. The brief *is* what a reference shows, so a reference to an entry of a
+schema without one has no card to show.
 
 **There is no key for who may create entries.** When a backend stores your content, anyone
 signed in may create entries of any schema. What protects content is the entry itself: who may
