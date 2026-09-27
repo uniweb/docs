@@ -337,7 +337,7 @@ It also reports a section whose page fetches data none of which fills the keys i
 
 ## See also
 
-- [Queries](../reference/queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`, external queries
+- [Queries](../reference/queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, external queries
 - [Data Fetching](../reference/data-fetching.md) — `query:` and `fetch:`, narrowing, what a section receives, `current:`
 - [Parametric Pages](../reference/dynamic-routes.md) — one page per record: which query a URL names, what it matches, `$route`
 - [Records](../reference/content-collections.md) — `records/`, its `folder.yml`, and what a compiled record holds

@@ -475,7 +475,7 @@ Records are identified by `slug`, `id`, or `name` (checked in that order). If no
 
 ## See Also
 
-- [Queries](./queries.md) — which records a query selects: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`
+- [Queries](./queries.md) — which records a query selects: `schema`, `scope`, `where`, `sort`, `limit`
 - [Data Fetching](./data-fetching.md) — naming a query from a page or section
 - [Parametric Pages](./dynamic-routes.md) — one page per record
 - [Working with Records](../authoring/collections.md) — the author's guide to records and queries

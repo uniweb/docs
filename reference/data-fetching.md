@@ -444,7 +444,7 @@ Secrets do not belong in `site.yml` — values here are public to the browser. S
 
 ## See Also
 
-- [Queries](./queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `deferred`, `queryable`, external queries
+- [Queries](./queries.md) — everything a query can say: `schema`, `scope`, `where`, `sort`, `limit`, `queryable`, external queries
 - [Parametric Pages](./dynamic-routes.md) — one page per record of a query
 - [Working with Data](../development/working-with-data.md) — one query used across a site, section by section
 - [Records](./content-collections.md) — `records/`, its `folder.yml`, and what a compiled record holds

@@ -1091,7 +1091,7 @@ queries:
     sort: order asc
 ```
 
-A page or section names a query — `query: articles` — and never the file a build generates from it. Every key a query can carry — `schema`, `scope`, `where`, `sort`, `limit`, `excerpt`, `deferred`, `queryable`, and `url:` for an external query — is in [Queries](./queries.md).
+A page or section names a query — `query: articles` — and never the file a build generates from it. Every key a query can carry — `schema`, `scope`, `where`, `sort`, `limit`, `excerpt`, `queryable`, and `url:` for an external query — is in [Queries](./queries.md).
 
 #### A record's link — `$route`
 

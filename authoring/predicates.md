@@ -289,7 +289,7 @@ The where-object format is deliberately small. It's a way to **select records**,
 These are intentionally out of scope:
 
 - **Aggregation.** `COUNT`, `SUM`, `AVG`, `GROUP BY`. Compute these in your component code (or in the backend) over the records the predicate returned.
-- **Projection.** "Give me only the title and excerpt fields." A predicate never changes which fields a record carries. For lean lists, declare [deferred fields](../reference/queries.md#deferred--fields-a-list-leaves-out) on the query.
+- **Projection.** "Give me only the title and excerpt fields." A predicate never changes which fields a record carries. A list carries each record's [brief](../reference/queries.md#what-a-list-carries).
 - **Joins.** Matching records of one query against another's. The author embeds the relationship in the data (id references, embedded arrays).
 - **Subqueries.** Predicates can compose with `and`/`or`/`not` but can't reference other queries.
 
@@ -362,7 +362,7 @@ fetch:
 
 ## What's next
 
-- **[Queries](../reference/queries.md)** — everything a query can say, including the complete operator reference and `deferred:` (lean lists).
+- **[Queries](../reference/queries.md)** — everything a query can say, including the complete operator reference and what a list carries.
 - **[Data Fetching](../reference/data-fetching.md)** — the `fetch:` declaration, and how a fetch narrows a query.
 - **[Working with Records](./collections.md)** — records and queries in depth.
 - **[Data Sources](../development/data-sources.md)** — when your where-objects ship over the wire instead of running locally.

@@ -86,7 +86,6 @@ A query over the site's records:
 | `sort` | the order, by one field ([below](#sort--in-what-order)) |
 | `limit` | how many: the first N in `sort`. `0` or absent means all of them |
 | `excerpt` | how a markdown record's `excerpt` is derived ([below](#excerpt--a-records-summary)) |
-| `deferred` | fields of the brief a static site's lists leave out ([below](#deferred--fields-a-list-leaves-out)) |
 | `queryable` | the fields a foundation may offer as filters ([below](#queryable--fields-a-foundation-can-filter-on)) |
 
 A query over a public JSON endpoint — an [external query](#external-queries):
@@ -101,7 +100,7 @@ A query over a public JSON endpoint — an [external query](#external-queries):
 | `record` | the request for one whole record, for a parametric page |
 | `queryable` | as on any query |
 
-The build stops on a query that mixes the two: `schema`, `scope`, `deferred` and `excerpt` describe
+The build stops on a query that mixes the two: `schema`, `scope` and `excerpt` describe
 the site's records and are refused beside `url:`, and `method`, `body`, `transform`, `name_field` and
 `record` are refused without it.
 
@@ -275,33 +274,16 @@ names, then the body's plain text, cut at a word boundary with `...`.
 
 ---
 
-## `deferred` — fields a list leaves out
+## What a list carries
 
 A list carries each record's **brief** ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)),
-so a query whose schema has more than one section already leaves every section but the brief out of
-its lists — `@std/article`'s body is not in its list, on any site. `deferred:` names more to leave
-out of a static site's lists — fields of the brief, by their key in it:
+so a field a list should leave out belongs in a section of its own, outside the brief —
+`@std/article`'s body is `body`, and no list carries it, on any site. A section that shows one record
+in full declares whole records (`'@std/article/*'`, [Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records));
+anywhere else, a component fetches one with [`useWholeRecord`](./kit-reference.md#usewholerecord).
 
-```yaml
-posts:
-  schema: '@/post'          # the `fields:` form: its brief is the whole record
-  deferred: [content]
-```
-
-- **A list** of the query carries each record without those fields: the generated
-  `/data/posts.json`.
-- **A component that declares whole records** (`'@/post/*'`) receives them — each record's own
-  file, `/data/posts/<name>.json`, holds it whole.
-- **Anywhere else**, a component fetches one whole record with
-  [`useWholeRecord`](./kit-reference.md#usewholerecord).
-
-⚠️ A component that expects briefs does not receive a deferred field — in a list, or on a
-parametric page, which reads the record its list holds. A host that serves records live answers
-every brief with all its fields, whatever `deferred:` says. A field every list should leave out
-belongs in a section of its own, where every site leaves it out.
-
-An external query cannot declare `deferred:`: its list is whatever the endpoint returns. It names
-a request for one whole record with [`record:`](#one-record-record).
+> **Removed:** `deferred:` — the fields a static site's lists left out. A schema's brief decides
+> what a list holds, on every site, and the build stops on the key.
 
 ---
 
