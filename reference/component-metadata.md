@@ -560,10 +560,26 @@ The component reads the events from `content.data.events` and renders them along
 A `data:` entry describes the shape of *each record*. The records a query delivers arrive as a **list**, always:
 
 - A section that shows a query's records receives every record it takes: `content.data.events`.
-- A section on a [parametric page](./dynamic-routes.md) receives the one record the URL names as a **list of one**, under the same kind of key. It reads `content.data.events[0]`.
+- A section on a [parametric page](./dynamic-routes.md) receives the one record the URL names as a **list of one**, under the same kind of key — its brief, or the record whole for a key declared `/*` ([below](#briefs-or-whole-records)). It reads `content.data.events[0]`.
 - When the URL names no record, the key is `[]` — an answer with no records — and the page is marked not found.
 
 A key that holds a tagged data block's value or an editor form's holds whatever was written — a record or a list. A key nothing fills is `null`. The runtime never turns a list into a single object and never adds a singular key; reshaping is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
+
+#### Briefs or whole records
+
+A query's record reaches a component in one of two shapes, and a named ref says which the component expects ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)):
+
+```javascript
+data: {
+  articles: '@std/article',     // briefs: the brief's fields at the top — article.title
+  article:  '@std/article/*',   // whole records, as stored — article.brief.title, article.body.content
+}
+```
+
+- **Without `/*`** — the default — each record is its **brief**: the fields of the schema's brief section at the top, the section not named. What a list, a card or a row needs.
+- **With `/*`** each record arrives **whole**: every section under its own name, the brief's included. What a page that shows one record in full needs — an article's body is not in its brief.
+
+The runtime asks for what the key declares — on a [parametric page](./dynamic-routes.md) as much as anywhere — so a component never receives the other shape. A key declared `/*` whose source cannot answer a whole record is `null`. A schema of one section (the `fields:` form) has a brief that is the whole record, so its component can leave `/*` off; records of an external query have no schema, and arrive as their source answers them. Field defaults follow the declaration: from the brief's fields, or from each section's.
 
 #### Loading states
 

@@ -153,9 +153,11 @@ export default function ArticleList({ content, block }) {
 
 ```js
 // src/sections/Article/meta.js
+// `/*` asks for each article WHOLE — its card under `brief`, its body under `body`.
+// Without it the page's article would be its brief: the card's fields, no body.
 export default {
   title: 'Article',
-  data: { articles: '@std/article' },
+  data: { articles: '@std/article/*' },
 }
 ```
 
@@ -178,12 +180,13 @@ export default function Article({ content, block }) {
     )
   }
 
-  // The card's fields are at the top of the record; the rest of it is under `body`.
+  // The article whole: the card under `brief`, the rest of it under `body`.
+  const { title, date, excerpt } = article.brief ?? {}
   return (
     <article>
-      <h1>{article.title}</h1>
-      <p>By {article.body?.author} on {article.date}</p>
-      <p>{article.excerpt}</p>
+      <h1>{title}</h1>
+      <p>By {article.body?.author} on {date}</p>
+      <p>{excerpt}</p>
     </article>
   )
 }
@@ -391,15 +394,18 @@ directly — a bookmark, a search result — the runtime fetches the route query
 and finds it there. A host that answers queries is asked for the one record directly —
 this record, if the query selects it.
 
-Some lists carry less than a whole record, and then the page also asks for the record
-on its own, even when it found it in a cached list:
+A list carries each record's brief — the card's fields — and the page's record arrives
+in the shape its component declares ([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)).
+A component that expects briefs gets the record the list holds. One that declares `/*`
+gets the record whole, from its own source, even when the page found it in a cached list:
 
-- **a query with `deferred:` fields** leaves those fields out of lists, and the build
-  writes one full file per record — the page reads it with no configuration;
-- **a host that serves records live** lists briefs and answers the page's record whole,
-  with no configuration either;
-- **an [external query](./queries.md#external-queries)** whose endpoint lists summaries
-  names the request for one full record with `record:`:
+- **a static build** writes one file per record, holding it whole — the page reads it
+  with no configuration;
+- **a host that serves records live** answers the page's record whole, with no
+  configuration either;
+- **an [external query](./queries.md#external-queries)** has no schema, and so no brief:
+  when its endpoint lists summaries, it names the request for one full record with
+  `record:`, and the page asks it whatever the component declares:
 
 ```yaml
 # queries.yml

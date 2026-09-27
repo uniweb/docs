@@ -57,7 +57,7 @@ Narrow on purpose. Its job is to cover a site reading its own records and public
 
 What the default handles, all of it read from the query a fetch names:
 
-- The file the build compiles from a query (`/data/<query>.json`), and a `deferred:` query's per-record files, under the site's base path.
+- The file the build compiles from a query (`/data/<query>.json`), and the file it writes for each of its records, under the site's base path.
 - A host's live records service, when the host offers one — the questions a page asks, in one request.
 - An external query's `url`, `method: POST` + `body` (with placeholder substitution from `dynamicContext`), and `transform:` — and on a parametric page, its `record:` request.
 - The query's `scope` / `where` / `sort` / `limit`, then the fetch's `narrow` of them, evaluated over what arrived.
@@ -99,7 +99,7 @@ Normalized from the author's `fetch:` / `query:` config. Carried fields:
 | `method` | no | `GET` (default) or `POST`. Unsupported values warn and fall back to GET. |
 | `body` | no | Arbitrary object (POST only). Supports `{paramName}` placeholder substitution from `dynamicContext`. |
 | `record` | no | An external query's `record:` — `{ url?, method?, body?, transform? }` — which `buildDetailConfig` turns into a parametric page's record request. |
-| `detail` | no | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true` for an external query's `record:` or a host's records service. |
+| `detail` | no | Set by resolution, never authored: the query has a per-record source — a compiled query's per-record file pattern, or `true` for an external query's `record:` or a host's records service. |
 | `scope` / `where` / `sort` / `limit` | no | The query as saved (folder branch, predicate, order, count) — together they select the query's records, its `limit` included. |
 | `narrow` | no | What this fetch takes of the query's records: its own `where`, `sort` and `limit`, applied after the query's — and on a host's record question, `match` for the one record a parametric page names and `cursor` to resume an answer. Absent when the fetch takes all of the query's records. The default fetcher evaluates both levels client-side over what arrived — `scope` over each record's `path` — and each combination is its own cache entry; a host that answers queries evaluates them at the source; a transport decides for itself. |
 | `dynamicContext` | no | Present on a parametric page's record fetch: `{ paramName, paramValue }`. |
@@ -203,7 +203,7 @@ Interactive re-fetching (search boxes, pagination, drill-downs) is handled by **
 
 `@uniweb/core`'s `substitutePlaceholders(value, context, { encode })` handles `{name}` substitution in two places:
 
-- **Record addresses.** An external query's `record: { url: 'https://api.example.com/articles/{slug}' }`, or a `deferred:` query's `/data/articles/{slug}.json` — `buildDetailConfig` fills in the value from the parametric page's URL. Encoding ON.
+- **Record addresses.** An external query's `record: { url: 'https://api.example.com/articles/{slug}' }`, or a compiled query's `/data/articles/{slug}.json` — `buildDetailConfig` fills in the value from the parametric page's URL. Encoding ON.
 - **POST body objects.** `body: { variables: { slug: '{slug}' } }` — a `record.body` is filled by `buildDetailConfig`, and the default fetcher fills a request's body from `dynamicContext` before JSON-serializing. Encoding OFF (JSON will serialize).
 
 The names available are the route's own param (`{slug}` for `[slug]`, `{id}` for `[id]`), `{param}` as an alias for it, and `{slug}` as the record's slug when the record is already in hand.

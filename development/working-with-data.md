@@ -278,11 +278,16 @@ A failure is never delivered as `[]`, because `[]` is an answer. On a parametric
 
 ## When a list carries less than a record
 
-A list of a hundred articles doesn't need a hundred bodies. When the list carries less than the page shows, the parametric page gets the whole record anyway:
+A list of a hundred articles doesn't need a hundred bodies. A list carries each record's **brief** — the card's fields — and a section that shows one record in full says so in its `meta.js`, with `/*`:
 
-- **A query with `deferred:` fields** — or one whose schema has more than one section, which defers every section but its brief — leaves those fields out of lists. The record's page receives it whole, with nothing to configure ([Queries → `deferred`](../reference/queries.md#deferred--fields-a-list-leaves-out)).
-- **A host that serves records live** answers lists with each record's brief, and a record's page asks for the record whole.
-- **An external query** whose endpoint lists summaries names the request for one whole record with `record:` ([Queries → `record`](../reference/queries.md#one-record-record)).
+```js
+// src/sections/Article/meta.js
+export default {
+  data: { articles: '@std/article/*' },   // the article whole: article.brief.title, article.body.content
+}
+```
+
+On the parametric page, that section receives the record whole — from the host that serves records live, from the file of its own a static build writes for every record, with nothing to configure — while a section that declares `'@std/article'` receives the brief the list holds ([Component Metadata → Briefs or whole records](../reference/component-metadata.md#briefs-or-whole-records)). **An external query** whose endpoint lists summaries names the request for one whole record with `record:` ([Queries → `record`](../reference/queries.md#one-record-record)); its records have no schema, and the page asks it for any section.
 
 Anywhere else — a hover card, a modal — a component fetches the whole record on demand with [`useWholeRecord`](../reference/kit-reference.md#usewholerecord), which returns the record it was given when the query has nothing separate to fetch.
 

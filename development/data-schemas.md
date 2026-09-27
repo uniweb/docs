@@ -350,7 +350,7 @@ modules:
   - title: "Getting Started"
 ```
 
-The records a query delivers are checked in the shape a component receives them: the brief's fields at the top, each other section under its name ([Entity Content → What a component receives](../reference/entity-content.md#what-a-component-receives)).
+The records a query compiles are checked against their schema too, each section where the schema puts it. A component receives each one as its brief, or whole ([Entity Content → What a component receives](../reference/entity-content.md#what-a-component-receives)).
 
 Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD` day, and a `datetime` a day and a time.
 

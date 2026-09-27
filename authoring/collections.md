@@ -335,24 +335,33 @@ team:
 
 ### Lean lists with `deferred:`
 
-If your records have heavy fields that bloat every list — article bodies, long markdown, big nested arrays — you can mark those fields as **deferred**, by their key in the record a component receives: a field, or a section's name. Lists of the query leave them out, and each record's full version is fetched only where it is shown:
+A list carries each record's **brief** — the card: its title, date, excerpt. When a record's schema
+keeps its heavy parts in a section of their own — `@std/article` keeps its body in `body` — every
+list already leaves them out, and a page that shows one article in full gets it whole. Nothing to
+configure.
+
+When a schema keeps a heavy field in its brief — a `fields:` schema, which is all brief — you can mark
+the field **deferred**, by its key in the brief. On a static site, lists of the query leave it out:
 
 ```yaml
 queries:
-  articles:
-    schema: '@/article'
-    deferred: [body]
+  posts:
+    schema: '@/post'
+    deferred: [content]
 ```
 
 What this changes:
 
-- The blog's list (`query: articles`) carries every article *without* the body. Cards stay light.
-- A `[slug]/` page — one page per article, [below](#individual-pages-for-records) — automatically receives the *full* article, body included. You don't configure anything else.
-- A component that wants a body anywhere else (a hover-card preview, an inline modal) fetches the whole record on demand with the `useWholeRecord` kit hook.
+- The blog's list (`query: posts`) carries every post *without* its body. Cards stay light.
+- A section built to show one record in full — its section type declares whole records — still
+  receives the body, from the file the build writes for each record.
+- ⚠️ A section that reads the post's brief does not: a deferred field is not in the brief a static
+  site delivers, on a list or on the post's own page. A site whose records a host serves live
+  delivers every brief with all its fields, `deferred:` or not.
 
 Skip `deferred:` for records without heavy fields — the entire record ships, like always.
 
-**External queries.** The above describes the site's own records — the build emits per-record files at `/data/<name>/<slug>.json` automatically. An external query — `url:` instead of a `schema:` — reads records the site doesn't hold, so it can't declare `deferred:`. When its list carries less than a whole record, name the request for one with `record:`:
+**External queries.** The above describes the site's own records — the build writes each one's own file at `/data/<name>/<name of the record>.json` automatically. An external query — `url:` instead of a `schema:` — reads records the site doesn't hold, so it can't declare `deferred:`. When its list carries less than a whole record, name the request for one with `record:`:
 
 ```yaml
 queries:

@@ -52,32 +52,48 @@ namespace: two sections may declare fields of the same name.
 
 ## What a component receives
 
-A component reads a record in one shape, whether the site is built to static files
-or its records come from a backend:
+A record reaches a component in one of two shapes — the same on a static site and on
+one whose records come from a backend. The component's section type says which it
+expects, per `content.data` key, in its `meta.js`
+([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)):
 
-- the fields of the schema's **brief** — the section marked `brief: true`, else the
-  first `single` section — at the top of the record;
-- every other section under its own name;
-- a reference as the record it points at, reduced to its brief: `{ entity, brief }`,
-  `entity` being that record's id where it has one;
-- `$name`, the record's handle ([below](#slugs)).
+- **A brief**, the default — `data: { articles: '@std/article' }`: the fields of the
+  schema's **brief** — the section marked `brief: true`, else the first `single`
+  section — at the top of the record. The brief section is not named.
+- **The record whole** — `data: { articles: '@std/article/*' }`: the record as it is
+  stored, each section under its own name, the brief's included.
+
+Both carry `$name`, the record's handle ([below](#slugs)), and a reference as the
+record it points at, reduced to its brief: `{ entity, brief }`, `entity` being that
+record's id where it has one.
 
 ```js
-// records/std/article/hello.md, as a component receives it
+// records/std/article/hello.md as a brief — '@std/article'
+{ $name: 'hello', title: 'Hello', date: '2026-05-01' }
+
+// the same record whole — '@std/article/*'
 {
   $name: 'hello',
-  title: 'Hello',                  // the brief, `brief`, at the top
-  date: '2026-05-01',
-  body: {                          // another section, under its name
-    content: { type: 'doc', … },   // the markdown body
-  },
+  brief: { title: 'Hello', date: '2026-05-01' },   // the card, under its section's name
+  body: { content: { type: 'doc', … } },           // the markdown body
 }
 ```
 
-A flat record arrives as it is written. A list of records may carry only each
-record's brief — a query leaves the other sections out of lists unless you say
-otherwise ([Queries → `deferred`](./queries.md#deferred--fields-a-list-leaves-out)) — while the
-page that shows one record receives it whole.
+Neither shape mixes the two: a brief holds one section's fields, a whole record holds
+sections. That is what lets a brief field share its name with a section — `details`
+the field, `details.pages` the section.
+
+A schema of one section — the `fields:` form — has a brief that is the whole record:
+its fields at the top as a brief, and under `brief` whole, so a component reading
+such records has no need of `/*`. A schema with no brief (only `multi` sections) is
+answered whole, even as a brief.
+
+**What each key gets.** A list carries briefs, or each record whole for a key declared
+`/*`. A [parametric page](./dynamic-routes.md) receives its record as its component
+declares: the brief its query's list holds, or the record whole from its own source.
+A key declared `/*` whose source cannot answer one record whole is `null`. Records of
+an [external query](./queries.md#external-queries) have no schema, and so no brief:
+they arrive as their source answers them.
 
 ## Sections and nesting
 
@@ -124,8 +140,7 @@ extension for a YAML/JSON/Markdown file, or the cite key for a BibTeX entry. The
 slug is the record's handle (`$name`), which a `[slug]` [parametric page](./dynamic-routes.md) matches, and what a `ref` field points at. Set
 it explicitly with a `slug:` field (or frontmatter key) when you don't want the
 filename to decide. In a record written by section, write it at the top, beside the
-sections — a `slug` inside a section is one of that section's fields (`@std/article`'s
-brief has one), not the handle.
+sections — a `slug` inside a section is one of that section's fields, not the handle.
 
 ## Per-format authoring
 

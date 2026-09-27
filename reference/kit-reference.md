@@ -505,7 +505,7 @@ A declared key is `null` while its fetch is pending, when it failed, and when no
 
 ### useWholeRecord
 
-Fetch one whole record, on demand, when a query's list carries less than the record — a query with `deferred:` fields, a host that lists briefs, an external query with `record:`. A parametric page already receives its record whole; this hook is for everywhere else: a hover card, a modal, an expanding row.
+Fetch one record whole, on demand, when a section holds less than the record — a list carries each record's brief, on a static site and on a host alike, and an external query may list summaries and name one record's request with `record:`. A section on a parametric page that declares `/*` already receives its record whole ([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)); this hook is for everywhere else: a hover card, a modal, an expanding row.
 
 ```jsx
 import { useState } from 'react'
@@ -533,7 +533,7 @@ function ArticleCard({ article }) {
 | `options.query` | The name of the query the record came from. Required with a record |
 | `options.param` | The record field its address is built from. Defaults to the one the query's parametric page matches, else `slug` |
 
-Returns `{ data, error, loading }`. When the query has no separate source for a whole record — nothing was left out of its list — `data` is the record you passed in, so a component can call the hook unconditionally. It shares the cache with section fetches.
+Returns `{ data, error, loading }`. `data` is the record whole, as stored — each section under its own name, the brief's included (`full.brief.title`, `full.body.content`). When the query has no separate source for one record — an external query with no `record:` — `data` is the record you passed in, so a component can call the hook unconditionally. It shares the cache with section fetches.
 
 ---
 

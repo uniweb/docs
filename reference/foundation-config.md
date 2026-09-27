@@ -573,7 +573,8 @@ A transport is any object with a `resolve` method (and optionally `cacheKey`):
 | `method` / `body` | string / any | An external query's `GET` or `POST`, and the POST's body. |
 | `transform` | string | Dot-path into the response (e.g. `data.items`). |
 | `record` | object | An external query's `record:` — `{ url?, method?, body?, transform? }` — the request for one record on a parametric page. |
-| `detail` | string \| boolean | Set by resolution, never authored: the query has a per-record source — a `deferred:` query's per-record file pattern, or `true`. |
+| `detail` | string \| boolean | Set by resolution, never authored: the query has a per-record source — a compiled query's per-record file pattern, or `true`. |
+| `whole` | boolean | Set by resolution, never authored: a question to a host's records service asks for whole records — the key's component declares `/*`. Absent, the answer is briefs. |
 | `scope` | string | The query's folder branch; the records' `path` must be at or below it. |
 | `where` | object | The query's predicate (where-object). |
 | `sort` / `limit` | any | The query's order and count. With `scope` and `where` they select **the query's records** — its `limit` included. |

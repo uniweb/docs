@@ -598,7 +598,7 @@ Record strings are stored in a separate manifest at `locales/records/manifest.js
 
 A record whose query has a [data schema](./data-schemas.md) is translated as its schema says: its text and rich-text fields are, and a field that is an enum, a URL or an email, a number, a date, a file, a reference, or marked `translatable: false` is not — the same fields a push to a backend carries in each language. A referenced record's card, shown inside another record, is translated as that record is. An excerpt the build derives from a record's body is derived again in each language from the translated body, so it is never a string to translate. A record with no data schema is read by a heuristic, or by a companion `.schema.js` file.
 
-A record's handles — `slug`, `path`, and system fields such as `$name` — are never extracted. The per-record files a query writes for [`deferred:`](../reference/queries.md#deferred--fields-a-list-leaves-out) fields are translated with the same strings as the list, so a translated record page shows its translated body.
+A record's handles — `slug`, `path`, and system fields such as `$name` — are never extracted. The file a query writes for each record — the record whole — is translated with the same strings as the list, so a translated record page shows its translated body.
 
 ---
 
