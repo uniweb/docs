@@ -83,9 +83,9 @@ Dotted field names (`tenure.start`) descend into a nested record — see
 
 ### A folder branch is `scope:`, not a predicate
 
-Where a record sits inside the site's folder is its **placement** — `path` on the record,
-`""` at the root, `2024/spring` inside two folders. To read one branch of that folder,
-give the query a `scope:`. It holds the named folder **and everything below it**, and it
+Where a record sits inside the site's folder is its **placement** — the top of the
+folder, or `2024/spring` inside two folders. A record does not carry it; to read one
+branch of that folder, give the query a `scope:`. It holds the named folder **and everything below it**, and it
 respects segment boundaries, so a sibling that merely starts with the same letters is
 not swept in:
 

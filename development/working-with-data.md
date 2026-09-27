@@ -136,7 +136,7 @@ A folder named in brackets is a **parametric page**: one page, with a URL for ea
 
 **The set decides which URLs exist.** `/blog/:slug` has a page for each of the 100 articles in the set, and no other: a press release, or a field note older than the 100 most recent, is not found there — even though it is a record of the same schema. A condition that should decide which pages exist belongs on the query, never on a list's fetch.
 
-The full rules — which query a URL names, what the segment matches, `[...path]` for nested placements — are in [Parametric Pages](../reference/dynamic-routes.md).
+The full rules — which query a URL names, what the segment matches, `[...path]` for URLs of any depth — are in [Parametric Pages](../reference/dynamic-routes.md).
 
 ### The article section: the page's record
 

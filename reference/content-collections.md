@@ -110,10 +110,10 @@ A data schema gives records a typed shape, used for validation, field defaults a
 - folder: archive
   label: The Archive            # only a folder takes a label; a record has its own title
   records:
-    - article/2019-*.md         # path: "archive"
+    - article/2019-*.md         # in archive
 ```
 
-A path under a folder is relative to `records/`, naming one file or matching many; `*` matches within one folder. Each record carries the `path` of the folder it sits in — `""` at the top — and a query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder). The organization is yours to choose: it does **not** mirror the `records/` layout, which names schemas and nothing else. Under a [`[...path]`](./dynamic-routes.md#multi-segment-routes--path) parametric page, a record's folder becomes part of its URL.
+A path under a folder is relative to `records/`, naming one file or matching many; `*` matches within one folder. A query reads one branch with [`scope: archive`](./queries.md#scope--a-branch-of-the-folder); a record does not carry its folder, and a folder is never part of a record's URL. The organization is yours to choose: it does **not** mirror the `records/` layout, which names schemas and nothing else.
 
 **A record sits in one folder.** Placing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 

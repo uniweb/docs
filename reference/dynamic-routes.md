@@ -352,8 +352,8 @@ record's query — in the Quick Start, `pages/articles/[slug]/` — so an articl
 `/articles/<slug>` wherever a list of articles appears: the list, the homepage, a
 sidebar on another article. The URL is filled from the field the page's URL is
 [matched against](#what-the-url-segment-is-matched-against) — a `[slug]` page's from
-the record's handle, a [`[...path]`](#multi-segment-routes--path) page's from its
-placement and handle. On a multilingual site it follows the page's translated route.
+the record's handle, and a [`[...path]`](#multi-segment-routes--path) page's from the
+handle too. On a multilingual site it follows the page's translated route.
 
 A record gets **no `$route`** when its query has no parametric page, or when it lacks
 the field the page's URL is built from — never a broken link, so a card can tell:
@@ -589,12 +589,12 @@ query written for one behaves the same under the other. **The record is delivere
 by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
 `content.data.posts[0]`.
 
-**Where a record's URL comes from.** Its **placement** is the directory: the folder
-`records/folder.yml` put it in (`- folder: rust/2025` → `path: rust/2025` on the record), or
-the top of the folder for a record no folder names.
-A record's `$route` and the static build's pages both compose `<placement>/<slug>`, so
-a record at the folder root is `/blog/my-post` and one placed under `rust/2025` is
-`/blog/rust/2025/my-post`.
+**Where a record's URL comes from.** Its handle, exactly as under `[slug]`. A record's
+`$route`, and the page a static build writes for it, is `/blog/my-post` wherever
+`records/folder.yml` places it. A record does not carry its folder: folders organize the
+records, and a query reads one with `scope:`. The router still matches a longer URL —
+`/blog/rust/2025/my-post` finds `my-post` — and binding `:dir`, below, makes the directory
+choose the folder.
 
 **Binding the parts is opt-in.** A URL segment has no meaning until a query gives it
 one; write a variable where it should mean something:

@@ -99,29 +99,26 @@ organizing** — a `sort:`, a `where:`, a `limit:` is how you show one slice of 
 
 Folders exist for one thing: so a query can ask for a **slice of the site's
 records** rather than all of them. They are declared in `records/folder.yml`, not as directories.
-Every record sits at the top — `path: ""` — unless `folder.yml` places it in a
-folder, so a record that belongs at the top needs no line:
+Every record sits at the top unless `folder.yml` places it in a folder, so a record
+that belongs at the top needs no line:
 
 ```yaml
-# records/folder.yml — news/announcement.md sits at the top, path: ""
+# records/folder.yml — news/announcement.md sits at the top
 - folder: 2024
   label: 2024                   # a folder may carry a label; a record never does
   records:
-    - news/spring.md            # path: "2024"
+    - news/spring.md            # in 2024
     - folder: q1
       records:
-        - news/report.md        # path: "2024/q1"
+        - news/report.md        # in 2024/q1
 
 - folder: 2023
   records:
-    - news/retrospective.md     # path: "2023"
+    - news/retrospective.md     # in 2023
 ```
 
-Every record carries a `path` naming the folder it sits in, and they all stay
-records of the site — a query over `@/news` still reaches all of them. Folders do not
-split anything, and they change a record's URL only under a
-[`[...path]`](../reference/dynamic-routes.md#multi-segment-routes--path) page, which
-puts the folder in it.
+They all stay records of the site — a query over `@/news` still reaches all of them.
+Folders do not split anything, and a folder is never part of a record's URL.
 
 To ask for one branch, give the query a `scope:` — it belongs to the query, so a
 `fetch:` that names the query can't carry one:
