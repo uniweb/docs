@@ -1014,7 +1014,7 @@ export default {
 }
 ```
 
-Whether an inset appears in a section palette is a concern of the parent component (via its `children`/`insets` declarations), not a property of the inset itself. Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components).
+Where an inset is offered is a concern of the section it is placed in — its [`visuals`](#visual-expectations) declaration, or `insets` in its `content:` — not a property of the inset itself. (`children` is about child sections, not insets.) Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components), so a hidden component is not a section type and `@ComponentName` cannot resolve to it.
 
 A component can be both a standalone section and an inset:
 
