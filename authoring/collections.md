@@ -135,6 +135,14 @@ A component receives them beside the record as `$tags` and `$label`, and a query
 ask for them: `where: { $tags: featured }`. A record that sits at the top can be
 listed at the top level for this, and only for this.
 
+On a site in several languages, a label — a record's or a folder's — can give one
+text per language, and each page shows the one for its language:
+
+```yaml
+    - path: news/spring.md
+      label: { en: Spring update, fr: Nouvelles du printemps }
+```
+
 To ask for one branch, give the query a `scope:` — it belongs to the query, so a
 `fetch:` that names the query can't carry one:
 

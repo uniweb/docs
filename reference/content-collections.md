@@ -120,6 +120,15 @@ A path under a folder is relative to `records/`, naming one file or matching man
 
 **What the folder says about a record.** A record's entry can be `{ path, tags, label }` rather than a path. `tags` are the entry's own labels, kept in the order written, and `label` is its display text. A component receives them beside the record as `$tags` and `$label` — absent when the entry gives none — and a query reads them like any other key: `where: { $tags: featured }`. A pattern gives every record it matches the same tags. A folder takes `tags:` too.
 
+**A label in several languages.** A `label` — a record entry's or a folder's — is one text, in the site's language, or one text per language:
+
+```yaml
+- path: article/2020-launch.md
+  label: { en: The launch, fr: Le lancement }
+```
+
+`$label` is the text for the page's language, else its base language (`fr-CA` → `fr`), else the site's language — and absent when the label has none of those.
+
 **A record sits in one folder.** Placing the same file twice is an error, and the build names both entries. A computed subset — "this year", "the five most recent" — is a **query**, not a second placement.
 
 `folder.yml` never lists records at the top level — every record in `records/` is one already — so a path there is reported as an error. The exception is an entry that gives a record `tags:` or a `label:`: `- path: news/welcome.md` with `tags: [pinned]` keeps the record at the top and says what the folder knows about it. A `folder.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
