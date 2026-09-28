@@ -656,7 +656,7 @@ params: {
 | `props` | params written as one map | `params` — its keys are merged in |
 | `data`, `preset`, `input` | nothing: `data:` is refused (it was `query:`'s old name); `preset:` and `input:` are ignored with a warning | — |
 
-The build warns on a param declared as `theme`, `background`, `grid`, `vars` or `fetch`. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
+The build warns on a param declared as any of them. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
 
 #### Param Types
 
