@@ -646,7 +646,17 @@ params: {
 
 **Runtime guarantees**: Param defaults from meta.js are automatically applied by the runtime. Your component receives `params` with defaults already merged in—no need for `variant || 'gradient'` fallbacks.
 
-**Names a param can't take.** `theme`, `background`, `grid` and `vars` are the section's own settings, not your component's. Framework applies them — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout through `ChildGrid` — so your component never receives them in `params`. When it needs one for its own logic, it reads it from `block`: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid. The build warns on a param declared with one of those names.
+**Names a param can't take.** Every key in a section's frontmatter is a param except these, which every section can be given, whatever its type. None reaches your component as a param, so don't declare one in `params`:
+
+| in a section's frontmatter | what it is | a component reads it from |
+|---|---|---|
+| `type`, `id`, `hidden` | the section itself — its section type, its id, and a draft (`hidden: true`) | — |
+| `query`, `fetch` | the section's data | `content.data`, under the keys `data:` declares |
+| `theme`, `background`, `grid`, `vars` | the section's own settings, which framework applies — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout | `block`, when it needs one for its own logic: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid |
+| `props` | params written as one map | `params` — its keys are merged in |
+| `data`, `preset`, `input` | nothing: `data:` is refused (it was `query:`'s old name); `preset:` and `input:` are ignored with a warning | — |
+
+The build warns on a param declared as `theme`, `background`, `grid`, `vars` or `fetch`. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
 
 #### Param Types
 
