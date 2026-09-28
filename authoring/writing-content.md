@@ -494,7 +494,6 @@ theme: dark
 |---------|-------------|
 | `type:` | How this section is displayed (required) |
 | `theme:` | Visual variant (e.g., `dark`, `light`) |
-| `preset:` | Apply a preset configuration |
 | `id:` | Override the section's anchor ID |
 
 ### Type-specific settings

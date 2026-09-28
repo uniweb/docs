@@ -754,7 +754,8 @@ Only vars declared in `meta.js` are emitted — unknown var names in frontmatter
 
 ### Presets
 
-Presets are pre-configured parameter combinations:
+Presets are pre-configured parameter combinations, which an editor offers by `label` —
+picking one sets those params on the section:
 
 ```javascript
 presets: {
@@ -773,14 +774,19 @@ presets: {
 }
 ```
 
-The preset name (key) is used in frontmatter:
+In a file, write the params themselves. `uniweb add section Hero --starter --preset glass`
+prints starter content with that preset's params as its frontmatter:
 
 ```yaml
 ---
 type: Hero
-preset: glass
+theme: glass
+layout: center
 ---
 ```
+
+A section keeps its params, not the name of the preset they came from: a `preset:` key in
+its frontmatter has no effect, and the build warns and ignores it.
 
 ---
 

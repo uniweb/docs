@@ -881,8 +881,9 @@ A component can serve as both a standalone section and an inset:
 ```js
 // sections/Testimonial/meta.js
 export default {
-  category: 'showcase',
-  inset: true,        // also available for @ references
+  family: 'testimonials',
+  inset: true,        // offered as an inset (@ references)
+  section: true,      // and still offered as a section
 }
 ```
 

@@ -24,7 +24,7 @@ The `meta.js` file makes a component a section type — selectable via `type:` i
 ```js
 export default {
   title: 'Feature Card',
-  category: 'showcase',
+  family: 'features',
 }
 ```
 
@@ -144,15 +144,19 @@ function MyComponent({ block }) {
 
 The `meta.js` file defines your component's interface.
 
-### Required Fields
+### Naming the Section Type
+
+Every field is optional. These two tell an editor what the section type is:
 
 ```js
 export default {
-  title: 'Feature Card',        // Display name
-  category: 'showcase',         // Free-form editor grouping. impact / showcase /
-                                // structure is a suggested set, not a fixed one
+  title: 'Feature Card',        // Display name (inferred from the name when left out)
+  family: 'features',           // The standard section type it belongs to, so an editor
+                                // can show an illustration and a translated label
 }
 ```
+
+Run `uniweb families` for the ids, or see [Family](../reference/component-metadata.md#family).
 
 ### Describing Content
 
@@ -161,7 +165,7 @@ Document what content your component uses:
 ```js
 export default {
   title: 'Hero',
-  category: 'impact',
+  family: 'hero',
 
   content: {
     pretitle: 'Eyebrow text',
@@ -183,7 +187,7 @@ Define configurable options:
 ```js
 export default {
   title: 'Hero',
-  category: 'impact',
+  family: 'hero',
 
   params: {
     theme: {
@@ -218,16 +222,17 @@ export default {
 
 ### Creating Presets
 
-Named combinations of parameters:
+Named combinations of parameters, which an editor offers by `label` — picking one sets
+those params on the section:
 
 ```js
 export default {
   title: 'Hero',
-  category: 'impact',
+  family: 'hero',
 
   params: {
     theme: { type: 'select', options: ['light', 'dark', 'gradient'], default: 'light' },
-    layout: { type: 'select', options: ['centered', 'left'], default: 'centered' },
+    layout: { type: 'select', options: ['centered', 'left', 'split'], default: 'centered' },
   },
 
   presets: {
@@ -247,14 +252,18 @@ export default {
 }
 ```
 
-Use in content:
+In a file, write the params themselves. `uniweb add section Hero --starter --preset bold`
+prints starter content with that preset's params as its frontmatter:
 
 ```markdown
 ---
 type: Hero
-preset: bold
+theme: dark
+layout: centered
 ---
 ```
+
+A `preset:` key in a section's frontmatter has no effect — the build warns and ignores it.
 
 ### Background Support
 
@@ -263,7 +272,7 @@ Enable background images/videos:
 ```js
 export default {
   title: 'Hero',
-  category: 'impact',
+  family: 'hero',
   background: true,    // Engine handles background rendering
 }
 ```
@@ -403,15 +412,13 @@ Define the schema in meta.js:
 ```js
 export default {
   title: 'Pricing Table',
-  category: 'showcase',
+  family: 'pricing',
 
   data: {
-    schemas: {
-      plans: {
-        name: 'string',
-        price: 'number',
-        features: { type: 'array', of: 'string' },
-      },
+    plans: {
+      name: 'string',
+      price: 'number',
+      features: { type: 'array', items: { type: 'string' } },
     },
   },
 }
@@ -466,7 +473,7 @@ pnpm build
 
 This generates:
 - `dist/entry.js` — Bundled components
-- `dist/schema.json` — Component metadata for the runtime
+- `dist/meta/schema.json` — Component metadata for editors
 
 ---
 
@@ -480,7 +487,7 @@ uniweb docs
 ```
 
 This creates documentation with each component's:
-- Description and category
+- Description and family
 - Content expectations
 - Parameters and defaults
 - Available presets
