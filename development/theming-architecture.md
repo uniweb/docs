@@ -168,6 +168,11 @@ This ensures the correct overrides apply as the scheme toggles. When Auto withou
 
 ## Section-Level Overrides — Storage Model
 
+> ⚠️ **The editor's older envelope.** What follows is the `standardOptions` shape a visual editor
+> sends. The runtime still reads it, by the rules below, while an editor sends it; a section's own
+> `theme:` — `theme.yml`'s `colors`, `contexts` and `vars`, scoped to the section — is the spelling
+> that replaces it ([Site Theming](../reference/site-theming.md)).
+
 ### Format
 
 Section overrides are stored in `standard_options` (JSON string on the section record):
@@ -446,7 +451,7 @@ if (theme && VALID_CONTEXTS.includes(theme)) {
 }
 ```
 
-Frontmatter-level `contextOverrides` (from `theme: { mode: dark, heading: neutral-900 }`) are still applied as inline CSS vars — these are content-author overrides, separate from editor UI overrides.
+A section's own `theme:` — tokens beside `mode`, and `theme.yml`'s `colors`, `contexts` and `vars` scoped to the section (see [Site Theming](../reference/site-theming.md)) — is applied in two places. The tokens in effect whatever the scheme go inline on the section wrapper, as the tokens beside `mode` always did; the palette, the per-context values that follow the site's scheme, and the variables go in the same page stylesheet as the editor's overrides.
 
 ### SectionOverrideStyles component
 

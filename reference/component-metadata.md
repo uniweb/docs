@@ -83,10 +83,10 @@ export default {
   },
 
   params: {
-    theme: {
+    variant: {
       type: 'select',
-      label: 'Theme',
-      options: ['gradient', 'glass', 'dark', 'light'],
+      label: 'Variant',
+      options: ['gradient', 'glass', 'minimal'],
       default: 'gradient',
     },
     layout: {
@@ -115,11 +115,11 @@ export default {
   presets: {
     default: {
       label: 'Centered Hero',
-      params: { theme: 'gradient', layout: 'center' },
+      params: { variant: 'gradient', layout: 'center' },
     },
     split: {
       label: 'Split Layout',
-      params: { theme: 'gradient', layout: 'split-right' },
+      params: { variant: 'gradient', layout: 'split-right' },
     },
   },
 
@@ -149,7 +149,7 @@ function Hero({ content, params, block, website }) {
   const { title, pretitle, subtitle, paragraphs, links, images, items } = content
 
   // ─── From frontmatter (params) ──────────────────────
-  const { theme, layout } = params
+  const { variant, layout } = params
 
   // ─── From a declared data key (a query's records) ──────
   const events = content.data?.events || []
@@ -158,7 +158,7 @@ function Hero({ content, params, block, website }) {
   const navLinks = content.data?.['nav-links'] || []
 
   return (
-    <section className={theme}>
+    <section className={variant}>
       {pretitle && <span className="eyebrow">{pretitle}</span>}
       {title && <H1>{title}</H1>}
       {paragraphs.map((p, i) => <P key={i}>{p}</P>)}
@@ -347,9 +347,10 @@ export default {
 
 | Value | Behavior |
 |-------|----------|
-| `true` or `'auto'` | Engine handles background |
-| `'manual'` | Component handles its own background |
-| `false` | No background support |
+| `'self'` | The component draws its own background; the runtime draws none behind the section. To draw the author's background itself, the component renders kit's `<SectionBackground block={block} />` |
+| anything else, or left out | The runtime draws the author's background behind the component |
+
+`true` and `false` change nothing at render; an editor may read them to decide whether to offer a background setting. ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
 
 **Frontmatter Background Options**
 
@@ -609,7 +610,7 @@ Parameters are configurable options set in frontmatter:
 ```yaml
 ---
 type: Hero
-theme: glass
+variant: glass
 layout: split-right
 ---
 ```
@@ -618,11 +619,11 @@ Define them in `params`:
 
 ```javascript
 params: {
-  theme: {
+  variant: {
     type: 'select',
-    label: 'Theme',
-    hint: 'Affects background and text colors',  // optional guidance
-    options: ['gradient', 'glass', 'dark', 'light'],
+    label: 'Variant',
+    hint: 'The hero’s visual style',  // optional guidance
+    options: ['gradient', 'glass', 'minimal'],
     default: 'gradient',
   },
   showPattern: {
@@ -643,7 +644,9 @@ params: {
 }
 ```
 
-**Runtime guarantees**: Param defaults from meta.js are automatically applied by the runtime. Your component receives `params` with defaults already merged in—no need for `theme || 'gradient'` fallbacks.
+**Runtime guarantees**: Param defaults from meta.js are automatically applied by the runtime. Your component receives `params` with defaults already merged in—no need for `variant || 'gradient'` fallbacks.
+
+**Names a param can't take.** `theme`, `background`, `grid` and `vars` are the section's own settings, not your component's. Framework applies them — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout through `ChildGrid` — so your component never receives them in `params`. When it needs one for its own logic, it reads it from `block`: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid. The build warns on a param declared with one of those names.
 
 #### Param Types
 
@@ -761,15 +764,15 @@ picking one sets those params on the section:
 presets: {
   default: {
     label: 'Centered Hero',
-    params: { theme: 'gradient', layout: 'center' },
+    params: { variant: 'gradient', layout: 'center' },
   },
   glass: {
     label: 'Glassmorphism',
-    params: { theme: 'glass', layout: 'center' },
+    params: { variant: 'glass', layout: 'center' },
   },
   minimal: {
-    label: 'Minimal Light',
-    params: { theme: 'light', layout: 'left', showPattern: false },
+    label: 'Minimal Dark',
+    params: { variant: 'minimal', layout: 'left', showPattern: false, theme: 'dark' },
   },
 }
 ```
@@ -780,10 +783,13 @@ prints starter content with that preset's params as its frontmatter:
 ```yaml
 ---
 type: Hero
-theme: glass
+variant: glass
 layout: center
 ---
 ```
+
+A preset may set one of the section's own settings too — `minimal` above pins the dark context
+with `theme: dark`.
 
 A section keeps its params, not the name of the preset they came from: a `preset:` key in
 its frontmatter has no effect, and the build warns and ignores it.
@@ -1109,7 +1115,7 @@ export default function Grid({ block }) {
 }
 ```
 
-`ChildGrid` shows one column on narrow screens, a layout of up to two columns from the `md` breakpoint (a wider one as two equal columns), and the chosen layout from `lg`. `headerRow` makes the first child span every column; `className` replaces the default `gap-8`. Don't declare a param named `grid` — the section key takes the name, so the param would never receive it.
+`ChildGrid` shows one column on narrow screens, a layout of up to two columns from the `md` breakpoint (a wider one as two equal columns), and the chosen layout from `lg`. `headerRow` makes the first child span every column; `className` replaces the default `gap-8`. Each child renders as a section, so its own `theme:` and `background:` apply. Don't declare a param named `grid` — the section key takes the name, so the param would never receive it.
 
 In markdown, child sections use the `@` prefix and `nest:` in page.yml:
 
@@ -1211,7 +1217,7 @@ Use `initialState` when the capability depends on runtime conditions — a Hero 
 
 1. **Graceful degradation** — Components handle missing content without errors
 2. **Sensible defaults** — Every param should have a good default
-3. **Intent over implementation** — Params describe purpose (`theme: dark`) not CSS (`background: #1a1a1a`)
+3. **Intent over implementation** — Params describe purpose (`variant: featured`) not CSS (`color: #1a1a1a`)
 4. **Minimal metadata** — Only include what the editor needs; implementation details stay in code
 5. **Composition over configuration** — Use Grid + simple components instead of mega-components with many options
 

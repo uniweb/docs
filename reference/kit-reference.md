@@ -240,6 +240,22 @@ function ColorPalette() {
 
 See [Site Theming](./site-theming.md) for the full Theme API.
 
+### useColorContext
+
+The color context a section renders in — `'light'`, `'medium'` or `'dark'`. A section pinned
+with `theme:` renders in that context; one that follows the site renders in the site's current
+scheme. For a component's own logic that tokens can't cover — a light or dark logo, say — since
+`theme` is a setting of the section, not a param.
+
+```jsx
+import { useColorContext } from '@uniweb/kit'
+
+function Logo({ block }) {
+  const context = useColorContext(block)
+  return <img src={context === 'dark' ? '/logo-light.svg' : '/logo.svg'} alt="" />
+}
+```
+
 ### useAppearance
 
 Control light/dark mode.
@@ -987,8 +1003,9 @@ function MyComponent({ content, params, block }) {
   // content - Parsed markdown content
   const { title, paragraphs, links, images, items, data } = content
 
-  // params - Frontmatter parameters (with defaults from meta.js)
-  const { theme, layout } = params
+  // params - Frontmatter parameters (with defaults from meta.js). The section's own
+  // settings — theme, background, grid, vars — are not among them: read them from `block`
+  const { variant, layout } = params
 
   // block - Block instance for navigation
   const { page, website } = block
@@ -1043,15 +1060,15 @@ Param defaults from `meta.js` are automatically applied:
 // meta.js
 export default {
   params: {
-    theme: { type: 'select', options: ['light', 'dark'], default: 'light' },
+    variant: { type: 'select', options: ['plain', 'cards'], default: 'plain' },
     columns: { type: 'number', default: 3 }
   }
 }
 
 // Component receives merged params
 function Grid({ params }) {
-  const { theme, columns } = params
-  // theme = 'light' if not specified in frontmatter
+  const { variant, columns } = params
+  // variant = 'plain' if not specified in frontmatter
   // columns = 3 if not specified
 }
 ```
@@ -1135,6 +1152,32 @@ function Grid({ block, params }) {
 | `cellClassName` | string | — | Classes on each child's cell |
 
 One column on narrow screens; from `md`, a layout of up to two columns as chosen and a wider one as two equal columns; from `lg`, the chosen layout. With no layout at all, the children stack. The columns are computed by `gridTemplate` from `@uniweb/schemas/grid`, so a visual editor drawing with the same function draws what renders.
+
+Each child renders as a section, in a `div`: its own `theme:` and `background:` apply.
+
+### SectionBackground
+
+The background the author set on a section, drawn by the runtime's own renderer — for a component that places it itself. The runtime draws a section's background behind every section; a component that paints its own declares `background: 'self'` in `meta.js`, and the runtime then draws none. With `SectionBackground` it can still draw the author's image, video, gradient or color, with its overlay, wherever it wants. From `@uniweb/kit`.
+
+```jsx
+import { SectionBackground } from '@uniweb/kit'
+
+function Hero({ content, block }) {
+  return (
+    <section className="relative">
+      <SectionBackground block={block} />
+      <div className="relative z-10">…</div>
+    </section>
+  )
+}
+```
+
+It fills the nearest positioned ancestor, so place it inside an element with `position: relative`, before the content. It draws nothing for a section without a background.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `block` | Block | The section — its `block.background`, normalized by the runtime |
+| `className` | string | Classes on the background layer |
 
 Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
 

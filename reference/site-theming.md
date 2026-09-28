@@ -302,25 +302,48 @@ The following table shows how each semantic token resolves in each context. Thes
 
 Sites can override any of these mappings under the `contexts:` key (see above).
 
-### Per-Section Token Overrides
+### A Section's Theme
 
-The `theme:` frontmatter supports an extended object format that lets content authors override specific tokens for a single section. Use `mode` to set the context (light/medium/dark), and add any token names alongside it:
+A section's `theme:` is `theme.yml` for that one section — the same keys, scoped to it — plus the one thing only a section has: `mode`, the color context it pins.
 
 ```yaml
 ---
-type: Header
-theme:
-  mode: light
-  primary: neutral-900
-  primary-hover: neutral-800
+type: CTA
+theme: dark          # the common case: pin the dark context
 ---
 ```
 
-This keeps the light context for text and backgrounds, but gives the primary button a dark appearance — just for this section. Any token from the semantic token table above can be overridden this way.
+`theme: dark` is the shorthand for `theme: { mode: dark }`. Left out, the section follows the site: light under a light scheme, dark under a dark one.
 
-The overrides are applied as inline CSS custom properties on the section wrapper, so they take precedence over the context class values. Components don't need to know about the overrides — they just use `bg-primary` and get the overridden value.
+The object form takes `theme.yml`'s keys:
 
-For simple string usage, `theme: dark` is equivalent to `theme: { mode: dark }`.
+```yaml
+---
+type: Hero
+theme:
+  mode: dark                  # light | medium | dark — leave it out to follow the site
+  colors:                     # like theme.yml `colors` — a palette for this section
+    primary: '#0a6'
+  contexts:                   # like theme.yml `contexts` — token overrides per context
+    dark: { link: primary-300 }
+    light: { link: primary-700 }
+  vars:                       # like theme.yml `vars` — the foundation's variables
+    header-height: 5rem
+  heading: neutral-100        # a token beside `mode` — this section's, in any context
+---
+```
+
+| Key | Like `theme.yml`'s | What it does for the section |
+|-----|--------------------|------------------------------|
+| `mode` | — (a section's own) | Pins its color context |
+| `colors` | `colors` | A palette, with shades generated as for the site (`--primary-500`, …) |
+| `contexts` | `contexts` | Token overrides per context. A pinned section uses its own context's; one that follows the site uses `light` under a light scheme and `dark` under a dark one |
+| `vars` | `vars` | The foundation's variables; a `{ light, dark }` value follows the context |
+| any other key | — | A token in any context — the short form for a section with one context |
+
+A context's own token beats one written beside `mode`. Framework applies all of it, scoped to the section — the tokens in effect in the section's context inline on the section, the palette, the per-context values and the variables in the page's stylesheet — and components don't need to know: they use `bg-primary`, `text-heading` and the other tokens and get the section's values.
+
+A component's own CSS variables — the ones its `meta.js` declares in `vars:` — are set with the section's `vars:` key, beside `theme:`.
 
 ### Page Background
 

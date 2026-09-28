@@ -45,7 +45,7 @@ For each section, the runtime:
 
 The component inside the wrapper doesn't have to do any of this — the runtime does it for every section, from what the author chose. So a component need not know whether it sits on a photo or a solid color: it uses semantic tokens and they resolve correctly. Relying on this is the recommendation, because it leaves the background and the context to the author.
 
-A component can still paint its own background — a hero with a built-in gradient, a video of its own. It declares `background: 'self'` in its `meta.js`, and the runtime then draws no background layer behind it.
+A component can still paint its own background — a hero with a built-in gradient, a video of its own. It declares `background: 'self'` in its `meta.js`, and the runtime then draws no background layer behind it. To draw the author's background itself, somewhere of its choosing, it renders kit's `<SectionBackground block={block} />`.
 
 ### Context vs scheme
 
@@ -392,7 +392,7 @@ const isDark = params.theme === 'dark'
 <h2 className={isDark ? 'text-white' : 'text-gray-900'}>...</h2>
 ```
 
-Delete the conditional. Replace with `text-heading`. The context class handles the inversion.
+Delete the conditional. Replace with `text-heading`. The context class handles the inversion. (`params.theme` no longer reaches a component anyway; when logic truly needs the context — a light or dark logo — use kit's `useColorContext(block)`.)
 
 **Custom CSS variables:**
 

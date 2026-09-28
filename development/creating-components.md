@@ -116,13 +116,17 @@ layout: centered
 ```
 
 ```jsx
-function Hero({ params }) {
-  const { theme, layout } = params
-  // theme = 'dark' (from frontmatter)
+function Hero({ params, block }) {
+  const { layout } = params
   // layout = 'centered' (from frontmatter)
   // Other params have defaults from meta.js
 }
 ```
+
+`theme: dark` is not among the params: it is one of the section's own settings — with
+`background`, `grid` and `vars` — which framework applies around your component. Here the
+runtime pins the section's dark context, and semantic tokens (`text-heading`) follow it. When a
+component needs the context for its own logic, it reads it with `useColorContext(block)`.
 
 ### block
 
@@ -190,11 +194,11 @@ export default {
   family: 'hero',
 
   params: {
-    theme: {
+    variant: {
       type: 'select',
-      label: 'Theme',
-      options: ['light', 'dark', 'gradient'],
-      default: 'light',
+      label: 'Variant',
+      options: ['plain', 'bold', 'gradient'],
+      default: 'plain',
     },
     layout: {
       type: 'select',
@@ -231,22 +235,22 @@ export default {
   family: 'hero',
 
   params: {
-    theme: { type: 'select', options: ['light', 'dark', 'gradient'], default: 'light' },
+    variant: { type: 'select', options: ['plain', 'bold', 'gradient'], default: 'plain' },
     layout: { type: 'select', options: ['centered', 'left', 'split'], default: 'centered' },
   },
 
   presets: {
     default: {
-      label: 'Light Centered',
-      params: { theme: 'light', layout: 'centered' },
+      label: 'Plain Centered',
+      params: { variant: 'plain', layout: 'centered' },
     },
     bold: {
-      label: 'Dark Hero',
-      params: { theme: 'dark', layout: 'centered' },
+      label: 'Bold Dark Hero',
+      params: { variant: 'bold', layout: 'centered', theme: 'dark' },  // a preset may set the section's theme too
     },
     gradient: {
       label: 'Gradient Split',
-      params: { theme: 'gradient', layout: 'split' },
+      params: { variant: 'gradient', layout: 'split' },
     },
   },
 }
@@ -258,8 +262,9 @@ prints starter content with that preset's params as its frontmatter:
 ```markdown
 ---
 type: Hero
-theme: dark
+variant: bold
 layout: centered
+theme: dark
 ---
 ```
 
@@ -498,7 +503,7 @@ This creates documentation with each component's:
 
 1. **Graceful degradation** — Handle missing content without errors
 2. **Sensible defaults** — Every param should have a good default
-3. **Intent over implementation** — `theme: dark` not `backgroundColor: #1a1a1a`
+3. **Intent over implementation** — `variant: featured` not `backgroundColor: #1a1a1a`
 4. **Minimal required content** — Components should render with minimal input
 5. **Consistent naming** — Use the standard content element names
 
