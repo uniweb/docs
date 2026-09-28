@@ -223,6 +223,11 @@ an authored 404 that no menu lists — which is almost always what you want — 
 all**: a 404 page is never listed in navigation to begin with. *(Until 2026-09-12 the flag was
 ignored for this one page and a "draft" 404 shipped anyway.)*
 
+**A section takes `hidden: true` too**, in its own frontmatter, with the same meaning one level
+down: a draft section. `uniweb dev` renders it, and a published build leaves it out together with
+its child sections — the page itself stays. Sync carries the flag both ways. (It is not the
+`hidden` in a component's `meta.js`, which keeps a component out of the foundation.)
+
 Use cases:
 - **Draft / in-progress pages**: `hidden: true` (invisible on the live site; previewable in dev)
 - **Landing / thank-you pages** (reached only via a direct link): `hideIn: ['*']`

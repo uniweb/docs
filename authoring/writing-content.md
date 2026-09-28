@@ -495,6 +495,7 @@ theme: dark
 | `type:` | How this section is displayed (required) |
 | `theme:` | Visual variant (e.g., `dark`, `light`) |
 | `id:` | Override the section's anchor ID |
+| `hidden:` | `true` makes the section a draft: shown while you preview with `uniweb dev`, left out of the published site |
 
 ### Type-specific settings
 
