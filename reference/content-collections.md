@@ -129,7 +129,39 @@ videos:
 data: { videos: '@uniweb/link' },
 ```
 
-Each link reaches the component as `{ url, $name, $label, $tags }` — `$label` and `$tags` when its entry gives them. A link record has no body and no other fields, and `uniweb push` sends no `draft: true` link: a link cannot yet be kept off a published site while it is in the site's folder.
+Each link reaches the component as `{ url, $name, $label, $tags }` — `$label` and `$tags` when its entry gives them. A link's `url` is absolute — a scheme and `://`, like `https://…`; a relative path or a `mailto:` is refused when you push. A link record has no body and no other fields, and `uniweb push` sends no `draft: true` link: a link cannot yet be kept off a published site while it is in the site's folder.
+
+A site that goes to a backend must have a component that declares the type — `data: { videos: '@uniweb/link' }` — for a query over it to be accepted.
+
+### File records
+
+A file — a PDF, a spreadsheet, a download of any type — is a record of **`@uniweb/file`**. The file itself is the record: drop it into `records/uniweb/file/`, and it is a record named by its file name without the extension. Nothing in it is read, whatever its type.
+
+```
+records/uniweb/file/brochure.pdf        → a record named `brochure`
+records/uniweb/file/price-list.xlsx     → a record named `price-list`
+```
+
+Its display text and tags go on its [folder entry](#folders), like any record's:
+
+```yaml
+- path: uniweb/file/brochure.pdf
+  label: Brochure
+  tags: [print]
+```
+
+A query selects files by that schema and a component declares them the same way (`schema: '@uniweb/file'`, `data: { downloads: '@uniweb/file' }`). Each reaches the component as `{ file, $name, $label, $tags }`, where `file` describes the asset:
+
+```javascript
+{
+  file: { url: '/records/uniweb/file/brochure.pdf', name: 'brochure.pdf', mime: 'application/pdf', size: 48213 },
+  $name: 'brochure',
+  $label: 'Brochure',
+  $tags: ['print'],
+}
+```
+
+Link to `file.url`, and show `file.name`, `file.mime` or `file.size` as a downloads list needs. The build publishes each file for the site to serve; `uniweb push` uploads it with the site's other media, and a pull fetches it back into `records/uniweb/file/`. Two files with the same name and different extensions are one name too many — rename one.
 
 ---
 
