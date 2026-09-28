@@ -99,6 +99,38 @@ Keep schema folders flat. A folder two levels deep names an organization's schem
 
 A data schema gives records a typed shape, used for validation, field defaults and i18n extraction — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives each record as its **brief** — the brief's fields at the top — or, when it declares `/*`, **whole**, each section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)). A list carries briefs, so an article's body is never in its list.
 
+### Link records
+
+A link — a video, a page elsewhere, a document online — is a record of **`@uniweb/link`**, a schema every site has without declaring one. Put one file per link in `records/uniweb/link/`, holding its `url` and nothing else:
+
+```yaml
+# records/uniweb/link/launch-video.yml
+url: https://www.youtube.com/watch?v=abc
+```
+
+A link's display text and tags are its [folder entry's](#folders), as for any record — give them in `records/folder.yml`, where a label can be one text or one per language:
+
+```yaml
+- path: uniweb/link/launch-video.yml
+  label: Launch video
+  tags: [media]
+```
+
+A query selects links by that schema, and a component declares them the same way:
+
+```yaml
+# queries.yml
+videos:
+  schema: '@uniweb/link'
+```
+
+```javascript
+// meta.js
+data: { videos: '@uniweb/link' },
+```
+
+Each link reaches the component as `{ url, $name, $label, $tags }` — `$label` and `$tags` when its entry gives them. A link record has no body and no other fields, and `uniweb push` sends no `draft: true` link: a link cannot yet be kept off a published site while it is in the site's folder.
+
 ---
 
 ## Folders: `records/folder.yml`
