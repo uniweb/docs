@@ -1,6 +1,6 @@
 # Theming Architecture
 
-Internal reference for the Uniweb theming system. Covers the two-axis model (context × scheme), the Auto context, section-level overrides, and how it all flows from editor to runtime.
+Internal reference for the Uniweb theming system. Covers the two-axis model (context × scheme), the Auto context, a section's own theme, and how it reaches the page.
 
 ---
 
@@ -67,22 +67,16 @@ The unified model adds one concept: **sections default to Auto** (follow the sit
 
 ### Data model
 
-Section `color_context` field:
+A section's `theme:` sets its mode — `theme: dark`, or `mode` in the object form (see [A section's theme](#a-sections-theme), below):
 
-| Value | Meaning |
+| Mode | Meaning |
 |-------|---------|
-| `""` / `null` / unset | Auto — follow site appearance |
-| `"light"` | Pinned to Light |
-| `"medium"` | Pinned to Dim |
-| `"dark"` | Pinned to Dark |
+| unset / `""` | Auto — follow site appearance |
+| `light` | Pinned to Light |
+| `medium` | Pinned to Dim |
+| `dark` | Pinned to Dark |
 
-Empty string is the default. No backend change required.
-
-In `core/src/block.js`, `block.themeName` maps from this:
-
-```js
-this.themeName = rawTheme || ''  // '' = Auto
-```
+In `core/src/block.js`, `Block.normalizeSectionTheme` reads it, and `block.themeName` holds the mode — `''` for Auto.
 
 ### Composition with Auto
 
@@ -150,253 +144,66 @@ A pinned section has a `context-{theme}` class that sets tokens directly on the 
 </section>
 ```
 
-### Dual CSS rules (Auto + toggle + overrides)
+### Two rules for an Auto section
 
-When an Auto section has overrides AND the site has toggle enabled, two CSS rules are generated:
+An Auto section's values for each scheme go in two rules, so it follows the site whether or not visitors can switch:
 
 ```css
-/* Light scheme overrides */
-#section-hero { --heading: rgba(var(--primary-900) / 1.00); }
+/* light scheme */
+:root:not(.scheme-dark) #section-hero { --link: var(--primary-700); }
 
-/* Dark scheme overrides */
-.scheme-dark #section-hero { --heading: rgba(var(--primary-200) / 1.00); }
+/* dark scheme */
+.scheme-dark #section-hero { --link: var(--primary-300); }
 ```
 
-This ensures the correct overrides apply as the scheme toggles. When Auto without toggle, or when pinned, only a single rule is generated (one context).
+A site whose `appearance.default` is `system` goes dark through a media query before any class is set, so the dark values are repeated under `@media (prefers-color-scheme: dark)` for `:root:not(.scheme-light) #section-hero`. A pinned section needs one rule: its own context never changes.
 
 ---
 
-## Section-Level Overrides — Storage Model
+## A section's theme
 
-> ⚠️ **The editor's older envelope.** What follows is the `standardOptions` shape a visual editor
-> sends. The runtime still reads it, by the rules below, while an editor sends it; a section's own
-> `theme:` — `theme.yml`'s `colors`, `contexts` and `vars`, scoped to the section — is the spelling
-> that replaces it ([Site Theming](../reference/site-theming.md)).
+A section's `theme:` is `theme.yml` for that section — the same keys, scoped to it — plus `mode`, the context it pins ([Site Theming](../reference/site-theming.md)):
 
-### Format
-
-Section overrides are stored in `standard_options` (JSON string on the section record):
-
-```js
-{
-  colors: {
-    colors: {                              // Base palette — context-independent
-      light: { "--primary-500": "...", ... }  // Always under 'light' key by convention
-    },
-    elements: {                            // Semantic tokens — context-dependent
-      light: { heading: "rgba(var(--primary-900) / 1.00)", ... },
-      dark:  { heading: "rgba(var(--primary-200) / 1.00)", ... }
-    }
-  },
-  foundationStyles: {
-    "field-id": "value"                    // Foundation-specific style overrides
-  }
-}
+```yaml
+theme:
+  mode: dark                 # left out: the section follows the site (Auto)
+  colors:                    # a palette — shades are generated, as for the site's
+    primary: '#8b5cf6'
+  contexts:                  # tokens per color context
+    dark:
+      link: var(--primary-300)
+  vars:                      # the foundation's variables
+    header-height: 5rem
+  heading: var(--primary-100)   # a token beside `mode` — any context
 ```
 
-**Base palette** (`colors.colors`): Always stored under the `light` key. Context-independent — the palette shade `primary-500` is the same blue in light and dark. Both `appendStyle()` in `theme.js:63` and `buildColorStyles()` in `sectionStyleManager.js:49` always read from `vars["light"]` regardless of active context.
+`theme: dark` is the shorthand for `{ mode: dark }`. It is stored in the section's params as written, and a component never receives it — it reads the result through kit's `useColorContext`.
 
-**Element tokens** (`colors.elements`): Keyed by context name. Genuinely context-dependent — `heading` in light might be `var(--primary-900)` while in dark it's `var(--primary-100)`.
+### What core makes of it
 
-### What gets populated per scenario
+`Block.normalizeSectionTheme` (`core/src/block.js`) turns it into:
 
-| Scenario | `color_context` | `elements` keys populated | CSS output |
-|---|---|---|---|
-| No overrides | `""` | (empty) | No rules generated |
-| Pinned to Light | `"light"` | `elements.light` | `#section-{id} { ... }` |
-| Pinned to Dim | `"medium"` | `elements.medium` | `#section-{id} { ... }` |
-| Pinned to Dark | `"dark"` | `elements.dark` | `#section-{id} { ... }` |
-| Auto + no toggle | `""` | `elements[default]` | `#section-{id} { ... }` |
-| Auto + toggle | `""` | `elements.light` AND `elements.dark` | Dual rules with `.scheme-dark` |
+| on the block | holds |
+|---|---|
+| `themeName` | the mode — `''` for Auto |
+| `themeOverrides` | `{ colors, contexts, vars, tokens }` — the palette, tokens per context, the variables, and the tokens written beside `mode` |
+| `contextOverrides` | the tokens in effect whatever the scheme — for a pinned section, its tokens and its own context's (the context's win); for an Auto section, the tokens set in no context |
 
-### Sample data
+### Which values apply
 
-#### No overrides (default section)
+| Section | Rule(s) in the page stylesheet |
+|---|---|
+| No `theme:` values | none |
+| Pinned (`light` / `medium` / `dark`) | one rule: the palette, the variables, the tokens beside `mode`, then its own context's tokens and variables — the context's win |
+| Auto | the palette, the variables and the tokens beside `mode` in one rule; `contexts.light` under a light scheme, `contexts.dark` under `.scheme-dark` (and the system's dark query, above) |
 
-```js
-color_context: ""
-standard_options: {}
-```
+A context the section's mode does not use stays in the file and applies again if the mode changes back — nothing is cleaned up.
 
-#### Pinned to Dark with overrides
+⛔ **An editor's older envelope is no longer read** (2026-09-28). A section's colors were once sent as `params.standardOptions` — `{ colors: { colors, elements }, foundationStyles }` — with its own rules, and component params could arrive nested under `params.properties`. An editor writes the section's `theme` instead, and core reads neither name; either is an ordinary param now.
 
-```js
-color_context: "dark"
-standard_options: {
-  colors: {
-    colors: {
-      light: {
-        "--primary-500": "59 130 246",
-        "--primary-600": "37 99 235"
-      }
-    },
-    elements: {
-      dark: {
-        "heading": "rgba(var(--primary-200) / 1.00)",
-        "section": "rgba(var(--neutral-950) / 1.00)",
-        "body": "rgba(var(--neutral-300) / 1.00)"
-      }
-    }
-  }
-}
-// CSS: context-dark class + #section-{id} { vars from elements.dark }
-```
+### Updating a preview
 
-#### Pinned to Light with overrides
-
-```js
-color_context: "light"
-standard_options: {
-  colors: {
-    colors: {
-      light: {
-        "--primary-500": "59 130 246"
-      }
-    },
-    elements: {
-      light: {
-        "heading": "rgba(var(--primary-900) / 1.00)",
-        "section": "rgba(var(--neutral-50) / 1.00)"
-      }
-    }
-  }
-}
-// CSS: context-light class + #section-{id} { vars from elements.light }
-```
-
-#### Auto + no toggle (site default = light)
-
-```js
-color_context: ""
-standard_options: {
-  colors: {
-    colors: {
-      light: {
-        "--primary-500": "59 130 246"
-      }
-    },
-    elements: {
-      light: {
-        "heading": "rgba(var(--primary-900) / 1.00)",
-        "section": "rgba(var(--neutral-50) / 1.00)"
-      }
-    }
-  }
-}
-// CSS: NO context class + #section-{id} { vars from elements[appearance.default] }
-// Same storage shape as "pinned to light" — only color_context differs
-```
-
-#### Auto + toggle (both contexts customized)
-
-```js
-color_context: ""
-standard_options: {
-  colors: {
-    colors: {
-      light: {
-        "--primary-500": "59 130 246"
-      }
-    },
-    elements: {
-      light: {
-        "heading": "rgba(var(--primary-900) / 1.00)",
-        "section": "rgba(var(--neutral-50) / 1.00)",
-        "body": "rgba(var(--neutral-800) / 1.00)"
-      },
-      dark: {
-        "heading": "rgba(var(--primary-200) / 1.00)",
-        "section": "rgba(var(--neutral-950) / 1.00)",
-        "body": "rgba(var(--neutral-300) / 1.00)"
-      }
-    }
-  }
-}
-// CSS: NO context class + dual rules:
-//   #section-{id} { light vars }
-//   .scheme-dark #section-{id} { dark vars }
-```
-
-#### Auto + toggle (only light customized)
-
-```js
-color_context: ""
-standard_options: {
-  colors: {
-    elements: {
-      light: {
-        "heading": "rgba(var(--primary-900) / 1.00)"
-      }
-      // dark: not present — user hasn't edited the Dark tab yet
-    }
-  }
-}
-// CSS: dual rules — light rule has overrides, dark rule is empty (theme defaults)
-```
-
-### Edge cases
-
-**Site enables toggle on existing Auto section with only `elements.light` overrides:**
-Light scheme applies the overrides. Dark scheme has no `elements.dark` — falls back to theme defaults. User opens Dark tab to customize if needed.
-
-**Site changes default from light to dark (no toggle):**
-Auto sections now read from `elements[dark]` — which may be empty. The old `elements.light` data sits dormant (not lost). If default switches back, the light overrides return.
-
-**Section changes from Auto to Pinned:**
-If it had `elements.light` and `elements.dark`, runtime now only uses the pinned context's key. The other key stays dormant.
-
-**Section changes from Pinned to Auto:**
-The pinned context's overrides still work for that scheme. The other tab starts empty.
-
-### Dormant data policy
-
-Unused context keys are left in storage when switching modes. They're harmless and preserve customizations if the user switches back. No cleanup on mode change.
-
----
-
-## Editor Panel Consumption
-
-### Context initialization
-
-When `SectionColors` opens, it determines the editing context:
-
-| Section mode | `settings.context` init value | Context tabs |
-|---|---|---|
-| Pinned to Light | `"light"` | None |
-| Pinned to Dim | `"medium"` | None |
-| Pinned to Dark | `"dark"` | None |
-| Auto + no toggle | `appearance.default` (e.g., `"light"`) | None |
-| Auto + toggle | Current scheme (from iframe DOM) | Light / Dark |
-
-```js
-const sectionContext = activeSection?.color_context || ""
-const isAutoSection = !sectionContext
-const showContextTabs = isAutoSection && isToggleEnabled
-```
-
-### How overrides are saved
-
-The `updateCustom(category, context, name, value)` function writes to `elements[context][name]`. The `context` argument comes from `settings.context`, which is:
-
-- The pinned context (for pinned sections)
-- The site's default appearance (for Auto + no toggle)
-- The currently active tab (for Auto + toggle)
-
-This means the storage key is always determined by the active editing context — no special logic needed.
-
-### Syncing to preview
-
-When element overrides are saved, `SectionColors` sends them through the `updateParams` pipeline — the same flow used for all section edits:
-
-```js
-sendToPreview("updateParams", {
-  pageRoute,
-  sectionId,
-  params: { standardOptions: nextOptions }
-})
-```
-
-The iframe receives `updateParams` → updates the block's `standardOptions` → `rebuildWebsite()` → `setVersion(v+1)` → React re-renders → `<SectionOverrideStyles>` rebuilds the page-level CSS. No separate message type needed.
+An editor sends a section's params as stored, through the `updateParams` message: the iframe updates the block, rebuilds the website and re-renders, and the page stylesheet is rebuilt with it. There is no message of its own for a section's theme.
 
 ---
 
@@ -404,44 +211,20 @@ The iframe receives `updateParams` → updates the block's `standardOptions` →
 
 ### Architecture: pre-built page-level CSS
 
-Section overrides follow the same pattern as global theme CSS. Just as `buildTheme()` produces a `<style id="uniweb-theme">` tag for the global palette and context tokens, section overrides are pre-built into a single `<style id="uniweb-page-overrides">` tag per page.
-
-This keeps the DOM clean — no inline styles on section elements, no scattered per-section `<style>` tags.
+A section's theme follows the same pattern as the global theme CSS. Just as `buildTheme()` produces a `<style id="uniweb-theme">` tag for the global palette and context tokens, the sections' values are pre-built into a single `<style id="uniweb-page-overrides">` tag per page. Only the tokens in effect whatever the scheme (`contextOverrides`) go inline on the section wrapper, so a section renders right before the stylesheet arrives.
 
 ### buildSectionOverrides(blocks, appearance)
 
-New utility in `theming/src/section-overrides.js`. Takes all blocks on a page + appearance config, returns a CSS string:
+`theming/src/section-overrides.js`. Takes every block a page renders — each layout area's too (`page.getAllBlocks()`) — and returns a CSS string. It reads, per block:
 
-```js
-export function buildSectionOverrides(blocks, appearance) {
-  let css = ''
-  for (const block of blocks) {
-    const { colors, foundationStyles } = block.standardOptions || {}
-    if (!hasOverrides(colors, foundationStyles)) continue
+- `stableId || id` — the selector, `#section-{id}`
+- `themeName` and `themeOverrides` — the section's theme, as above
+- `componentVars` — the variables the component declares in `meta.js`, with the section's values over them
+- `childBlocks` — child sections get their own rules, at any depth
 
-    const id = `#section-${block.stableId || block.id}`
-    const isAuto = !block.themeName
-    const hasToggle = appearance.allowToggle
+### BlockRenderer.jsx — context class
 
-    if (isAuto && hasToggle) {
-      // Dual rules — light and dark overrides in separate selectors
-      css += `${id} { ${buildVarsCSS(colors, 'light', foundationStyles)} }\n`
-      css += `.scheme-dark ${id} { ${buildVarsCSS(colors, 'dark')} }\n`
-    } else {
-      // Single context — pinned context or site default
-      const ctx = block.themeName || appearance.default || 'light'
-      css += `${id} { ${buildVarsCSS(colors, ctx, foundationStyles)} }\n`
-    }
-  }
-  return css
-}
-```
-
-`buildVarsCSS()` is a helper that reads base palette from `colors.colors.light` (context-independent) and element tokens from `colors.elements[ctx]`, and returns a CSS declaration string.
-
-### BlockRenderer.jsx — context class only
-
-`BlockRenderer.jsx` handles context class assignment. No inline styles for section overrides — those come from the page-level `<style>` tag:
+`BlockRenderer.jsx` assigns the context class, and puts `contextOverrides` inline:
 
 ```js
 // Empty themeName = Auto → no context class → inherits from :root
@@ -451,54 +234,30 @@ if (theme && VALID_CONTEXTS.includes(theme)) {
 }
 ```
 
-A section's own `theme:` — tokens beside `mode`, and `theme.yml`'s `colors`, `contexts` and `vars` scoped to the section (see [Site Theming](../reference/site-theming.md)) — is applied in two places. The tokens in effect whatever the scheme go inline on the section wrapper, as the tokens beside `mode` always did; the palette, the per-context values that follow the site's scheme, and the variables go in the same page stylesheet as the editor's overrides.
-
 ### SectionOverrideStyles component
 
-A React component renders the page-level `<style>` tag in the website renderer:
+`runtime/src/components/PageRenderer.jsx` builds the page-level stylesheet and keeps it in the document head:
 
 ```jsx
-function SectionOverrideStyles({ blocks, appearance }) {
+function SectionOverrideStyles({ page, appearance }) {
   const css = useMemo(
-    () => buildSectionOverrides(blocks, appearance),
-    [blocks, appearance]
+    () => (page ? buildSectionOverrides(page.getAllBlocks(), appearance) : ''),
+    [page, appearance]
   )
-  if (!css) return null
-  return <style id="uniweb-page-overrides">{css}</style>
+  // …writes `css` into <style id="uniweb-page-overrides"> in the head, removing it when empty
 }
 ```
 
-React manages the tag lifecycle. When blocks change (via `updateParams` → `rebuildWebsite()` → `setVersion(v+1)`), the component re-renders and CSS updates naturally.
-
-### Editor preview (DynamicApp.jsx)
-
-The dynamic runtime uses the same `<SectionOverrideStyles>` component. Editor updates flow through the existing `updateParams` pipeline:
-
-1. Editor: `sendToPreview("updateParams", { pageRoute, sectionId, params: { standardOptions } })`
-2. Iframe: `updateParams` handler → `rebuildWebsite()` → `setVersion(v+1)` → React re-render
-3. `<SectionOverrideStyles>` re-renders with updated CSS
-
-No `updateSectionTheme` message type needed. Same data flow as other section edits.
+When blocks change (via `updateParams` → `rebuildWebsite()` → `setVersion(v+1)`), the component re-renders and the CSS updates with it. The server-side twin is `ssr-renderer.js`, which passes the same blocks.
 
 ### Published site (rendered server-side)
 
-`buildSectionOverrides()` is called during prerender and injected into the HTML alongside the global theme CSS:
+`renderPage` returns the same stylesheet as `sectionOverrideCSS`, and `injectPageContent` places it beside the global theme CSS:
 
 ```js
-const sectionCSS = buildSectionOverrides(page.blocks, appearance)
+const sectionCSS = buildSectionOverrides(page.getAllBlocks(), appearance)
 // → <style id="uniweb-page-overrides">{sectionCSS}</style>
 ```
-
-### Legacy rendering (reference only)
-
-An earlier renderer generated this CSS differently, and three of its patterns are worth knowing
-because the current shape is a reaction to them:
-
-- reading vars from a `light` key and elements from a `[context]` key, rather than one map per context
-- generating dual CSS rules for toggle-enabled sites
-- building a CSS variable map for a single context at a time
-
-The modern runtime replaces all three. Nothing here is still in use.
 
 ---
 
@@ -688,12 +447,12 @@ const themes = {...}                   →  DELETE (context system replaces)
 
 | File | Role |
 |---|---|
-| `theming/src/normalize.js` | **NEW** — `normalizeTokenValue()` — single source of truth |
-| `theming/src/section-overrides.js` | **NEW** — `buildSectionOverrides()` utility |
+| `theming/src/normalize.js` | `normalizeTokenValue()` — single source of truth |
+| `theming/src/section-overrides.js` | `buildSectionOverrides()` — the page stylesheet for sections' themes |
 | `theming/src/index.js` | Exports for the theming package |
-| `runtime/src/components/BlockRenderer.jsx` | Context class logic (no inline override styles) |
-| `runtime/src/components/WebsiteRenderer.jsx` | Renders `<SectionOverrideStyles>` component |
-| `core/src/block.js` | Block class — `themeName` defaults to `''` (Auto), `componentVars` merging |
+| `runtime/src/components/BlockRenderer.jsx` | Context class, and the section's `contextOverrides` inline |
+| `runtime/src/components/PageRenderer.jsx` | `<SectionOverrideStyles>` — the page stylesheet |
+| `core/src/block.js` | Block class — `normalizeSectionTheme()`, `themeName` (`''` = Auto), `componentVars` merging |
 | `core/src/theme.js` | Theme class — `hasSchemeToggle()`, `getAppearance()` |
 | `theming/src/css-generator.js` | Global theme CSS generation |
 | `theming/src/processor.js` | Theme validation, `DEFAULT_APPEARANCE` |
