@@ -43,9 +43,9 @@ For each section, the runtime:
 4. Applies the context class (`.context-light`, `.context-medium`, `.context-dark`)
 5. Sets `background-color: var(--section)` on the wrapper
 
-The component inside the wrapper doesn't touch any of this. It never sets a section background. It doesn't know whether it's on top of a photo or a solid color. It uses semantic tokens and they resolve correctly.
+The component inside the wrapper doesn't have to do any of this — the runtime does it for every section, from what the author chose. So a component need not know whether it sits on a photo or a solid color: it uses semantic tokens and they resolve correctly. Relying on this is the recommendation, because it leaves the background and the context to the author.
 
-Components can opt out of the runtime-rendered background by declaring `background: 'self'` in their `meta.js` — but this is rare and only for components that create their own visual environment (like a hero with a built-in gradient).
+A component can still paint its own background — a hero with a built-in gradient, a video of its own. It declares `background: 'self'` in its `meta.js`, and the runtime then draws no background layer behind it.
 
 ### Context vs scheme
 
