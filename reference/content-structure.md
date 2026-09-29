@@ -68,12 +68,14 @@ All content fields are available at the top level:
 | `images`       | `![alt](url)`          | Array of image objects                     |
 | `icons`      | `![](icon:url)`        | Array of icon objects                      |
 | `videos`     | `![](url){role=video}` | Array of video objects                     |
+| `documents`  | `![](file.pdf){role=pdf}` | Array of document objects — see [Document Attributes](#document-attributes) |
 | `insets`     | `![](@Component)` or a ` ```@Component ` fence | Component references — inline, or wrapping a body |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
 | `data`       | Tagged blocks          | `yaml:`/`json:` give the parsed value; `md:` gives `{ items, sequence }` (see below) |
 | `tables`     | Markdown tables        | Present only when the content has one — `[{ rows }]` |
+| `math`       | `$$ … $$` on its own lines | Present only when the content has one — `[{ id, latex, mathml }]` |
 | `headings`   | Nested content only    | Headings inside quote/list bodies — a section's headline never spills here |
 | `items`      | Subsequent headings    | Child content groups                       |
 | `sequence`   | All elements           | Ordered array for document-order rendering |
