@@ -1223,17 +1223,16 @@ Reaching for `<Prose>` to render a document is the mistake worth naming: it rend
 
 #### Both need the typography plugin
 
-`<Prose>` emits Tailwind Typography's `prose` classes, and `<Render>` output is normally placed inside a container that carries them. Those classes come from a plugin your **foundation** installs — kit cannot supply them, since it ships no stylesheet of its own. Without it the markup is right and completely unstyled.
+`<Prose>` emits Tailwind Typography's `prose` classes, and `<Render>` output is normally placed inside a container that carries them. Your foundation's stylesheet supplies the rules with one line — it brings the plugin with it, so there is nothing to install:
 
 ```css
-/* your foundation's styles.css */
-@plugin "@tailwindcss/typography";
+/* your foundation's styles.css, after the Tailwind import */
 @import "@uniweb/kit/prose-tokens.css";
 ```
 
-Add `@tailwindcss/typography` to the foundation's dependencies too.
+Without it the markup is right and completely unstyled — lists lose their bullets and numbers, headings and spacing their typography. The foundation build warns when it renders `<Prose>` or `<Article>` with no prose styles in its CSS, and `uniweb doctor` flags it too.
 
-The second line is what makes body copy answer to the site's `theme.yml`. Typography ships its own greys, so without it long-form content is the one part of the page a site cannot restyle. After the import there is nothing more to do — and specifically, do not add `prose-invert`, a `dark:` variant, or a palette modifier like `prose-gray`. Each re-declares the variables the bridge just pointed at the theme, and the tokens already flip with the visitor's scheme.
+The same import is what makes body copy answer to the site's `theme.yml`. Typography ships its own greys, so without it long-form content is the one part of the page a site cannot restyle. After the import there is nothing more to do — and specifically, do not add `prose-invert`, a `dark:` variant, or a palette modifier like `prose-gray`. Each re-declares the variables the bridge just pointed at the theme, and the tokens already flip with the visitor's scheme.
 
 **Use exactly one prose container per subtree.** The `--tw-prose-*` variables are inherited, so a `prose` container nested inside another silently resets all of them for everything inside it — the outer looks correctly themed and its contents do not. The section that renders the document is usually the better owner, since it then renders correctly under any layout; a layout should supply column width and padding only.
 
