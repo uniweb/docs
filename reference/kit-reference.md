@@ -1100,34 +1100,45 @@ Uses `animate-pulse` and the `--border` CSS variable for styling. Includes `role
 
 ### Visual
 
-Renders the first visual element from content, checking insets first, then video, then image. From `@uniweb/kit`.
+Renders one visual: an item of the section's [`media` slot](./component-metadata.md#media) by its kind, or the first of the candidates you pass. From `@uniweb/kit`.
 
 ```jsx
 import { Visual } from '@uniweb/kit'
 
+// meta.js: content: { title: 'Headline', media: 'Photo, video or diagram [1]' }
 function SplitContent({ content, block }) {
   return (
     <div className="flex gap-12">
       <div className="flex-1">
         <h2 className="text-heading">{content.title}</h2>
       </div>
-      <Visual inset={block.insets[0]} video={content.videos[0]} image={content.images[0]} className="flex-1 rounded-lg" />
+      <Visual media={content.media} block={block} className="flex-1 rounded-lg" />
     </div>
   )
 }
+```
+
+Handed `content.media`, it renders the first item — the first image, video or embedded component the author placed, whatever its kind. Handed one item, it renders that one, which is how a gallery renders every item in the author's order:
+
+```jsx
+{content.media.map((item, i) => <Visual key={i} media={item} block={block} />)}
 ```
 
 #### Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
+| `media` | object or array | — | A `content.media` item — `{ kind: 'image' \| 'video' \| 'inset', … }` — or the list, for its first item |
+| `block` | Block | — | The section's block. An embedded component (`kind: 'inset'`) resolves through it |
 | `inset` | Block | — | Inset Block instance (from `block.insets` or `block.getInset()`) |
 | `video` | object | — | Video object with `src` property |
 | `image` | object | — | Image object with `src` and `alt` properties |
 | `className` | string | — | CSS classes for the visual container |
 | `fallback` | ReactNode | `null` | Fallback when no visual is found |
 
-**Resolution order:** inset > video > image. Only tries candidates you pass.
+**Without `media`:** the first of the candidates you pass, in the order inset > video > image — whatever order the author placed them in.
+
+A slot narrowed to one type (`media: { types: ['image'] }`, or `image:`) can render with `<Image>` directly. A slot that takes embedded components must render them — `<Visual>` does; kit's `<Media>` is a video player.
 
 ### ChildGrid
 
@@ -1178,8 +1189,6 @@ It fills the nearest positioned ancestor, so place it inside an element with `po
 |------|------|-------------|
 | `block` | Block | The section — its `block.background`, normalized by the runtime |
 | `className` | string | Classes on the background layer |
-
-Section types that declare `visuals: 1` (any type) should use `<Visual>`. Those that declare `visuals: 'image'` (media only) should use `<Media>` or `<Image>` directly.
 
 ### Render vs Prose
 

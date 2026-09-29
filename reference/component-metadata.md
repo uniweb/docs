@@ -47,7 +47,6 @@ When `meta.js` is present:
 | `hidden` | No | `false` |
 | `background` | No | `false` |
 | `inset` | No | `false` |
-| `visuals` | No | — |
 | `children` | No | — |
 | `data` | No | — (the section receives no data of its own) |
 | `content` | No | — |
@@ -253,25 +252,34 @@ section type.
 
 ### Content
 
-The `content` object describes what markdown content the component uses.
+The `content` object says what your component expects from its section's markdown — which elements it reads, how many, and what an author should write there.
 
 ```javascript
 content: {
-  // String: label only, any count
-  title: 'Headline',
-
-  // String with count: label [count]
+  title: 'Headline [1]',                 // a label, with a count
   paragraphs: 'Description [1-2]',
-  links: 'CTA buttons [1-2]',
-  image: 'Hero image [1]',
+  links: 'CTA buttons [0-2]',
+  media: 'Photo, video or diagram [1]',  // an image, a video, or an embedded component
 
-  // Object form: when you need a hint
+  // The object form: a hint, and for `items`, what each entry holds
   items: {
     label: 'Feature cards [3-6]',
-    hint: 'Each H3 becomes a card',
+    hint: 'Each ### heading starts a card',
+    content: { title: 'Feature', paragraphs: 'Description', icon: 'Icon [1]' },
   },
 }
 ```
+
+A value is one of:
+
+| Form | Example | Means |
+|------|---------|-------|
+| A label | `'Headline'` | The element, named for the author |
+| A label with a count | `'Cards [3-6]'` | …and how many — see [Count Syntax](#count-syntax) |
+| `true` | `title: true` | The element, with no label of yours — the editor uses its own words |
+| An object | `{ label, hint }` | A label and a longer hint. `media` also takes `types`, `sequence` takes `except`, and `items` takes `content` |
+
+**The label is for authors.** A visual editor shows it to the person writing the section, so write what they need to know — "Product photo", "Rich content" — not a variable name. It is shown as you wrote it, in every language, so write it in your authors' language.
 
 #### Count Syntax
 
@@ -296,7 +304,7 @@ produces one: the floor is the author's option to delete, not an instruction to 
 
 #### Standard Content Elements
 
-These names are a **fixed vocabulary**—they map to what the semantic parser extracts from markdown:
+These names are a **fixed vocabulary** — each is something the semantic parser extracts from markdown, and the component reads it as `content.<name>`:
 
 | Element | Source | Description |
 |---------|--------|-------------|
@@ -306,38 +314,90 @@ These names are a **fixed vocabulary**—they map to what the semantic parser ex
 | `paragraphs` | Body text | Description paragraphs |
 | `links` | `[text](url)` | Markdown links (become buttons/links) |
 | `lists` | `- item` | Bullet or numbered lists |
-| `items` | Subsequent headings | Content groups within the markdown |
-| `insets` | `@Component` refs | Inline component references |
+| `items` | Subsequent headings | Content groups within the markdown — see [What each entry holds](#what-each-entry-holds) |
+| `media` | `![…](…)` on its own line | An image, a video, or an embedded component — see [Media](#media) |
+| `icons` | `![](lu-star)` | Icons an author picks |
+| `documents` | `![…](file.pdf){role=pdf}` | Files, with an optional preview |
+| `snippets` | ` ```js ` | Code samples |
+| `tables` | A markdown table | Tables |
+| `math` | `$$ … $$` | Displayed equations |
+| `quotes` | `> …` | Block quotes |
+| `sequence` | The whole section | Content rendered as written — see [Sequence](#sequence--content-rendered-as-written) |
 
-Use these exact names. The meta.js describes which of these your component uses—you're not inventing new names, you're declaring which parsed elements you consume. Child sections from separate files are not content elements: they arrive as `block.childBlocks`, and a section type that accepts them declares [`children`](#children-composition).
+Use these exact names. The meta.js describes which of these your component uses — you're not inventing new names, you're declaring which parsed elements you consume. Child sections from separate files are not content elements: they arrive as `block.childBlocks`, and a section type that accepts them declares [`children`](#children-composition). A tagged block the author writes is declared in [`data`](#data) — a [concept block](#concept-blocks) as `'md:<tag>'`.
 
-#### Image Roles
+#### Media
 
-Instead of generic `images`, use role-specific element names:
-
-| Element | Role | Description |
-|---------|------|-------------|
-| `image` | Content image | Photos, graphics alongside content |
-| `icon` | Small graphic | Icons, logos, avatars |
-| `thumbnail` | Preview | Small preview images |
-| `background` | Background | Handled by engine (see below) |
-
-```javascript
-content: {
-  image: 'Hero image [1]',
-  icon: 'Feature icon [1]',
-}
-```
-
-Videos and documents have arrays of their own and are declared by those names: a `{role=video}`
-arrives in `content.videos`, and a `{role=pdf}` document in `content.documents` — never among the
-images.
+`media` is the section's visual media: **an image, a video, or an embedded component**, each on its own line. Declared without `types` it takes any of the three, and narrowing is the extra work:
 
 ```javascript
 content: {
-  documents: 'Reports [1+]',
+  media: 'Hero media [1]',                                    // any of the three
+  // media: { label: 'Product photo [1]', types: ['image'] },  // images only
 }
 ```
+
+`types` takes `'image'`, `'video'` and `'inset'` (an embedded component). The familiar spellings are the same declaration, narrowed to one type:
+
+| Spelling | Is |
+|----------|----|
+| `image`, `images`, `thumbnail` | `media` with `types: ['image']` |
+| `videos` | `media` with `types: ['video']` |
+| `insets` | `media` with `types: ['inset']` |
+
+A component reads the slot as **`content.media`** — its items in the order the author wrote them, each with its `kind` (`'image'`, `'video'` or `'inset'`) — or by kind, as `content.images`, `content.videos` and `content.insets`. Kit's `<Visual>` renders an item by its kind; handed the whole list it renders the first, because a slot of one is the first thing the author placed in it:
+
+```jsx
+<Visual media={content.media} block={block} className="rounded-lg" />
+```
+
+⚠️ **The one mistake the name invites:** rendering the slot with an image or video component and dropping a component the author placed there. Kit's `<Media>` is a video player — for the slot, use `<Visual>`.
+
+- **An icon is not media** — it is a glyph an author picks. Declare `icons` (or `icon`).
+- **A document is not media** — declare `documents`. A `{role=pdf}` file arrives in `content.documents`, never among the images.
+- **An image inside a sentence belongs to the text.** It arrives in `content.images` and in `content.sequence`, but not in `content.media`.
+- **Declare a thing once.** `media` beside `image` would count one image toward both; the build says so.
+
+> **`visuals` is retired.** The slot is the `media` element: `visuals: 1` is `media: '… [0-1]'`, and `visuals: { types: ['image'], count: 'many' }` is `media: { label: '…', types: ['image'] }`. The build refuses a top-level `visuals` and names the equivalent.
+
+#### Sequence — content rendered as written
+
+A component that renders its content in the order the author wrote it — prose with images, tables, equations and embedded components in between — declares `sequence`:
+
+```javascript
+content: {
+  title: 'Headline [1]',
+  sequence: 'Prose and media',
+  // leaving out kinds it does not render:
+  // sequence: { label: 'Rich content', except: ['table', 'math'] },
+}
+```
+
+- It covers **the whole section, in order — the headline included**. The component renders `content.sequence`, as kit's `<Render>`, `<Prose>` and `<Article>` do. `title` beside it says the section should begin with one; it does not mean the title renders apart from the rest.
+- **`except` lists the kinds of content it does not render** — `heading`, `prose`, `list`, `link`, `image`, `video`, `inset`, `icon`, `document`, `code`, `table`, `math`, `quote`. Every other kind reaches the page, including one the framework adds later.
+- A count on `sequence` means nothing, so it takes none.
+
+A `content:` declared without `sequence` says only what it names, and a component with no `content:` says nothing about its content at all.
+
+#### What each entry holds
+
+`items` takes `content:` — the same map a section's is, for one entry:
+
+```javascript
+content: {
+  title: 'Headline',
+  items: {
+    label: 'Team members [2+]',
+    content: { title: 'Name', subtitle: 'Role', image: 'Portrait [1]', paragraphs: 'Bio' },
+  },
+}
+```
+
+Each entry is built the way a section is, less the grouping, so an entry's `content:` holds neither `items` nor a `sequence`. Each entry in `content.items` has its own `media`, `images` and the rest.
+
+#### What the build does with it
+
+The build checks the declaration and **lowers** it into one form in the foundation's schema — what a visual editor reads: every media spelling becomes `media` with its `types`, a count becomes a minimum and a maximum, and a label appears only where you wrote one. Anything it cannot read — an unknown name, a count on `sequence`, two declarations of one thing — is a build warning, and the rest is still used. `@uniweb/schemas/content`'s `describeContent` reads a `meta.js` the same way.
 
 #### Background Media
 
@@ -419,7 +479,7 @@ data: {
 }
 ```
 
-Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below), or `{}` for a key whose records have no schema — an external API's. The site, author, or editor decides *how* each key is filled — a query's records, a tagged code block, or an editor form — and the schema is the same regardless of source.
+Each entry's **key** is the `content.data` key. Its **value** is one of three forms (below), or `{}` for a key whose records have no schema — an external API's. A key written `'md:<tag>'` declares a [concept block](#concept-blocks) the author writes, read as `content.data.<tag>`. The site, author, or editor decides *how* each key is filled — a query's records, a tagged code block, or an editor form — and the schema is the same regardless of source.
 
 A component with no `data` field, or `data: false`, receives no keys of its own.
 
@@ -836,6 +896,30 @@ an **inline field map** (a keyed object, below) or an **inline rich-form** (a
 `fields` array — the editor form). It can also be a named ref (`'@/…'`,
 `'@std/…'`) when the shape is shared/versioned.
 
+#### Concept blocks
+
+A concept block is prose an author writes under a tag — a ` ```md:faq ` fence, or a GitHub alert (`> [!WARNING]`) — and it arrives at `content.data.<tag>` as `{ items, sequence }` ([Concept Blocks](./content-structure.md#concept-blocks)). Declare one by writing its key as the fence is written:
+
+```javascript
+data: {
+  'md:faq': 'Questions and answers [3+]',
+}
+```
+
+The component still reads `content.data.faq`. The value is the author's label — its count counts the entries — or an object that also says what each entry holds:
+
+```javascript
+data: {
+  'md:faq': {
+    label: 'Questions and answers [3+]',
+    hint: 'One heading per question',
+    content: { title: 'Question', paragraphs: 'Answer' },
+  },
+}
+```
+
+`content:` takes the vocabulary a section's does, for one entry — it holds neither `items` nor a `sequence`. A concept block has no schema, since its shape comes from the fence, so the value is never a schema ref. `faq: {}` still declares the key, with nothing said about the block.
+
 #### Inline field map — flat key/value maps
 
 Use a field map for flat row-like data (e.g. nav links). Fields are
@@ -1046,7 +1130,7 @@ export default {
 }
 ```
 
-Where an inset is offered is a concern of the section it is placed in — its [`visuals`](#visual-expectations) declaration, or `insets` in its `content:` — not a property of the inset itself. (`children` is about child sections, not insets.) Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components), so a hidden component is not a section type and `@ComponentName` cannot resolve to it.
+Where an inset is offered is a concern of the section it is placed in — a [`media`](#media) slot that takes embedded components, or a [`sequence`](#sequence--content-rendered-as-written) that does not leave them out — not a property of the inset itself. (`children` is about child sections, not insets.) Don't use `hidden` on insets — `hidden` means "exclude from export entirely" (for internal helpers or work-in-progress components), so a hidden component is not a section type and `@ComponentName` cannot resolve to it.
 
 A component with `inset: true` is meant to be placed as an inset: a visual editor offers it among insets and leaves it out of the list of sections. A component meant for both adds `section: true`:
 
@@ -1064,38 +1148,9 @@ Inset components receive `content.title` (from the `[description]` text) and `pa
 
 ---
 
-## Visual Expectations
-
-The `visuals` field declares what visual content a section type expects. This is editor metadata — it helps the visual editor present the right insertion UI. The runtime stays permissive.
-
-| Form | Meaning | Example |
-|------|---------|---------|
-| Number | Count, any type (image/video/inset) | `visuals: 1` |
-| `'many'` | Multiple, any type | `visuals: 'many'` |
-| String subtype | One of a specific type | `visuals: 'image'` |
-| Array | One of the listed types | `visuals: ['image', 'video']` |
-| Object | Full spec with count + types | `visuals: { types: ['image'], count: 'many' }` |
-
-Subtypes: `'image'`, `'video'`, `'inset'`. Without a subtype, the editor offers all types including inset components.
-
-```javascript
-// SplitContent — one visual slot, anything goes
-export default { visuals: 1 }
-
-// Gallery — many images only
-export default { visuals: { types: ['image'], count: 'many' } }
-
-// VideoPlayer — one video
-export default { visuals: 'video' }
-```
-
-Section types with unqualified `visuals` (any type) use the `<Visual>` component from kit. Those narrowed to media subtypes use `<Media>` or `<Image>` directly.
-
----
-
 ## Children (Composition)
 
-The `children` field declares that a section type accepts file-based child sections. Like `visuals`, this is editor metadata — at runtime, `block.childBlocks` is always available regardless of whether `children` is declared.
+The `children` field declares that a section type accepts file-based child sections. This is editor metadata — at runtime, `block.childBlocks` is always available regardless of whether `children` is declared.
 
 ```javascript
 // sections/Grid/meta.js

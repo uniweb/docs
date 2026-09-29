@@ -70,6 +70,7 @@ All content fields are available at the top level:
 | `videos`     | `![](url){role=video}` | Array of video objects                     |
 | `documents`  | `![](file.pdf){role=pdf}` | Array of document objects — see [Document Attributes](#document-attributes) |
 | `insets`     | `![](@Component)` or a ` ```@Component ` fence | Component references — inline, or wrapping a body |
+| `media`      | Images, videos and insets on their own line | The section's visual media, in the order written — each with its `kind` (see [below](#the-media-slot--contentmedia)) |
 | `lists`      | `- item`               | Bullet or numbered lists                   |
 | `quotes`     | `> text`               | Blockquote content                         |
 | `snippets`   | Fenced code            | Code snippets — `[{ language, code }]`     |
@@ -255,6 +256,35 @@ The roles above are **conventions, not a fixed set.** `role` rides through verba
 `{role=wibble}` reaches your component as `role: "wibble"`; it simply lands in `images`
 like any role that isn't `icon`, `video` or `pdf`. Only those three select a different array.
 
+### The media slot — `content.media`
+
+`images`, `videos` and `insets` keep the author's order within one kind and lose it across
+kinds. **`content.media`** keeps it: every image, video and embedded component the author placed
+on its own line, in the order written, each tagged with its `kind` — `'image'`, `'video'` or
+`'inset'`:
+
+```markdown
+![Night launch](./launch.mp4){role=video}
+
+![The crew](./crew.jpg)
+
+![Trajectory](@TrajectoryChart)
+```
+
+```js
+media: [
+  { kind: 'video', src: './launch.mp4', … },
+  { kind: 'image', url: './crew.jpg', alt: 'The crew', … },
+  { kind: 'inset', refId: 'inset_0' },
+]
+```
+
+It is what a component with a [`media` slot](./component-metadata.md#media) reads, and each entry
+in `items` has its own. Kit's `<Visual>` renders an item by its kind —
+`<Visual media={content.media} block={block} />` renders the first. An image inside a sentence
+belongs to the text: it is in `images` and `sequence`, not `media`. An icon and a document are not
+visual media, so neither is in it.
+
 ### Setting the Role
 
 There are two ways to set the role:
@@ -328,10 +358,17 @@ It arrives in `content.documents`, not `content.images`:
 
 ```js
 documents: [{
-  url: './report.pdf', alt: 'Annual report', caption: '', role: 'pdf',
+  url: './report.pdf', name: 'report.pdf', mime: 'application/pdf',
+  alt: 'Annual report', caption: '', role: 'pdf',
   preview: './cover.jpg', author: 'Finance team', description: 'Results for the year',
 }]
 ```
+
+A document names its file as a file record does — `url`, `name`, `mime`, `size` — so one component
+can render a downloads list from either. `name` and `mime` come from the address. `size` is known
+only where the file is, so it is there only when a producer knows it: a build that copies a local
+file into `dist/` adds it, and gives the file's own `name` too, since the copy's address carries a
+content hash.
 
 A component that renders its content in order gets documents from `content.sequence` too; kit's
 `<Render>` and `<Article>` draw each as a link to the file, with its preview (or a file badge) and its
