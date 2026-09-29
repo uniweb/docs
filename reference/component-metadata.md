@@ -329,6 +329,16 @@ content: {
 }
 ```
 
+Videos and documents have arrays of their own and are declared by those names: a `{role=video}`
+arrives in `content.videos`, and a `{role=pdf}` document in `content.documents` — never among the
+images.
+
+```javascript
+content: {
+  documents: 'Reports [1+]',
+}
+```
+
 #### Background Media
 
 Background images and videos are handled at the engine level so components don't repeat this logic. Use the top-level `background` field:

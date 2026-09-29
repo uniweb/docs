@@ -235,7 +235,7 @@ To use your own preview, specify it explicitly:
 ![Report](./report.pdf){preview=./report-cover.jpg}
 ```
 
-## Media Assets: Images, Videos, and Icons
+## Media Assets: Images, Videos, Documents, and Icons
 
 Media uses the standard image syntax `![alt](url)` but the `role` attribute determines which content array it goes into:
 
@@ -247,11 +247,11 @@ Media uses the standard image syntax `![alt](url)` but the `role` attribute dete
 | `background`      | `images`       | Background images        |
 | `icon`            | `icons`      | Icons and small graphics |
 | `video`           | `videos`     | Video content            |
-| `pdf`             | `images`       | Documents — adds `preview`, `author`, `description` |
+| `pdf`             | `documents`  | Documents — a file, with an optional `preview`, `author`, `description` |
 
 The roles above are **conventions, not a fixed set.** `role` rides through verbatim, so
 `{role=wibble}` reaches your component as `role: "wibble"`; it simply lands in `images`
-like any role that isn't `icon` or `video`. Only those two select a different array.
+like any role that isn't `icon`, `video` or `pdf`. Only those three select a different array.
 
 ### Setting the Role
 
@@ -262,6 +262,7 @@ There are two ways to set the role:
 ```markdown
 ![Logo](icon:./logo.svg)
 ![Demo](video:./demo.mp4)
+![Report](pdf:./report.pdf)
 ```
 
 **2. Attribute syntax (recommended):**
@@ -305,6 +306,34 @@ The attribute syntax is more flexible—it allows combining role with other attr
 | `loop`     | Loop playback          |
 | `controls` | Show video controls    |
 | `poster`   | Poster/thumbnail image |
+
+### Document Attributes
+
+A document is a file a visitor opens or downloads — a PDF, say. The image syntax places it; `role=pdf`
+makes it a document.
+
+```markdown
+![Annual report](./report.pdf){role=pdf preview=./cover.jpg author="Finance team" description="Results for the year"}
+```
+
+| Attribute     | Description                                                    |
+| ------------- | -------------------------------------------------------------- |
+| `preview`     | An image of the document — a cover — shown in its place        |
+| `author`      | Who wrote it                                                   |
+| `description` | What it is. It describes the file, where `alt` describes an image |
+
+It arrives in `content.documents`, not `content.images`:
+
+```js
+documents: [{
+  url: './report.pdf', alt: 'Annual report', caption: '', role: 'pdf',
+  preview: './cover.jpg', author: 'Finance team', description: 'Results for the year',
+}]
+```
+
+A component that renders its content in order gets documents from `content.sequence` too; kit's
+`<Render>` and `<Article>` draw each as a link to the file, with its preview (or a file badge) and its
+name.
 
 ### Icons
 
