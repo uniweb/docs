@@ -119,6 +119,10 @@ listing it changes what the site *declares*, never what it *emits*: a language
 switcher needs it as a choice, and a site that never names it can end up with no
 switcher at all.
 
+A URL that carries the default language's code anyway — `/en/about` — names the
+same page as `/about`, and a visitor who follows one is sent there. A host that
+answers with a status sends a permanent redirect (`301`).
+
 > **Declare it even if translations are auto-discovered.** The build finds
 > locales on disk, but a page's links are resolved at render from what the site
 > declares. A site with `locales/fr.json` and no `languages:` builds a complete
