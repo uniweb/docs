@@ -41,6 +41,8 @@ The redirect target can be:
 
 No `.md` files are needed in the page directory — the redirect replaces content entirely. The page still appears in navigation (controlled by `pages:` and `hideIn:`) but clicking it navigates to the target.
 
+**In a site with several languages, a redirect to one of the site's pages keeps the visitor's language.** A French visitor on `/fr/features` whose page says `redirect: /product/features` goes to `/fr/product/features` — or to the page's translated address, where it has one. Anything that is not one of the site's pages goes exactly as written: an external URL, a file (`/files/report.pdf`), or a path that already names a language (`/en/about`).
+
 ### How redirects work
 
 Redirects operate at three levels for maximum compatibility:
