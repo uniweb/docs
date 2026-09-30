@@ -166,7 +166,7 @@ sections:
 ```
 ````
 
-**No `brief:` here, and that's right** — there's no single record to be the card, so the type just isn't referenceable from another schema. `uniweb validate` checks each record and names its index (`[1].label`), and defaults are applied per entry. This is how `@std/nav` is built.
+**No `brief:` here, and that's right** — there's no single record to be the card, so the type just isn't referenceable from another schema. `uniweb validate` checks each record and names its index (`[1].label`), and defaults are applied per entry. This is how `@std/nav` and `@std/form` are built, and both declare [`linkable: false`](#describing-the-schema-itself) as well.
 
 One limit: it must be *exactly one* section. Two `many` sections with no single one leaves "which one is the value?" unanswerable, so nothing is checked.
 
