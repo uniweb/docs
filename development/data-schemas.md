@@ -43,14 +43,16 @@ Beside its content, a schema can carry a few keys about the model as a whole. Al
 ```yaml
 name: session                 # the schema's name — this is its identity
 label: Session                # a display name, for people
+plural: Sessions              # what many entries are called
 description: A conference talk.
 source_locale: en             # the language the inline text is written in
 linkable: true                # may other schemas reference this one? (default: yes)
 ```
 
-`label` and `description` are plain strings in the source language — translations live in
-`locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
-quietly accepted.
+`label`, `plural` and `description` are plain strings in the source language — translations live
+in `locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
+quietly accepted. `plural` is written out because it cannot be worked out from the label: a
+`Person` schema's entries are `People`.
 
 **`linkable`** controls whether this schema's entries may be referenced — by another schema's `ref`
 field, and, on a backend, as a site's records. It is `true` unless you write `linkable: false`, with
