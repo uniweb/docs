@@ -223,6 +223,7 @@ slug:
 - The folder name stays the page's stable canonical route (default language + internal `page:` links); list only the non-default languages.
 - Each value is a single path segment (no slashes). Nested folders **compose automatically** — localize a parent (`/blog` → `/blogue`) and its children follow (`/blog/post` → `/blogue/post`).
 - Localized segments flow through navigation, `website.getLocaleUrl()` (the language switcher below), and the `hreflang` tags.
+- One URL per page per language: the default language's segment under another prefix — `/fr/about`, where French shows `/fr/a-propos` — sends the visitor to `/fr/a-propos`. A host that answers with a status sends a permanent redirect (`301`), as for `/en/about`.
 
 See [Page Configuration → Localized URLs](../reference/page-configuration.md#localized-urls) for the full reference.
 

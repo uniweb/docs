@@ -432,6 +432,7 @@ The folder name stays the page's stable, canonical route — used in the default
 - Each value is a **single path segment** (no slashes or spaces).
 - **Nesting composes automatically:** if a parent folder is localized (`/blog` → `/blogue`), its children follow (`/blog/my-post` → `/blogue/my-post`) without repeating the parent. Give a child its own `slug:` only to localize its own segment too.
 - Localized URLs flow through navigation, the language switcher, and the sitemap (`hreflang`).
+- **One URL per page per language:** the folder name under another language's prefix — `/fr/About-Us`, where French shows `/fr/a-propos` — sends the visitor to the localized URL. A host that answers with a status sends a permanent redirect (`301`), as it does for the default language's own prefix.
 
 This controls only the **URL**. Translating page *content* (titles, text) is separate — see [Internationalization](../development/internationalization.md).
 
