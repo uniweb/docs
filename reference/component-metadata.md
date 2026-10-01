@@ -279,6 +279,8 @@ A value is one of:
 | `true` | `title: true` | The element, with no label of yours — the editor uses its own words |
 | An object | `{ label, hint }` | A label and a longer hint. `media` also takes `types`, `sequence` takes `except`, and `items` takes `content` |
 
+**A component that takes no content says so with `content: {}`** (or `content: []`) — one that renders only what it receives in `content.data`, say. The visual editor then offers no text editor for its sections. Leaving `content` out says nothing about what the component reads, which is different.
+
 **The label is for authors.** A visual editor shows it to the person writing the section, so write what they need to know — "Product photo", "Rich content" — not a variable name. It is shown as you wrote it, in every language, so write it in your authors' language.
 
 #### Count Syntax
@@ -1083,7 +1085,7 @@ active locale.
 
 #### Inline field-map field types (keyed-object form)
 
-An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name.
+An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name. It must therefore be a valid data schema — an `object` field declares `fields` or `values`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
 
 ```javascript
 // Full form
