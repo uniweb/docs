@@ -1644,7 +1644,7 @@ The CLI produces these workspace layouts:
 ```
 my-project/
 ├── src/                 # React components — the foundation package
-│   ├── main.js          # Foundation declarations (vars, defaultLayout, props, …)
+│   ├── main.js          # Foundation declarations (name, vars, defaultLayout, …)
 │   ├── styles.css
 │   ├── sections/
 │   ├── components/

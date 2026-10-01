@@ -81,7 +81,7 @@ The default when you run `pnpm create uniweb`. Foundation and site are siblings 
 my-project/
 ├── src/                       ← the foundation package
 │   ├── package.json           ← name: "src"
-│   ├── main.js                ← foundation declarations (vars, defaultLayout, props)
+│   ├── main.js                ← foundation declarations (name, vars, defaultLayout)
 │   ├── styles.css
 │   ├── sections/
 │   ├── components/

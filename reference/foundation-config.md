@@ -8,7 +8,7 @@ Foundations can expose configuration points that sites customize in their `theme
 
 ```
 src/                       # the foundation package
-├── main.js                # Name, description, variables, defaultLayout, props
+├── main.js                # Name, description, variables, defaultLayout
 ├── sections/              # Section types
 ├── components/            # Internal components
 ├── layouts/               # Layout components (auto-discovered)
