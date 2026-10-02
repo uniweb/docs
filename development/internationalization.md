@@ -614,6 +614,15 @@ Record strings are stored in a separate manifest at `locales/records/manifest.js
 
 A record whose query has a [data schema](./data-schemas.md) is translated as its schema says: its text and rich-text fields are, and a field that is an enum, a URL or an email, a number, a date, a file, a reference, or marked `translatable: false` is not — the same fields a push to a backend carries in each language. A referenced record's card, shown inside another record, is translated as that record is. An excerpt the build derives from a record's body is derived again in each language from the translated body, so it is never a string to translate. A record with no data schema is read by a heuristic, or by a companion `.schema.js` file.
 
+A tagged data block follows the same rule when its section's component declares the shape of the block's key in `meta.js` `data:` — a data schema (`'@/member'`) or an inline field map. Its text fields are translated and nothing else:
+
+```js
+// meta.js — the logos' names are text; a style names one of the component's looks
+data: { logos: { name: 'string', style: { type: 'string', enum: ['display-black', 'serif-italic'] } } }
+```
+
+A key declared with no shape (`logos: {}`) leaves its blocks to a heuristic. It skips fields such as `href`, `icon` and `slug` and values such as URLs and colors, and offers every other string — a `style: display-black` included, which a translated file would turn into a look the component does not have. Declare the shape of any block a translator will see.
+
 A record's system fields — `$name` and every other `$` key — are never extracted. The file a query writes for each record — the record whole — is translated with the same strings as the list, so a translated record page shows its translated body.
 
 ---

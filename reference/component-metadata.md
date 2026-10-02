@@ -636,7 +636,7 @@ A `data:` entry describes the shape of *each record*. The records a query delive
 - A section on a [parametric page](./dynamic-routes.md) receives the one record the URL names as a **list of one**, under the same kind of key — its brief, or the record whole for a key declared `/*` ([below](#briefs-or-whole-records)). It reads `content.data.events[0]`.
 - When the URL names no record, the key is `[]` — an answer with no records — and the page is marked not found.
 
-A key that holds a tagged data block's value or an editor form's holds whatever was written — a record or a list. A key nothing fills is `null`. The runtime never turns a list into a single object and never adds a singular key; reshaping is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
+A key that holds a tagged data block's value or an editor form's holds whatever was written — a record or a list. The shape the key declares also decides what of a translated site's block is translated: its text fields, never an enum, a URL or a `translatable: false` field ([Internationalization](../development/internationalization.md)). A key declared `{}` leaves that to a heuristic. A key nothing fills is `null`. The runtime never turns a list into a single object and never adds a singular key; reshaping is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
 
 #### Briefs or whole records
 
