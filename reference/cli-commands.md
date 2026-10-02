@@ -784,6 +784,8 @@ When a newer CLI exists, `update` says so at the end of the run and names the co
 
 `AGENTS.md` is regenerated from the CLI's current partials and stamped with the CLI version. Refreshing it while the workspace's declared `@uniweb/*` deps lag the CLI silently produces a doc that documents features the installed code doesn't have. The verb's drift gate refuses that combination unless you pass `--allow-mismatch`.
 
+**Project notes survive in one place.** Everything in `AGENTS.md` is rewritten except a block that starts with a `<!-- project-notes:start -->` line and ends with a `<!-- project-notes:end -->` line, each on a line of its own. `update` carries every such block over verbatim, to the end of the new file. If the markers don't pair up, it leaves `AGENTS.md` as it is and says why. Notes of any length are better kept in a file of your own, with a line in the block pointing to it.
+
 ### Options
 
 | Option | Description |
