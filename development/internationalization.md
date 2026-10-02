@@ -401,7 +401,7 @@ Edit language files, replacing source text (or empty strings) with translations:
 }
 ```
 
-**A value is inline Markdown.** At build time the merge parses it and replaces the element's inline content with the result — it does not re-apply the source's marks, and there is no placeholder or tag convention. So links, bold and emphasis have to be written into the translation:
+**A value is inline Markdown.** At build time the merge parses it and replaces the element's inline content with the result — it does not re-apply the source's marks (buttons aside, below), and there is no placeholder or tag convention. So links, bold and emphasis in a sentence have to be written into the translation:
 
 ```json
 {
@@ -409,7 +409,18 @@ Edit language files, replacing source text (or empty strings) with translations:
 }
 ```
 
-A plain-text value produces a plain-text paragraph, exactly and only. `page:` references, root-relative paths and full URLs are all carried through verbatim as hrefs.
+A plain-text value for such a sentence produces a plain-text paragraph. `page:` references, root-relative paths and full URLs are all carried through verbatim as hrefs.
+
+**An element made only of links is the exception** — a button, or buttons on consecutive lines (one paragraph, so one string). A value with no link of its own is their labels: the whole value for one link, a line each for several. Each keeps its source link, target and options (`{role=primary icon=…}`) included:
+
+```json
+{
+  "12133946": "Créer un groupe",
+  "583e9a06": "Soutenez notre travail\nEn savoir plus"
+}
+```
+
+A value that writes a link is taken as written, so a translation can still re-target a button. Labels that don't match the links one per line are taken as written too, and lose their links.
 
 `uniweb i18n status` reports the entries where this has been lost:
 

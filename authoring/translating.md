@@ -104,6 +104,19 @@ translation with the link left out produces a paragraph with **no link** — the
 original formatting is not put back for you, because only you know where it belongs
 in the new wording.
 
+**A button is the exception.** A line that is only a link can be translated by its
+label alone, and it keeps its link and its options (`{role=primary}`). Buttons on
+consecutive lines are one string; give one label per line:
+
+```json
+{
+  "12133946": "Créer un groupe",
+  "583e9a06": "Soutenez notre travail\nEn savoir plus"
+}
+```
+
+Write the link out only to send the button somewhere else in this language.
+
 Links keep working the same way: `page:` references, `/paths` and full URLs all
 behave as they do in your content.
 
