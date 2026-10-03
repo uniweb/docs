@@ -1345,7 +1345,7 @@ The **first** publish of a site also creates it on the backend, in the workspace
   3) Cancel (default)
 ```
 
-Enter cancels, and nothing changes. With no one at the terminal (`--non-interactive`, CI, or no TTY) nothing is asked: `publish` prints the message and the link and exits non-zero.
+For a change that charges, Enter cancels and only you can confirm it. `--yes` doesn't answer it, and with `--yes` or no one at the terminal (`--non-interactive`, CI, or no TTY) nothing is asked: `publish` prints the message and the link and exits non-zero. A change that only lowers what the site pays asks *Continue and publish?* instead, and Enter continues; `--yes` answers it without asking, with or without a terminal.
 
 ### Where it goes: the backend you are logged in to
 
@@ -1358,7 +1358,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Resolve everything; release, sync and publish nothing. |
-| `--yes` | Skip confirmations (CI); never block on a prompt. |
+| `--yes` | Skip confirmations (CI); never block on a prompt. Answers a change that only lowers what the site pays — never one that charges. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping — as [`uniweb push --bump`](#uniweb-push). |
