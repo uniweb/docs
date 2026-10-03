@@ -1337,6 +1337,16 @@ uniweb publish
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
+**When the backend needs something first.** If the site can't go live until something is settled — a plan, a payment, a change to what the site's plan covers — `publish` shows the backend's message and opens the page in the app where you settle it; run `uniweb publish` again afterwards. Your content is already pushed, so nothing is lost. When the only thing owed is a change to a plan the site already has, such as one more language, the backend may let you confirm it at the terminal instead. `publish` then shows its sentence, which names the change, its price and the card, and asks:
+
+```
+  1) Confirm and publish
+  2) Open it in the app
+  3) Cancel (default)
+```
+
+Enter cancels, and nothing changes. With no one at the terminal (`--non-interactive`, CI, or no TTY) nothing is asked: `publish` prints the message and the link and exits non-zero.
+
 ### Where it goes: the backend you are logged in to
 
 `uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --backend <url>`); a script can aim a single run with `UNIWEB_REGISTER_URL`. Not logged in, it asks you to log in first — to https://uniweb.app unless you pass `--backend`.
