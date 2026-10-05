@@ -13,7 +13,7 @@ Without any configuration, every Uniweb site animates navigation — and for lay
 - **Persistent chrome** — a header, sidebar, or footer that's the same across pages — stays put, no crossfade.
 - **The body** — the part that actually changes — crossfades to the new page.
 
-You don't declare anything. A layout that lists `areas: ['header', 'left', 'right', 'footer']` already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, `uw-body`, and so on. A layout with no named areas simply crossfades the page body, which is the sensible default.
+You don't declare anything. A page whose site fills layout areas — `header`, `left`, `right`, `footer` in its `layout/` folder — already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, `uw-body`, and so on. A layout with no named areas simply crossfades the page body, which is the sensible default.
 
 The `transitions` map below is an **override** for advanced cases — you don't need it for the common "header stays, content crossfades" effect.
 

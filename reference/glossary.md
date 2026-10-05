@@ -17,7 +17,7 @@ The guaranteed structure that the semantic parser extracts from markdown: `title
 A theming environment applied per-section. The runtime wraps each section in a context class (`context-light`, `context-medium`, `context-dark`) based on the `theme:` frontmatter. Semantic tokens resolve differently in each context. See [Thinking in Contexts](../development/thinking-in-contexts).
 
 **Data schema**
-The shape of a content type — the fields a `person` or an `article` has. A component names a schema for each `content.data` key it declares (`data: { team: '@std/person' }`), and a query names the schema whose records it reads. The runtime applies its field defaults, `uniweb validate` checks records against it, and the editor builds its form from it. Refs name a namespace: `@/name` (the foundation's own), `@std/name` (the shared standards), `@org/name` (an organization's). See [Data Schemas](../development/data-schemas).
+The shape of a content type — the fields a `person` or an `article` has. A component names a schema for each `content.data` key it declares (`data: { team: '@std/person' }`), and a query names the schema whose records it reads. `uniweb validate` checks records against it, a fetch fills a declared key of its type, and the editor builds its form from it. It never changes a record: a field a record lacks reaches the component absent. Refs name a namespace: `@/name` (the foundation's own), `@std/name` (the shared standards), `@org/name` (an organization's). See [Data Schemas](../development/data-schemas).
 
 **Entity**
 What a backend calls one stored thing of a data schema. In a site the word is [record](#record): a file in `records/`.

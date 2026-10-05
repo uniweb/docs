@@ -1,6 +1,8 @@
 # Data Schemas
 
-A data schema is the shape of a content type — what fields a `person` has, what a `product` looks like. You write it once, and it does three jobs at the same time: `uniweb validate` **checks** your data before it ships, the runtime **delivers** each record to your components with field defaults applied, and the editor renders a **form** authors fill in. Define the shape once instead of re-describing it in a validator, a fetch handler, and a form.
+A data schema is the shape of a content type — what fields a `person` has, what a `product` looks like. You write it once, and it does three jobs at the same time: `uniweb validate` **checks** your data before it ships, a fetch of the type **reaches** the components that declare it, and the editor renders a **form** authors fill in. Define the shape once instead of re-describing it in a validator, a fetch handler, and a form.
+
+A schema describes a record; it never changes one. A record reaches your component as it is — a field it lacks is absent — so a schema file declares no `default:` (the build refuses one). What an absent field renders as is your component's choice.
 
 This guide is about the schema *definition* — authoring one, sharing it across projects, and registering it as a reusable content type. For how data is fetched and delivered to components at runtime, see [Working with Data](./working-with-data.md).
 
@@ -10,7 +12,7 @@ This guide is about the schema *definition* — authoring one, sharing it across
 
 | What you write | What you get |
 |---|---|
-| The shape, once, in a schema file | `validate` on your data, runtime defaults, and a form in the editor — all from one definition |
+| The shape, once, in a schema file | `validate` on your data, and a form in the editor — from one definition |
 | A reference by name (`@/product`) | The reference is a name, not a path — move or rename the implementation freely |
 | Shared schemas in one place (`@org/schemas`) | Fix `person` once; every foundation that references it picks up the change |
 
@@ -78,7 +80,7 @@ export default {
 }
 ```
 
-Your component then reads `content.data.products` — a list of products, each with the schema's defaults already applied, so its fields need no null checks. The declaration is what the section receives: a component that doesn't declare `products` receives no `products`. (The full `data:` reference — inline field maps and the editor "rich form" — is in [Component Metadata → Data](../reference/component-metadata.md#data).)
+Your component then reads `content.data.products` — a list of products, each as its record holds it, so a field a product lacks is absent and the component decides what to show instead (`product.price ?? 0`). The declaration is what the section receives: a component that doesn't declare `products` receives no `products`. (The full `data:` reference — inline field maps and the editor "rich form" — is in [Component Metadata → Data](../reference/component-metadata.md#data).)
 
 For content with more structure than a flat record — say a profile with a bio plus a list of publications — a schema declares named `sections:` instead of `fields:`. Each section is one record by default, or a repeating list (`many: true`):
 

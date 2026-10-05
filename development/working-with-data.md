@@ -112,7 +112,7 @@ No `fetch()`, no `useState`, no cache. The component doesn't know which query, f
 `data: { articles: '@std/article' }` does two jobs.
 
 - **Its key is what the section receives.** A section's `content.data` holds the keys its component declares, and nothing else. A component that reads `content.data.articles` without declaring `articles` receives nothing there.
-- **Its value is the shape of each record.** The runtime applies the schema's field defaults, so `a.title` is a string even on a record without one, and the editor knows what an article looks like. `'@std/article'` is a shared standard schema; `'@/article'` would be one of your foundation's own ([Data Schemas](./data-schemas.md)).
+- **Its value is the shape of each record.** It tells the editor what an article looks like and `uniweb validate` what to check. The runtime changes no record: a field a record lacks is absent, so write `a.title ?? ''` where your component needs a value. `'@std/article'` is a shared standard schema; `'@/article'` would be one of your foundation's own ([Data Schemas](./data-schemas.md)).
 
 ### `$route` — the link is already built
 

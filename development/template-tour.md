@@ -93,7 +93,7 @@ A multilingual site (English, Spanish, French) with a blog and team pages.
 
 **Translations.** The `site/locales/` directory holds `manifest.json` and one file per language (`es.json`, `fr.json`) for string translations, and `freeform/` for sections translated as whole bodies rather than string by string. If you need to build a multilingual site, this is the reference — see [Internationalization](./internationalization.md).
 
-**Declared data.** The blog's `page.yml` names `query: articles`. `ArticleList` declares `data: { articles: '@std/article' }` in its `meta.js`, and that declaration is what the section receives: the articles, under `articles`, with the field defaults of the shared `@std/article` schema. The about page's `Team` section names `query: team` in its own frontmatter and declares `data: { team: '@/member' }`, a schema of the foundation's own. This is the CCA data layer pattern: the content names the query, the component declares what it renders.
+**Declared data.** The blog's `page.yml` names `query: articles`. `ArticleList` declares `data: { articles: '@std/article' }` in its `meta.js`, and that declaration is what the section receives: the articles, under `articles`, each as its record holds it, typed by the shared `@std/article` schema. The about page's `Team` section names `query: team` in its own frontmatter and declares `data: { team: '@/member' }`, a schema of the foundation's own. This is the CCA data layer pattern: the content names the query, the component declares what it renders.
 
 **Parametric pages with i18n.** The `site/pages/blog/[slug]/` folder is a parametric page — one page per article — and translations apply to the records it renders. This shows how CCA's routing and i18n systems compose.
 

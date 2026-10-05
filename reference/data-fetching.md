@@ -193,7 +193,7 @@ export default {
 }
 ```
 
-Each entry's value is a named schema ref, an inline field map, an inline rich-form — or `{}` for a key whose records have no schema, such as an external API's. A schema supplies field defaults the runtime applies to each record, drives the visual editor, and goes into the foundation's published metadata. See [Component Metadata → Data](./component-metadata.md#data).
+Each entry's value is a named schema ref, an inline field map, an inline rich-form — or `{}` for a key whose records have no schema, such as an external API's. A schema drives the visual editor and `uniweb validate`, and goes into the foundation's published metadata. It changes no record: a field a record lacks reaches the component absent. See [Component Metadata → Data](./component-metadata.md#data).
 
 | `content.data.<key>` | means |
 |---|---|

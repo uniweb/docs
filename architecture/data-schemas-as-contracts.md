@@ -13,7 +13,7 @@ A schema earns its keep because it is consumed three different ways — and in C
 | The schema declares | Consumer | What it does with it |
 |---|---|---|
 | Field names, types, requiredness, allowed values | `uniweb validate` | Flags data that doesn't fit *before it ships* — a misspelled field, a value outside an enum |
-| Field defaults and the delivery shape | The runtime | Hands each record to components as `content.data.<key>`, defaults applied, no null-checks needed |
+| The delivery shape | The runtime | Hands each record to components as `content.data.<key>`, as the record holds it — a field it lacks is absent, and the component decides what that shows |
 | The same fields, as editable inputs | The editor | Renders the form a content author or client fills in — the schema *is* the spec for the editing UI |
 
 In a conventional stack these are three artifacts maintained separately: a validation schema, a form configuration, and a fetch-and-serialize layer. They drift — a field added to the form but not the validator, a default that lives in the API but not the UI. CCA collapses them into one declaration, so drift isn't something you manage; it's something that can't happen. Add a field once and `validate` starts checking it, the runtime starts delivering it, and the form gains an input.

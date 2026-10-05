@@ -471,12 +471,12 @@ background:
 
 The `data` field declares **the `content.data` keys your component receives**, each with its schema. It is the single declaration surface for a component's structured data — there is no separate `schemas:` key.
 
-A section's `content.data` holds the keys its component declares, and nothing else (plus any its foundation declares in `main.js`). A component that reads `content.data.events` declares `events`. Each key is filled from the fetches and tagged blocks that reach the section — by name, or, for a fetch under another name, by the query's schema — and a key nothing fills is `null`. The schema tells the editor and the runtime what shape to expect, and supplies the field defaults the runtime applies to each item. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
+A section's `content.data` holds the keys its component declares, and nothing else (plus any its foundation declares in `main.js`). A component that reads `content.data.events` declares `events`. Each key is filled from the fetches and tagged blocks that reach the section — by name, or, for a fetch under another name, by the query's schema — and a key nothing fills is `null`. The schema tells the editor what shape to expect and `uniweb validate` what to check; it changes no record — a field a record lacks reaches the component absent, and what it renders as is the component's choice. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
 
 ```javascript
 data: {
   events: '@std/event',                            // named ref (shared standard)
-  specs:  { cpu: { type: 'string', default: '' } },   // inline field map
+  specs:  { cpu: { type: 'string' } },                // inline field map
   signup: { fields: [{ id: 'email', type: 'text' }] },// inline rich-form (editor form)
 }
 ```
@@ -608,7 +608,7 @@ export default {
 export default {
   title: 'Event Grid',
 
-  // Renders event-shaped data; field defaults come from the standard event schema.
+  // Renders event-shaped data; its shape comes from the standard event schema.
   data: { events: '@std/event' },
 
   content: {
@@ -1037,7 +1037,7 @@ function Hero({ content }) {
 | `description` | string or `{en,fr}` | editor tooltip |
 | `placeholder` | string or `{en,fr}` | input placeholder |
 | `required` | boolean | editor validation |
-| `default` | any | applied at runtime when missing |
+| `default` | any | what the editor's form starts the field with — never applied at runtime |
 | `options` | `[{label, value}]` or `[string]` | for `select` |
 | `min` / `max` | number | for `number` |
 | `condition` | object | visibility predicate — see below |
@@ -1085,7 +1085,7 @@ active locale.
 
 #### Inline field-map field types (keyed-object form)
 
-An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name. It must therefore be a valid data schema — an `object` field declares `fields` or `values`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
+An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name, except `default:`. A `default:` is what an editor's form starts the field with, so it belongs only inline; a named schema declares none (the build refuses one), and the runtime applies neither — a component receives the data as written. It must be a valid data schema — an `object` field declares `fields` or `values`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
 
 ```javascript
 // Full form
@@ -1139,7 +1139,7 @@ A component with `inset: true` is meant to be placed as an inset: a visual edito
 ```javascript
 // sections/Testimonial/meta.js
 export default {
-  inset: true,               // available for @ references
+  inset: true,               // offered among insets in an editor
   section: true,             // and still offered as a section
 }
 ```
