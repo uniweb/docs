@@ -122,6 +122,8 @@ export default {
 
 The content handler receives `block.parsedContent.data` as its first argument and reads raw ProseMirror from `block.rawContent`. It returns a new ProseMirror document — the framework re-parses it through the semantic parser. Returning `null` signals no change.
 
+Anything that is not a ProseMirror document — `{ type: 'doc', … }`, bare or wrapped as `{ doc }` — is ignored, and the section keeps its content; the framework warns once per handler. Mind the first argument: it is the section's *data*, so a pass-through `(x) => x` returns the data, not the content. Return `null` for no change.
+
 `instantiateContent` resolves expressions in the full document. `instantiateRepeated` splits at dividers and repeats the body per item in the named source array.
 
 ---
