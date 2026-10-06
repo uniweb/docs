@@ -92,6 +92,21 @@ the site's own still answers there.
 What `resolveService` returns in each of these cases, and how an address is joined to the site's
 base path, is in the [Kit Reference](./kit-reference.md#resolveservice).
 
+### Asking your host for a service
+
+The host's tier is the host's answer, so a site never writes it. On a site you push or publish, you
+**ask** for a service with `services:` in `site.yml` — `search: true`, `submit: false`, or a map of
+the service's settings — and the host's answer arrives with the site:
+
+```yaml
+services:
+  search: true
+  submit: false
+```
+
+A request is not an address: it never reaches the built site, and a component never reads it. See
+[Site Configuration → Asking your host](./site-configuration.md#asking-your-host--services).
+
 ---
 
 ## The services

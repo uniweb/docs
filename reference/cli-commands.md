@@ -1171,6 +1171,8 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
 
+**The services you ask for** — [`services:` in `site.yml`](site-configuration.md#asking-your-host--services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
+
 When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
 A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json` — commit it. Unchanged code is not released again. The version picked is always the next patch (a pre-release gets its next pre-release); for a change that is not backwards compatible, set a higher minor or major version in `package.json` yourself before you push.
@@ -1235,7 +1237,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 
 ## uniweb pull
 
-Bring the backend's copy of a site back down to local files — the **backend → local** direction, the read-side mirror of `uniweb push`. It projects the returned content to `site.yml`/`theme.yml`, `pages/**`, and the record files.
+Bring the backend's copy of a site back down to local files — the **backend → local** direction, the read-side mirror of `uniweb push`. It projects the returned content to `site.yml`/`theme.yml`, `pages/**`, and the record files — the services the site has included, into `site.yml`'s `services:`.
 
 ```bash
 uniweb login

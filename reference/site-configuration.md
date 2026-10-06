@@ -48,6 +48,11 @@ layout:
 search:
   enabled: true
 
+# Services — what you ask your host to provide (a site you push or publish)
+services:
+  search: true
+  submit: false
+
 # Accounts — the `api` service, if this site has one
 api: /_api                           # where it answers — same in dev and production
 $devApi: ./mock/api.js               # what answers it locally (never published)
@@ -482,6 +487,34 @@ The keys are documented individually below. For the rule they share — the two 
 host's silence means, and how a component asks — see
 [Site Services](./site-services.md).
 
+### Asking your host — `services`
+
+The keys below configure a service your site provides itself. **To ask your host for one** — on a
+site you push or publish with `uniweb push` / `uniweb publish` — list it under `services`:
+
+```yaml
+services:
+  search: true       # turn it on
+  submit: false      # turn it off
+  api:               # turn it on, with the service's own settings
+    grade: pro
+```
+
+- `true` turns a service on, `false` turns it off, and a map turns it on with those settings —
+  `enabled: false` inside the map turns it off and keeps them. `enabled` is the switch, never a
+  setting.
+- **A service you leave out keeps whatever your site has.** To turn one off, say `false`.
+- **Settings you leave out keep their current values.** Name only the ones you want to change.
+
+`uniweb push` and `uniweb publish` send what you changed since your last sync, and only that. If your
+site's services changed elsewhere in the meantime — in the Uniweb app, say — they show the difference
+and offer to update `site.yml` instead of sending your older choice over it; if you both changed the
+same service, they ask which to keep. `uniweb pull` writes the services your site has into
+`services`.
+
+**`services` never reaches the built site.** It is a request, so a static build leaves it out — on a
+static host, use the keys below.
+
 ---
 
 ## Search
@@ -663,15 +696,15 @@ submit: /forms
 **Optional, and often unnecessary.** A form's destination comes from the first
 of these that applies:
 
-1. `submit:` here, if you set it.
-2. One the host supplies — a site published to Uniweb Cloud gets submission
-   handling from the platform and normally needs no `submit:`.
-3. Neither, in which case forms render disabled rather than posting a visitor's
-   answers to an endpoint that may not exist.
+1. One the host supplies — where your host handles submissions, that is where
+   they go, and nothing here overrides it. On Uniweb Cloud, turn form handling on
+   or off with [`services`](#asking-your-host--services).
+2. `submit:` here — for a host that does not handle submissions, or a static site.
+3. Neither — there is nowhere to send a visitor's answers, so a component draws no
+   form, or shows contact details the site already carries.
 
 So set this when *you* are providing the endpoint — `uniweb export`, or a
-`deploy --host` target with its own form handling. Setting it on Uniweb Cloud
-overrides what the platform would have supplied.
+`deploy --host` target with its own form handling.
 
 ### Full Options
 
