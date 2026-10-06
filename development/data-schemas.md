@@ -46,6 +46,7 @@ Beside its content, a schema can carry a few keys about the model as a whole. Al
 name: session                 # the schema's name — this is its identity
 label: Session                # a display name, for people
 plural: Sessions              # what many entries are called
+icon: lu-presentation         # the schema's icon — a framework icon name
 description: A conference talk.
 source_locale: en             # the language the inline text is written in
 linkable: true                # may other schemas reference this one? (default: yes)
@@ -55,6 +56,11 @@ linkable: true                # may other schemas reference this one? (default: 
 in `locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
 quietly accepted. `plural` is written out because it cannot be worked out from the label: a
 `Person` schema's entries are `People`.
+
+**`icon`** names the schema's icon with a framework icon name, written `family-name` — `lu-user` is
+the icon `user` of the Lucide family `lu`, the same spelling content uses for an icon
+(`![](lu-house)`). It is one value for every language. A name that is not `family-name` stops the
+build.
 
 **`linkable`** controls whether this schema's entries may be referenced — by another schema's `ref`
 field, and, on a backend, as a site's records. It is `true` unless you write `linkable: false`, with
