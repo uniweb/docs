@@ -948,7 +948,7 @@ uniweb login [options]
 
 ### Which workspace
 
-A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` switches workspace without logging in again — with `--backend <url>` when you are logged in to a backend other than the default, since a login that names none goes to the default.
+A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` (or `--personal`) switches the workspace on the backend you are logged in to, without logging in again — with no `--backend` needed, whichever backend that is.
 
 ### Options
 
