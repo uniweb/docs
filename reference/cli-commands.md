@@ -1380,12 +1380,23 @@ Show how a site's local files compare to the Uniweb backend — its **sync ident
 
 ```bash
 uniweb status
-uniweb status --json     # { synced, uuid, foundation, changed, unchanged }
+uniweb status --json            # { synced, uuid, foundation, changed, unchanged }
+uniweb status --remote          # also asks the backend (it may ask you to log in)
+uniweb status --remote --json   # adds { remote: { site_state, site_state_detail, site, … } }
 ```
 
 Run from a site, or a workspace with one site. The content diff is exactly what `uniweb push` would send — so `changed: 0` means a `push` would be a no-op.
 
-*(Richer signals — whether a newer foundation version is registered, and whether the synced draft differs from what's live — are added as the backend exposes them.)*
+**`--remote`** asks the backend about the site this directory names on it — in the workspace you work in, or the one named with `--org` / `--personal`:
+
+| `site_state` | means |
+|---|---|
+| `live` | the backend holds the site — or holds it in another workspace, which `site_state_detail` names |
+| `gone` | the backend says it holds no such site: it was deleted there, or the backend was rebuilt. `uniweb forget --backend <url>` clears the binding, and the next push creates a new site |
+| `unknown` | anything else — no answer, a refused credential, a backend that cannot say |
+| `null` | this directory names no site on that backend |
+
+`gone` is said only on the backend's own word about this site — never for a failure to reach it — so a script can forget a binding on `gone` without risking a second copy of a site that still exists. `--remote` also says whether the synced draft differs from what is live, and whether a newer version of the foundation is registered.
 
 ---
 
