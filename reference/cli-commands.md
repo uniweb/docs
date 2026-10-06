@@ -934,7 +934,7 @@ uniweb i18n sync
 
 ## uniweb login
 
-Log in to a Uniweb backend. **You are logged in to one backend at a time:** logging in to another logs you out of the first, once the new login succeeds — a cancelled or failed login leaves you where you were. The session is stored in `~/.uniweb/registry-auth.json`; `uniweb logout` removes it.
+Log in to a Uniweb backend. **You are logged in to one backend at a time:** logging in to another logs you out of the first, once the new login succeeds — a cancelled or failed login leaves you where you were. One login is kept although it exits non-zero: it signs you in but chooses no workspace (see *Which workspace*), and says so. The session is stored in `~/.uniweb/registry-auth.json`; `uniweb logout` removes it.
 
 ```bash
 uniweb login [options]
@@ -964,7 +964,7 @@ A login works in **one workspace** — your personal one, or an organization you
 
 Without a method flag, `login` asks which one to use. Without a terminal it needs `UNIWEB_USERNAME` and `UNIWEB_PASSWORD`, or `--token`.
 
-**Without a terminal** — an agent, a script — sign in with `uniweb login --backend <url> --token $TOKEN --org @acme` (or `--personal`): the token is checked against that backend before it is stored, and a login that belongs to organizations must name its workspace. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead — with `UNIWEB_REGISTER_URL` for a backend other than the default, and `UNIWEB_WORKSPACE=@acme` (or `personal`) for its workspace. The backend commands themselves take no `--backend` or `--token`.
+**Without a terminal** — an agent, a script — sign in with `uniweb login --backend <url> --token $TOKEN --org @acme` (or `--personal`): the token is checked against that backend before it is stored, and a login that belongs to organizations must name its workspace — one that names none signs you in but exits 2, and `uniweb login --org @acme` (or `--personal`) finishes it without signing in again. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead — with `UNIWEB_REGISTER_URL` for a backend other than the default, and `UNIWEB_WORKSPACE=@acme` (or `personal`) for its workspace. The backend commands themselves take no `--backend` or `--token`.
 
 ### Examples
 
@@ -1044,7 +1044,7 @@ A name with no scope has not been registered yet. The first `register` chooses o
 
 1. **`--scope @scope` flag** — explicit.
 2. *(real submit only)* **the workspace you work in** — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site): an organization's scope when you work in that organization, your personal scope when you work in your personal workspace. Said, not asked — so a team logged in to `@acme` registers `@acme/…`, which any of its members can release.
-3. *(real submit only)* when no workspace is chosen — you belong to organizations and named none — a choice between your personal scope and your organizations (in CI, your personal scope, said).
+3. *(real submit only)* when no workspace is chosen — you belong to organizations and named none — a choice between your personal scope and your organizations at a terminal. Without one, `register` refuses: choose a workspace, or pass `--scope`.
 
 …and writes it into the name in `main.js` (`name: '@acme/marketing'`), so it is chosen once and later runs need no flag. A `--scope` that names a different scope than the name's is refused; to move a foundation to another scope, change its name and register it there. A preview (`--dry-run`, `-o`) writes nothing: a name with no scope previews under `--scope`, or unscoped.
 
