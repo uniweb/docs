@@ -1006,6 +1006,8 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | Option | Description |
 |--------|-------------|
 | `--scope @scope` | A foundation whose name has no scope yet: register it under `@scope` — your personal scope or an organization's (resolves `@/x` → `@scope/x`) — and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@scope`; default `package.json::uniweb.scope`. |
+| `--org @org` | Work in `@org` for this command: a name with no scope yet registers under it. |
+| `--personal` | Work in your personal workspace for this command: a name with no scope yet registers under your personal scope. |
 | `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
@@ -1041,7 +1043,8 @@ A **scope** is a namespace, and **it is part of the name**: a foundation named `
 A name with no scope has not been registered yet. The first `register` chooses one:
 
 1. **`--scope @scope` flag** — explicit.
-2. *(real submit only)* derived from your login: your personal scope when you belong to no organization — without asking, in CI too — else a choice between it and your organizations (in CI, your personal scope, said).
+2. *(real submit only)* **the workspace you work in** — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site): an organization's scope when you work in that organization, your personal scope when you work in your personal workspace. Said, not asked — so a team logged in to `@acme` registers `@acme/…`, which any of its members can release.
+3. *(real submit only)* when no workspace is chosen — you belong to organizations and named none — a choice between your personal scope and your organizations (in CI, your personal scope, said).
 
 …and writes it into the name in `main.js` (`name: '@acme/marketing'`), so it is chosen once and later runs need no flag. A `--scope` that names a different scope than the name's is refused; to move a foundation to another scope, change its name and register it there. A preview (`--dry-run`, `-o`) writes nothing: a name with no scope previews under `--scope`, or unscoped.
 
