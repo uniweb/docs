@@ -35,11 +35,11 @@ Three possibilities, in precedence order:
 
 | | Source | When |
 |---|---|---|
-| 1 | `submit:` in `site.yml` | you named an endpoint yourself |
-| 2 | `services.submit` in the served payload | the host provides submission handling for this site |
+| 1 | `services.submit` in the served payload | the host provides submission handling for this site |
+| 2 | an address under `services.submit` in `site.yml` | you bring the destination yourself |
 | 3 | nothing | the site has no submission endpoint — draw no form |
 
-That second row is not specific to forms. A host declares everything it offers
+That first row is not specific to forms. A host declares everything it offers
 in one block, keyed by service name:
 
 ```js
@@ -54,7 +54,7 @@ config.services = {
 }
 ```
 
-Every service resolves the same way — the host's offer, then your own declaration,
+Every service resolves the same way — the host's offer, then your own address,
 then neither — through one function, so a foundation reads them alike:
 
 ```js
@@ -69,10 +69,10 @@ implements (search, form submission) and *resolution* for anything, so a
 foundation can define a service the framework has never heard of and a host can
 fill it without a framework change.
 
-**On a host that handles submissions you configure nothing.** The host answers
-for itself in the served payload: an endpoint when it will accept submissions
-for this site, and no address when it will not. A `submit:` of your own is used
-where the host gives no endpoint; where it gives one, the host's is used.
+**On a host that handles submissions, ask for it.** `submit: true` under
+`services:` asks your host for form handling when you push or publish; the host
+answers for itself in the served payload — an endpoint when it will accept
+submissions for this site, and no address when it will not.
 
 ⛔ **There is deliberately no explanatory string, and absence is not an error to
 report to a visitor.** No endpoint means draw no form — or degrade to something
@@ -85,44 +85,42 @@ framework invents in one language.
 
 **Elsewhere, you provide it.** `uniweb export` produces a plain static site, and
 most `deploy --host` targets have no opinion about forms, so those are the cases
-`submit:` exists for.
+an address of your own exists for.
 
 ### Declaring one
 
 ```yaml
-submit: /forms                              # shorthand
-submit: { endpoint: /forms }                # object form
-submit: https://forms.example.com/intake    # another origin
+services:
+  submit: /forms                              # an address on your own site
 ```
 
-A relative endpoint resolves against the site's `base:`, exactly as
-`search.endpoint` does. One spelling works whether the site is served from the
-root, from a subdirectory (`base: /docs/`), or from a host that serves it under
-a subpath. An absolute URL is used as written.
+```yaml
+services:
+  submit: https://forms.example.com/intake    # a form service, on another origin
+```
+
+An address can also be a map — `submit: { endpoint: /forms }` — with room for options.
+A relative endpoint resolves against the site's `base:`, exactly as a search
+endpoint does. One spelling works whether the site is served from the root, from
+a subdirectory (`base: /docs/`), or from a host that serves it under a subpath. An
+absolute URL is used as written.
 
 **Either way the endpoint is the site's, not the component's.** A section type
 never names one — that's what lets the same foundation serve a site posting to
 its own API and a site whose host handles it, with no code change.
 
-> **Where your host offers a destination, the host's is used — and a host that
-> declined does not overrule yours.** Your own declaration is for what the host
-> does not provide: a site posting to its own API, or to a form service, keeps
-> working on a host that does not take submissions.
+> **An address means the destination is yours.** On a host that handles
+> submissions, writing one asks your host to leave its own off, so yours answers —
+> a site posting to its own API, or to a form service, keeps working there.
 >
-> The footgun is the narrow case where you point `submit:` at *the host's own*
-> endpoint after the host declined to accept submissions for this site. The form
-> then renders **live** — the framework has a destination and no way to know the
-> host won't honour it — and the POST is rejected when it arrives. A visitor
-> types an answer and loses it.
->
-> So: declare `submit:` when you are providing the destination. If a host
-> supplies one, let it, and leave `submit:` unset — that way a decline reaches
-> the visitor as a disabled form with an explanation, which is the honest
-> outcome, instead of a rejection after they have typed.
+> ⛔ So never write *your host's own* endpoint as an address: it would ask your
+> host to close the service the form then posts to, and a visitor would type an
+> answer and lose it. If your host handles submissions, `submit: true` is the whole
+> declaration.
 
-> **Status:** host-supplied destinations are live on Uniweb Cloud — a site
-> published there gets one without declaring anything. Anywhere else, `submit:`
-> is how you provide it.
+> **Status:** host-supplied destinations are live on Uniweb Cloud, where form
+> handling is a service you ask for with `submit: true` and settle when you publish.
+> Anywhere else, an address of your own is how you provide one.
 
 ---
 
@@ -301,6 +299,6 @@ their file did not, instead of reporting a flat failure or a false success.
 
 ## See Also
 
-- [Site Configuration](../reference/site-configuration.md) — the `submit:` key
+- [Site Configuration](../reference/site-configuration.md#form-submissions) — the `services.submit` entry
 - [Kit Reference](../reference/kit-reference.md) — the full API
 - [Writing Content](../authoring/writing-content.md) — how an author describes a form

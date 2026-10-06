@@ -1171,7 +1171,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
 
-**The services you ask for** — [`services:` in `site.yml`](site-configuration.md#asking-your-host--services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
+**The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
 
 When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 

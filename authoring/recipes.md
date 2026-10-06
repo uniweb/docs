@@ -639,8 +639,9 @@ fetch:
 **1. Enable search** in `site.yml`:
 
 ```yaml
-search:
-  enabled: true
+services:
+  search:
+    enabled: true
 ```
 
 **2. Check your template** — most templates include search UI that works automatically once search is enabled.
@@ -650,12 +651,13 @@ That's it. The build generates a search index, and the search UI loads it on dem
 **Optional configuration**:
 
 ```yaml
-search:
-  enabled: true
-  exclude:
-    routes:
-      - /admin
-      - /draft
+services:
+  search:
+    enabled: true
+    exclude:
+      routes:
+        - /admin
+        - /draft
 ```
 
 See the [Search guide](./search.md) for full configuration options.
@@ -867,9 +869,10 @@ and tag managers do — you can skip `head.html` and name the URL instead:
 
 ```yaml
 # site.yml
-tracking:
-  scripts:
-    - https://www.example-analytics.com/tag.js?id=YOUR-ID
+services:
+  tracking:
+    scripts:
+      - https://www.example-analytics.com/tag.js?id=YOUR-ID
 ```
 
 Same script, same service, same data. The difference is **who loads it**: the site's runtime does,

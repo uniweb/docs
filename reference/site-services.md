@@ -13,9 +13,10 @@ single question: **does this site have that service, and where does it answer?**
 
 ```yaml
 # site.yml
-search: /_search
-submit: https://forms.example.com/f/abc123
-tracking: /_events
+services:
+  search: true                              # your host's, or the built-in index
+  submit: https://forms.example.com/f/abc123
+  tracking: /_events
 ```
 
 ```jsx
@@ -55,34 +56,37 @@ if (!url) return <p>Chat is unavailable</p>   // ⛔ invents a failure that isn'
 
 ## Who declares a service
 
-Two tiers — and where a host offers a service, the host wins:
+A site says everything about its services in one place — **`services:` in `site.yml`**, one
+entry per service: `true`, `false`, an address of its own, or a map of options
+([Site Configuration](./site-configuration.md#site-services) has the grammar). From there, two
+tiers answer a component — and where a host offers a service, the host wins:
 
 1. **The host**, served — `config.services.<name>` in the payload a host delivers. What the
    deployment offers, which the site never had to know about. When a host offers a service, that
    is the answer: nothing the site declares overrides it.
-2. **The site**, authored — `search:`, `submit:`, `assistant:`, `tracking:` in `site.yml`. Used for
-   any service the host does not provide — a form service or a search provider of your own — and,
-   on a static site where no host speaks, the whole answer.
+2. **The site** — its entry in `services:`. Used for any service the host does not provide — a
+   form service or a search provider of your own — and, on a static site where no host speaks, the
+   whole answer.
 
-Either tier accepts a bare string or an object with an `endpoint` key:
-
-```yaml
-search: /_search                    # string shorthand
-search:
-  endpoint: /_search                # the same thing, with room for options
-  provider: endpoint
-```
-
-**Either tier can switch a service off** — `false`, or `{ enabled: false }`:
+An address comes as a string or as `endpoint:` in a map:
 
 ```yaml
-submit: false                       # this site has no form submission
-submit: { enabled: false }          # the same, keeping the rest of the block
+services:
+  search:
+    provider: endpoint
+    endpoint: /_search              # a search server of your own
 ```
 
-Where a host offers the service, **the host's offer wins** — a hosted service is turned off with
-your host, where it is provided. A site's `false` decides wherever no host offers it, which on a
-static site is always.
+**A site switches a service off with `false`**, or `enabled: false` in its map:
+
+```yaml
+services:
+  submit: false                     # this site has no form submission
+```
+
+On a site you push or publish, the entry is also **what you ask your host for**: `true` asks for its
+service, `false` asks it to turn its service off, and an address asks it to leave its own off so
+yours answers. Your host settles the request, and its answer arrives with the site.
 
 **A host's silence is an answer.** A host that publishes a services block is stating what it
 offers, so a name it leaves out is declined, exactly as if it had named it with no address — which
@@ -91,21 +95,6 @@ the site's own still answers there.
 
 What `resolveService` returns in each of these cases, and how an address is joined to the site's
 base path, is in the [Kit Reference](./kit-reference.md#resolveservice).
-
-### Asking your host for a service
-
-The host's tier is the host's answer, so a site never writes it. On a site you push or publish, you
-**ask** for a service with `services:` in `site.yml` — `search: true`, `submit: false`, or a map of
-the service's settings — and the host's answer arrives with the site:
-
-```yaml
-services:
-  search: true
-  submit: false
-```
-
-A request is not an address: it never reaches the built site, and a component never reads it. See
-[Site Configuration → Asking your host](./site-configuration.md#asking-your-host--services).
 
 ---
 
@@ -118,7 +107,7 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `search` | where search queries go | site or host |
 | `submit` | where form submissions go | site or host |
 | `tracking` | where analytics events go | site or host |
-| `assistant` | where an assistant surface answers | site |
+| `assistant` | where an assistant surface answers | site or host |
 | `api` | accounts, per-visitor data, member writes | host (see below) |
 | `records` | where live record queries are answered | **host only** |
 
@@ -130,10 +119,11 @@ component asks about search is *"should I draw a search box"* rather than *"is t
 service"* — the two differ, and [`useSearch`](./kit-reference.md) answers the first. See
 [Search](../authoring/search.md).
 
-**`api` is the one service a site does not normally author.** It has to be provisioned, so its
-address arrives in the payload rather than from `site.yml`. Arriving with the site does not make
-your host its provider — what answers there has a provider of its own. You *can* write `api:` in
-`site.yml`: that is how a static build reaches one, and how `$devApi` mounts a local mock. See
+**`api` is the one service a site does not normally address.** It has to be provisioned, so on a
+site you publish you ask for it — `api: true` under `services:` — and its address arrives in the
+payload. Arriving with the site does not make your host its provider — what answers there has a
+provider of its own. An address of your own is how a static build reaches a backend you run; in
+`uniweb dev`, `$devApi` answers it with a local mock at an address the dev server supplies. See
 [Sites with Accounts](../development/sites-with-accounts.md).
 
 **`records` is invisible to foundations, deliberately.** When a provider answers it, record
@@ -181,8 +171,8 @@ Services are **not** a hosted-only feature, and it is worth being precise about 
 a host:
 
 - **The site tier works anywhere.** A static site exported to any file host can declare
-  `submit: https://forms.example.com/f/abc123` and the form submits. Same for `search`,
-  `tracking` and `assistant`.
+  `submit: https://forms.example.com/f/abc123` under `services:` and the form submits. Same for
+  `search`, `tracking` and `assistant`.
 - **The host tier needs a host**, by definition — nothing stamps `config.services` onto a static
   build.
 - **`records` is the exception**, and the only service a site cannot declare at all. Absent, its

@@ -190,11 +190,11 @@ For the full translation workflow (extracting strings, providing translations, c
 
 ## Enabling Search
 
-Built-in full-text search is available with one line:
+Built-in full-text search is on by default; one entry says so, and on a site you publish, asks your host for it:
 
 ```yaml
-search:
-  enabled: true
+services:
+  search: true
 ```
 
 The site generates a search index at build time and your template's search component handles the rest. Visitors can search by title, headings, paragraphs, and link text.
@@ -204,10 +204,11 @@ The site generates a search index at build time and your template's search compo
 If some pages shouldn't appear in search results:
 
 ```yaml
-search:
-  enabled: true
-  exclude:
-    routes: [/admin, /drafts]
+services:
+  search:
+    enabled: true
+    exclude:
+      routes: [/admin, /drafts]
 ```
 
 For more search options, see the [Search guide](./search.md).
@@ -317,8 +318,9 @@ defaultLanguage: en
 languages: [en, es]
 
 # Features
-search:
-  enabled: true
+services:
+  search:
+    enabled: true
 
 # Blog content
 queries:

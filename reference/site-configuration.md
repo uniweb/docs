@@ -44,18 +44,13 @@ layout:
   name: DocsLayout
   hide: [right]
 
-# Features
-search:
-  enabled: true
-
-# Services — what you ask your host to provide (a site you push or publish)
+# Services — search, forms, tracking, an assistant, accounts: one entry each
 services:
-  search: true
-  submit: false
-
-# Accounts — the `api` service, if this site has one
-api: /_api                           # where it answers — same in dev and production
-$devApi: ./mock/api.js               # what answers it locally (never published)
+  search:                            # on, with options
+    exclude: { routes: [/legal] }
+  submit: https://forms.example.com/f/abc   # a provider you bring
+  api: true                          # ask your host for an app backend
+$devApi: ./mock/api.js               # what answers `api` in `uniweb dev` (never published)
 
 # Build Options
 build:
@@ -476,82 +471,82 @@ i18n:
 
 ## Site Services
 
-Four of the sections below — **Search**, **Accounts**, **Form Submissions** and
-**Tracking** — are one mechanism, not four features. Each declares a **service**: a named slot
-for an address the site does not hardcode. A host may offer one, and where it does, its offer wins;
-a site declares one here for anything the host does not provide. Where neither names an address,
-the site does not have that service and a component draws nothing. Any of them can be switched
-off with `false` or `{ enabled: false }` — again, except where a host offers it.
-
-The keys are documented individually below. For the rule they share — the two tiers, what a
-host's silence means, and how a component asks — see
-[Site Services](./site-services.md).
-
-### Asking your host — `services`
-
-The keys below configure a service your site provides itself. **To ask your host for one** — on a
-site you push or publish with `uniweb push` / `uniweb publish` — list it under `services`:
+Search, form submissions, tracking, an assistant and accounts are **services**, and a site
+configures all of them in one place — `services:`, one entry per service:
 
 ```yaml
 services:
-  search: true       # turn it on
-  submit: false      # turn it off
-  api:               # turn it on, with the service's own settings
-    grade: pro
+  search:                                   # on, with options
+    exclude: { routes: [/legal] }
+  submit: https://forms.example.com/f/abc   # a provider you bring
+  tracking: { consent: required }
+  api: true                                 # ask your host for an app backend
 ```
 
-- `true` turns a service on, `false` turns it off, and a map turns it on with those settings —
-  `enabled: false` inside the map turns it off and keeps them. `enabled` is the switch, never a
-  setting.
-- **A service you leave out keeps whatever your site has.** To turn one off, say `false`.
-- **Settings you leave out keep their current values.** Name only the ones you want to change.
+Each entry is one of:
 
-`uniweb push` and `uniweb publish` send what you changed since your last sync, and only that. If your
-site's services changed elsewhere in the meantime — in the Uniweb app, say — they show the difference
-and offer to update `site.yml` instead of sending your older choice over it; if you both changed the
+| value | means |
+|---|---|
+| `true` | on — your host's, where it offers the service; on a static site, the built-in provider if there is one (search has an index) |
+| `false` | off |
+| an address — a string, or `endpoint:` in a map | on, answered by a provider you bring — on a host, your host is asked to leave its own off |
+| a map | on, with options; `enabled: false` inside turns it off and keeps them |
+
+- **A service you leave out keeps whatever your site has.** To turn one off, say `false`.
+- **Options you leave out keep their current values.** Name only the ones you want to change.
+  `enabled` is the switch, never an option.
+
+**On a site you push or publish, `services` is also what you ask your host for.** `uniweb push`
+and `uniweb publish` send what you changed since your last sync, and only that. If your site's
+services changed elsewhere in the meantime — in the Uniweb app, say — they show the difference and
+offer to update `site.yml` instead of sending your older choice over it; if you both changed the
 same service, they ask which to keep. `uniweb pull` writes the services your site has into
 `services`.
 
-**`services` never reaches the built site.** It is a request, so a static build leaves it out — on a
-static host, use the keys below.
+**Everything but a credential is public.** An entry's options reach the built site — except
+`api`'s settings, which only your host reads. A credential (`apiKey`, `token`, `secret`, …) is never
+sent or published: set it in the app, where secrets are kept.
+
+The services are documented one by one below. For how a component asks for one, and what a host's
+answer means, see [Site Services](./site-services.md).
+
+> The top-level `search:`, `submit:`, `assistant:`, `tracking:` and `api:` keys are retired. The
+> build stops on them and says where each one moves.
 
 ---
 
 ## Search
 
-Enable built-in full-text search. Search is **on by default** — you only need to write this to turn
-it off or to set an option.
+`services.search` — built-in full-text search. It is **on by default**; write it to turn it off, to
+set an option, or to ask your host for it on a site you publish.
 
 ```yaml
-search: true       # shorthand
-search: false      # turn it off
+services:
+  search: true       # on
 ```
 
-The shorthand and the object form mean the same thing, so `search: false` and
-`search: { enabled: false }` are interchangeable. Use the object form when you want any of the other
-options below.
-
 ```yaml
-search:
-  enabled: true
+services:
+  search: false      # off
 ```
 
 ### Full Options
 
 ```yaml
-search:
-  enabled: true
-  include:
-    pages: true
-    sections: true
-    headings: true
-    paragraphs: true
-  exclude:
-    routes: [/admin, /draft]
-    components: [CodeBlock]
+services:
+  search:
+    include:
+      pages: true
+      sections: true
+      headings: true
+      paragraphs: true
+    exclude:
+      routes: [/admin, /draft]
+      components: [CodeBlock]
 ```
 
-See [Site Search](../authoring/search.md) for details.
+A search server of your own is an address — `provider: endpoint` with `endpoint:` — and on a host
+it asks your host to leave its own search off. See [Site Search](../authoring/search.md) for details.
 
 ---
 
@@ -626,15 +621,18 @@ on, so a typo is silent. `uniweb doctor` flags them.
 ## Accounts
 
 A site can have its own `api` service — accounts, per-visitor data, content its
-members create. `api:` says where it answers:
+members create. On a site you publish, ask your host for one:
 
 ```yaml
-api: /_api
+services:
+  api: true
 ```
 
-Components never see this value. They ask [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api),
-which reads it — `isApiEnabled()` is `false` on a site that declares none — so a
-foundation works unchanged on a site with the service and on a site without it.
+Its address comes from your host. Components never see it: they ask
+[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api) — `isApiEnabled()` is `false` on a
+site without the service — so a foundation works unchanged on a site with it and on a site
+without it. A backend you run yourself is an address — `api: https://your-backend.example/_api`
+under `services:` — and asks your host to leave its own off.
 
 > **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
 > what the site does without one, and where a demo fixture belongs — see
@@ -646,8 +644,9 @@ Building an app against a live service is slow, and it puts a shared database be
 your experiments. Name a local handler instead:
 
 ```yaml
-api: /_api                 # unchanged — the address is the same everywhere
-$devApi: ./mock/api.js     # development only
+services:
+  api: true                # in production, your host's
+$devApi: ./mock/api.js     # in `uniweb dev`, this answers it
 ```
 
 `./mock/api.js` default-exports a function that takes a `Request` and returns a
@@ -657,10 +656,9 @@ $devApi: ./mock/api.js     # development only
 export default (request) => Response.json({ entities: [], matched: 0 })
 ```
 
-The dev server mounts it at your `api:` address. Because that is the **same address**
-production uses, nothing in your foundation knows which one it is talking to — and
-because it is **same-origin**, sign-in cookies behave exactly as they will in
-production.
+In `uniweb dev` the dev server answers the site's `api` service with it, at an address of its
+own — your site never names one, so nothing in your foundation knows which backend it is talking
+to. Because it is **same-origin**, sign-in cookies behave exactly as they will in production.
 
 Anything can sit behind it: a hand-written stub, recorded fixtures, or your real
 service running as a function. If you are building against Uniweb's own `api` service,
@@ -675,8 +673,8 @@ export default createMockBackend({ seed }).fetch
 > **`$devApi` is never published.** Keys beginning with `$` are local to your working
 > copy and are stripped from the built site, so a visitor cannot reach your local
 > handler and a build cannot ship it by accident. Delete the line and the site still
-> works — it simply has no `api` service, and the features that need one disappear rather
-> than break.
+> works — it simply has no `api` service in development, and the features that need one
+> disappear rather than break.
 
 The `conference` template is a worked example — a programme that reads as a static
 site, and becomes an editable app for the people running the event:
@@ -687,34 +685,38 @@ uniweb create my-event --template conference
 
 ## Form Submissions
 
-Declare where this site's forms send their submissions.
+`services.submit` — where this site's forms send their submissions.
 
 ```yaml
-submit: /forms
+services:
+  submit: true                               # your host's form handling
 ```
 
-**Optional, and often unnecessary.** A form's destination comes from the first
-of these that applies:
+```yaml
+services:
+  submit: https://forms.example.com/intake   # a form service you bring
+```
 
-1. One the host supplies — where your host handles submissions, that is where
-   they go, and nothing here overrides it. On Uniweb Cloud, turn form handling on
-   or off with [`services`](#asking-your-host--services).
-2. `submit:` here — for a host that does not handle submissions, or a static site.
-3. Neither — there is nowhere to send a visitor's answers, so a component draws no
-   form, or shows contact details the site already carries.
+A form's destination comes from the first of these that applies:
 
-So set this when *you* are providing the endpoint — `uniweb export`, or a
-`deploy --host` target with its own form handling.
+1. **Your host's** — where your host handles submissions, that is where they go. `submit: true`
+   asks for it on a site you publish.
+2. **An address of your own** — for a static site, or a host that does not handle submissions. On a
+   host that does, it asks your host to leave its own off, so yours answers.
+3. **Neither** — there is nowhere to send a visitor's answers, so a component draws no form, or
+   shows contact details the site already carries.
 
 ### Full Options
 
 ```yaml
-submit: /forms                              # shorthand
+services:
+  submit: /forms                             # an address on your own site
+```
 
-submit:
-  endpoint: /forms                          # object form
-
-submit: https://forms.example.com/intake    # another origin
+```yaml
+services:
+  submit:
+    endpoint: /forms                         # the same, as a map
 ```
 
 A relative endpoint resolves against the site's `base:`, so one spelling works
@@ -732,7 +734,8 @@ Where this site's usage events go. One destination, one stream: page views and
 anything a component reports share it.
 
 ```yaml
-tracking: https://collector.example.com/events
+services:
+  tracking: https://collector.example.com/events
 ```
 
 Off unless you set it. With no destination configured, nothing is collected and
@@ -741,21 +744,25 @@ nothing is sent — components that report events simply do nothing.
 ### Full Options
 
 ```yaml
-tracking: /collect                              # shorthand — a path on your own site
-
-tracking:
-  endpoint: https://collector.example.com/events   # object form
-  consent: required                             # hold everything until the visitor agrees
-  scripts:                                      # a vendor's own script — see below
-    - https://vendor.example.com/tag.js
+services:
+  tracking: /collect                            # an address — a path on your own site
 ```
 
-A relative endpoint resolves against the site's `base:`, the same way `submit:`
-and `search:` do. An absolute URL is used as written.
+```yaml
+services:
+  tracking:
+    endpoint: https://collector.example.com/events   # the same, as a map
+    consent: required                           # hold everything until the visitor agrees
+    scripts:                                    # a vendor's own script — see below
+      - https://vendor.example.com/tag.js
+```
 
-A host may also provide a destination, in which case you need nothing here — and
-where it does, the host's is used. Your own `tracking:` endpoint is for a site
-whose host provides none.
+A relative endpoint resolves against the site's `base:`, the same way a form's and
+search's do. An absolute URL is used as written.
+
+On a site you publish, `tracking: true` asks your host to collect for you, and the
+address comes from the host. An endpoint of your own means you collect yourself,
+and asks your host to leave its collector off.
 
 > **The endpoint is yours to provide.** Events are sent in the format below, so
 > the destination has to be something that accepts it — your own collector, a
@@ -883,22 +890,24 @@ otherwise — or, where your host supplies the collector, whatever that host
 declares it collects (see *Where your host supplies the collector*, below):
 
 ```yaml
-tracking:
-  endpoint: https://collector.example.com/events
-  emit: standard
+services:
+  tracking:
+    endpoint: https://collector.example.com/events
+    emit: standard
 ```
 
 `emit` stands on its own. Where your host supplies the collector you declare
 only what to send, and the address comes from the host:
 
 ```yaml
-tracking:
-  emit: minimal
+services:
+  tracking:
+    emit: minimal
 ```
 
 The two are read key by key, so naming `emit` alone overrides nothing else the
-host declared. An `endpoint:` of your own applies where the host supplies no
-collector; where it supplies one, the host's is used.
+host declared. An `endpoint:` of your own means you collect yourself, and asks
+your host to leave its collector off.
 
 | value | sends |
 | --- | --- |
@@ -944,9 +953,10 @@ is sent immediately rather than waiting, and whatever is still queued is flushed
 when the page is hidden or closed.
 
 ```yaml
-tracking:
-  endpoint: https://collector.example.com/events
-  flushIntervalMs: 30000        # milliseconds
+services:
+  tracking:
+    endpoint: https://collector.example.com/events
+    flushIntervalMs: 30000      # milliseconds
 ```
 
 Raising it means fewer, larger requests. The cost is **tail loss**: events from
@@ -968,9 +978,10 @@ If you also use a vendor's own analytics or tag manager, name its script and the
 framework loads it:
 
 ```yaml
-tracking:
-  scripts:
-    - https://vendor.example.com/tag.js
+services:
+  tracking:
+    scripts:
+      - https://vendor.example.com/tag.js
 ```
 
 ⭐ **This works on every host**, including Uniweb Cloud — the runtime loads the
@@ -980,15 +991,16 @@ difference from pasting the same tag into
 builds them. If you are declaring a vendor's tracking script, this is the place
 to put it.
 
-You can add it alongside a `tracking:` endpoint or on its own — the two are
+You can add it alongside an endpoint of your own or on its own — the two are
 independent:
 
 ```yaml
-tracking:
-  endpoint: /collect          # optional — your own collector
-  consent: required           # optional — gates both
-  scripts:
-    - https://vendor.example.com/tag.js
+services:
+  tracking:
+    endpoint: /collect        # optional — your own collector
+    consent: required         # optional — gates both
+    scripts:
+      - https://vendor.example.com/tag.js
 ```
 
 The vendor's script measures its own way, with its own storage, and reports to
@@ -1270,7 +1282,7 @@ site/
 
 > ⭐ **If what you are adding is a vendor's tracking script and their snippet is a single `<script src="…">`, put the URL in [`tracking.scripts`](#third-party-scripts) instead.** Same script, same vendor, same data — but the runtime loads it, so it works on **every** host rather than only the ones where the framework builds your pages. Reach for `head.html` when the vendor's snippet also runs inline configuration lines, which have nowhere to go in a URL field.
 
-> **And separately, on what to measure with.** A vendor's script sets its own cookies, which is what lets it report sessions and unique users; it counts page loads, so in-app navigation needs its own handling. [`tracking:`](#tracking) loads no script and stores nothing on the visitor's device, reports every route change, and sends to an endpoint you provide — so it counts page views and events but not users or sessions. Different numbers, not better ones; many sites run both.
+> **And separately, on what to measure with.** A vendor's script sets its own cookies, which is what lets it report sessions and unique users; it counts page loads, so in-app navigation needs its own handling. [`services.tracking`](#tracking) loads no script and stores nothing on the visitor's device, reports every route change, and sends to an endpoint you provide — so it counts page views and events but not users or sessions. Different numbers, not better ones; many sites run both.
 
 > For social/SEO meta (Open Graph image, title, description, canonical, robots), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`. Reserve `head.html` for everything else.
 
@@ -1321,9 +1333,9 @@ layout:
   name: DocsLayout
   hide: [right]
 
-# Features
-search:
-  enabled: true
+# Services
+services:
+  search: true
 
 # Build
 build:

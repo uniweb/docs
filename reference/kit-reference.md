@@ -599,7 +599,7 @@ function ProductCard({ params }) {
 ### useFormSubmit
 
 Submit a form, with the `idle → submitting → success | error` lifecycle. The
-destination comes from the site's `submit:` declaration or from its host, so a
+destination comes from the site's host or from its own `services.submit` address, so a
 component never names an endpoint.
 
 ```jsx
@@ -676,9 +676,10 @@ A container control (`type: group` with `children`) nests: its answers appear un
 | `files` (per call) | `File`s or `{ file, field }` pairs — sent as bytes after the answers |
 
 **The framework never invents an endpoint, but a host may supply one** — a site
-on Uniweb Cloud typically needs no `submit:`. `canSubmit` is false only when
-neither a declaration nor a host provides a destination; render the control
-disabled rather than posting a visitor's answers nowhere. Companion utilities
+on Uniweb Cloud asks for form handling with `submit: true` under `services:` and
+names no address. `canSubmit` is false only when neither the host nor an address of
+the site's own provides a destination; render no form rather than posting a
+visitor's answers nowhere. Companion utilities
 `submitForm()` and `resolveSubmitTarget(website)` do the same thing without React.
 
 **Attachments go separately from the answers**, so bytes never ride inside the
@@ -755,7 +756,7 @@ To decide only *whether* to draw, a [service predicate](#service-predicates) is 
 
 Resolution is the same for every service: what the host offers
 (`config.services.assistant` in the served payload), then the site's own
-declaration (`assistant:` in `site.yml`) for anything the host does not provide,
+entry (`services.assistant` in `site.yml`) for anything the host does not provide,
 then neither. `source` says which tier answered — the thing to check when a value
 you set appears not to be taking effect:
 

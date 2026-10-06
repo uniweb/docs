@@ -412,7 +412,7 @@ times what a short one does. The control sits where the cost actually varies —
 which is why a site with five landing pages and four hundred documentation pages
 can instrument the five and leave the rest alone.
 
-It does nothing unless the site declares a [`tracking:`](site-configuration.md#tracking)
+It does nothing unless the site has a [`services.tracking`](site-configuration.md#tracking)
 destination. With none — the default — nothing is collected and nothing is sent.
 
 

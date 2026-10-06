@@ -11,8 +11,9 @@ Search works out of the box. If your foundation includes a search UI component (
 To explicitly enable and configure search, add to `site.yml`:
 
 ```yaml
-search:
-  enabled: true
+services:
+  search:
+    enabled: true
 ```
 
 ## How It Works
@@ -43,9 +44,10 @@ A provider is what actually answers a query.
 
 ```yaml
 # site.yml
-search:
-  provider: index        # the default; writing it changes nothing — omit it unless
-                         # you are switching AWAY from the local index
+services:
+  search:
+    provider: index        # the default; writing it changes nothing — omit it unless
+                           # you are switching AWAY from the local index
 ```
 
 | Provider | What it does | Trade-off |
@@ -57,16 +59,17 @@ search:
 ### Using a server endpoint
 
 ```yaml
-search:
-  provider: endpoint
-  endpoint: _search      # required — there is no default
+services:
+  search:
+    provider: endpoint
+    endpoint: _search      # required — there is no default
 ```
 
 **`endpoint` is required.** A provider with nowhere to send a query has nothing to do, so search behaves like every other service here: you name the target, or the site has no search. (Until 0.16 an omitted `endpoint` fell back to `_search`. It no longer does — a path a host serves is that host's to name, and a framework guess competes with it.)
 
 **It is resolved relative to your site's base path**, which is what makes one spelling work everywhere. On a site at the root `_search` resolves to `/_search`; under `base: /docs/` it becomes `/docs/_search`; on a site served from a subpath it follows that subpath. Give an absolute `https://…` URL to point at a search service on another origin.
 
-A host that serves your site may offer search itself, in which case it supplies the address and you declare nothing.
+A host that serves your site may offer search itself: `search: true` under `services:` asks for it, and the host supplies the address. A server endpoint of your own is the other way round — it asks your host to leave its own search off, so yours answers.
 
 The response envelope is read leniently — `{ results: [...] }`, `{ hits: [...] }`, `{ items: [...] }`, or a bare array all work — so a self-hosted search backend usually needs no adapter.
 
@@ -111,33 +114,35 @@ Whether one of these arrives is a *deployment* fact, not a content fact — the 
 
 ```yaml
 # site.yml
-search:
-  enabled: true
+services:
+  search:
+    enabled: true
 ```
 
 ### Full Configuration
 
 ```yaml
-search:
-  enabled: true
+services:
+  search:
+    enabled: true
 
-  # What to include in the index
-  include:
-    pages: true        # Page titles and descriptions
-    sections: true     # Section content
-    headings: true     # Heading text
-    paragraphs: true   # Paragraph text
-    links: true        # Link labels
-    lists: true        # List item text
+    # What to include in the index
+    include:
+      pages: true        # Page titles and descriptions
+      sections: true     # Section content
+      headings: true     # Heading text
+      paragraphs: true   # Paragraph text
+      links: true        # Link labels
+      lists: true        # List item text
 
-  # What to exclude
-  exclude:
-    routes:            # Routes to skip (prefix match)
-      - /admin
-      - /draft
-    components:        # Component types to skip
-      - CodeBlock
-      - RawHtml
+    # What to exclude
+    exclude:
+      routes:            # Routes to skip (prefix match)
+        - /admin
+        - /draft
+      components:        # Component types to skip
+        - CodeBlock
+        - RawHtml
 ```
 
 All `include` options default to `true`. Exclusions default to empty arrays.
@@ -145,8 +150,9 @@ All `include` options default to `true`. Exclusions default to empty arrays.
 ### Disabling Search
 
 ```yaml
-search:
-  enabled: false
+services:
+  search:
+    enabled: false
 ```
 
 Or simply omit the `search` configuration—search is enabled by default.

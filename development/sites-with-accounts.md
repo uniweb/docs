@@ -29,16 +29,19 @@ implies the other.
 
 ## Declaring it
 
-One line says where your site's `api` service answers:
+On a site you publish, one entry asks your host for the `api` service:
 
 ```yaml
 # site.yml
-api: /_api
+services:
+  api: true
 ```
 
-Components never read this value. They ask [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api),
-which reads it for them — so **the same foundation works on a site with the service and on a site
-without it**, with no branch in your build.
+Its address comes from your host, and components never read it. They ask
+[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api), which reads it for them — so **the same
+foundation works on a site with the service and on a site without it**, with no branch in your
+build. A backend you run yourself is an address instead — `api: https://your-backend.example/_api`
+under `services:` — and asks your host to leave its own off.
 
 ---
 
@@ -47,8 +50,9 @@ without it**, with no branch in your build.
 You do not need the service running to build against it. Name a local handler:
 
 ```yaml
-api: /_api                 # unchanged — the address is the same in production
-$devApi: ./mock/api.js     # development only
+services:
+  api: true                # in production, your host's
+$devApi: ./mock/api.js     # in `uniweb dev`, this answers it
 ```
 
 ```js
@@ -85,9 +89,9 @@ export default createMockBackend({
 }).fetch
 ```
 
-`uniweb dev` mounts it at your `api:` address. Because that is **the same address production
-uses**, and same-origin, nothing in your foundation knows which one it is talking to and
-sign-in cookies behave as they will in production.
+`uniweb dev` answers your site's `api` service with it, at an address the dev server supplies —
+your site never names one, so nothing in your foundation knows which backend it is talking to.
+Because it is same-origin, sign-in cookies behave as they will in production.
 
 Anything can sit behind `$devApi` — a hand-written stub, recorded fixtures, your real service
 running as a function. The mock above is the one that speaks this client's own dialect.
@@ -153,7 +157,7 @@ content is missing when it was never asked for.
 
 ## A site without the service
 
-Delete the `api:` line and the site still works. `isApiEnabled()` answers `false`, and the features that need the service **disappear rather than break**.
+Remove `api` from `services:` and the site still works. `isApiEnabled()` answers `false`, and the features that need the service **disappear rather than break**.
 
 ⛔ **When the answer is no, draw nothing** — not a disabled button, not an explanation. A
 visitor has no stake in which services the operator set up, and *"sign-in is unavailable"*
@@ -185,9 +189,9 @@ Three reasons, and the first is the one that matters:
 
 - **[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api)** — the client, in full
 - [Data Sources](./data-sources.md) — content, which is a different problem
-- [Site Configuration](../reference/site-configuration.md#accounts) — `api:` and `$devApi:`
+- [Site Configuration](../reference/site-configuration.md#accounts) — `services.api` and `$devApi:`
 - The **`conference` template** is a worked example of everything above — it scaffolds with
-  `api:`, `$devApi:` and a `mock/` directory already wired, so you can read a working seed
+  `services.api`, `$devApi:` and a `mock/` directory already wired, so you can read a working seed
   rather than assemble one:
 
   ```bash
