@@ -1038,7 +1038,7 @@ export default {
 
 #### Scope
 
-A **scope** is a namespace, and **it is part of the name**: a foundation named `@acme/marketing` registers under `@acme`. So do the data schemas it defines — `@/article` registers as `@acme/article` — which is the name a site's records and queries use for them. A scope is either **your personal scope**, `@<your handle>`, which needs no organization and only you can publish into, or an **organization's**, which its members can publish into.
+A **scope** is a namespace, and **it is part of the name**: a foundation named `@acme/marketing` registers under `@acme`. So do the data schemas it defines — `@/article` registers as `@acme/article` — which is the name a site's records and queries use for them. A scope is either **your personal scope**, `@<your handle>`, which needs no organization and only you can publish into, or an **organization's**, which its members can publish into. Scopes belong to their owners on one backend: a name registers on another backend only where its scope has the same owner there — and on another backend your handle, and so your personal scope, may be someone else's.
 
 A name with no scope has not been registered yet. The first `register` chooses one:
 
