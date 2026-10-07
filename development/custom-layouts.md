@@ -150,6 +150,10 @@ export default {
 }
 ```
 
+With no `defaultLayout`, a layout named `Default` (or `DefaultLayout`) is the default. With neither, a
+page that names no layout gets the built-in one: `header`, the page, then `footer`, in a single column —
+other areas are not drawn. A `defaultLayout` that names none of your layouts stops the build.
+
 Pages can override this in `page.yml`:
 
 ```yaml

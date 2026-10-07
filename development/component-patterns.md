@@ -779,7 +779,7 @@ export default function DocsLayout({ page, website, header, body, footer, left, 
 }
 ```
 
-A page opts in with `layout: DocsLayout` in its `page.yml` or `folder.yml`, which cascades to everything beneath it. A foundation can name a `defaultLayout` in `src/main.js` to apply one everywhere.
+A page opts in with `layout: DocsLayout` in its `page.yml` or `folder.yml`, which cascades to everything beneath it. A foundation can name a `defaultLayout` in `src/main.js` to apply one everywhere, or call a layout `Default`; with neither, a page that names no layout gets the built-in `header`, page, `footer`.
 
 Area content comes from the layout folder — `layout/left.md`, `layout/right.md`, alongside `layout/header.md` and `layout/footer.md`.
 

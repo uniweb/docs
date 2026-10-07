@@ -448,7 +448,7 @@ Control which layout is used and which areas appear on this page.
 layout: MarketingLayout
 ```
 
-If the foundation provides multiple layouts, set which one to use. Pages without an explicit `layout:` use the foundation's `defaultLayout`.
+If the foundation provides multiple layouts, set which one to use. Pages without an explicit `layout:` use the foundation's `defaultLayout` — else its layout named `Default`, else the built-in layout, which draws `header`, the page and `footer`.
 
 ### Hiding Areas
 
