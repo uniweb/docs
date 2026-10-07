@@ -109,7 +109,7 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `tracking` | where analytics events go | site or host |
 | `assistant` | where an assistant surface answers | site or host |
 | `api` | accounts, per-visitor data, member writes | host (see below) |
-| `records` | where live record queries are answered | **host only** |
+| `records` | where live record queries are answered | **host only** — asked for with `records: true` |
 
 Three of them deserve a note.
 
@@ -127,9 +127,11 @@ provider of its own. An address of your own is how a static build reaches a back
 [Sites with Accounts](../development/sites-with-accounts.md).
 
 **`records` is invisible to foundations, deliberately.** When a provider answers it, record
-queries are resolved live at the source; when it is absent, the same queries are answered by the files
-the build compiled. Either way a component reads `content.data` identically, which is the whole
-point — a foundation cannot tell, and never needs to. See
+queries are resolved live at the source; when it is absent, queries read the files the build
+compiled. On a static site that is every query. A host that delivers records live delivers those
+with a data schema only through `records`, so a site it publishes asks for it — `records: true`
+under `services:` — or its pages show none of them. Either way a component reads `content.data`
+identically, which is the whole point — a foundation cannot tell, and never needs to. See
 [Data Sources](../development/data-sources.md).
 
 ---
@@ -175,9 +177,9 @@ a host:
   `search`, `tracking` and `assistant`.
 - **The host tier needs a host**, by definition — nothing stamps `config.services` onto a static
   build.
-- **`records` is the exception**, and the only service a site cannot declare at all. Absent, its
-  queries fall through to the files the build compiled, which is why a site with no host is the
-  default case rather than a degraded one.
+- **`records` is the exception**: a site asks its host for it, with `records: true`, and cannot
+  give an address of its own. With no host, its queries read the files the build compiled, which is
+  why a site with no host is the default case rather than a degraded one.
 
 Deleting every service declaration leaves a site that still works. The features that needed one
 disappear; nothing breaks.

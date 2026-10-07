@@ -471,8 +471,8 @@ i18n:
 
 ## Site Services
 
-Search, form submissions, tracking, an assistant and accounts are **services**, and a site
-configures all of them in one place — `services:`, one entry per service:
+Search, form submissions, tracking, an assistant, accounts and live records are **services**, and
+a site configures all of them in one place — `services:`, one entry per service:
 
 ```yaml
 services:
@@ -481,6 +481,7 @@ services:
   submit: https://forms.example.com/f/abc   # a provider you bring
   tracking: { consent: required }
   api: true                                 # ask your host for an app backend
+  records: true                             # ask your host to deliver your records live
 ```
 
 Each entry is one of:
@@ -492,17 +493,23 @@ Each entry is one of:
 | an address — a string, or `endpoint:` in a map | on, answered by a provider you bring — on a host, your host is asked to leave its own off |
 | a map | on, with options; `enabled: false` inside turns it off and keeps them |
 
-- **A service you leave out keeps whatever your site has.** To turn one off, say `false`.
+- **On a site your host publishes, a service is off unless `services:` asks for it.** List the
+  services your site uses; the official templates list theirs.
 - **An entry says everything about its service.** An option you remove from it is removed from your
   site on the next push. `enabled` is the switch, never an option.
+- **`records` delivers your records live to your published pages.** A query whose records have a
+  data schema is answered by it on a host that offers it; without it, those pages show no records
+  there. A static build reads records from the files it writes, and ignores the entry. Pushing and
+  pulling records works either way.
 
 **On a site you push or publish, `services` is also what you ask your host for.** `uniweb push`
-and `uniweb publish` send what you changed since your last sync, and only that. If your site's
-services changed elsewhere in the meantime — in the Uniweb app, say — they show the difference and
-offer to update `site.yml` instead of sending your older choice over it; if you both changed the
-same service, they ask which to keep. They ask too when `site.yml` names a service for the first
-time that your site already has, set differently — so a setting made in the app is not erased by a
-file that never had it. `uniweb pull` writes the services your site has into `services`.
+and `uniweb publish` send each service `site.yml` lists, as it says it, and switch off one you have
+removed from the file. A service your site has that this copy has never seen — one turned on in the
+Uniweb app since your last pull, say — is left as it is. If a service you changed was also changed
+on your site since your last pull, the push stops and names it: run `uniweb pull --merge`, then push
+again. `uniweb publish` also says when your pages show records and `services` does not ask for
+`records`. `uniweb pull` writes the services your site has into `services` — one that is off, with
+no options, only where `site.yml` already names it.
 
 **Everything but a credential is public.** An entry's options reach the built site — except
 `api`'s settings, which only your host reads. A credential (`apiKey`, `token`, `secret`, …) is never
