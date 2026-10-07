@@ -32,6 +32,7 @@ uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
 uniweb status                  # Show a site's sync state (unpushed content)
 uniweb forget --backend <url>  # Forget one backend (--all: make a copied project a new one)
+uniweb site <list|unpublish|delete>  # The sites in a workspace — list them, take one offline, delete one
 ```
 
 ---
@@ -1426,6 +1427,39 @@ The next push from the copy creates a new site. Neither form touches `site.yml` 
 `--backend` is required even when the project has synced with only one backend: forgetting a backend you still use means its next push creates a second site there, so you name it. Both forms are safe to repeat; nothing recorded means nothing to do.
 
 ⚠️ `sync.json` and `deploy.yml` are committed files. If you run `--all` in the original by mistake, restore them from git.
+
+---
+
+## uniweb site
+
+The sites in a workspace on the backend you are logged in to — list them, take one offline, or delete one.
+
+```bash
+uniweb site list [--json]              # each site's name, uuid, and whether it is published
+uniweb site unpublish [<site-uuid>]    # take a site offline — its content stays
+uniweb site delete [<site-uuid>]       # delete a site — final
+```
+
+The workspace is the one you chose at login, or `--org @handle` / `--personal` for this command. Without a uuid, `unpublish` and `delete` act on the site this project is synced to on that backend. `uniweb site list` shows each site's uuid — the one [`uniweb clone`](#uniweb-clone) takes, too.
+
+**`delete` is final**: there is no trash and no restore. Only the site's owner, or an admin of its workspace, can delete it.
+
+- **A published site is not deleted** — unpublish it first.
+- **Anything else still active is named** when the delete is refused — a hosting plan, a custom domain, form messages visitors sent — and is resolved in the app.
+- **Records the site pushed stay** in the workspace.
+- **Deleting the site this project is synced to also removes the project's record of it**, as `uniweb forget --backend` does, so the project's next push creates a new site.
+
+Both `unpublish` and `delete` ask before they act. In a script, pass `--yes`; without a terminal and without `--yes`, they refuse and exit with code `2`, so nothing is reported done that was not.
+
+With `--json`, `list` prints one JSON object on stdout:
+
+```json
+{ "backend": "https://…", "workspace": "@acme", "sites": [
+  { "uuid": "…", "name": "Blog", "status": "published", "published": true, "url": "https://…", "updated_at": "…" }
+] }
+```
+
+`status` is `null` for a site that was never published.
 
 ---
 
