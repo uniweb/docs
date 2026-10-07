@@ -493,6 +493,10 @@ Each entry is one of:
 | an address — a string, or `endpoint:` in a map | on, answered by a provider you bring — on a host, your host is asked to leave its own off |
 | a map | on, with options; `enabled: false` inside turns it off and keeps them |
 
+Anything else stops the build and the push, naming the entry and what to write — an empty entry, a
+number, a list. ⚠️ **`yes`, `no`, `on` and `off` are words here, not switches**: YAML reads them
+as text, and text is an address. Write `true` or `false`.
+
 - **On a site your host publishes, a service is off unless `services:` asks for it.** List the
   services your site uses; the official templates list theirs.
 - **An entry says everything about its service.** An option you remove from it is removed from your
