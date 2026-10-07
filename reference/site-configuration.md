@@ -493,15 +493,16 @@ Each entry is one of:
 | a map | on, with options; `enabled: false` inside turns it off and keeps them |
 
 - **A service you leave out keeps whatever your site has.** To turn one off, say `false`.
-- **Options you leave out keep their current values.** Name only the ones you want to change.
-  `enabled` is the switch, never an option.
+- **An entry says everything about its service.** An option you remove from it is removed from your
+  site on the next push. `enabled` is the switch, never an option.
 
 **On a site you push or publish, `services` is also what you ask your host for.** `uniweb push`
 and `uniweb publish` send what you changed since your last sync, and only that. If your site's
 services changed elsewhere in the meantime — in the Uniweb app, say — they show the difference and
 offer to update `site.yml` instead of sending your older choice over it; if you both changed the
-same service, they ask which to keep. `uniweb pull` writes the services your site has into
-`services`.
+same service, they ask which to keep. They ask too when `site.yml` names a service for the first
+time that your site already has, set differently — so a setting made in the app is not erased by a
+file that never had it. `uniweb pull` writes the services your site has into `services`.
 
 **Everything but a credential is public.** An entry's options reach the built site — except
 `api`'s settings, which only your host reads. A credential (`apiKey`, `token`, `secret`, …) is never
