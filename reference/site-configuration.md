@@ -49,8 +49,8 @@ services:
   search:                            # on, with options
     exclude: { routes: [/legal] }
   submit: https://forms.example.com/f/abc   # a provider you bring
-  api: true                          # ask your host for an app backend
-$devApi: ./mock/api.js               # what answers `api` in `uniweb dev` (never published)
+  backend: true                      # ask your host for the site's own backend
+$devBackend: ./mock/api.js           # what answers `backend` in `uniweb dev` (never published)
 
 # Build Options
 build:
@@ -480,7 +480,7 @@ services:
     exclude: { routes: [/legal] }
   submit: https://forms.example.com/f/abc   # a provider you bring
   tracking: { consent: required }
-  api: true                                 # ask your host for an app backend
+  backend: true                             # ask your host for the site's own backend
   records: true                             # ask your host to deliver your records live
 ```
 
@@ -516,14 +516,15 @@ again. `uniweb publish` also says when your pages show records and `services` do
 no options, only where `site.yml` already names it.
 
 **Everything but a credential is public.** An entry's options reach the built site — except
-`api`'s settings, which only your host reads. A credential (`apiKey`, `token`, `secret`, …) is never
+`backend`'s settings, which only your host reads. A credential (`apiKey`, `token`, `secret`, …) is never
 sent or published: set it in the app, where secrets are kept.
 
 The services are documented one by one below. For how a component asks for one, and what a host's
 answer means, see [Site Services](./site-services.md).
 
 > The top-level `search:`, `submit:`, `assistant:`, `tracking:` and `api:` keys are retired. The
-> build stops on them and says where each one moves.
+> build stops on them and says where each one moves. So does `api` under `services:`, which is
+> `backend` now, and `$devApi:`, which is `$devBackend:`.
 
 ---
 
@@ -632,33 +633,33 @@ on, so a typo is silent. `uniweb doctor` flags them.
 
 ## Accounts
 
-A site can have its own `api` service — accounts, per-visitor data, content its
+A site can have its own backend — the `backend` service: accounts, per-visitor data, content its
 members create. On a site you publish, ask your host for one:
 
 ```yaml
 services:
-  api: true
+  backend: true
 ```
 
 Its address comes from your host. Components never see it: they ask
-[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api) — `isApiEnabled()` is `false` on a
+[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api) — `isBackendEnabled()` is `false` on a
 site without the service — so a foundation works unchanged on a site with it and on a site
-without it. A backend you run yourself is an address — `api: https://your-backend.example/_api`
+without it. A backend you run yourself is an address — `backend: https://your-backend.example/_api`
 under `services:` — and asks your host to leave its own off.
 
 > **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
 > what the site does without one, and where a demo fixture belongs — see
 > [Sites with Accounts](../development/sites-with-accounts.md).
 
-### Developing against it: `$devApi`
+### Developing against it: `$devBackend`
 
 Building an app against a live service is slow, and it puts a shared database behind
 your experiments. Name a local handler instead:
 
 ```yaml
 services:
-  api: true                # in production, your host's
-$devApi: ./mock/api.js     # in `uniweb dev`, this answers it
+  backend: true              # in production, your host's
+$devBackend: ./mock/api.js   # in `uniweb dev`, this answers it
 ```
 
 `./mock/api.js` default-exports a function that takes a `Request` and returns a
@@ -668,12 +669,12 @@ $devApi: ./mock/api.js     # in `uniweb dev`, this answers it
 export default (request) => Response.json({ entities: [], matched: 0 })
 ```
 
-In `uniweb dev` the dev server answers the site's `api` service with it, at an address of its
+In `uniweb dev` the dev server answers the site's `backend` service with it, at an address of its
 own — your site never names one, so nothing in your foundation knows which backend it is talking
 to. Because it is **same-origin**, sign-in cookies behave exactly as they will in production.
 
 Anything can sit behind it: a hand-written stub, recorded fixtures, or your real
-service running as a function. If you are building against Uniweb's own `api` service,
+service running as a function. If you are building against Uniweb's own `backend` service,
 `@uniweb/api` ships one that speaks it:
 
 ```js
@@ -682,10 +683,10 @@ import { createMockBackend } from '@uniweb/api/mock'
 export default createMockBackend({ seed }).fetch
 ```
 
-> **`$devApi` is never published.** Keys beginning with `$` are local to your working
+> **`$devBackend` is never published.** Keys beginning with `$` are local to your working
 > copy and are stripped from the built site, so a visitor cannot reach your local
 > handler and a build cannot ship it by accident. Delete the line and the site still
-> works — it simply has no `api` service in development, and the features that need one
+> works — it simply has no `backend` service in development, and the features that need one
 > disappear rather than break.
 
 The `conference` template is a worked example — a programme that reads as a static

@@ -20,7 +20,7 @@ Two different things are easy to confuse, and they have separate guides:
 | | you want | read |
 |---|---|---|
 | **Content** | articles, team members, a product list — the same for every visitor | [Data Sources](./data-sources.md) |
-| **An `api` service** | accounts, sign-in, per-visitor data, things members create | **this guide** |
+| **A `backend` service** — the site's own backend | accounts, sign-in, per-visitor data, things members create | **this guide** |
 
 A site can have both, one, or neither. They are declared separately and nothing about one
 implies the other.
@@ -29,18 +29,18 @@ implies the other.
 
 ## Declaring it
 
-On a site you publish, one entry asks your host for the `api` service:
+On a site you publish, one entry asks your host for the `backend` service:
 
 ```yaml
 # site.yml
 services:
-  api: true
+  backend: true
 ```
 
 Its address comes from your host, and components never read it. They ask
 [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api), which reads it for them — so **the same
 foundation works on a site with the service and on a site without it**, with no branch in your
-build. A backend you run yourself is an address instead — `api: https://your-backend.example/_api`
+build. A backend you run yourself is an address instead — `backend: https://your-backend.example/_api`
 under `services:` — and asks your host to leave its own off.
 
 ---
@@ -51,8 +51,8 @@ You do not need the service running to build against it. Name a local handler:
 
 ```yaml
 services:
-  api: true                # in production, your host's
-$devApi: ./mock/api.js     # in `uniweb dev`, this answers it
+  backend: true              # in production, your host's
+$devBackend: ./mock/api.js   # in `uniweb dev`, this answers it
 ```
 
 ```js
@@ -89,14 +89,14 @@ export default createMockBackend({
 }).fetch
 ```
 
-`uniweb dev` answers your site's `api` service with it, at an address the dev server supplies —
+`uniweb dev` answers your site's `backend` service with it, at an address the dev server supplies —
 your site never names one, so nothing in your foundation knows which backend it is talking to.
 Because it is same-origin, sign-in cookies behave as they will in production.
 
-Anything can sit behind `$devApi` — a hand-written stub, recorded fixtures, your real service
+Anything can sit behind `$devBackend` — a hand-written stub, recorded fixtures, your real service
 running as a function. The mock above is the one that speaks this client's own dialect.
 
-> **`$devApi` is never published.** Keys beginning with `$` are local to your working copy and
+> **`$devBackend` is never published.** Keys beginning with `$` are local to your working copy and
 > are stripped from the built site, so a visitor cannot reach your local handler and a build
 > cannot ship it by accident.
 
@@ -140,8 +140,8 @@ Two habits worth forming early, both of which the README explains in full:
 configuration, not a probe:
 
 ```jsx
-import { isApiEnabled } from '@uniweb/kit'
-if (!isApiEnabled()) return <StaticVersion />
+import { isBackendEnabled } from '@uniweb/kit'
+if (!isBackendEnabled()) return <StaticVersion />
 ```
 
 Every site service is asked the same way — `isSearchEnabled()`, `isSubmitEnabled()`,
@@ -149,7 +149,7 @@ Every site service is asked the same way — `isSearchEnabled()`, `isSubmitEnabl
 always means the same thing: draw nothing.
 
 **Treat "no source" and "nothing there" as different answers.** `absent` means there is no
-live source — no `api` service, or nobody signed in. `ready` with an empty list means the service
+live source — no `backend` service, or nobody signed in. `ready` with an empty list means the service
 answered and there is nothing. Showing *"nothing yet"* for the first tells a visitor their
 content is missing when it was never asked for.
 
@@ -157,7 +157,7 @@ content is missing when it was never asked for.
 
 ## A site without the service
 
-Remove `api` from `services:` and the site still works. `isApiEnabled()` answers `false`, and the features that need the service **disappear rather than break**.
+Remove `backend` from `services:` and the site still works. `isBackendEnabled()` answers `false`, and the features that need the service **disappear rather than break**.
 
 ⛔ **When the answer is no, draw nothing** — not a disabled button, not an explanation. A
 visitor has no stake in which services the operator set up, and *"sign-in is unavailable"*
@@ -171,7 +171,7 @@ the components that need a session are simply not rendered on the site that has 
 ## Where the fixture belongs
 
 If you are building a template or a demo, the fictional tenant — the accounts, the sample
-roster, the progress a learner has made — belongs in the **seed behind `$devApi`**, not in
+roster, the progress a learner has made — belongs in the **seed behind `$devBackend`**, not in
 `site.yml` and not compiled into your foundation.
 
 Three reasons, and the first is the one that matters:
@@ -179,7 +179,7 @@ Three reasons, and the first is the one that matters:
 1. **Your foundation stops knowing it is a demo.** It reads through `@uniweb/api` exactly as
    it will in production. A component that reads a config block knows; one that calls
    `useRecords()` does not.
-2. **Nothing demo-shaped ships**, because `$devApi` is stripped from the build.
+2. **Nothing demo-shaped ships**, because `$devBackend` is stripped from the build.
 3. **Deleting it gives you the empty product**, not a broken one — the degradation above is
    the same mechanism.
 
@@ -189,9 +189,9 @@ Three reasons, and the first is the one that matters:
 
 - **[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api)** — the client, in full
 - [Data Sources](./data-sources.md) — content, which is a different problem
-- [Site Configuration](../reference/site-configuration.md#accounts) — `services.api` and `$devApi:`
+- [Site Configuration](../reference/site-configuration.md#accounts) — `services.backend` and `$devBackend:`
 - The **`conference` template** is a worked example of everything above — it scaffolds with
-  `services.api`, `$devApi:` and a `mock/` directory already wired, so you can read a working seed
+  `services.backend`, `$devBackend:` and a `mock/` directory already wired, so you can read a working seed
   rather than assemble one:
 
   ```bash

@@ -108,7 +108,7 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `submit` | where form submissions go | site or host |
 | `tracking` | where analytics events go | site or host |
 | `assistant` | where an assistant surface answers | site or host |
-| `api` | accounts, per-visitor data, member writes | host (see below) |
+| `backend` | the site's own backend — accounts, per-visitor data, member writes | host (see below) |
 | `records` | where live record queries are answered | **host only** — asked for with `records: true` |
 
 Three of them deserve a note.
@@ -119,12 +119,14 @@ component asks about search is *"should I draw a search box"* rather than *"is t
 service"* — the two differ, and [`useSearch`](./kit-reference.md) answers the first. See
 [Search](../authoring/search.md).
 
-**`api` is the one service a site does not normally address.** It has to be provisioned, so on a
-site you publish you ask for it — `api: true` under `services:` — and its address arrives in the
-payload. Arriving with the site does not make your host its provider — what answers there has a
-provider of its own. An address of your own is how a static build reaches a backend you run; in
-`uniweb dev`, `$devApi` answers it with a local mock at an address the dev server supplies. See
-[Sites with Accounts](../development/sites-with-accounts.md).
+**`backend` is the one service a site does not normally address.** It is the site's own backend,
+and it has to be provisioned, so on a site you publish you ask for it — `backend: true` under
+`services:` — and its address arrives in the payload. Arriving with the site does not make your host
+its provider — what answers there has a provider of its own. An address of your own is how a static
+build reaches a backend you run; in `uniweb dev`, `$devBackend` answers it with a local mock at an
+address the dev server supplies. See [Sites with Accounts](../development/sites-with-accounts.md).
+*This service was called `api` before; written that way under `services:`, it now stops the build
+with the new name.*
 
 **`records` is invisible to foundations, deliberately.** When a provider answers it, record
 queries are resolved live at the source; when it is absent, queries read the files the build
@@ -151,7 +153,7 @@ if (!isSearchEnabled()) return null
 |---|---|
 | a search control | `isSearchEnabled()` |
 | a form | `isSubmitEnabled()` |
-| anything needing a signed-in visitor | `isApiEnabled()` |
+| anything needing a signed-in visitor | `isBackendEnabled()` |
 | an assistant surface | `isAssistantEnabled()` |
 | anything that reports events | `isTrackingEnabled()` |
 
@@ -200,7 +202,7 @@ Three words, three levels, and a real sentence needs all three:
 > Your host provides `search` and `tracking`. `submit` is provided by a form service you chose.
 > The `index` provider answers search queries from a file the build emitted.
 
-⛔ **`records` and `api` normally have providers of their own.** Something answering live record
+⛔ **`records` and `backend` normally have providers of their own.** Something answering live record
 queries, and something holding your members' accounts, are separate from whatever serves your HTML —
 and neither is implied by your choice of host. One operator often sells several of these at once,
 which is exactly why the distinction is easy to miss, and why it matters the first time one of
@@ -210,8 +212,10 @@ them is somebody else.
 search — `index` (a downloaded index, queried in the browser), `endpoint` (a server), or a
 foundation-supplied search transport.
 
-⛔ One word that is **not** a provider or a host: **backend**. In Uniweb's vocabulary that means
-the origin you select with `uniweb login --server`.
+⚠️ **backend** names two different things, so say which. **The `backend` service** is the site's own
+backend — a provider, like any other. **The backend you are logged in to** is the server
+`uniweb login --server` selects, which holds and publishes your site — it is not a service of the
+site at all.
 
 ---
 
@@ -220,6 +224,6 @@ the origin you select with `uniweb login --server`.
 - [Site Configuration](./site-configuration.md) — every `site.yml` key, including each service
 - [Search](../authoring/search.md) — providers, and what a site declares
 - [Receiving Form Submissions](../development/receiving-form-submissions.md) — the `submit` service end to end
-- [Sites with Accounts](../development/sites-with-accounts.md) — the `api` service
+- [Sites with Accounts](../development/sites-with-accounts.md) — the `backend` service
 - [Data Sources](../development/data-sources.md) — where a site's records come from
 - [Kit Reference](./kit-reference.md) — `resolveService`, `useSearch`, `useFormSubmit`
