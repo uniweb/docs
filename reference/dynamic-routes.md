@@ -153,11 +153,12 @@ export default function ArticleList({ content, block }) {
 
 ```js
 // src/sections/Article/meta.js
-// `/*` asks for each article WHOLE — its card under `brief`, its body under `body`.
-// Without it the page's article would be its brief: the card's fields, no body.
+// `single: true` holds the one article the URL names, where a key holds a list by
+// default. `whole: true` asks for it WHOLE — its card under `brief`, its body under
+// `body`. Without it the page's article would be its brief: the card's fields, no body.
 export default {
   title: 'Article',
-  data: { articles: '@std/article/*' },
+  data: { article: { schema: '@std/article', single: true, whole: true } },
 }
 ```
 
@@ -168,8 +169,8 @@ export default function Article({ content, block }) {
     return <div className="animate-pulse">Loading...</div>
   }
 
-  // The same key as the list. On the parametric page it holds exactly one record.
-  const article = content.data.articles?.[0]
+  // The one record the URL names — or null when it names none.
+  const article = content.data.article
 
   if (!article) {
     return (
@@ -203,21 +204,23 @@ reaching only a top-level page — and the most specific fills each key first. T
 `[slug]` folder sits one level below `articles/`, so the parent's `query: articles`
 reaches it by the same walk that serves the list. Nothing is declared twice.
 
-### One key, two lengths
+### One record, or a list of one
 
-The records arrive under the **same key on both pages**. Only the length differs:
+The route query reaches both pages. What a section receives is what its key declares —
+a list, by default, or one record with `single: true`
+([Component Metadata → One record, or a list](./component-metadata.md#one-record-or-a-list)):
 
-| page | `content.data.articles` |
-|---|---|
-| `/articles` | `[ {…}, {…}, {…} ]` — every record the query selects |
-| `/articles/getting-started` | `[ {…} ]` — the one the URL names |
-| a URL that names no record | `[]` |
+| page | a list key — `articles: '@std/article'` | a `single: true` key |
+|---|---|---|
+| `/articles` | `[ {…}, {…}, {…} ]` — every record the query selects | the first of them |
+| `/articles/getting-started` | `[ {…} ]` — the one the URL names | `{…}` — the one the URL names |
+| a URL that names no record | `[]` | `null` |
 
-A section showing the record reads `content.data.articles[0]`; the runtime never
-collapses the list to an object, because reshaping is the foundation's job. The key is
-the one the component declares: a component declaring `article: '@std/article'`
-receives the same list of one under `article`, because the route query fills the first
-key of its schema ([Which fetch fills a key](./data-fetching.md#which-fetch-fills-a-key)).
+A section that shows the record declares its key `single: true` and reads it as the
+record. The key is the one the component declares: the route query fills a key named
+after it, and otherwise the component's first key of its schema — so the Article above
+receives the record under `article`, although the query is `articles`
+([Which fetch fills a key](./data-fetching.md#which-fetch-fills-a-key)).
 
 ### Which query the URL names
 
@@ -308,10 +311,10 @@ pages/members/
 ├── page.yml              # query: members — the route query of [slug]/ and of cv/
 ├── 1-list.md
 └── [slug]/
-    ├── 1-profile.md      # /members/alice     — content.data.members[0] is Alice
+    ├── 1-profile.md      # /members/alice     — the members record is Alice
     └── cv/
         ├── page.yml      # query: publications — cv/'s own data, under its own key
-        └── 1-cv.md       # /members/alice/cv  — content.data.members[0] is Alice again
+        └── 1-cv.md       # /members/alice/cv  — the members record is Alice again
 ```
 
 A query the nested page names itself is delivered under its own key and changes
@@ -399,8 +402,9 @@ this record, if the query selects it.
 
 A list carries each record's brief — the card's fields — and the page's record arrives
 in the shape its component declares ([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)).
-A component that expects briefs gets the record the list holds. One that declares `/*`
-gets the record whole, from its own source, even when the page found it in a cached list:
+A component that expects briefs gets the record the list holds. One that declares its key
+`whole: true` gets the record whole, from its own source, even when the page found it in a
+cached list:
 
 - **a static build** writes one file per record, holding it whole — the page reads it
   with no configuration;
@@ -450,7 +454,8 @@ fetch:
 # More articles
 ```
 
-`current: only` is the default — the record, as a list of one — and `current: include`
+`current: only` is the default — the record: one, for a `single: true` key, and a list of
+one otherwise — and `current: include`
 gives all of them with the record among them, for a previous / next pager. The order
 of work is the query's records, then the fetch's `where` and `sort`, then remove the
 record, then `limit` — so the others never include a record the query does not select.
@@ -487,8 +492,8 @@ record, another showing a few of its siblings.
 
 ```text
 pages/articles/[slug]/
-├── 1-article.md      # type: Article           → content.data.articles[0]
-├── 2-author.md       # type: AuthorBio         → content.data.articles[0]
+├── 1-article.md      # type: Article           → content.data.article, single: true
+├── 2-author.md       # type: AuthorBio         → content.data.article, single: true
 └── 3-related.md      # type: RelatedArticles   → fetch: { query: articles, current: exclude, limit: 3 }
 ```
 
@@ -518,8 +523,8 @@ if (block.dataError?.articles) {
 }
 ```
 
-When the URL names no record, the key is delivered as `[]`, so
-`content.data.articles?.[0]` is `undefined`. Handle it — and note the page title is
+When the URL names no record, a `single: true` key is `null`, and a list key is `[]`.
+Handle it — and note the page title is
 set to `"Not found"` and `page.notFound` to `true` for you, just as the title is set
 from the record on a hit. No `useEffect`, no `document.title`.
 
@@ -586,8 +591,8 @@ same three every parametric page has:
 `:slug` means the same thing under both route kinds — under `[slug]` (or any
 `[name]`) it is the whole segment, `:path` equals it and `:dir` is empty — so a
 query written for one behaves the same under the other. **The record is delivered
-by its handle**, exactly as under `[slug]`: a page under `[...path]` still reads
-`content.data.posts[0]`.
+by its handle**, exactly as under `[slug]`: a page under `[...path]` receives the record
+as a `[slug]` page does.
 
 **Where a record's URL comes from.** Its handle, exactly as under `[slug]`. A record's
 `$route`, and the page a static build writes for it, is `/blog/my-post` wherever
@@ -700,8 +705,8 @@ section receives only the keys its `meta.js` `data:` names.
 The URL segment matched no record of the route query's set. Usually the right signal —
 show a proper not-found state. If it is wrong, check which query is the page's route
 query (its own, its parent's, or the site's), that the record is in that query's set,
-and that the field the folder names exists on every record. Remember the record is at
-`content.data.articles[0]`, not under a singular key.
+and that the field the folder names exists on every record. Remember a key holds a list
+unless it is declared `single: true`: the record is `content.data.articles[0]` for a list key.
 
 **A card's link is wrong or doubled (`/blog//my-post`).**
 Something is rebuilding the href. Read `item.$route`.

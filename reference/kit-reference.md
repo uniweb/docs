@@ -521,7 +521,7 @@ A declared key is `null` while its fetch is pending, when it failed, and when no
 
 ### useWholeRecord
 
-Fetch one record whole, on demand, when a section holds less than the record — a list carries each record's brief, on a static site and on a host alike, and an external query may list summaries and name one record's request with `record:`. A section on a parametric page that declares `/*` already receives its record whole ([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)); this hook is for everywhere else: a hover card, a modal, an expanding row.
+Fetch one record whole, on demand, when a section holds less than the record — a list carries each record's brief, on a static site and on a host alike, and an external query may list summaries and name one record's request with `record:`. A section on a parametric page whose key is declared `whole: true` already receives its record whole ([Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records)); this hook is for everywhere else: a hover card, a modal, an expanding row.
 
 ```jsx
 import { useState } from 'react'

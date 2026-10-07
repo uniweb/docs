@@ -628,31 +628,44 @@ export default {
 
 The component reads the events from `content.data.events` and renders them alongside markdown content.
 
-#### A query's records arrive as a list
+#### One record, or a list
 
-A `data:` entry describes the shape of *each record*. The records a query delivers arrive as a **list**, always:
-
-- A section that shows a query's records receives every record it takes: `content.data.events`.
-- A section on a [parametric page](./dynamic-routes.md) receives the one record the URL names as a **list of one**, under the same kind of key — its brief, or the record whole for a key declared `/*` ([below](#briefs-or-whole-records)). It reads `content.data.events[0]`.
-- When the URL names no record, the key is `[]` — an answer with no records — and the page is marked not found.
-
-A key that holds a tagged data block's value or an editor form's holds whatever was written — a record or a list. The shape the key declares also decides what of a translated site's block is translated: its text fields, never an enum, a URL or a `translatable: false` field ([Internationalization](../development/internationalization.md)). A key declared `{}` leaves that to a heuristic. A key nothing fills is `null`. The runtime never turns a list into a single object and never adds a singular key; reshaping is the foundation's job (read `[0]`, or reshape `content.data` once with a foundation `handlers.data` hook). See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
-
-#### Briefs or whole records
-
-A query's record reaches a component in one of two shapes, and a named ref says which the component expects ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)):
+A `data:` entry describes the shape of *each record*. How many records the key holds is the entry's to say too:
 
 ```javascript
 data: {
-  articles: '@std/article',     // briefs: the brief's fields at the top — article.title
-  article:  '@std/article/*',   // whole records, as stored — article.brief.title, article.body.content
+  events: '@std/event',                             // a list of records
+  event:  { schema: '@std/event', single: true },   // one record, or null
 }
 ```
 
-- **Without `/*`** — the default — each record is its **brief**: the fields of the schema's brief section at the top, the section not named. What a list, a card or a row needs.
-- **With `/*`** each record arrives **whole**: every section under its own name, the brief's included. What a page that shows one record in full needs — an article's body is not in its brief.
+- **A list, by default.** A section that shows a query's records receives every record it takes: `content.data.events`. When the query holds none, the key is `[]` — an answer with no records.
+- **One record, with `single: true`.** The key holds the first record its binding selects, or `null` when there is none. On a [parametric page](./dynamic-routes.md) that is the record the URL names: `content.data.event`.
 
-The runtime asks for what the key declares — on a [parametric page](./dynamic-routes.md) as much as anywhere — so a component never receives the other shape. A key may also name **`@uniweb/link`** or **`@uniweb/file`**, the schemas of a site's [link records](./content-collections.md#link-records) and [file records](./content-collections.md#file-records): a link arrives as `{ url, $name, $label, $tags }`, a file as `{ file: { url, name, mime, size }, $name, $label, $tags }`. A key declared `/*` whose source cannot answer a whole record is `null`. A schema of one section (the `fields:` form) has a brief that is the whole record, so its component can leave `/*` off; records of an external query have no schema, and arrive as their source answers them. Either shape arrives as the records hold it: no field is filled with a default.
+The runtime asks for one record for a `single` key, rather than the whole list. When the binding selects several, the key holds the first, so sort the query or give the binding `limit: 1` to choose which. When the URL of a parametric page names no record, the page is marked not found, and its key is `null` (`[]` for a list key).
+
+A key that holds a tagged data block's value holds what was written, and `uniweb validate` checks the block against the key: a list of records under a list key, one record under a `single` key. The shape the key declares also decides what of a translated site's block is translated: its text fields, never an enum, a URL or a `translatable: false` field ([Internationalization](../development/internationalization.md)). A key declared `{}` leaves that to a heuristic. A key nothing fills is `null`. Beyond what a key declares, the runtime does not reshape what it holds; reshape `content.data` once with a foundation `handlers.data` hook. See [Data Fetching → What a section receives](./data-fetching.md#what-a-section-receives).
+
+#### Briefs or whole records
+
+A query's record reaches a component in one of two shapes, and the key says which the component expects ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)):
+
+```javascript
+data: {
+  articles: '@std/article',                                         // briefs: the brief's fields at the top — article.title
+  archive:  { schema: '@std/article', whole: true },                // whole records, as stored — article.brief.title, article.body.content
+  article:  { schema: '@std/article', single: true, whole: true },  // the one article, whole
+}
+```
+
+- **The default** — each record is its **brief**: the fields of the schema's brief section at the top, the section not named. What a list, a card or a row needs.
+- **With `whole: true`** each record arrives **whole**: every section under its own name, the brief's included. What a page that shows one record in full needs — an article's body is not in its brief.
+
+`single` and `whole` are independent, and the long form takes those two and `schema`, nothing else: the build stops on any other property, naming the key. A ref written alone, `'@std/article'`, is the same as `{ schema: '@std/article' }`.
+
+The runtime asks for what the key declares — on a [parametric page](./dynamic-routes.md) as much as anywhere — so a component never receives the other shape. A key may also name **`@uniweb/link`** or **`@uniweb/file`**, the schemas of a site's [link records](./content-collections.md#link-records) and [file records](./content-collections.md#file-records): a link arrives as `{ url, $name, $label, $tags }`, a file as `{ file: { url, name, mime, size }, $name, $label, $tags }`. A key declared `whole: true` whose source cannot answer a whole record is `null`. A schema of one section (the `fields:` form) has a brief that is the whole record, so its component can leave `whole` off; records of an external query have no schema, and arrive as their source answers them. Either shape arrives as the records hold it: no field is filled with a default.
+
+A schema whose root is a list, such as `@std/nav` or `@std/form`, describes the key's whole value: its key holds that list, and takes neither flag.
 
 #### Loading states
 

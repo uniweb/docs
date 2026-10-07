@@ -193,17 +193,18 @@ export default {
 }
 ```
 
-Each entry's value is a named schema ref, an inline field map, an inline rich-form — or `{}` for a key whose records have no schema, such as an external API's. A schema drives the visual editor and `uniweb validate`, and goes into the foundation's published metadata. It changes no record: a field a record lacks reaches the component absent. See [Component Metadata → Data](./component-metadata.md#data).
+Each entry's value is a named schema ref, an inline field map, an inline rich-form — or `{}` for a key whose records have no schema, such as an external API's. A ref may be written long, to say how many records the key holds and how much of each: `{ schema: '@std/article', single: true, whole: true }` holds one record, whole ([Component Metadata → One record, or a list](./component-metadata.md#one-record-or-a-list)). A schema drives the visual editor and `uniweb validate`, and goes into the foundation's published metadata. It changes no record: a field a record lacks reaches the component absent. See [Component Metadata → Data](./component-metadata.md#data).
 
 | `content.data.<key>` | means |
 |---|---|
 | a list | the records of the fetch that fills the key — `[]` is an answer with none |
+| one record | the first record of that fetch, for a key declared `single: true` — `null` when there is none |
 | any other value | a tagged data block in the section (```` ```yaml:<key> ````), or an editor form |
 | `null`, with `block.dataLoading` | its fetch has not answered yet |
 | `null`, with `block.dataError[key]` | its fetch failed |
 | `null` | nothing fills it |
 
-A query's records always arrive as a **list** — every record the fetch takes, a list of one on a [parametric page](./dynamic-routes.md), `[]` when nothing matches — and each record carries `$route`, the URL of the page that shows it.
+A query's records arrive as a **list** — every record the fetch takes, a list of one on a [parametric page](./dynamic-routes.md), `[]` when nothing matches — or, under a key declared `single: true`, as the one record, `null` when nothing matches. Each record carries `$route`, the URL of the page that shows it.
 
 A tagged data block under a key the component does not declare is left out of `content.data` — the browser console says so while you develop — and stays in `content.sequence`, where a component that renders the sequence finds it.
 
@@ -256,11 +257,11 @@ export default {
 
 ## On a parametric page: `current:`
 
-On a [parametric page](./dynamic-routes.md) — `pages/blog/[slug]/` — every section the page's query reaches receives the one record the URL names, as a list of one. A section that wants something else fetches a query and says how it uses the page's record with `current:`:
+On a [parametric page](./dynamic-routes.md) — `pages/blog/[slug]/` — every section the page's query reaches receives the one record the URL names: the record, under a key declared `single: true`, and a list of one otherwise. A section that wants something else fetches a query and says how it uses the page's record with `current:`:
 
 | `current:` | the section receives |
 |---|---|
-| `only` | the record, as a list of one — the default for a fetch of the page's query |
+| `only` | the record — one, or a list of one — the default for a fetch of the page's query |
 | `exclude` | the query's records without it — "related", "more articles" |
 | `include` | all of them, the record among them — for a previous / next pager |
 

@@ -60,8 +60,8 @@ expects, per `content.data` key, in its `meta.js`
 - **A brief**, the default — `data: { articles: '@std/article' }`: the fields of the
   schema's **brief** — the section marked `brief: true`, else the first `single`
   section — at the top of the record. The brief section is not named.
-- **The record whole** — `data: { articles: '@std/article/*' }`: the record as it is
-  stored, each section under its own name, the brief's included.
+- **The record whole** — `data: { articles: { schema: '@std/article', whole: true } }`:
+  the record as it is stored, each section under its own name, the brief's included.
 
 Both carry `$name`, the record's name ([below](#names)); `$tags` and `$label` when its
 entry in `records/folder.yml` gives them ([Folders](./content-collections.md#folders));
@@ -72,7 +72,7 @@ and a reference as the record it points at, reduced to its brief: `{ entity, bri
 // records/std/article/hello.md as a brief — '@std/article'
 { $name: 'hello', title: 'Hello', date: '2026-05-01' }
 
-// the same record whole — '@std/article/*'
+// the same record whole — { schema: '@std/article', whole: true }
 {
   $name: 'hello',
   brief: { title: 'Hello', date: '2026-05-01' },   // the card, under its section's name
@@ -86,13 +86,14 @@ the field, `details.pages` the section.
 
 A schema of one section — the `fields:` form — has a brief that is the whole record:
 its fields at the top as a brief, and under `brief` whole, so a component reading
-such records has no need of `/*`. A schema with no brief (only `multi` sections) is
-answered whole, even as a brief.
+such records has no need of `whole: true`. A schema with no brief (only `multi` sections)
+is answered whole, even as a brief.
 
 **What each key gets.** A list carries briefs, or each record whole for a key declared
-`/*`. A [parametric page](./dynamic-routes.md) receives its record as its component
-declares: the brief its query's list holds, or the record whole from its own source.
-A key declared `/*` whose source cannot answer one record whole is `null`. Records of
+`whole: true`. A [parametric page](./dynamic-routes.md) receives its record as its
+component declares: the brief its query's list holds, or the record whole from its own
+source — one record, for a key declared `single: true`. A key declared `whole: true`
+whose source cannot answer one record whole is `null`. Records of
 an [external query](./queries.md#external-queries) have no schema, and so no brief:
 they arrive as their source answers them.
 

@@ -97,7 +97,7 @@ A file whose name starts with `_` is not a record, and neither is anything in a 
 
 Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records/folder.yml` instead.
 
-A data schema gives records a typed shape, used for validation and i18n extraction — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives each record as its **brief** — the brief's fields at the top — or, when it declares `/*`, **whole**, each section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)). A list carries briefs, so an article's body is never in its list.
+A data schema gives records a typed shape, used for validation and i18n extraction — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives each record as its **brief** — the brief's fields at the top — or, when it declares its key `whole: true`, **whole**, each section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)). A list carries briefs, so an article's body is never in its list.
 
 ### Link records
 

@@ -151,7 +151,7 @@ type: Article
 // src/sections/Article/meta.js
 export default {
   title: 'Article',
-  data: { article: '@std/article' },
+  data: { article: { schema: '@std/article', single: true } },
 }
 ```
 
@@ -162,7 +162,7 @@ import { DataPlaceholder } from '@uniweb/kit'
 export default function Article({ content, block }) {
   if (block.dataLoading) return <DataPlaceholder lines={8} />
 
-  const article = content.data.article?.[0]
+  const article = content.data.article
   if (!article) return <p>This article does not exist.</p>
 
   return (
@@ -174,9 +174,9 @@ export default function Article({ content, block }) {
 }
 ```
 
-The section has no fetch of its own. The page's query reaches it narrowed to the record the URL names, so `content.data.article` holds a list of one — or `[]` when the URL names no record of the set, in which case the page is marked not found and titled "Not found". On a hit, the page takes its title from the record.
+The section has no fetch of its own. The page's query reaches it narrowed to the record the URL names, and `single: true` says the key holds that one record, so `content.data.article` is the article — or `null` when the URL names no record of the set, in which case the page is marked not found and titled "Not found". On a hit, the page takes its title from the record.
 
-The record arrives as a list, not an object, so the key means the same thing on every page. And it arrives under `article`, not `articles`: a fetch fills the key named after its query when the component declares that key, and otherwise fills the component's first key of the query's schema. `Article` declares one `@std/article` key, so the record lands there. A component declaring `articles` would receive it under `articles` — the rule is in [Which fetch fills a key](../reference/data-fetching.md#which-fetch-fills-a-key).
+Without `single: true` the key holds a list, as any key does: a list of one here, `content.data.article[0]`, and `[]` when nothing matches. And the record arrives under `article`, not `articles`: a fetch fills the key named after its query when the component declares that key, and otherwise fills the component's first key of the query's schema. `Article` declares one `@std/article` key, so the record lands there. A component declaring `articles` would receive it under `articles` — the rule is in [Which fetch fills a key](../reference/data-fetching.md#which-fetch-fills-a-key).
 
 ### "More to read": the rest of the set
 
@@ -207,7 +207,7 @@ This section names the same query and **narrows** it: `current: exclude` takes o
 
 | `current:` | the section receives |
 |---|---|
-| `only` | the record, as a list of one — the default for the page's own query, which is what the article section got |
+| `only` | the record — one, for a `single: true` key, as the article section got; a list of one otherwise. The default for the page's own query |
 | `exclude` | the set without it — "more to read", "related" |
 | `include` | all of it, the record among them — a previous / next pager |
 
@@ -278,12 +278,13 @@ A failure is never delivered as `[]`, because `[]` is an answer. On a parametric
 
 ## When a list carries less than a record
 
-A list of a hundred articles doesn't need a hundred bodies. A list carries each record's **brief** — the card's fields — and a section that shows one record in full says so in its `meta.js`, with `/*`:
+A list of a hundred articles doesn't need a hundred bodies. A list carries each record's **brief** — the card's fields — and a section that shows one record in full says so in its `meta.js`, with `whole: true`:
 
 ```js
 // src/sections/Article/meta.js
 export default {
-  data: { articles: '@std/article/*' },   // the article whole: article.brief.title, article.body.content
+  // the article whole: article.brief.title, article.body.content
+  data: { article: { schema: '@std/article', single: true, whole: true } },
 }
 ```
 

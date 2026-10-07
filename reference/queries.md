@@ -280,7 +280,7 @@ names, then the body's plain text, cut at a word boundary with `...`.
 A list carries each record's **brief** ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)),
 so a field a list should leave out belongs in a section of its own, outside the brief —
 `@std/article`'s body is `body`, and no list carries it, on any site. A section that shows one record
-in full declares whole records (`'@std/article/*'`, [Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records));
+in full declares whole records (`{ schema: '@std/article', whole: true }`, [Component Metadata → Briefs or whole records](./component-metadata.md#briefs-or-whole-records));
 anywhere else, a component fetches one with [`useWholeRecord`](./kit-reference.md#usewholerecord).
 
 > **Removed:** `deferred:` — the fields a static site's lists left out. A schema's brief decides
