@@ -88,7 +88,7 @@ targets:
     # For host: uniweb, `backend:` records which Uniweb backend this target's
     # publishes went to — `uniweb publish` writes it. It routes nothing: Uniweb
     # hosting goes to the backend you are logged in to (`uniweb login
-    # --backend <url>`), and each publish is recorded under the target naming
+    # --server <url>`), and each publish is recorded under the target naming
     # that backend (one is added when none does).
 
 saveDeploys: true                  # false to stop recording deploys

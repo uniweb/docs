@@ -211,7 +211,7 @@ search — `index` (a downloaded index, queried in the browser), `endpoint` (a s
 foundation-supplied search transport.
 
 ⛔ One word that is **not** a provider or a host: **backend**. In Uniweb's vocabulary that means
-the origin you select with `uniweb login --backend`.
+the origin you select with `uniweb login --server`.
 
 ---
 

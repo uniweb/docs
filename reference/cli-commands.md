@@ -31,7 +31,7 @@ uniweb refresh                 # Catch up with the git remote and the backend (n
 uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
 uniweb status                  # Show a site's sync state (unpushed content)
-uniweb forget --backend <url>  # Forget one backend (--all: make a copied project a new one)
+uniweb forget --server <url>  # Forget one backend (--all: make a copied project a new one)
 uniweb site <list|unpublish|delete>  # The sites in a workspace — list them, take one offline, delete one
 ```
 
@@ -943,19 +943,19 @@ uniweb login [options]
 
 ### Which backend
 
-`--backend <url>` names it. Without the flag, `login` logs in to **https://uniweb.app** (or `UNIWEB_REGISTER_URL`, when set) — to work with any other backend, name it.
+`--server <url>` names it. Without the flag, `login` logs in to **https://uniweb.app** (or `UNIWEB_SERVER`, when set) — to work with any other backend, name it.
 
-⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing; add `--password`, `--browser`, `--token-paste` or `--token` to log in again. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_REGISTER_URL`, without touching the login.
+⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing; add `--password`, `--browser`, `--token-paste` or `--token` to log in again. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_SERVER`, without touching the login.
 
 ### Which workspace
 
-A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` (or `--personal`) switches the workspace on the backend you are logged in to, without logging in again — with no `--backend` needed, whichever backend that is.
+A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` (or `--personal`) switches the workspace on the backend you are logged in to, without logging in again — with no `--server` needed, whichever backend that is.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--backend <url>` | The backend to log in to |
+| `--server <url>` | The backend to log in to |
 | `--org @org` | Work in `@org`, an organization you belong to |
 | `--personal` | Work in your personal workspace |
 | `--browser` | Log in through the browser |
@@ -965,7 +965,7 @@ A login works in **one workspace** — your personal one, or an organization you
 
 Without a method flag, `login` asks which one to use. Without a terminal it needs `UNIWEB_USERNAME` and `UNIWEB_PASSWORD`, or `--token`.
 
-**Without a terminal** — an agent, a script — sign in with `uniweb login --backend <url> --token $TOKEN --org @acme` (or `--personal`): the token is checked against that backend before it is stored, and a login that belongs to organizations must name its workspace — one that names none signs you in but exits 2, and `uniweb login --org @acme` (or `--personal`) finishes it without signing in again. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead — with `UNIWEB_REGISTER_URL` for a backend other than the default, and `UNIWEB_WORKSPACE=@acme` (or `personal`) for its workspace. The backend commands themselves take no `--backend` or `--token`.
+**Without a terminal** — an agent, a script — sign in with `uniweb login --server <url> --token $TOKEN --org @acme` (or `--personal`): the token is checked against that backend before it is stored, and a login that belongs to organizations must name its workspace — one that names none signs you in but exits 2, and `uniweb login --org @acme` (or `--personal`) finishes it without signing in again. To authenticate a single process without storing anything, set `UNIWEB_TOKEN` instead — with `UNIWEB_SERVER` for a backend other than the default, and `UNIWEB_WORKSPACE=@acme` (or `personal`) for its workspace. The backend commands themselves take no `--server` or `--token`.
 
 ### Examples
 
@@ -974,7 +974,7 @@ Without a method flag, `login` asks which one to use. Without a terminal it need
 uniweb login
 
 # Log in to a local development server — push, pull and publish now go there
-uniweb login --backend http://localhost:8080
+uniweb login --server http://localhost:8080
 
 # Work in an organization's workspace (switches without logging in again)
 uniweb login --org @acme
@@ -1014,7 +1014,7 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | `-o <file>` | Write the `.uwx` to a file; submit nothing. |
 | `--json` | Porcelain: one compact JSON line on stdout (`{ok,scope,origin,entities:[{name,uuid,version,unchanged}]}`); human output to stderr. |
 
-> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; to register on a local backend, log in to it (`uniweb login --backend <url>`).
+> Note: foundation **propagation** controls (`--propagate`) and **access policy** (`--edit-access`) from the legacy `publish` aren't wired into `register` yet — see [Propagation](#propagation-currently-silent) below. The retired `--local` flag is gone; to register on a local backend, log in to it (`uniweb login --server <url>`).
 
 ### Identity (scope + name)
 
@@ -1143,7 +1143,7 @@ uniweb register --schema-only
 uniweb register --dry-run
 
 # Register on a local backend: log in there first
-uniweb login --backend http://localhost:8080
+uniweb login --server http://localhost:8080
 uniweb register
 ```
 
@@ -1198,7 +1198,7 @@ uniweb push --personal      # work in your personal workspace for this push
 
 The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
 
-A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login); a script can aim a single run with `UNIWEB_REGISTER_URL`. They never talk to a backend you are not logged in to: logged in nowhere, they ask you to log in first, to https://uniweb.app unless you name another. If the backend they go to has no site for this project while it has one elsewhere, `push` and `publish` say so before creating a new site there.
+A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login); a script can aim a single run with `UNIWEB_SERVER`. They never talk to a backend you are not logged in to: logged in nowhere, they ask you to log in first, to https://uniweb.app unless you name another. If the backend they go to has no site for this project while it has one elsewhere, `push` and `publish` say so before creating a new site there.
 
 Record files keep their own `$uuid`. It is the record's id in your project, not any backend's, and `sync.json` maps it to each backend's id for the same record.
 
@@ -1355,7 +1355,7 @@ For a change that charges, Enter cancels and only you can confirm it. `--yes` do
 
 ### Where it goes: the backend you are logged in to
 
-`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --backend <url>`); a script can aim a single run with `UNIWEB_REGISTER_URL`. Not logged in, it asks you to log in first — to https://uniweb.app unless you pass `--backend`.
+`uniweb publish` goes live on **the backend you are logged in to** — the one you last chose with [`uniweb login`](#uniweb-login), as `push` and `pull` do. To go live somewhere else, log in there (`uniweb login --server <url>`); a script can aim a single run with `UNIWEB_SERVER`. Not logged in, it asks you to log in first — to https://uniweb.app unless you pass `--server`.
 
 The publish is recorded in `deploy.yml` under the target for that backend. If no target names it, one is added, named after the backend (`localhost:8080`, say); your `default:` and other targets are left alone. `uniweb deploy --host=uniweb` is `uniweb publish`, so it goes to the same place. A Uniweb target's `backend:` in `deploy.yml` records where that target's publishes went; it does not route. Naming one whose backend is not the one you are logged in to (`uniweb deploy --target staging`) is refused — log in there first.
 
@@ -1373,7 +1373,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--org @org` | Work in `@org` for this publish, instead of your login's workspace. |
 | `--personal` | Work in your personal workspace for this publish. |
 
-> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. `--backend` and `--token` are not flags of these commands: they go to the backend you are logged in to, with that login's session, and passing either is rejected with a pointer to `uniweb login`.
+> **Unknown flags are rejected.** `uniweb publish`, `push`, `pull`, `refresh`, `sync`, `clone`, `register`, `status`, and `forget` exit with an error on a flag they do not recognize, rather than ignoring it. `--server` and `--token` are not flags of these commands: they go to the backend you are logged in to, with that login's session, and passing either is rejected with a pointer to `uniweb login`.
 
 ---
 
@@ -1395,7 +1395,7 @@ Run from a site, or a workspace with one site. The content diff is exactly what 
 | `site_state` | means |
 |---|---|
 | `live` | the backend holds the site — or holds it in another workspace, which `site_state_detail` names |
-| `gone` | the backend says it holds no such site: it was deleted there, or the backend was rebuilt. `uniweb forget --backend <url>` clears the binding, and the next push creates a new site |
+| `gone` | the backend says it holds no such site: it was deleted there, or the backend was rebuilt. `uniweb forget --server <url>` clears the binding, and the next push creates a new site |
 | `unknown` | anything else — no answer, a refused credential, a backend that cannot say |
 | `null` | this directory names no site on that backend |
 
@@ -1408,11 +1408,11 @@ Run from a site, or a workspace with one site. The content diff is exactly what 
 Remove what this project recorded about where it synced — **local files only**. Every site stays where it is on its backend.
 
 ```bash
-uniweb forget --backend <url>    # one backend
+uniweb forget --server <url>    # one backend
 uniweb forget --all              # everything — for a copy that should become a new project
 ```
 
-**`--backend <url>`** removes that backend's section of `sync.json` and of the local cache, and the records of past publishes to it in `deploy.yml`. Its targets in `deploy.yml` stay — a target is where you chose to ship — so the next push or publish there creates a new site. Other backends are untouched. Use it when you are done with a backend: a scratch server you pushed a template to, or one you will start over on.
+**`--server <url>`** removes that backend's section of `sync.json` and of the local cache, and the records of past publishes to it in `deploy.yml`. Its targets in `deploy.yml` stay — a target is where you chose to ship — so the next push or publish there creates a new site. Other backends are untouched. Use it when you are done with a backend: a scratch server you pushed a template to, or one you will start over on.
 
 **`--all`** deletes `sync.json`, `deploy.yml` and the local cache: everything that names the sites and destinations of the project this one was copied from. `deploy.yml` goes whole, targets included, because a copy's targets are the original's destinations. To duplicate a project:
 
@@ -1424,7 +1424,7 @@ uniweb forget --all
 
 The next push from the copy creates a new site. Neither form touches `site.yml` or your record files — a record's `$uuid` is its own id, not a backend's.
 
-`--backend` is required even when the project has synced with only one backend: forgetting a backend you still use means its next push creates a second site there, so you name it. Both forms are safe to repeat; nothing recorded means nothing to do.
+`--server` is required even when the project has synced with only one backend: forgetting a backend you still use means its next push creates a second site there, so you name it. Both forms are safe to repeat; nothing recorded means nothing to do.
 
 ⚠️ `sync.json` and `deploy.yml` are committed files. If you run `--all` in the original by mistake, restore them from git.
 
@@ -1447,7 +1447,7 @@ The workspace is the one you chose at login, or `--org @handle` / `--personal` f
 - **A published site is not deleted** — unpublish it first.
 - **Anything else still active is named** when the delete is refused — a hosting plan, a custom domain, form messages visitors sent — and is resolved in the app.
 - **Records the site pushed stay** in the workspace.
-- **Deleting the site this project is synced to also removes the project's record of it**, as `uniweb forget --backend` does, so the project's next push creates a new site.
+- **Deleting the site this project is synced to also removes the project's record of it**, as `uniweb forget --server` does, so the project's next push creates a new site.
 
 Both `unpublish` and `delete` ask before they act. In a script, pass `--yes`; without a terminal and without `--yes`, they refuse and exit with code `2`, so nothing is reported done that was not.
 
@@ -1488,7 +1488,7 @@ Run from a foundation directory or workspace root.
 | `--list` | List all invites for your foundation |
 | `--revoke <id>` | Revoke an invite by ID |
 | `--resend <id>` | Resend an invite by ID |
-| `--backend <url>` | Use a specific backend origin |
+| `--server <url>` | Use a specific backend origin |
 
 ### Examples
 
@@ -1550,7 +1550,7 @@ Run from a foundation directory or workspace root.
 |--------|-------------|
 | `--site <id>` | Specify a site ID (default: auto-generated) |
 | `--web` | Show web-based handoff instructions instead of running the API flow |
-| `--backend <url>` | Use a specific backend origin |
+| `--server <url>` | Use a specific backend origin |
 
 ### What Happens
 
