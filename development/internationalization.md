@@ -421,7 +421,7 @@ A plain-text value for such a sentence produces a plain-text paragraph. `page:` 
 }
 ```
 
-A value that writes a link is taken as written, so a translation can still re-target a button. Labels that don't match the links one per line are taken as written too, and lose their links.
+A value that writes a link is taken as written, so a translation can still re-target a button. Labels that don't match the links one per line are taken as written too, and lose their links. A `uniweb pull` writes a button back the same way: its labels, or the link written out where this language sends it somewhere else.
 
 `uniweb i18n status` reports the entries where this has been lost:
 
