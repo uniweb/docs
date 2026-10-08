@@ -581,6 +581,8 @@ sections:
 
 When both `sections:` inline nesting and `nest:` declare children for the same parent, `nest:` wins.
 
+A `uniweb pull` keeps your `nest:` as you wrote it. When the nesting was changed elsewhere, it writes the new nesting as a `sections:` list and removes the `nest:` that would override it.
+
 ### No Sections
 
 ```yaml
