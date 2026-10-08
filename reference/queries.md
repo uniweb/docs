@@ -35,6 +35,10 @@ declare a query, `queries.yml` wins, key by key.
 | `team: '@/person'` | a query over `@/person` |
 | a map | a query with the keys below |
 
+A `uniweb pull` writes each query with its schema: `events:` comes back as
+`events: { schema: '@/events' }`, the same query. A bare name a data key types, below, comes back as
+you wrote it.
+
 A bare name that is not a data schema takes the type your foundation's sections declare for the
 data key of the same name. With `data: { team: '@/member' }` in a section's `meta.js` and no `team`
 schema, `team:` is a query over `@/member` records, on a static site as on a backend (pushed, they

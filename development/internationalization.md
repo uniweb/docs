@@ -129,7 +129,8 @@ answers with a status sends a permanent redirect (`301`).
 > French tree whose every internal link points back into the default-language
 > tree — the pages exist and nothing reaches them. Recent versions stamp the
 > resolved set onto the build output so this can't happen silently; declaring it
-> is still the clearer form.
+> is still the clearer form. A `uniweb pull` writes the list your site has, so a
+> site that declares none gets one.
 
 ### Custom Locales Directory
 
