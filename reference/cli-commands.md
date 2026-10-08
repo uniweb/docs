@@ -91,17 +91,7 @@ Without `--template` or `--blank`, the CLI scaffolds a working project with foun
 | `starter` | Foundation + site + starter content (default) |
 | `none` | Foundation + site with no content |
 
-**Official templates:**
-
-| Template | Description |
-|----------|-------------|
-| `marketing` | Landing page, features, pricing, testimonials |
-| `docs` | Documentation site with sidebar, search, versioning |
-| `academic` | Research site with publications, team, timeline |
-| `dynamic` | Live API data fetching with loading states and transforms |
-| `international` | Multilingual site with i18n, a blog, and records |
-| `store` | E-commerce with product grid and Shopify integration |
-| `extensions` | Multi-foundation demo with a visual effects extension |
+**Official templates:** `uniweb template list` prints the ones your CLI scaffolds, and the [templates repository](https://github.com/uniweb/templates#live-demos) lists them all, each with a live demo. A CLI scaffolds the templates of the release it was published with, so `npx uniweb@latest template list` shows the current set.
 
 **External templates:**
 

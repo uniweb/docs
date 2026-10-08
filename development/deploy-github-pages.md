@@ -19,7 +19,7 @@ Two equivalent starting points — pick whichever fits how you usually work.
 ```bash
 gh repo create mysite --public --clone   # or use the GitHub web UI + git clone
 cd mysite
-npx uniweb create . --template marketing
+npx uniweb@latest create . --template marketing
 ```
 
 `uniweb create .` overwrites a pre-existing `README.md` and `.gitignore` with the scaffold's versions (the GitHub repo-init defaults aren't useful for a Uniweb project). `LICENSE` and other unrelated files are left alone. The verb skips its own `git init` because `.git/` already exists.
@@ -27,7 +27,7 @@ npx uniweb create . --template marketing
 **B) Local-first.** Scaffold locally, then create the repo on GitHub and push:
 
 ```bash
-npx uniweb create mysite --template marketing
+npx uniweb@latest create mysite --template marketing
 cd mysite
 git init
 git add .

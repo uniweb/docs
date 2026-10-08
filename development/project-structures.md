@@ -328,7 +328,7 @@ These are starting points. The patterns compose — a co-located project can hav
 
 Projects evolve. The `uniweb add` command handles scaffolding, workspace globs, and root scripts — you don't wire things manually.
 
-> **Running the CLI:** Install globally with `npm i -g uniweb` for the best experience — then `uniweb` works everywhere. Alternatively, use `npx uniweb` (no install needed) or `pnpm uniweb` (after `pnpm install`).
+> **Running the CLI:** Install globally with `npm i -g uniweb` for the best experience — then `uniweb` works everywhere, and inside a project it runs the project's own copy. Keep it current: `create` and `clone` start a project on the CLI that runs them, so a global install stops them when a newer release is out. Without a global install, use `npx uniweb@latest create` to start a project and `pnpm uniweb` inside one (after `pnpm install`).
 
 ### Starting from blank
 

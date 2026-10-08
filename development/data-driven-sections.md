@@ -198,7 +198,7 @@ A few conventions make expressions work predictably:
 The `cv-loom` template demonstrates the full pattern — a complete academic CV driven by a single YAML profile. Create one with:
 
 ```bash
-npx uniweb create --template cv-loom
+npx uniweb@latest create --template cv-loom
 ```
 
 The template includes: a profile record (`records/profile/darwin.yml`), a foundation with `createLoomHandlers` and `data: { profile: {} }`, and sections for education, employment, publications, funding, teaching, service, and awards — each using the header/body/footer pattern with aggregation and filtering.
