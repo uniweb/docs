@@ -246,7 +246,9 @@ Same shape for `add site` (default folder `site/`, default package `site`, co-lo
 
 **Extension placement:**
 
-Extensions always go in `extensions/{name}/` and require a name.
+The same rule: `add extension effects` creates `effects/`, `add extension extensions/effects` creates `extensions/effects/`, and `--path` is the folder it goes in. An extension needs a name, or a `--path` that names its folder.
+
+A site loads a workspace extension from its own origin at `/<name>/entry.js`, which the build finds in `<name>/` or `extensions/<name>/` and copies into the site's output. `add extension --site` writes that URL into the site's `site.yml`; for an extension in any other folder it writes nothing and says why.
 
 ### Package Naming
 
@@ -1719,11 +1721,11 @@ my-project/
 ├── src/                    # Original foundation (name: "src")
 ├── site/                   # Original site
 ├── foundations/
-│   └── blog/               # Added: uniweb add foundation blog
+│   └── blog/               # Added: uniweb add foundation foundations/blog
 ├── sites/
-│   └── docs/               # Added: uniweb add site docs
+│   └── docs/               # Added: uniweb add site sites/docs
 ├── extensions/
-│   └── effects/            # Added: uniweb add extension effects
+│   └── effects/            # Added: uniweb add extension extensions/effects
 ├── package.json
 └── pnpm-workspace.yaml
 ```

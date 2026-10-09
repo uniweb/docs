@@ -410,7 +410,7 @@ uniweb add extension effects --site site
 pnpm install
 ```
 
-This creates `extensions/effects/`, adds the `extensions/*` glob, and wires the extension URL into the specified site's `site.yml`. The extension builds like a foundation — run `uniweb build` from the workspace root to build everything in order.
+This creates `effects/`, lists it in `pnpm-workspace.yaml`, and wires `/effects/entry.js` — where the site loads it from — into the specified site's `site.yml`. Extensions are placed like foundations: to group them, name the folder (`uniweb add extension extensions/effects`). The extension builds like a foundation — run `uniweb build` from the workspace root to build everything in order.
 
 Extensions are always runtime-loaded (via URL, not `file:` dependency). In dev, a Vite plugin serves the extension. In production, the build copies the extension's output into the site's `dist/`. See [Extending Your Site](./extending-your-site.md) for the full setup.
 
