@@ -77,6 +77,8 @@ The build supports two naming conventions for the entry file in a section type f
 
 Named files are checked first, so if both exist, `Hero.jsx` wins. At the root of `sections/`, bare files like `CTA.jsx` are always named — `index.jsx` at the root has no meaning (there's no "default section type").
 
+**JSX goes in `.jsx` files** (or `.tsx`). A section type may also be a `.js` file, but only without JSX — JSX compiles in no `.js` file, and the build stops on one, naming the file to rename. The same holds for the foundation's `main.js`, which is plain JavaScript: a component it declares (in `defaultInsets`, for example) lives in a `.jsx` file it imports.
+
 ### Your components live in `components/`
 
 The `components/` folder is yours — organize it however makes sense for your project. A `components/ui/` subfolder follows the [shadcn/ui](https://ui.shadcn.com) convention (shadcn's CLI installs there by default). Section types import from them like any other module:
