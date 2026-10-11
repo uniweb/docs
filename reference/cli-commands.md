@@ -803,15 +803,17 @@ AGENTS.md stamp:        v0.9.5
 
 Workspace deps (declared):
   (root)/
-    ✗ uniweb           ^0.9.5     → ^0.12.15    behind
+    ✗ uniweb           ^0.9.5     → ~0.12.15    behind
   foundation/
-    ✗ @uniweb/core     ^0.6.1     → ^0.7.11     behind
-    ✗ @uniweb/kit      ^0.8.2     → ^0.9.11     behind
-    ✗ @uniweb/build    ^0.9.4     → ^0.14.3     behind
+    ✗ @uniweb/core     ^0.6.1     → ~0.7.11     behind
+    ✗ @uniweb/kit      ^0.8.2     → ~0.9.11     behind
+    ✗ @uniweb/build    ^0.9.4     → ~0.14.3     behind
   site/
-    ✗ @uniweb/runtime  ^0.7.4     → ^0.8.13     behind
-    ✗ @uniweb/build    ^0.9.4     → ^0.14.3     behind
+    ✗ @uniweb/runtime  ^0.7.4     → ~0.8.13     behind
+    ✗ @uniweb/build    ^0.9.4     → ~0.14.3     behind
 ```
+
+`update` writes tilde ranges (`~0.7.11`). A patch release — a fix or a feature — installs within one by itself; a new minor version is where Uniweb puts breaking changes, so it arrives only through `update`, which lists every package that crosses one.
 
 Each row is one declared dep in one workspace `package.json` that needs attention — `behind` (the CLI ships a newer version) or `ahead of CLI` (left untouched, since `update` never downgrades). Deps already aligned are collapsed to a count rather than listed, because on the command's most common outcome — a no-op — every row would otherwise read `0.9.11 → 0.9.11 aligned` and bury the lines that matter. `--verbose` lists them all.
 
