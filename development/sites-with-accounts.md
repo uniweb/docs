@@ -102,10 +102,13 @@ running as a function. The mock above is the one that speaks this client's own d
 
 ### It enforces, so your demo cannot lie
 
-The mock applies what your schemas declare — who may create an entry, which sections are
-insert-only. A permission you are relying on fails **here**, at your desk, rather than in
-front of a user. That is the part a hand-rolled fixture object usually gets wrong: it shows a
-button working that production would refuse.
+The mock applies what production applies — who may edit an entry, and which sections your
+schemas declare insert-only. A permission you are relying on fails **here**, at your desk,
+rather than in front of a user. That is the part a hand-rolled fixture object usually gets
+wrong: it shows a button working that production would refuse.
+
+The mail the backend would send — a sign-up's confirmation, a password reset — is printed in
+the dev server's terminal, its link on your site, so following it tries your own page.
 
 State is in memory. Restart to reset.
 
@@ -152,6 +155,11 @@ always means the same thing: draw nothing.
 live source — no `backend` service, or nobody signed in. `ready` with an empty list means the service
 answered and there is nothing. Showing *"nothing yet"* for the first tells a visitor their
 content is missing when it was never asked for.
+
+**Finish the links the backend mails where they land.** A sign-up's confirmation, a password
+reset and an invitation each arrive as a link to the site's home page, a token in the address.
+A component the home page renders — a header or a layout is on every page — calls
+`useMailedLink()`, which says which step the link came for and finishes it.
 
 ---
 
