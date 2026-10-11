@@ -15,5 +15,6 @@ pages:
   - layout-areas
   - versioning
   - cli-commands
+  - framework-versions
   - deployment
   - ...
