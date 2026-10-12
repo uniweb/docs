@@ -161,6 +161,12 @@ reset and an invitation each arrive as a link to the site's home page, a token i
 A component the home page renders — a header or a layout is on every page — calls
 `useMailedLink()`, which says which step the link came for and finishes it.
 
+**Show the invitations waiting, wherever a member lands.** An invitation to join an
+organization waits for the member's answer, whether it was sent to their account or taken
+up from a mailed link. `useInvitations()` lists the ones waiting and answers them — draw it
+for anyone signed in, not only after a link, since an invitation sent to an account comes
+with no link to follow.
+
 ---
 
 ## A site without the service
