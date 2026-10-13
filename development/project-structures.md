@@ -49,7 +49,7 @@ The site needs to know which package provides the foundation. `site.yml` declare
 foundation: src
 ```
 
-The value matches the package name from `package.json`. The build resolves the package through pnpm's workspace linking — the name just has to match.
+The value matches the package name from `package.json`. The build finds the foundation by that name: through the site's `file:` dependency of that name, a foundation in a folder of that name next to the site, or one in `../../foundations/<name>`. It never looks in `node_modules` — a foundation is loaded by the site, not installed as a library.
 
 ### 4. Folder name vs package name
 
@@ -110,7 +110,7 @@ A site is pure content. A foundation is the site's source code — that's why th
 
 ### Segregated
 
-Foundations and sites in separate directories. Create a `blank` workspace and use `uniweb add` with named packages to build this layout.
+Foundations and sites in separate directories. Create a `blank` workspace and use `uniweb add` with paths — `uniweb add foundation foundations/default` — to build this layout.
 
 ```
 my-project/
@@ -139,27 +139,29 @@ packages:
   - sites/*
 ```
 
+`uniweb add` registers each folder it creates by its exact path; globs like these cover every folder under `foundations/` and `sites/` at once. Either works.
+
 The `file:` path goes up two levels from `sites/main/` to the workspace root, then down into `foundations/default/`.
 
 **When to use it:** Multiple sites sharing a foundation, or multiple foundations with clear separation. The foundation is often the primary deliverable — registered to the Uniweb registry and delivered via CDN to sites. The site packages serve as development harnesses for testing the foundation.
 
 **Trade-off:** Deeper nesting means longer `file:` paths. A single-foundation project doesn't benefit from the extra directories.
 
-**Root scripts with build order:**
+**Build order:**
 
-Foundations must build before sites (prerender needs the built `entry.js`). Root scripts enforce this:
+Foundations must build before sites — prerender needs each foundation's built `entry.js`. `uniweb build` at the workspace root takes care of it: it builds every foundation, then every extension, then every site. The CLI writes it into the root `package.json` as the `build` script, next to `dev`:
 
 ```json
 {
   "scripts": {
-    "dev": "pnpm --filter main dev",
-    "build": "pnpm --filter default build && pnpm --filter main build",
-    "build:all": "pnpm -r build"
+    "build": "uniweb build",
+    "dev": "uniweb dev",
+    "dev:marketing": "uniweb dev marketing"
   }
 }
 ```
 
-`pnpm -r build` respects dependency order — if `main` depends on `default` via `file:`, pnpm builds `default` first. Explicit ordering in scripts is only needed when you want to build a subset.
+With several sites, `uniweb dev` runs the first one, `uniweb dev <site>` any other, and `uniweb add site` adds a `dev:<site>` script for each site after the first.
 
 ### Co-located projects
 
@@ -200,16 +202,17 @@ The `*/src` and `*/site` globs discover every project's packages automatically. 
 
 ### Extensions as siblings
 
-An extension adds specialized section types without modifying the primary foundation. It's a separate foundation loaded at runtime via URL. The `extensions` template creates this layout.
+An extension adds specialized section types without modifying the primary foundation. It's a separate foundation, loaded at runtime from a URL — for an extension in the workspace, a URL on the site's own origin. The `extensions` template creates this layout.
 
 ```
 my-project/
 ├── src/
 │   ├── package.json          ← name: "src"
 │   └── sections/             ← Header, Hero, Features, Footer
-├── effects/
-│   ├── package.json          ← name: "effects"
-│   └── sections/             ← ParticleHero, AnimatedCounter
+├── extensions/
+│   └── effects/
+│       ├── package.json      ← name: "effects"
+│       └── sections/         ← ParticleHero, AnimatedCounter
 ├── site/
 │   ├── package.json          ← "src": "file:../src"
 │   └── site.yml              ← see below
@@ -221,7 +224,7 @@ my-project/
 # pnpm-workspace.yaml
 packages:
   - src
-  - effects
+  - extensions/effects
   - site
 ```
 
@@ -235,26 +238,17 @@ extensions:
   - /effects/entry.js
 ```
 
-The URL `/effects/entry.js` works in both dev and production:
+`/effects/entry.js` names the extension `effects`. A site finds it in a folder of that name — `effects/` or `extensions/effects/` — in the folder the site is in or a folder above it, up to the workspace root; the nearest one wins. So `effects/` next to `site/` works as well as `extensions/effects/`, and so does an extension at the workspace root for a site in `sites/main/`. The same folder serves the URL everywhere:
 
-- **Dev:** A custom Vite plugin in `site/vite.config.js` serves `/effects/*` from `../effects/dist/`
-- **Production:** The root build script copies `effects/dist/` into `site/dist/effects/`
+- **Dev:** `uniweb dev` builds the extension first if it isn't built, or if its sources changed since, and the dev server serves its build at that URL. After editing the extension while the server runs, run `uniweb build` and reload.
+- **Production:** `uniweb build` builds extensions before sites, and each site's build copies the extension's built files into its own `dist/`, under `effects/`.
 
-```json
-{
-  "scripts": {
-    "dev": "pnpm --filter effects build && pnpm --filter site dev",
-    "build": "pnpm --filter src build && pnpm --filter effects build && pnpm --filter site build && cp -r effects/dist site/dist/effects"
-  }
-}
-```
-
-(pnpm filters by package `name`, not by folder. `src` is the foundation package's `name`; the folder is `src/`.)
+No root script or Vite plugin is needed for either.
 
 An extension builds like any foundation — same Vite plugin, same output. The difference is in role: it contributes section types but doesn't provide Layout or theme variables. Its `main.js` declares `extension: true`:
 
 ```js
-// effects/main.js
+// extensions/effects/main.js
 export default {
   extension: true
 }
@@ -266,7 +260,7 @@ Content authors use section types from extensions the same way — `type: Partic
 
 **When to use it:** Adding specialized capabilities (visual effects, data visualization, interactive widgets) that don't belong in a general-purpose foundation. The extension can be developed, tested, and registered independently.
 
-**Trade-off:** Extensions are always runtime-loaded, which means an additional network request on first page load. The custom Vite plugin for dev serving is small but manual — each extension needs its route served.
+**Trade-off:** Extensions are always runtime-loaded, which means an additional network request on first page load.
 
 See [Extending Your Site](./extending-your-site.md) for the broader extensibility model, including Vite plugins and `head.html` scripts.
 
@@ -301,11 +295,11 @@ packages:
   - sites/*
 ```
 
-The wiring is the same as the sibling extension recipe, but organized for scale. Each site declares which extensions it needs. The root build script handles the copy step for each extension into each site's `dist/`.
+The wiring is the same as the sibling extension recipe, organized for scale. Each site declares the extensions it needs, and finds them by the same rule: a site in `sites/marketing/` looks in `sites/` first, then at the workspace root, where `extensions/effects/` is. Its build copies each one into its own `dist/`.
 
 **When to use it:** Multiple extensions shared across multiple sites — typically a larger project with a team maintaining the extension library.
 
-**Trade-off:** Build orchestration gets more involved. Each `site × extension` combination needs its copy step in the build. For a single extension used by one site, the sibling layout is less ceremony.
+**Trade-off:** More folders for the same wiring. For a single extension used by one site, the sibling layout is less ceremony.
 
 ---
 
@@ -383,12 +377,11 @@ This creates `blog/` at the workspace root, registers it in `pnpm-workspace.yaml
 my-project/
 ├── src/                          ← foundation package (name: "src")
 ├── site/                         ← original
-├── sites/
-│   └── blog/                     ← new, wired to the src foundation
+├── blog/                         ← new, wired to the src foundation
 └── pnpm-workspace.yaml
 ```
 
-Adding a named foundation works the same way — it goes into `foundations/{name}/`.
+Adding a named foundation works the same way: `uniweb add foundation marketing` creates `marketing/`, and `uniweb add foundation foundations/marketing` groups it under `foundations/`.
 
 ### Adding a co-located project
 
@@ -412,7 +405,9 @@ pnpm install
 
 This creates `effects/`, lists it in `pnpm-workspace.yaml`, and wires `/effects/entry.js` — where the site loads it from — into the specified site's `site.yml`. Extensions are placed like foundations: to group them, name the folder (`uniweb add extension extensions/effects`). The extension builds like a foundation — run `uniweb build` from the workspace root to build everything in order.
 
-Extensions are always runtime-loaded (via URL, not `file:` dependency). In dev, a Vite plugin serves the extension. In production, the build copies the extension's output into the site's `dist/`. See [Extending Your Site](./extending-your-site.md) for the full setup.
+The URL is written only when the site will find this extension there — the folder has to be one the site looks in (see [Extensions as siblings](#extensions-as-siblings)). For any other folder, the command creates the extension, leaves `site.yml` alone, and says where the site looks.
+
+Extensions are always runtime-loaded (via URL, not `file:` dependency). `uniweb dev` builds the extension when it needs to and serves its build; `uniweb build` copies it into the site's `dist/`. See [Extending Your Site](./extending-your-site.md) for the broader extensibility model.
 
 ---
 
@@ -437,7 +432,7 @@ The path is relative to the site directory. `defineSiteConfig()` in the site's `
 ## See Also
 
 - **[Building with Uniweb](./building-with-uniweb.md)** — The two-package model and how CCA works
-- **[Templates](../getting-started/templates)** — Built-in and official templates
+- **[Templates](../getting-started/templates.md)** — Built-in and official templates
 - **[Extending Your Site](./extending-your-site.md)** — Vite plugins, `head.html`, and the full extensibility model
 - **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable foundations and when portability matters
 - **[Site Configuration](../reference/site-configuration.md)** — Full `site.yml` reference including `paths:`, `extensions:`, and `foundation:`

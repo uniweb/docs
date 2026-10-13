@@ -248,7 +248,7 @@ Same shape for `add site` (default folder `site/`, default package `site`, co-lo
 
 The same rule: `add extension effects` creates `effects/`, `add extension extensions/effects` creates `extensions/effects/`, and `--path` is the folder it goes in. An extension needs a name, or a `--path` that names its folder.
 
-A site loads a workspace extension from its own origin at `/<name>/entry.js`, which the build finds in `<name>/` or `extensions/<name>/` and copies into the site's output. `add extension --site` writes that URL into the site's `site.yml`; for an extension in any other folder it writes nothing and says why.
+A site loads a workspace extension from its own origin at `/<name>/entry.js`. The build finds it in `<name>/` or `extensions/<name>/`, in the folder the site is in or a folder above it up to the workspace root — the nearest first — and copies it into the site's output; `uniweb dev` serves it from the same folder. `add extension --site` writes that URL into the site's `site.yml` when the new extension is the one the site will find there; otherwise it writes nothing and says why.
 
 ### Package Naming
 
@@ -315,6 +315,11 @@ with a notice pointing at `--site` for explicit selection.
 
 Markdown, `theme.yml`, and component edits hot-reload. New section types are
 picked up without restarting.
+
+**A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
+their builds. `uniweb dev` builds any that isn't built, or whose sources changed since
+its last build, before the server starts. Nothing watches an extension while the server
+runs: after editing one, run `uniweb build` and reload.
 
 **A site whose foundation is a released version** — `foundation: '@org/name@1.2.0'`,
 as in every [`uniweb clone`](#uniweb-clone) — has no build of that foundation in the
