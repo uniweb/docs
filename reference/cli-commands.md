@@ -173,14 +173,14 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 
 | Option | Description |
 |--------|-------------|
-| `--project <name>` | Group under a project directory (co-located layout) |
+| `--project <name>` | The project's foundation, at `<name>/src/` (package `<name>-src`). Takes no name of its own |
 
 ### Site Options
 
 | Option | Description |
 |--------|-------------|
 | `--foundation <name>` | Foundation to wire to (prompted if multiple exist) |
-| `--project <name>` | Group under a project directory (co-located layout) |
+| `--project <name>` | The project's one site, at `<name>/site/` (package `<name>-site`). Takes no name of its own — for several sites, name each folder: `add site <name>/sites/<site>` |
 
 ### Extension Options
 
@@ -234,8 +234,9 @@ The CLI creates exactly the folder you ask for. The name argument is taken verba
 | `add foundation ui --path libs` | `libs/ui/` | `ui` |
 | `add foundation --path foundations/effects` | `foundations/effects/` | `effects` (last segment of `--path`) |
 | `add foundation --project docs` | `docs/src/` | `docs-src` (co-located convention) |
+| `add foundation core --project docs` | — refused | `--project` names the folder itself; the command stops and names `add foundation docs/core` |
 
-Same shape for `add site` (default folder `site/`, default package `site`, co-located `<project>/site/` with package name `<project>-site`).
+Same shape for `add site` (default folder `site/`, default package `site`, co-located `<project>/site/` with package name `<project>-site`). `add site guide --project docs` stops and names `add site docs/sites/guide`, the form for a project with several sites.
 
 **Collision handling.** Before scaffolding, the CLI checks two things:
 
@@ -294,7 +295,7 @@ uniweb add site --project docs
 
 ### Workspace Config
 
-The `add` command automatically updates `pnpm-workspace.yaml` with appropriate globs and updates root `package.json` scripts (`dev`, `build`, `preview`). You don't need to manage these manually.
+The `add` command lists the new package in `pnpm-workspace.yaml` and `package.json::workspaces` — only where no pattern there covers its folder already, so a workspace listing `*/sites/*` keeps its file unchanged when a site is added under it. It edits just the `packages:` list: comments and the file's other settings stay as they are. It also updates the root `package.json` scripts (`dev`, `build`, `preview`, and `dev:<site>` / `preview:<site>` for each site after the first), removing the per-site scripts it wrote for a site that no longer exists; a script you wrote yourself is left alone. You don't need to manage these manually.
 
 ---
 
@@ -1329,7 +1330,7 @@ Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where
 |--------|-------------|
 | `<name>` / `.` | New workspace named `<name>`, or `.` for in-place / the current workspace |
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
-| `--project <dir>` | Co-locate as `<dir>/site` |
+| `--project <dir>` | Co-locate as `<dir>/site`. Takes no name: with `<name>` as well, clone stops and names `<dir>/sites/<name>` |
 | `--no-records` | Pull pages only; skip records |
 | `--org @org` | Work in `@org` for this clone, instead of your login's workspace |
 
@@ -1771,7 +1772,7 @@ The CLI auto-detects context:
 | `site.yml` or `pages/` | Site |
 | `pnpm-workspace.yaml` | Workspace (builds all) |
 
-Workspace builds discover foundations, extensions, and sites by scanning the glob patterns in `pnpm-workspace.yaml`. Standard patterns (`foundation`, `foundations/*`, `*/foundation`, etc.) are all supported — the build checks each matched directory for foundation or site markers.
+Workspace builds discover foundations, extensions, and sites from the patterns in `pnpm-workspace.yaml`, read the way pnpm reads them: `*`, `?` and `[...]` within a folder name, `**` for any depth, `{a,b}`, and `!` to exclude — `*/src` and `*/sites/*` included. A folder a wildcard finds counts when it holds a `package.json`. Every command that looks for packages (`build`, `dev`, `update`, `doctor`, …) reads them the same way, and the build checks each package for foundation or site markers.
 
 ---
 

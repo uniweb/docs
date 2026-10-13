@@ -6,7 +6,7 @@ This guide covers the workspace structures we've found work well, when to use ea
 
 > **The naming convention.** A site is pure content; a foundation is the site's source code. That's why a single-foundation workspace puts content in `site/` and code in `src/`. The foundation package's `name` is just `src` — folder and package name match. See [Folder name vs package name](#4-folder-name-vs-package-name) below for the multi-foundation cases where they need to differ.
 
-> **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of foundation + site. Use `uniweb add project` to create this structure in one step, or the `--project` flag on individual `add foundation`/`add site` commands.
+> **Terminology note:** "Workspace" means the top-level directory created by `uniweb create` — the pnpm monorepo root. In co-located layouts, each subdirectory (e.g., `marketing/`, `docs/`) is called a **project** — a self-contained group of a foundation and its sites. Use `uniweb add project` to create one in a step, or `--project` on `add foundation` / `add site` for a project's foundation (`<project>/src/`) or its one site (`<project>/site/`). A project with several sites keeps them in `<project>/sites/` — see [Projects with several sites](#projects-with-several-sites).
 
 ---
 
@@ -26,6 +26,8 @@ packages:
 ```
 
 `src` and `site` match sibling packages.
+
+The entries are folder patterns, and the CLI reads them the way pnpm does: `*`, `?` and `[...]` within a folder name, `**` for any depth, `{a,b}` for alternatives, and a leading `!` to exclude what the others match. A folder a wildcard finds counts when it holds a `package.json`. When `uniweb add` creates a package, it lists the folder only if no pattern covers it already, and it edits just this list — comments and the file's other settings stay as they are.
 
 ### 2. `file:` dependency
 
@@ -200,6 +202,52 @@ The `*/src` and `*/site` globs discover every project's packages automatically. 
 
 **One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/src` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit.
 
+### Projects with several sites
+
+Co-located projects whose foundation serves more than one site — one product or solution type per project, its sites side by side.
+
+```
+my-workspace/
+├── memberships/
+│   ├── src/
+│   │   └── package.json      ← name: "memberships-src"
+│   └── sites/
+│       ├── fitness/
+│       │   ├── package.json  ← "memberships-src": "file:../../src"
+│       │   └── site.yml      ← foundation: memberships-src
+│       └── society/
+├── courses/
+│   ├── src/                  ← name: "courses-src"
+│   └── sites/
+│       └── academy/
+├── pnpm-workspace.yaml
+└── package.json
+```
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "*/src"
+  - "*/sites/*"
+```
+
+Two lines cover every project and every site in each, so a new project or site needs no change to the file. Listing each project's folders instead (`memberships/src`, `memberships/sites/*`, …) works the same way and names the projects in one place, at two lines each.
+
+Grow it by naming the folders:
+
+```bash
+uniweb add foundation --project courses                         # courses/src/, package courses-src
+uniweb add site courses/sites/academy --foundation courses-src  # courses/sites/academy/
+```
+
+With `*/src` and `*/sites/*` listed, both commands create the folder and leave `pnpm-workspace.yaml` as it is. A site's package name is the last folder of its path, and package names are workspace-wide: two projects can't both hold a site package named `fitness`.
+
+Extensions nest the same way. A project's own go in `memberships/extensions/<name>/`, and one shared by every project goes in `extensions/<name>/` at the workspace root; each site loads the nearest one with the name it asks for.
+
+**When to use it:** Several products or solution types in one repository, each a foundation with several sites.
+
+**Trade-off:** One folder level more than co-located projects, so a site's `file:` path goes up two levels (`file:../../src`).
+
 ### Extensions as siblings
 
 An extension adds specialized section types without modifying the primary foundation. It's a separate foundation, loaded at runtime from a URL — for an extension in the workspace, a URL on the site's own origin. The `extensions` template creates this layout.
@@ -311,6 +359,7 @@ The wiring is the same as the sibling extension recipe, organized for scale. Eac
 | Registering a portable foundation | Segregated (site is the dev harness) |
 | Multiple sites sharing a foundation | Segregated |
 | Multiple independent brands | Co-located |
+| Several products, each a foundation with several sites | Projects with several sites |
 | Adding specialized section types | Extensions as siblings |
 | Extensions shared across sites | Extensions segregated |
 
@@ -359,7 +408,7 @@ uniweb add site sites/main --foundation marketing
 uniweb add site sites/docs --foundation blog
 ```
 
-The CLI creates the directory, writes `package.json` and config files, registers the package in `pnpm-workspace.yaml`, wires the `file:` dependency from site to foundation, and updates root scripts. Run `pnpm install` once after adding all packages. If a target folder or package name already exists, the command stops with a precise error.
+The CLI creates the directory, writes `package.json` and config files, lists the package in `pnpm-workspace.yaml` (unless a pattern there covers it already), wires the `file:` dependency from site to foundation, and updates root scripts — removing the ones it wrote for a site that no longer exists. Run `pnpm install` once after adding all packages. If a target folder or package name already exists, the command stops with a precise error.
 
 ### Adding to an existing workspace
 
@@ -392,9 +441,11 @@ uniweb add project docs
 pnpm install
 ```
 
-This creates `docs/src/` and `docs/site/`, adds `*/src` and `*/site` globs. Package names are `docs-src` and `docs-site`. Use `--from` to apply template content: `add project docs --from academic`.
+This creates `docs/src/` and `docs/site/`, and lists `*/src` and `*/site` — each only if the workspace's patterns don't cover that folder already. Package names are `docs-src` and `docs-site`. Use `--from` to apply template content: `add project docs --from academic`.
 
 Your original `src/` and `site/` still work — they match their existing globs. You can keep the hybrid layout or move them into a project directory when you're ready.
+
+For a project with several sites, add each one by its folder — `uniweb add site docs/sites/guide --foundation docs-src` — as in [Projects with several sites](#projects-with-several-sites). `--project docs` places the project's foundation (`docs/src/`) or its one site (`docs/site/`) and takes no name of its own: given one, the command stops and names the folder form instead.
 
 ### Adding an extension
 
