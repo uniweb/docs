@@ -798,24 +798,30 @@ When a newer CLI exists, `update` says so at the end of the run and names the co
 The verb prints a version survey first, regardless of flags:
 
 ```
-uniweb CLI:             v0.12.15
-AGENTS.md stamp:        v0.9.5
+uniweb CLI:             v1.2.3
+AGENTS.md stamp:        v1.1.0
 
 Workspace deps (declared):
   (root)/
-    ✗ uniweb           ^0.9.5     → ~0.12.15    behind
+    ✗ uniweb  ~1.1.0     → ~1.2.3      minor · BREAKING
   foundation/
-    ✗ @uniweb/core     ^0.6.1     → ~0.7.11     behind
-    ✗ @uniweb/kit      ^0.8.2     → ~0.9.11     behind
-    ✗ @uniweb/build    ^0.9.4     → ~0.14.3     behind
+    ✗ @uniweb/core   ~1.1.2     → ~1.1.4      patch
+    ✗ @uniweb/kit    ~1.0.6     → ~1.2.0      minor · BREAKING
+    ✗ @uniweb/build  ~1.3.1     → ~1.3.2      patch
   site/
-    ✗ @uniweb/runtime  ^0.7.4     → ~0.8.13     behind
-    ✗ @uniweb/build    ^0.9.4     → ~0.14.3     behind
+    ✗ @uniweb/runtime  ~1.1.0     → ~1.1.3      patch
+    ✗ @uniweb/build    ~1.3.1     → ~1.3.2      patch
+
+⚠  2 packages cross a breaking boundary:
+     uniweb  ~1.1.0 → ~1.2.3  (minor)
+     @uniweb/kit  ~1.0.6 → ~1.2.0  (minor)
+   A minor version is where Uniweb's breaking changes go, so these are releases
+   you may need to act on. Read their changelogs before shipping.
 ```
 
-`update` writes tilde ranges (`~0.7.11`). A patch release — a fix or a feature — installs within one by itself; a new minor version is where Uniweb puts breaking changes, so it arrives only through `update`, which lists every package that crosses one.
+`update` writes tilde ranges (`~1.0.1`). A patch release — a fix or a feature — installs within one by itself; a new minor version is where Uniweb puts breaking changes, so it arrives only through `update`, which lists every package that crosses one.
 
-Each row is one declared dep in one workspace `package.json` that needs attention — `behind` (the CLI ships a newer version) or `ahead of CLI` (left untouched, since `update` never downgrades). Deps already aligned are collapsed to a count rather than listed, because on the command's most common outcome — a no-op — every row would otherwise read `0.9.11 → 0.9.11 aligned` and bury the lines that matter. `--verbose` lists them all.
+Each row is one declared dep in one workspace `package.json` that needs attention: one the CLI ships a newer version of, labelled with how far it moves — `patch`, or `minor · BREAKING` and `major · BREAKING` for a version that may ask you to act — or one `ahead of CLI`, left untouched since `update` never downgrades. The packages that cross a breaking boundary are named again after the table, so the log of an `update --yes` still says what it crossed. Deps already aligned are collapsed to a count rather than listed, because on the command's most common outcome — a no-op — every row would otherwise read `~1.0.1 → ~1.0.1 aligned` and bury the lines that matter. `--verbose` lists them all. See [Framework Versions](./framework-versions.md) for what each part of a version means.
 
 After the survey, each step prompts in TTY; `--yes` accepts the defaults; non-interactive prints the plan without mutating.
 

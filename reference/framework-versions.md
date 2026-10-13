@@ -16,6 +16,8 @@ A breaking change is one your project may need to act on: a renamed option, a re
 
 A package at 1.x has left its experimental phase: you can build on it with production confidence. It does not mean the package stops changing. Breaking changes keep arriving as minor versions, listed by `uniweb update`, and a 2.0 is kept for something really big.
 
+Since the 1.0.1 release, every Uniweb package is on 1.x: the `uniweb` CLI and the `@uniweb/*` packages still at 0.x moved to 1.0.1 together. For a project on the latest 0.x versions, 1.0.1 asks for no change. `uniweb update` lists every package as crossing a major version, because 0.x to 1.0.1 is one, but there is nothing to act on. A project on older 0.x versions also crosses the minor versions in between, as with any update.
+
 ## Your project's version ranges
 
 `uniweb create` writes each `@uniweb/*` dependency, and `uniweb` itself, as a tilde range:
@@ -23,12 +25,12 @@ A package at 1.x has left its experimental phase: you can build on it with produ
 ```json
 {
   "devDependencies": {
-    "uniweb": "~0.89.4"
+    "uniweb": "~1.0.1"
   }
 }
 ```
 
-A tilde range accepts patches — `0.89.x` here — and nothing past them. So `pnpm install` and `pnpm update` bring fixes and features, never a minor version.
+A tilde range accepts patches — `1.0.x` here — and nothing past them. So `pnpm install` and `pnpm update` bring fixes and features, never a minor version.
 
 Projects created earlier have caret ranges (`^0.89.4`). Below 1.0 a caret behaves the same way, and `uniweb update` writes a tilde the next time it moves that package.
 
@@ -45,7 +47,7 @@ Keep the `@uniweb/*` packages at the versions `update` sets. They are released t
 
 ## `uniweb@1.0.0` on npm
 
-The npm registry lists a `uniweb@1.0.0` published in 2017. It is a placeholder npm itself published before the name was ours, not the Uniweb CLI. Use `npx uniweb@latest`.
+The npm registry lists a `uniweb@1.0.0` published in 2017. It is a placeholder npm itself published before the name was ours, not the Uniweb CLI, and it is marked deprecated. The CLI's 1.x line starts at 1.0.1, so `uniweb@^1` installs the CLI. Use `npx uniweb@latest`.
 
 ---
 
