@@ -4,7 +4,7 @@ Create your first Uniweb site in 5 minutes.
 
 ## Prerequisites
 
-- **Node.js 20.19** or later
+- **Node.js 22.12** or later
 - **pnpm 9+** (recommended) or npm 10+
 
 ```bash
