@@ -123,7 +123,7 @@ no wrappers, no encoding:
 | Field type | Value shape |
 |---|---|
 | `string`, `text`, `int`, `decimal`, `bool` | The raw value |
-| `text` with `format: markdown` / `html` | The raw source string (a rich-content body) |
+| `text` with `format: markdown` | The raw source string (a rich-content body) |
 | `date`, `datetime` | ISO-8601 string (e.g. `2026-05-01`, `2026-05-01T12:00:00Z`) |
 | `file` | A path or URL to the file |
 | `array` (of scalars) | The native array (`[a, b, c]`) |

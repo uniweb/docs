@@ -36,7 +36,7 @@ fields:
   featured:    { type: boolean }
 ```
 
-The types are plain and content-oriented — `string`, `text`, `markdown`, `html`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object` (also spelled `group`), `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` and `html` are a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
+The types are plain and content-oriented — `string`, `text`, `markdown`, `number`, `boolean`, `date`, `datetime`, `image`, `url`, `email`, `richtext`, plus structural `object` (also spelled `group`), `array`, and `ref` (a reference to another schema). You write the word that fits the content; the framework folds the friendly names to canonical kinds (`markdown` is a `text` field carrying that rich-content `format`, `richtext` is a ProseMirror `json` document, `image` is a file, `number` is a decimal).
 
 ### Describing the schema itself
 
@@ -249,7 +249,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `date`, `datetime` | `date`, `datetime` | An ISO-8601 date / timestamp |
 | `image` | `file` | A path or URL to a file |
 | `url`, `email` | `string` (+ `format`) | A validated string |
-| `markdown`, `html` | `text` (+ `format`) | A rich-content body (a source string) |
+| `markdown` | `text` (+ `format`) | A rich-content body (a source string) |
 | `richtext` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
 | `json` | `json` | An opaque structured value (see `format`) |
 | `object`, `group` | `object` | A nested record — declare its `fields:`. `group` is the friendlier spelling |
@@ -294,7 +294,6 @@ A `format` marks a field as carrying rich content. It is **type-bound** — the 
 | `format` | Valid on | Use it for |
 |---|---|---|
 | `markdown` | `text` | A markdown body that round-trips as plain source |
-| `html` | `text` | An HTML body |
 | `prosemirror` | `json` | A rich document edited through a structured editor |
 | `scene` | `json` | A visual scene composition (rendered by `@uniweb/scene`) |
 
@@ -304,7 +303,9 @@ fields:
   body:    richtext            # a rich document, edited in the visual app (json + prosemirror)
 ```
 
-The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: prosemirror`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` / `html` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
+The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: prosemirror`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
+
+There is no `html` type or format. Content is never markup — a component decides how content renders — so a schema declaring one is refused, naming `richtext` and `markdown`.
 
 ### Translatable fields: `translatable`
 
