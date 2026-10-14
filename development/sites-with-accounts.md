@@ -102,9 +102,10 @@ running as a function. The mock above is the one that speaks this client's own d
 
 ### It enforces, so your demo cannot lie
 
-The mock applies what production applies — who may edit an entry, and which sections your
-schemas declare insert-only. A permission you are relying on fails **here**, at your desk,
-rather than in front of a user. That is the part a hand-rolled fixture object usually gets
+The mock applies what production applies — who may edit an entry, which sections your schemas
+declare insert-only, and that the account running the site reads everyone's entries but changes
+them only after confirming its password. A permission you are relying on fails **here**, at your
+desk, rather than in front of a user. That is the part a hand-rolled fixture object usually gets
 wrong: it shows a button working that production would refuse.
 
 The mail the backend would send — a sign-up's confirmation, a password reset — is printed in
@@ -160,6 +161,12 @@ content is missing when it was never asked for.
 reset and an invitation each arrive as a link to the site's home page, a token in the address.
 A component the home page renders — a header or a layout is on every page — calls
 `useMailedLink()`, which says which step the link came for and finishes it.
+
+**Let an administrator act only after confirming it is them.** On a site, an administrator
+reads what their role reaches and changes nothing through it until they confirm their password;
+then, for a while, they act through the role. `useElevation()` says whether to offer that,
+does it, and says until when it lasts — draw the controls that remove or change other people's
+content from it, and ask each record what the viewer may do to it.
 
 **Show the invitations waiting, wherever a member lands.** An invitation to join an
 organization waits for the member's answer, whether it was sent to their account or taken
