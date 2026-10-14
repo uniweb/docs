@@ -50,6 +50,7 @@ icon: lu-presentation         # the schema's icon — a framework icon name
 description: A conference talk.
 source_locale: en             # the language the inline text is written in
 linkable: true                # may other schemas reference this one? (default: yes)
+grantable: true               # may an entry be shared, one at a time? (default: yes)
 ```
 
 `label`, `plural` and `description` are plain strings in the source language — translations live
@@ -66,6 +67,11 @@ build.
 field, and, on a backend, as a site's records. It is `true` unless you write `linkable: false`, with
 or without a `brief:` section. The brief *is* what a reference shows, so a reference to an entry of a
 schema without one has no card to show.
+
+**`grantable`** controls whether, on a backend, one entry can be shared with a person or a team — to
+read it, edit it or administer it. It is `true` unless you write `grantable: false`, which keeps every
+entry of the schema from being shared that way. A backend may refuse to turn it off while an entry of
+the schema is shared.
 
 **There is no key for who may create entries.** When a backend stores your content, anyone
 signed in may create entries of any schema. What protects content is the entry itself: who may
@@ -260,6 +266,27 @@ You can always write the canonical kind directly; the friendly names just save y
 **References.** A `ref` field points at a record of another schema. In a record's file, write the name of the record it points at — its file's name — so `speaker: ada` points at `records/speaker/ada.yml`; a `many: true` reference is a list of names. A component receives the record it points at reduced to its brief, as `{ entity, brief }` — so `talk.speaker.brief.name` — with `entity` the record's id where it has one ([Entity Content](../reference/entity-content.md#what-a-component-receives)). With a backend, `uniweb push` sends each reference to the record it names — in the same push when that record is new too — and `uniweb pull` writes the name back.
 
 **Lists use `many: true`.** Any field or section becomes a list by adding `many: true` — `{ type: string, many: true }` (a list of strings), `{ ref: '@/course', many: true }` (a list of references), or a `many: true` section (a repeating list of records). List-level flags like `required` ride on the list; the type describes each item.
+
+### A reference that opens its entry: `readable_with`
+
+On a backend, a reference can carry access. A `ref` field that declares `readable_with` opens the
+entry holding it — to read, never to change — to whoever holds that level on the entry the reference
+points to:
+
+```yaml
+# foundation/schemas/submission.yml
+name: submission
+fields:
+  title:  { type: string }
+  course: { ref: '@/course', readable_with: edit }   # read by whoever may edit the course
+```
+
+A submission's `course` declaring `edit` is read by the course's staff and by none of its students;
+a lesson's `course` declaring `read` is read by everyone who may read the course. The level is
+`read`, `edit` or `admin`, and only a reference — a `ref`, or a list of them — can declare it; any
+other field is refused. It reaches one step: the course's own references open nothing further. The
+link is made from the entry's side, by setting the field. And a backend refuses adding it to a field
+entries already hold a value in, so references written as plain ones never become access later.
 
 Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
 
