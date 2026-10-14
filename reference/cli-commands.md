@@ -1407,6 +1407,17 @@ Run from a site, or a workspace with one site. The content diff is exactly what 
 
 `gone` is said only on the backend's own word about this site — never for a failure to reach it — so a script can forget a binding on `gone` without risking a second copy of a site that still exists. `--remote` also says whether the synced draft differs from what is live, and whether a newer version of the foundation is registered.
 
+It also lists who has the site open in the Uniweb app right now, so you can follow up with them:
+
+```
+→ Open in the app now:
+    Ada Lovelace (@ada)
+      pages/about/1-hero.md (/about) · changed 3 min ago
+      layout/header.md · changed 1 h ago
+```
+
+Each line is a tab that person has open, named by its file in your copy. A page or section added in the app since your last pull has no file yet, so it shows as, for example, `a section not in this copy (/blog)`. "Changed" is when that page or section last changed, by anyone, not necessarily that person. This is presence, not a lock: nothing stops a push because someone has the site open.
+
 ---
 
 ## uniweb forget
