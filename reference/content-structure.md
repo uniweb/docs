@@ -1441,31 +1441,31 @@ Kit components like `<Icon>`, `<Link>`, and `<Image>` destructure the properties
 When attributes appear on inline text or within paragraph content, they're serialized as HTML before reaching the component. For example:
 
 ```markdown
-This has [important]{.callout color=red} information.
+This has [important]{callout color=red} information.
 ```
 
 Your component receives:
 
 ```js
 content.paragraphs[0]
-// 'This has <span class="callout" style="color: red;">important</span> information.'
+// 'This has <span callout="true" style="color: red">important</span> information.'
 ```
 
-Kit's `<Text>`, `<H1>`, `<H2>`, and `<P>` components render these strings with `dangerouslySetInnerHTML`, so the span and its attributes appear in the DOM as-is.
+Kit's `<Text>`, `<H1>`, `<H2>`, and `<P>` components render these strings with `dangerouslySetInnerHTML`, so the span and its attributes appear in the DOM as written. That is safe because the parser builds the string from structure: every character of the text is escaped, so a `<` an author types shows as `<` and never opens a tag.
 
 ### What Survives the Pipeline
 
-Nothing is filtered. Every attribute the content author writes reaches the component:
+An attribute reaches the component when the object it is written on carries it, and when it cannot run anything:
 
 | Stage | What happens |
 |-------|-------------|
-| **Markdown** | `{key=value .class #id}` parsed into object |
-| **Content reader** | Stored in ProseMirror node attrs |
-| **Semantic parser** | Spread onto content objects (images, links) or serialized as HTML (text) |
-| **prepare-props** | Passed through — only guarantees structure, doesn't filter |
-| **Component** | Receives everything — decides what to use |
+| **Markdown** | `{key=value #id}` parsed into an object |
+| **Content reader** | Stored in the ProseMirror node's attrs — an image or a link keeps the attributes it knows (`width`, `height`, `loading`, `target`, `role`, `class`, `id`, …), a span keeps every name |
+| **Semantic parser** | Spread onto content objects (images, links, icons), or serialized as HTML (text) with the text escaped |
+| **prepare-props** | Passed through — only guarantees structure |
+| **Component** | Receives what is left, and decides what to use |
 
-Known attributes like `width`, `height`, `loading`, `target`, `role` are extracted by name during parsing and placed in predictable fields. Unknown attributes are preserved alongside them — nothing is discarded.
+Content never carries script. In the HTML strings, a span keeps `class`, `id`, a colour (`color`, `bg`) and named styles — plain lowercase names like `callout` — and drops anything else, an event handler (`onclick`) included. A link keeps a relative URL or an `http:`, `https:`, `mailto:`, `tel:` or `page:` one; any other, such as `javascript:`, leaves its text unlinked. Markup that rides in content by design — a math formula's MathML, an icon's SVG — is rebuilt from an allowlist of elements and attributes. And HTML an author writes in markdown is not markup at all: it shows as written, except `<br/>` (see [Writing Content](../authoring/writing-content.md)).
 
 ### The Foundation as Gatekeeper
 
@@ -1484,7 +1484,7 @@ function FeatureCard({ icon, title, paragraphs }) {
 }
 ```
 
-This is what Kit components do by default. Content authors can add `color`, `class`, `data-*`, `aria-*` attributes and they all work. It's a useful escape hatch — a content author can write `![](lu-star){color=var(--primary-600)}` to tint an icon without the foundation needing a `color` param.
+This is what Kit components do by default. Content authors can set the attributes each object carries — an icon's `color` and `size`, an image's `class` — and they work. It's a useful escape hatch — a content author can write `![](lu-star){color=var(--primary-600)}` to tint an icon without the foundation needing a `color` param.
 
 **Restrictive** — pick only what you support:
 
