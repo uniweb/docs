@@ -436,7 +436,7 @@ Images and videos can be links—clicking them navigates to the specified URL:
 
 ```markdown
 ![Product Screenshot](./screenshot.jpg){href=/products/details}
-![Demo Video](./demo.mp4){role=video href=/demo target=\_blank}
+![Demo Video](./demo.mp4){role=video href=/demo target=_blank}
 ```
 
 ```js
@@ -754,7 +754,7 @@ Links are collected in the `links` array. Attributes control behavior and stylin
 
 ```markdown
 [Learn more](/about)
-[External](https://example.com){target=\_blank}
+[External](https://example.com){target=_blank}
 [Download](./report.pdf){download}
 [Download as](./report.pdf){download="annual-report.pdf"}
 ```
@@ -850,8 +850,8 @@ links: [
 Icons can be links themselves—useful for social media buttons and icon-only navigation:
 
 ```markdown
-![Twitter](/icons/twitter.svg){role=icon href="https://twitter.com/example" target=\_blank}
-![GitHub](/icons/github.svg){role=icon href="https://github.com/example" target=\_blank}
+![Twitter](/icons/twitter.svg){role=icon href="https://twitter.com/example" target=_blank}
+![GitHub](/icons/github.svg){role=icon href="https://github.com/example" target=_blank}
 ```
 
 ```js
@@ -876,19 +876,22 @@ Components can check `icon.href` to render clickable icons differently from deco
 Links can include optional attributes that components may use as rendering hints:
 
 ```markdown
-[Get Started](/signup){variant=primary size=lg}
+[Get Started](/signup){button variant=primary size=lg}
+[Pricing](button:/pricing)
 [Learn More](/docs){target=_blank}
 [Download PDF](/file.pdf)
 ```
 
 **Available attributes:**
 
-| Attribute | Values                                     | Description                |
-| --------- | ------------------------------------------ | -------------------------- |
-| `role`    | Any string (e.g., `button`, `nav`)         | Hint for component styling |
-| `variant` | `primary`, `secondary`, `outline`, `ghost` | Visual style hint          |
-| `size`    | `sm`, `md`, `lg`                           | Size hint                  |
-| `target`  | `_blank`, `_self`, etc.                    | Link target                |
+| Attribute | Values                                                  | Description                                    |
+| --------- | ------------------------------------------------------- | ---------------------------------------------- |
+| `button`  | A flag, or the `button:` prefix on the URL              | The link is a button: its `role` is `button`   |
+| `role`    | Any string (e.g., `nav`)                                | Hint for component styling                     |
+| `variant` | `primary` (the default), `secondary`, `outline`, `ghost` | A button's visual style hint                   |
+| `size`    | `sm`, `md`, `lg`                                        | Size hint                                      |
+| `icon`    | An icon name (`lu-arrow-right`) or path                 | Icon hint                                      |
+| `target`  | `_blank`, `_self`, `_parent`, `_top`                    | Where the link opens — any other value opens it in the same tab |
 
 **Important:** These attributes are hints—components decide how to render links. A Hero component might render all links as buttons regardless of attributes, while a Footer component might render them as plain links.
 
@@ -1122,7 +1125,7 @@ $29/month
 
 For growing teams.
 
-[Get Started](/signup?plan=pro){.button variant=primary}
+[Get Started](/signup?plan=pro){button variant=secondary}
 ```
 
 ```js
@@ -1465,7 +1468,7 @@ An attribute reaches the component when the object it is written on carries it, 
 | **prepare-props** | Passed through — only guarantees structure |
 | **Component** | Receives what is left, and decides what to use |
 
-Content never carries script. In the HTML strings, a span keeps `class`, `id`, a colour (`color`, `bg`) and named styles — plain lowercase names like `callout` — and drops anything else, an event handler (`onclick`) included. A link keeps a relative URL or an `http:`, `https:`, `mailto:`, `tel:` or `page:` one; any other, such as `javascript:`, leaves its text unlinked. Markup that rides in content by design — a math formula's MathML, an icon's SVG — is rebuilt from an allowlist of elements and attributes. And HTML an author writes in markdown is not markup at all: it shows as written, except `<br/>` (see [Writing Content](../authoring/writing-content.md)).
+Content never carries script. In the HTML strings, a span keeps `class`, `id`, a colour (`color`, `bg`) and named styles — a letter, then letters, digits, `_` or `-`, like `callout` or `bigRed`, never a name starting with `on` — and drops anything else, an event handler (`onclick`) included. A link keeps a relative URL or an `http:`, `https:`, `mailto:`, `tel:` or `page:` one; any other, such as `javascript:`, leaves its text unlinked. Markup that rides in content by design — a math formula's MathML, an icon's SVG — is rebuilt from an allowlist of elements and attributes. And HTML an author writes in markdown is not markup at all: it shows as written, except `<br/>` (see [Writing Content](../authoring/writing-content.md)).
 
 ### The Foundation as Gatekeeper
 
