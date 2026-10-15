@@ -277,7 +277,7 @@ A value is one of:
 | A label | `'Headline'` | The element, named for the author |
 | A label with a count | `'Cards [3-6]'` | …and how many — see [Count Syntax](#count-syntax) |
 | `true` | `title: true` | The element, with no label of yours — the editor uses its own words |
-| An object | `{ label, hint }` | A label and a longer hint. `media` also takes `types`, `sequence` takes `except`, and `items` takes `content` |
+| An object | `{ label, hint }` | A label and a longer hint. `media` also takes `types`, `sequence` takes `except` and `placement`, and `items` takes `content` |
 
 **A component that takes no content says so with `content: {}`** (or `content: []`) — one that renders only what it receives in `content.data`, say. The visual editor then offers no text editor for its sections. Leaving `content` out says nothing about what the component reads, which is different.
 
@@ -378,6 +378,29 @@ content: {
 - It covers **the whole section, in order — the headline included**. The component renders `content.sequence`, as kit's `<Render>`, `<Prose>` and `<Article>` do. `title` beside it says the section should begin with one; it does not mean the title renders apart from the rest.
 - **`except` lists the kinds of content it does not render** — `heading`, `prose`, `list`, `link`, `image`, `video`, `inset`, `icon`, `document`, `code`, `table`, `math`, `quote`. Every other kind reaches the page, including one the framework adds later.
 - A count on `sequence` means nothing, so it takes none.
+
+**`placement` says where an author may place a block** — an image, a video or a table — in the
+flow your component renders ([Placement](./content-structure.md#placement--where-a-block-sits)):
+
+```javascript
+content: {
+  sequence: { label: 'The article', placement: true },
+}
+```
+
+| Written | Means |
+|---------|-------|
+| `placement: true` | `left`, `right`, `wide` and `full`, on every kind that takes one |
+| `placement: ['wide', 'full']` | those, on every kind |
+| `placement: { image: ['left', 'right'], table: ['wide'] }` | those, per kind — `image`, `video`, `table` |
+| left out | none |
+
+A visual editor offers an author only what you declare, so declare what your component lays out:
+kit's `<Render>`, `<Prose>` and `<Article>` honour all four, so a component built on them declares
+`true`. A kind `except` leaves out takes none. The build writes the declaration as a map from each
+kind to its values, and says when a section's file asks for a placement its type does not offer.
+It is for authoring only, and never reaches a published page, which renders whatever placement its
+content holds. A record's body is not covered: a record is shown by whatever section a site gives it.
 
 A `content:` declared without `sequence` says only what it names, and a component with no `content:` says nothing about its content at all.
 

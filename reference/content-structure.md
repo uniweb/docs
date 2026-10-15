@@ -317,13 +317,15 @@ The attribute syntax is more flexible—it allows combining role with other attr
 ![Alt text](./image.jpg){width=800 height=600 loading=lazy fit=cover}
 ```
 
-| Attribute  | Description                              |
-| ---------- | ---------------------------------------- |
-| `width`    | Image width                              |
-| `height`   | Image height                             |
-| `loading`  | `lazy` or `eager`                        |
-| `fit`      | CSS object-fit: `cover`, `contain`, etc. |
-| `position` | CSS object-position                      |
+| Attribute   | Description                              |
+| ----------- | ---------------------------------------- |
+| `width`     | Image width                              |
+| `height`    | Image height                             |
+| `loading`   | `lazy` or `eager`                        |
+| `fit`       | CSS object-fit: `cover`, `contain`, etc. |
+| `position`  | CSS object-position                      |
+| `placement` | Where it sits in content rendered in order: `left`, `right`, `wide` or `full` — see [Placement](#placement--where-a-block-sits) |
+| `author`    | Who made it — a credit. Kit's `<Render>` shows it in the caption line |
 
 ### Video Attributes
 
@@ -331,13 +333,14 @@ The attribute syntax is more flexible—it allows combining role with other attr
 ![Demo](./video.mp4){role=video autoplay muted loop controls poster=./thumb.jpg}
 ```
 
-| Attribute  | Description            |
-| ---------- | ---------------------- |
-| `autoplay` | Auto-play on load      |
-| `muted`    | Start muted            |
-| `loop`     | Loop playback          |
-| `controls` | Show video controls    |
-| `poster`   | Poster/thumbnail image |
+| Attribute   | Description            |
+| ----------- | ---------------------- |
+| `autoplay`  | Auto-play on load      |
+| `muted`     | Start muted            |
+| `loop`      | Loop playback          |
+| `controls`  | Show video controls    |
+| `poster`    | Poster/thumbnail image |
+| `placement` | Where it sits, as an image's — see [Placement](#placement--where-a-block-sits) |
 
 ### Document Attributes
 
@@ -701,6 +704,31 @@ $$
 
 For a literal dollar the rules cannot save — a lone `$` that happens to pair with another one later in the same paragraph — escape it as `\$`. That is worth knowing precisely because it is easy to trip: an earlier draft of the paragraph above ran on past its last figure and picked up a `$` further down the line, turning the sentence that claims currency stays prose into rendered math.
 
+## Tables
+
+A table is GitHub's: a header row, a separator row, then the rows. The line after it — Pandoc's
+**caption line**, a paragraph that starts with `:` — gives the table a caption, and its trailing
+braces a [cross-reference](#cross-references) label and a [placement](#placement--where-a-block-sits):
+
+```markdown
+| Plan  | Price |
+| ----- | ----- |
+| Basic | $10   |
+
+: Plans and prices {placement=wide #tbl-plans}
+```
+
+Either part may stand alone — `: Plans and prices`, or `: {#tbl-plans}`.
+
+- **A blank line comes first.** A line directly under the rows is another row.
+- **The caption is plain text.** Formatting in it is left out, with a warning, and its words are kept.
+- **The braces take `#id` and `placement=…`, and nothing else.** Anything else in braces is part of
+  the caption, so `: Revenue by {year}` keeps its placeholder.
+
+A component reads a table in `content.sequence` as `{ type: 'table', rows, attrs }`, with `caption`,
+`id` and `placement` in `attrs` when the caption line set them. Kit's `<Render>` writes the caption
+as the table's `<caption>`.
+
 ## Cross-references
 
 Label a figure, equation, table or heading with `{#id}`, then refer to it with `[#id]`. The number is worked out at render time, so inserting a figure ahead of another renumbers every reference to it.
@@ -714,7 +742,7 @@ $$
 As shown in [#eq-energy], mass and energy are equivalent.
 ```
 
-`{#id}` goes on the element itself — after a display-math block, or in the attribute braces of an image or heading. Four kinds are recognized without any configuration:
+`{#id}` goes on the element itself — after a display-math block, in the attribute braces of an image or heading, or on a table's [caption line](#tables). Four kinds are recognized without any configuration:
 
 | You label | It becomes | A reference reads |
 |---|---|---|
@@ -954,6 +982,38 @@ sequence.forEach((element) => {
 | `sequence`      | Document-order flow                    | Article, Blog Post, Documentation |
 
 You can also combine both—use semantic fields for the header area and sequence for the body.
+
+### Placement — where a block sits
+
+An author can say where an image, a video or a table sits in content rendered in order:
+
+```markdown
+![The harbour at dawn](harbour.jpg){placement=wide}
+```
+
+| `placement` | The block sits |
+| --- | --- |
+| *(none)* | in the text column |
+| `left` · `right` | beside the text, on that side, and the text wraps around it |
+| `wide` | wider than the text column |
+| `full` | across the whole width of the section |
+
+A table takes it on its [caption line](#tables): `: Plans and prices {placement=wide}`. Any other
+value is left out, with a warning.
+
+**It is the author's intent, not a size.** A component that renders the content in order may
+honour it, and any other component ignores it. The element carries it as `attrs.placement`. Kit's
+`<Render>` — and `<Prose>` and `<Article>`, built on it — writes it as `data-placement` on the
+block's box, and `@uniweb/kit/prose-tokens.css` lays the four out inside a `.prose` container:
+`left` and `right` at half the column, the whole column on a narrow screen; `wide` past the column
+on both sides; `full` across the nearest size container (`container-type: inline-size`), else the
+viewport. A foundation restyles `[data-placement]`, or sets `--prose-side-width`,
+`--prose-wide-bleed` and `--prose-full-width`.
+
+**A section type declares the placements it honours** —
+[`sequence: { placement }`](./component-metadata.md#sequence--content-rendered-as-written) in its
+`meta.js`. A visual editor offers an author only those, and the build — like the dev server and
+`uniweb validate` — says when a file asks for one its section type does not offer.
 
 ## Semantic Heading Interpretation
 

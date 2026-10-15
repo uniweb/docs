@@ -1248,6 +1248,18 @@ The same import is what makes body copy answer to the site's `theme.yml`. Typogr
 
 Both stamp an `id` on each heading, from the same generator, so `useHeadings` and any anchor link agree with whichever one rendered.
 
+#### Both lay out an author's placement
+
+An author places an image, a video or a table with `{placement=…}` — `left`, `right`, `wide` or
+`full` ([Placement](./content-structure.md#placement--where-a-block-sits)). Both write it as
+`data-placement` on the block's box, and `prose-tokens.css` lays the four out: `left` and `right`
+beside the text at `--prose-side-width` (half the column), `wide` past the column by
+`--prose-wide-bleed` on each side, `full` across the nearest size container. Mark the element your
+sections sit in with Tailwind's `@container` class (`container-type: inline-size`) so `full` spans
+it rather than the viewport, or set `--prose-full-width`. A component built on them declares
+`sequence: { placement: true }` in its `meta.js`, so a visual editor offers its authors all four
+([Sequence](./component-metadata.md#sequence--content-rendered-as-written)).
+
 ---
 
 ## Utilities
