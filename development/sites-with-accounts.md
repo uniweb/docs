@@ -174,6 +174,17 @@ up from a mailed link. `useInvitations()` lists the ones waiting and answers the
 for anyone signed in, not only after a link, since an invitation sent to an account comes
 with no link to follow.
 
+**Let people give access to what they own.** Whoever administers an entry — its owner, or
+someone given `admin` on it — can give other people `read`, `edit` or `admin` on it, and take
+it back. An instructor enrols students in a course this way; you name it as your solution
+does — "enrolled", "course staff". `useAccess({ schema, uuid })` lists who holds what and gives
+and takes it; for everyone else it answers `forbidden`, the ordinary answer, so draw nothing.
+
+**Land what a member creates where it belongs.** Everything a member creates lands at the
+root of the organization the site's backend is founded with, unless the create names one of
+its units — a department, a course. `useUnits()` lists the ones the viewer is placed in, and
+`createEntity({ …, unit })` lands an entry in one.
+
 ---
 
 ## A site without the service
