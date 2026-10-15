@@ -387,6 +387,7 @@ fields:
   fee:     { type: string, format: currency }                       # an ISO 4217 code, like CAD
   started: { type: date, format: year-month }                       # holds '2024-05'
   year:    { type: date, format: year }                             # holds '2024'
+  code:    { type: string, pattern: '[A-Z]{2}[0-9]{4}' }            # the whole value, like AB1234
 ```
 
 | Rule | On | Keeps the value to |
@@ -396,12 +397,28 @@ fields:
 | `mime_types`, `max_size` | `image`, `file` | those types (`image/*`, `application/pdf`) and that many bytes |
 | `format: year-month`, `format: year` | `date` | a month or a year instead of a day |
 | `format: email`, `url`, `currency` | `string` — `email` and `url` on `text` too | a valid value of that kind |
+| `pattern` | `string` | a regular expression the whole value matches |
 
 A date's value is text at every precision. YAML reads an unquoted `2024` as a number, so a year is
-written `year: '2024'`; a month, `2024-05`, needs no quotes.
+written `year: '2024'`; a month, `2024-05`, needs no quotes. A day written short, `2024-5-3`, is a
+day too, and a backend stores it in full, `2024-05-03`.
+
+A `url` is a web address: `http://` or `https://`, or one written without a scheme that starts with
+a host name — `example.com/cv` — which a backend stores as `https://example.com/cv`. A path
+(`/about`) or another scheme (`mailto:`, `ftp:`) is not one; a link inside your own site is a
+`string`.
+
+A `pattern` matches the **whole** value: `[0-9]{4}` is four digits, not four digits somewhere in the
+text. On a `url` it matches the address as stored, with `https://` in front. It is written in the
+syntax JavaScript and a backend read the same way, so what they read differently is refused when the
+schema is built, each by name: look-around (`(?=…)`, `(?<!…)`), back-references (`\1`), named groups,
+flags (`(?i)` — write `[Aa]`), Unicode property classes (`\p{L}`) and POSIX ones (`[[:alpha:]]`).
+Inside a class, `( ) [ ] { } / |` and a `-` that is not part of a range are escaped:
+`[A-Za-z0-9_\-]`. A `pattern` checks a value only when there is one — an empty value is `required`'s
+concern.
 
 A field takes only the keys this page describes. One it does not — `maxLength` (it is `max_length`),
-`placeholder`, `pattern` — is refused by name when the schema is built, rather than dropped. How a
+`placeholder`, `min_length` — is refused by name when the schema is built, rather than dropped. How a
 field is edited — a widget, a placeholder — belongs to the component that edits it, and a field's
 guidance for the person filling it is its `description`: a schema's field declares no `help`.
 
@@ -431,7 +448,7 @@ modules:
 
 The records a query compiles are checked against their schema too, each section where the schema puts it. A component receives each one as its brief, or whole ([Entity Content → What a component receives](../reference/entity-content.md#what-a-component-receives)).
 
-Values are checked by their type and their field's rules as well — a `date` must be a real `YYYY-MM-DD` day, or a month `YYYY-MM` or a year `YYYY` when its `format` says so, written as text; a `datetime` a day and a time; and a value over its `max_length`, outside its `min`/`max`, a currency that is not a three-letter code, or a file of a type or size its `mime_types`/`max_size` exclude, is reported ([A field's rules](#a-fields-rules)).
+Values are checked by their type and their field's rules as well — a `date` must be a real `YYYY-MM-DD` day, or a month `YYYY-MM` or a year `YYYY` when its `format` says so, written as text; a `datetime` a day and a time; a `url` a web address; and a value over its `max_length`, outside its `min`/`max`, not matching its `pattern`, a currency that is not a three-letter code, or a file of a type or size its `mime_types`/`max_size` exclude, is reported ([A field's rules](#a-fields-rules)).
 
 One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list is checked as the list: the records a query delivers, or the list a record file holds under its section's key.
 
