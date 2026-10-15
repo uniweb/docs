@@ -252,7 +252,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `number` | `decimal` | A number |
 | `integer` | `int` | A whole number |
 | `boolean` | `bool` | `true` / `false` |
-| `date`, `datetime` | `date`, `datetime` | An ISO-8601 date / timestamp |
+| `date`, `datetime` | `date`, `datetime` | An ISO-8601 date — a day, or a month or a year with [`format`](#a-fields-rules) — / a timestamp |
 | `image` | `file` | A path or URL to a file |
 | `url`, `email` | `string` (+ `format`) | A validated string |
 | `markdown` | `text` (+ `format`) | A rich-content body (a source string) |
@@ -294,7 +294,7 @@ Every list has an element type: `many: true` takes it from the field itself, and
 
 ### Constraints
 
-A nested record and a list of records become **sections** when a schema is registered, and a section can carry rules a single field can't express. Declare them with `constraints:` — on the section in the `sections:` form, or on the field itself:
+A nested record and a list of records become **sections** when a schema is registered, and a section can carry rules a single field can't express. Declare them with `constraints:` — on the section in the `sections:` form, beside `fields:` in a schema written with `fields:` (they rule its one section), or on a nested-record field itself:
 
 ```yaml
 fields:
@@ -312,7 +312,7 @@ fields:
 - **A delete floor, not a fill requirement.** It refuses a delete that would take the section below N. Nothing forces an author to populate it in the first place. On a single-record section, read it as *"undeletable once created"*.
 - **A write guarantee, never a render guarantee.** Your component still handles an empty list — the same schema can be rendered by a foundation that never saw the constraint, so content and code stay independent axes.
 
-Constraints on a plain leaf field are ignored; a leaf narrows with `enum` and `format` instead. They take effect once the schema is [registered](#registering-schemas) — records in files have no write step.
+A rule names fields of its section, so it is never declared on a plain value: a schema that puts `constraints` on one is refused, pointing at the section's `constraints:`. A plain value narrows with `enum`, `format` and [its own rules](#a-fields-rules) instead. Constraints take effect once the schema is [registered](#registering-schemas) — records in files have no write step.
 
 ### Rich content: `format`
 
@@ -334,6 +334,8 @@ The friendly aliases set these for you — `type: markdown` is exactly `type: te
 
 There is no `html` type or format. Content is never markup — a component decides how content renders — so a schema declaring one is refused, naming `richtext` and `markdown`.
 
+Other formats check a value rather than mark it — `email` and `url` on `string` and `text`, `currency` on `string` — and on a `date` the format is its precision ([A field's rules](#a-fields-rules)). A format the field's kind does not take is refused when the schema is built.
+
 ### Translatable fields: `translatable`
 
 Text and rich-content fields are **translatable by default** — the framework keeps one value per locale. Set `translatable: false` to opt a field out (an ID, a slug, a machine code that's the same in every language):
@@ -353,16 +355,55 @@ Two ways to constrain a field to a set of choices:
 
 ```yaml
 fields:
-  status:  { type: string, enum: [draft, published, archived] }  # inline list
-  country: { type: string, options: '@/countries' }              # curated, shared
+  status:   { type: string, enum: [draft, published, archived] }  # inline list
+  country:  { options: '@/lists/countries' }                      # a list kept as content
+  province: { options: '@/lists/countries/subdivisions' }         # a nested list, by its path
 ```
 
 - **`enum:`** — an **inline** list of allowed values. Best for a short, fixed set. An entry can also
   be `{ value, label }` — `{ value: published, label: Live }` — to give an editor a label to show;
   a record stores the `value`.
-- **`options:`** — a **`@/<name>` ref** to a curated options schema. Best when the choices are a managed list reused across fields or foundations.
+- **`options:`** — the **section of a lists schema** that holds the choices: the schema's ref, then
+  the section's name — a nested section by its path. Best when the choices are a managed list,
+  reused across fields or foundations, that people curate as content. A field stores the chosen
+  item. Keep the lists a project shares in **one lists schema, a section per list**; a schema whose
+  top holds a single list may be named alone (`options: '@/countries'`), and one with several is
+  refused until the field names its section.
 
-An inline array always belongs on `enum:`; `options:` always takes a ref.
+An inline array always belongs on `enum:`; `options:` always names a schema. A field cannot take its
+choices from a section of its own schema — keep the list in a schema of its own. When the schema is
+built, an `options:` that names no section of the schema, or a section that holds only other sections,
+is refused, naming the schema's lists.
+
+### A field's rules
+
+A field can carry the rules a backend checks on every write, as its own keys:
+
+```yaml
+fields:
+  title:   { type: string, max_length: 250 }                        # characters
+  age:     { type: integer, min: 0, max: 150 }
+  photo:   { type: image, mime_types: ['image/*'], max_size: 2000000 }  # bytes
+  fee:     { type: string, format: currency }                       # an ISO 4217 code, like CAD
+  started: { type: date, format: year-month }                       # holds '2024-05'
+  year:    { type: date, format: year }                             # holds '2024'
+```
+
+| Rule | On | Keeps the value to |
+|---|---|---|
+| `max_length` | `string`, `text` | that many characters — each language of a translatable value on its own |
+| `min`, `max` | `integer`, `number` | that range |
+| `mime_types`, `max_size` | `image`, `file` | those types (`image/*`, `application/pdf`) and that many bytes |
+| `format: year-month`, `format: year` | `date` | a month or a year instead of a day |
+| `format: email`, `url`, `currency` | `string` — `email` and `url` on `text` too | a valid value of that kind |
+
+A date's value is text at every precision. YAML reads an unquoted `2024` as a number, so a year is
+written `year: '2024'`; a month, `2024-05`, needs no quotes.
+
+A field takes only the keys this page describes. One it does not — `maxLength` (it is `max_length`),
+`placeholder`, `pattern` — is refused by name when the schema is built, rather than dropped. How a
+field is edited — a widget, a placeholder — belongs to the component that edits it, and a field's
+guidance for the person filling it is its `description`: a schema's field declares no `help`.
 
 ---
 
@@ -390,7 +431,7 @@ modules:
 
 The records a query compiles are checked against their schema too, each section where the schema puts it. A component receives each one as its brief, or whole ([Entity Content → What a component receives](../reference/entity-content.md#what-a-component-receives)).
 
-Values are checked by their type as well — a `date` must be a real `YYYY-MM-DD` day, and a `datetime` a day and a time.
+Values are checked by their type and their field's rules as well — a `date` must be a real `YYYY-MM-DD` day, or a month `YYYY-MM` or a year `YYYY` when its `format` says so, written as text; a `datetime` a day and a time; and a value over its `max_length`, outside its `min`/`max`, a currency that is not a three-letter code, or a file of a type or size its `mime_types`/`max_size` exclude, is reported ([A field's rules](#a-fields-rules)).
 
 One thing is reported as **deferred** rather than checked, for an honest reason — the data isn't there to look at: an **external query** (`url:`), which isn't fetched at build time. A schema whose root is a list is checked as the list: the records a query delivers, or the list a record file holds under its section's key.
 
