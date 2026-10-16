@@ -1255,7 +1255,7 @@ Pull is a checkout, not a merge: it rewrites your files to match the backend, **
 
 Because it overwrites, **pull refuses while you have uncommitted changes** under the files it rewrites. Commit or stash them first — then your work is in git either way. Outside a git repository, pull asks before overwriting, and refuses when it cannot ask.
 
-To keep your local work instead, use `--merge`. It three-way merges your changes with the backend's, using the committed version of each file as the common ancestor: edits to different parts of a file combine silently, and only a genuine overlap gets conflict markers — in which case pull exits non-zero, so `uniweb pull --merge && uniweb push` never pushes conflict markers. `--merge` needs a git repository.
+To keep your local work instead, use `--merge`. It three-way merges your changes with the backend's, using as the common ancestor the version of each file your last pull wrote, found in your repository's history: edits to different parts of a file combine silently, and only a genuine overlap gets conflict markers — in which case pull exits non-zero, so `uniweb pull --merge && uniweb push` never pushes conflict markers. `--merge` needs a git repository.
 
 ### Options
 
