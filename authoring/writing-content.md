@@ -405,7 +405,7 @@ The one exception is `<br/>`, a line break inside a heading, where markdown has 
 # Launch a platform<br/>that's entirely yours
 ```
 
-In a paragraph, end the line with a backslash (`\`) instead.
+In a paragraph, end the line with a backslash (`\`) instead. A line break is always written on purpose like that: a plain newline inside a paragraph is a space, so you can wrap your lines however you like, and re-wrapping a paragraph changes nothing.
 
 ---
 
