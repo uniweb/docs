@@ -406,7 +406,8 @@ day too, and a backend stores it in full, `2024-05-03`.
 A `url` is a web address: `http://` or `https://`, or one written without a scheme that starts with
 a host name — `example.com/cv` — which a backend stores as `https://example.com/cv`. A path
 (`/about`) or another scheme (`mailto:`, `ftp:`) is not one; a link inside your own site is a
-`string`.
+`string`. It is also one a browser can open: a port above 65535, an unclosed `[`, or a character no
+host name may hold — `<`, or a space written `%20` — makes it not one.
 
 A `pattern` matches the **whole** value: `[0-9]{4}` is four digits, not four digits somewhere in the
 text. On a `url` it matches the address as stored, with `https://` in front. It is written in the
