@@ -76,7 +76,7 @@ uniweb add ci --host=github-pages   # Optional: add CI for GitHub Pages
 
 **Conflict handling.** Pre-existing `README.md` and `.gitignore` are overwritten — the scaffold's versions (project-shaped README, Vite/Node-aware ignores) are more useful than what `gh repo create` puts in a fresh repo. Any other collision aborts with the list of conflicting files; move or remove them and re-run. Files outside the scaffold's write set (e.g. `LICENSE`) are left alone.
 
-**Git.** `git init` is skipped when a `.git/` directory already exists.
+**Git.** `git init` is skipped when a repository already holds the directory — the clone you run it in, or a repository it sits inside. A folder a repository ignores gets a repository of its own.
 
 ### Default Behavior
 
@@ -1260,7 +1260,9 @@ uniweb pull
 
 The first pull of a project whose history shares nothing with the backend yet — a repository started from files that were never pulled into it — has no common state to merge from: a file both sides hold alike merges silently, and every difference is a conflict to settle. `uniweb pull --force` takes the backend's version instead. Either way, later pulls merge from there. A pull in a repository needs git 2.27 or later.
 
-Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask.
+What your repository ignores travels in no commit, so no merge can bring it: media a pull fetches into a folder you keep out of git are placed where your files lack them, and never over a file you have.
+
+Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask. A site in a folder that the repository around it ignores — a scratch directory, say — is outside git too: that repository can never hold its history.
 
 A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
 
@@ -1326,7 +1328,7 @@ uniweb login
 uniweb clone <site-uuid> [name|.]
 ```
 
-`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Like `uniweb create`, it puts a new project under git — unless it is already inside a repository — and the first commit holds the site as the backend has it, so your first `uniweb pull` merges from it. Sites are private — authenticate with `uniweb login` first.
+`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Like `uniweb create`, it puts a new project under git — unless a repository already holds its folder — and the first commit holds the site as the backend has it, so your first `uniweb pull` merges from it. Sites are private — authenticate with `uniweb login` first.
 
 Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where the site's foundation version is served.
 
