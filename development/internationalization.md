@@ -423,6 +423,8 @@ A plain-text value for such a sentence produces a plain-text paragraph. `page:` 
 
 A value that writes a link is taken as written, so a translation can still re-target a button. Labels that don't match the links one per line are taken as written too, and lose their links. A `uniweb pull` writes a button back the same way: its labels, or the link written out where this language sends it somewhere else.
 
+**A link belongs to the place that has one.** The same words are one string wherever they appear, so a heading that says *Faculty of Science* and a link that says `[Faculty of Science](/)` share one translation — and `uniweb i18n init` seeds it with the link. Where the source has no link, the translation's link is left off and its words are kept: the heading stays a heading, the link stays a link. A page title, a navigation label and a data block's plain string take the words alone the same way. Bold and emphasis are yours to write; they stay where you put them.
+
 `uniweb i18n status` reports the entries where this has been lost:
 
 ```

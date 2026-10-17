@@ -117,6 +117,11 @@ consecutive lines are one string; give one label per line:
 
 Write the link out only to send the button somewhere else in this language.
 
+**The same words in two places share one translation.** If a heading says "Faculty of
+Science" and a link elsewhere says it too, they are one string, and you can write the
+link into it: the place whose original has the link gets the link, and the heading gets
+just the words.
+
 Links keep working the same way: `page:` references, `/paths` and full URLs all
 behave as they do in your content.
 
