@@ -568,6 +568,8 @@ When the source content changes, free-form translations become stale. Check stat
 uniweb i18n status --freeform
 ```
 
+The free-form commands read your site's source files, so there's no need to build first. A record's translation is listed as *not checked*: nothing compares it with its record yet.
+
 After reviewing changes, update the recorded hash:
 
 ```bash
@@ -595,7 +597,7 @@ uniweb i18n prune --freeform --dry-run   # Preview what would be removed
 uniweb i18n prune --freeform             # Remove orphaned files
 ```
 
-Record translations (`records/…`) are never pruned, and neither are the translations of a page whose sections the built site content doesn't carry — a site that splits its content into per-page files, for instance.
+Record translations (`records/…`) are never pruned. Neither are the translations of a page or section marked `hidden: true`: it's a draft, left out of the published site but still there.
 
 ---
 
