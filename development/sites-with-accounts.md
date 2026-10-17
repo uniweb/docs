@@ -68,7 +68,7 @@ export default createMockBackend({
     // A Model's sections, so writes are checked the way production checks them —
     // `append_only` included. Who may edit an entry is enforced either way.
     schemas: {
-      '@acme/track': {   // named in full, as your foundation registers it
+      '@/track': {   // your foundation's own type, named as `uniweb dev` sends it
         sections: {
           identity: { kind: 'single', brief: true, fields: { name: { type: 'string', required: true } } },
           sessions: { kind: 'multi', fields: { title: { type: 'string', required: true } } },
@@ -78,7 +78,7 @@ export default createMockBackend({
     entities: [
       {
         uuid: '01926d5e-0000-7000-8000-000000000001',  // a UUID, as on the wire
-        model: '@acme/track',
+        model: '@/track',
         items: [
           { section: 'identity', data: { name: 'Main hall' } },
           { section: 'sessions', data: { title: 'Opening keynote' } },
