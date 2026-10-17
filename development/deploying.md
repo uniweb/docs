@@ -330,14 +330,14 @@ This is one thing you give up when you don't deploy to the Uniweb platform: prop
 
 When a site is hosted on the Uniweb backend, its content lives there as data — and you can work on it from a file project with **git-style sync verbs**:
 
-- `uniweb clone <site-uuid>` — start a local file project from a site that already lives on the backend (often authored in the apps).
-- `uniweb pull` — bring the backend's current content down into your files (prunes pages/sections removed on the backend; `--no-delete` to keep them). It overwrites rather than merges, so it refuses while you have uncommitted changes — `uniweb pull --merge` combines them with the backend's instead.
+- `uniweb clone <site-uuid>` — start a local file project, under git, from a site that already lives on the backend (often authored in the apps).
+- `uniweb pull` — bring the backend's current content into your files. In a git repository it merges, like `git pull`: the backend's content is committed and merged into your branch, so your work — committed or not — is kept, and pages and sections removed on the backend are removed here too unless you changed them. Outside git it rewrites your files to match the backend (`--no-delete` keeps what the backend removed), asking first.
 - `uniweb push` — send your local edits back up (first push creates the site and mints its id).
-- `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull --merge` for the authors' edits. Never pushes.
+- `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
 - `uniweb sync` — `refresh`, then `push`.
 - `uniweb publish` — make the backend's current state **live**.
 
-**Nobody's work is overwritten without asking.** A push that would overwrite changes made in the apps since your last pull is refused before anything is written; merge them in with `uniweb pull --merge` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
+**Nobody's work is overwritten without asking.** A push that would overwrite changes made in the apps since your last pull is refused before anything is written; merge them in with `uniweb pull` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge, then `git commit`. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
 
 ---
 

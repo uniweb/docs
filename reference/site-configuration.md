@@ -510,7 +510,7 @@ as text, and text is an address. Write `true` or `false`.
 and `uniweb publish` send each service `site.yml` lists, as it says it, and switch off one you have
 removed from the file. A service your site has that this copy has never seen — one turned on in the
 Uniweb app since your last pull, say — is left as it is. If a service you changed was also changed
-on your site since your last pull, the push stops and names it: run `uniweb pull --merge`, then push
+on your site since your last pull, the push stops and names it: run `uniweb pull`, then push
 again. `uniweb publish` also says when your pages show records and `services` does not ask for
 `records`. `uniweb pull` writes the services your site has into `services` — one that is off, with
 no options, only where `site.yml` already names it.

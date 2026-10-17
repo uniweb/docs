@@ -1176,7 +1176,7 @@ uniweb push
 
 Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` records it in [`sync.json`](#which-site-this-is--syncjson)); later pushes update it.
 
-**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Combine the changes with `uniweb pull --merge` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately.
+**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
 
 **The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
 
@@ -1251,19 +1251,25 @@ uniweb login
 uniweb pull
 ```
 
-Pull is a checkout, not a merge: it rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree). A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
+**In a git repository, a pull is a merge** — like `git pull`, with the backend as the remote. It commits the backend's content (*"The site's content on https://uniweb.app"*) and merges that commit into your branch, from the last state of the site your history shares with the backend:
 
-Because it overwrites, **pull refuses while you have uncommitted changes** under the files it rewrites. Commit or stash them first — then your work is in git either way. Outside a git repository, pull asks before overwriting, and refuses when it cannot ask.
+- **Your work is kept**, committed or not: uncommitted changes are set aside for the merge and put back after it.
+- **A teammate's work arriving through git is kept like your own**, and a file the backend never had — a section nobody has pushed yet — is never deleted.
+- **What changed on the backend arrives**: edits, new pages and sections, renames, and pages and sections the backend removed — removed here too, unless you changed them, which is a conflict.
+- **Edits to different parts of a file combine silently**; only a genuine overlap gets conflict markers. Pull then exits non-zero, so `uniweb pull && uniweb push` never pushes conflict markers. Settle the conflict as in any merge, then `git commit`.
 
-To keep your local work instead, use `--merge`. It three-way merges your changes with the backend's, using as the common ancestor the version of each file your last pull wrote, found in your repository's history: edits to different parts of a file combine silently, and only a genuine overlap gets conflict markers — in which case pull exits non-zero, so `uniweb pull --merge && uniweb push` never pushes conflict markers. `--merge` needs a git repository.
+The first pull of a project whose history shares nothing with the backend yet — a repository started from files that were never pulled into it — has no common state to merge from: a file both sides hold alike merges silently, and every difference is a conflict to settle. `uniweb pull --force` takes the backend's version instead. Either way, later pulls merge from there. A pull in a repository needs git 2.27 or later.
+
+Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask.
+
+A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--merge` | Three-way merge your uncommitted changes with the backend's, instead of refusing |
-| `--force` | Discard your uncommitted changes and take the backend's version |
-| `--no-delete` | Project, but keep local files that have no backend item |
+| `--force` | Take the backend's version, discarding your local changes to the site's content |
+| `--no-delete` | Keep local files that have no backend item |
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
 | `--dry-run` | Report what it would fetch; write nothing |
@@ -1279,7 +1285,7 @@ Catch up with everything outside your working copy: your teammates' commits on t
 uniweb refresh
 ```
 
-It runs `git pull` first, then `uniweb pull --merge`, and ends by reporting what it checked, what it skipped, and whether you have unpushed changes. It **never pushes** — it cannot ship anything, so it is safe to run at the start of every working session. It stops if `git pull` fails, and exits non-zero if the merge leaves conflicts.
+It runs `git pull` first — merging, never rebasing, since a rebase would rewrite the commits a pull of the backend made — then `uniweb pull`, and ends by reporting what it checked, what it skipped, and whether you have unpushed changes. It **never pushes** — it cannot ship anything, so it is safe to run at the start of every working session. It stops if `git pull` fails, and exits non-zero if the merge leaves conflicts.
 
 ### Options
 
@@ -1320,7 +1326,7 @@ uniweb login
 uniweb clone <site-uuid> [name|.]
 ```
 
-`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Sites are private — authenticate with `uniweb login` first.
+`clone` scaffolds a full site package whose foundation is loaded by URL (the site carries its own foundation ref), records the site's id in `sync.json`, installs dependencies, and then runs the project-local `uniweb pull` to fill in the content. Like `uniweb create`, it puts a new project under git — unless it is already inside a repository — and the first commit holds the site as the backend has it, so your first `uniweb pull` merges from it. Sites are private — authenticate with `uniweb login` first.
 
 Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where the site's foundation version is served.
 
@@ -1332,6 +1338,7 @@ Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where
 | `--path <dir>` | Place the site under `<dir>/` (segregated layout) |
 | `--project <dir>` | Co-locate as `<dir>/site`. Takes no name: with `<name>` as well, clone stops and names `<dir>/sites/<name>` |
 | `--no-records` | Pull pages only; skip records |
+| `--no-git` | Don't start a git repository for the new project |
 | `--org @org` | Work in `@org` for this clone, instead of your login's workspace |
 
 ---
