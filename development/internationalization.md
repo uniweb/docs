@@ -350,7 +350,7 @@ Generates `locales/manifest.json` with all translatable content:
 
 One unit per block element — a heading, a paragraph, a list item — never a fragment of one, and never two joined. A `\n` inside a `source` is a line break *within* one paragraph.
 
-**`source` is the key; `markup` is the prompt.** The hash is computed over `source`, the element's flattened plain text, so adding a link or bolding a phrase does **not** move the hash and does not orphan the existing translation. `markup` is that same element as inline Markdown, and appears only when the element carries formatting the plain text has lost. It is what `uniweb i18n init` seeds a language file with, and what a translator should work from.
+**`source` is the key; `markup` is the prompt.** The hash is computed over `source`, the element's flattened plain text, so adding a link or bolding a phrase does **not** move the hash and does not orphan the existing translation. `markup` is that same element as inline Markdown, and appears only when the element carries formatting the plain text has lost. It is what `uniweb i18n init` seeds a language file with, and what a translator should work from — except where `markupVaries` says the string's places differ in formatting, when `init` seeds its plain words (see *The same words in several places*, below).
 
 The `contexts` array shows where the string appears, and `field` indicates the content type (title, paragraph, link label, etc.).
 
@@ -423,7 +423,7 @@ A plain-text value for such a sentence produces a plain-text paragraph. `page:` 
 
 A value that writes a link is taken as written, so a translation can still re-target a button. Labels that don't match the links one per line are taken as written too, and lose their links. A `uniweb pull` writes a button back the same way: its labels, or the link written out where this language sends it somewhere else.
 
-**A link belongs to the place that has one.** The same words are one string wherever they appear, so a heading that says *Faculty of Science* and a link that says `[Faculty of Science](/)` share one translation — and `uniweb i18n init` seeds it with the link. Where the source has no link, the translation's link is left off and its words are kept: the heading stays a heading, the link stays a link. A page title, a navigation label and a data block's plain string take the words alone the same way — bold included, since they are plain text. In headings and paragraphs, bold and emphasis are yours to write, and they stay where you put them.
+**The same words in several places are one string.** A heading that says *Faculty of Science* and a link that says `[Faculty of Science](/)` share one translation. When a string's places differ like this, the manifest marks it `"markupVaries": true` and `uniweb i18n init` starts it with its plain words. Translate it with the words alone: the heading takes them as they are, and the link — like a button — takes them as its label and keeps its target. A link you write goes to every place the string appears, so write one only when each place should have it; to give one place its own wording, use an override (below). A page title or a navigation label is plain text, and takes a translation's words without its formatting.
 
 `uniweb i18n status` reports the entries where this has been lost:
 
