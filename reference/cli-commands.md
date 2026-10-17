@@ -1253,7 +1253,7 @@ uniweb pull
 
 **In a git repository, a pull is a merge** — like `git pull`, with the backend as the remote. It commits the backend's content (*"The site's content on https://uniweb.app"*) and merges that commit into your branch, from the last state of the site your history shares with the backend:
 
-- **Your work is kept**, committed or not: uncommitted changes are set aside for the merge and put back after it. Where they overlap what the merge brought, that is a conflict like any other: the markers are in your file, git keeps your changes in the stash as well, and pull exits non-zero — settle the markers, then `git stash drop`.
+- **Your work is kept**, committed or not: uncommitted changes are set aside for the merge and put back after it. Where they overlap what the merge brought, that is a conflict like any other: the markers are in your file, git keeps your changes in the stash as well, and pull exits non-zero — settle the markers and `git add` each file, then `git stash drop`. A push is refused while any file of the site is in conflict.
 - **A teammate's work arriving through git is kept like your own**, and a file the backend never had — a section nobody has pushed yet — is never deleted.
 - **What changed on the backend arrives**: edits, new pages and sections, renames, and pages and sections the backend removed — removed here too, unless you changed them, which is a conflict.
 - **Edits to different parts of a file combine silently**; only a genuine overlap gets conflict markers. Pull then exits non-zero, so `uniweb pull && uniweb push` never pushes conflict markers. Settle the conflict as in any merge, then `git commit`.
