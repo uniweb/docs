@@ -506,7 +506,7 @@ See [Deploying → How a foundation reaches the catalog](../development/deployin
 
 Uniweb hosting requires authentication — run `uniweb login` first.
 
-For the full developer-to-client workflow (registering foundations, creating invites, handing off sites), see [Publishing and Clients](../development/publishing-and-clients.md).
+To make a foundation a catalog product other sites can use, see [Registering a Foundation](../development/publishing-and-clients.md).
 
 ---
 
@@ -543,4 +543,4 @@ See [CLI Commands](./cli-commands.md) and [Deploying](../development/deploying.m
 - [CLI Commands](./cli-commands.md) — Build and deploy command options
 - [Site Configuration](./site-configuration.md) — Pre-render settings
 - [Templates](../getting-started/templates.md) — Project templates
-- [Publishing and Clients](../development/publishing-and-clients.md) — Full developer-to-client workflow
+- [Registering a Foundation](../development/publishing-and-clients.md) — Making a foundation a catalog product

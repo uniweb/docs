@@ -557,5 +557,5 @@ A few practical notes:
 - [Working with Data](./working-with-data.md) — How a query's records reach your components at runtime, and `uniweb validate`.
 - [Component Metadata → Data](../reference/component-metadata.md#data) — The `data:` field reference: named refs, inline field maps, and the editor rich-form.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — Why one schema serves validation, editor UI, and delivery — and how the registry makes content types shareable.
-- [Publishing and Working with Clients](./publishing-and-clients.md) — Publishing a foundation as a catalog product, and the invite / handoff client workflows.
+- [Registering a Foundation](./publishing-and-clients.md) — Publishing a foundation as a catalog product.
 - [CLI Commands](../reference/cli-commands.md) — Full command reference.

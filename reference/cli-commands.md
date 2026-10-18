@@ -20,8 +20,6 @@ uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb login                   # Authenticate with Uniweb platform
 uniweb register                # Register a foundation + its data schemas
-uniweb invite <email>          # Invite a client to use your foundation
-uniweb handoff <email>         # Create a site and transfer to a client
 uniweb publish                 # Publish a site to Uniweb hosting (brings the foundation along)
 uniweb deploy                  # Ship a site to a host (asks where, if not yet configured)
 uniweb add ci --host=<adapter>  # Set up CI so every push deploys (+ PR previews)
@@ -994,7 +992,7 @@ uniweb logout
 
 ### When It's Needed
 
-Login is required for `publish`, `register`, `push`, `pull`, `invite`, and `handoff`. The CLI prompts you to log in automatically if you run one of these commands without credentials. (`uniweb deploy --host=<adapter>` authenticates with the third-party host, not with Uniweb.)
+Login is required for every command that talks to a backend, `publish`, `register`, `push` and `pull` among them. The CLI prompts you to log in automatically if you run one of these commands without credentials. (`uniweb deploy --host=<adapter>` authenticates with the third-party host, not with Uniweb.)
 
 ---
 
@@ -1157,10 +1155,6 @@ uniweb register
 
 ```
 ✓ Registered @myorg/marketing@1.0.0 + 2 data schema(s)
-
-  Working with clients:
-    uniweb invite <email>    Client creates their own site with your foundation
-    uniweb handoff <email>   Create a web or local site and hand it off to a client
 ```
 
 ---
@@ -1489,142 +1483,6 @@ With `--json`, `list` prints one JSON object on stdout:
 
 ---
 
-## uniweb invite
-
-Create, list, revoke, and resend foundation invites.
-
-```bash
-uniweb invite <email> [options]
-uniweb invite --list
-uniweb invite --revoke <inviteId>
-uniweb invite --resend <inviteId>
-```
-
-Invites let you authorize a client to create sites with your foundation. When the client creates a site using your foundation, their license is granted automatically.
-
-Run from a foundation directory or workspace root.
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--uses <n>` | Maximum number of times the invite can be used (default: 1) |
-| `--expires <days>` | Days until the invite expires (default: 30) |
-| `--version <n>` | Major version to authorize (default: current) |
-| `--list` | List all invites for your foundation |
-| `--revoke <id>` | Revoke an invite by ID |
-| `--resend <id>` | Resend an invite by ID |
-| `--server <url>` | Use a specific backend origin |
-
-### Examples
-
-```bash
-# Create a single-use invite (default)
-uniweb invite client@example.com
-
-# Create a multi-use invite (e.g., for a team)
-uniweb invite team@company.com --uses 5
-
-# Create an invite that expires in 60 days
-uniweb invite client@example.com --expires 60
-
-# List all invites
-uniweb invite --list
-
-# Revoke an invite
-uniweb invite --revoke abc-123
-
-# Resend an invite
-uniweb invite --resend abc-123
-```
-
-### Output
-
-```
-✓ Invite created
-
-  ID:       abc-123
-  To:       client@example.com
-  For:      my-foundation v1
-  Uses:     1
-  Expires:  2025-03-15
-  Link:     https://hub.uniweb.app/invite/abc-123
-
-  When client@example.com creates a site with my-foundation
-  on hub.uniweb.app or Studio, it will be authorized automatically.
-```
-
-The link opens a landing page where the client can create their site using the web app or download Uniweb Studio.
-
----
-
-## uniweb handoff
-
-Create a site record and transfer ownership to a client.
-
-```bash
-uniweb handoff <email> [options]
-```
-
-Use this when you build a site for a client and want to hand it off — the client receives a licensed, registered site ready to use.
-
-Run from a foundation directory or workspace root.
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--site <id>` | Specify a site ID (default: auto-generated) |
-| `--web` | Show web-based handoff instructions instead of running the API flow |
-| `--server <url>` | Use a specific backend origin |
-
-### What Happens
-
-1. Creates a site record on the backend with your foundation
-2. Auto-grants a license (you own the foundation)
-3. Transfers ownership to the client's email
-4. Shows next steps for sharing the site files
-
-### Examples
-
-```bash
-# Hand off to a client (auto-generates site ID)
-uniweb handoff client@example.com
-
-# Hand off with a specific site ID
-uniweb handoff client@example.com --site acme-corp
-
-# Show web-based handoff instructions
-uniweb handoff client@example.com --web
-```
-
-### Output
-
-```
-✓ Site created and transferred
-
-  Site:        my-foundation-a1b2c3
-  Foundation:  my-foundation v1
-  Owner:       client@example.com
-  License:     ✓ granted
-
-  Next steps:
-    1. Add id: my-foundation-a1b2c3 to your site.yml
-    2. Share the site files with client@example.com
-       (git repo, zip, shared drive — any method works)
-    3. Client opens the project in Uniweb Studio
-```
-
-### Invite vs Handoff
-
-| | Invite | Handoff |
-|---|---|---|
-| **Who creates the site** | Client | Developer |
-| **Client starts with** | A blank site with the foundation | A populated site with content |
-| **When to use** | Client wants to build their own content | Developer builds the site for the client |
-
----
-
 ## uniweb deploy
 
 Ship a site to a host. Run it with no destination configured and it asks:
@@ -1811,5 +1669,5 @@ Workspace builds discover foundations, extensions, and sites from the patterns i
 - [Page Configuration](./page-configuration.md) — `page.yml` reference
 - [Component Metadata](./component-metadata.md) — `meta.js` reference
 - [Internationalization](../development/internationalization.md) — Translation workflow
-- [Publishing and Clients](../development/publishing-and-clients.md) — Full developer-to-client workflow
+- [Registering a Foundation](../development/publishing-and-clients.md) — Making a foundation a catalog product
 - [Deployment](./deployment.md) — Static hosting and platform deployment

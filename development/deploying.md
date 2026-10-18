@@ -507,7 +507,7 @@ The framework knows both verbs, in both orders, against both kinds of destinatio
 - **[Building with Uniweb](./building-with-uniweb.md)** — The two-package model and how content connects to components.
 - **[Project Structures](./project-structures.md)** — Workspace layouts: single, segregated, co-located, extensions; multiple sites sharing one foundation.
 - **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable on the foundation-design axis (orthogonal to standalone vs linked deployment).
-- **[Publishing and Clients](./publishing-and-clients.md)** — Invite and handoff workflows for getting a site into a content author's hands.
+- **[Registering a Foundation](./publishing-and-clients.md)** — Making a foundation a catalog product that other sites can use.
 - **[CLI Commands](../reference/cli-commands.md)** — Full reference for `uniweb publish`, `uniweb register`, `uniweb deploy`, `uniweb push`/`pull`, runtime policy, and propagation.
 - **[Static Hosting](../reference/deployment.md)** — Per-host recipes for Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, and self-hosted servers.
 - **[Deploying to GitHub Pages](./deploy-github-pages.md)** — The full recipe: scaffold, push, custom domain, draft-mode escape hatches, troubleshooting.
