@@ -35,7 +35,7 @@ uniweb register
 
 A foundation's scope is part of its name in `main.js` (`@your-org/marketing`). A name with no scope yet registers under the workspace you work in — an organization's scope, or your personal one — or under `--scope @your-org`, and the scope is written into the name. See [Identity](../reference/cli-commands.md#identity-scope--name). If you only mean to ship a single site, you don't need to call `register` yourself — `uniweb publish` brings the site's local foundation along.
 
-Registering makes your foundation available for sites to consume — either through the web app (uniweb.app) or the desktop app (Uniweb Studio). The version comes from `package.json::version`.
+Registering makes your foundation available for sites to consume, including the sites authors build in the web app (uniweb.app). The version comes from `package.json::version`.
 
 Each version can only be registered once. To register an update, bump the version in `package.json`:
 

@@ -326,7 +326,7 @@ Edit from the web app or mobile. Changes publish instantly.
 
 ![](lu-monitor)
 
-Native apps for desktop. Work directly on your file system.
+Your own editor, your own files. Work directly on your file system.
 
 ### Teams
 

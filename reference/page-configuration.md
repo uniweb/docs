@@ -114,7 +114,7 @@ title: Installation Guide
 
 Now `[Install](page:installation)` works regardless of where the page moves.
 
-IDs can be descriptive (like `installation`) or opaque (like `a7f3e2b1`). When editing with Studio, IDs are auto-assigned to any page that doesn't have one — you don't need to set them manually. Explicit IDs are useful when you want meaningful `page:` link targets.
+IDs can be descriptive (like `installation`) or opaque (like `a7f3e2b1`); a descriptive one makes a meaningful `page:` link target.
 
 ---
 
