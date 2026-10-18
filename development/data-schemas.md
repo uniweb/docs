@@ -256,7 +256,7 @@ The friendly type you write folds to a small set of **canonical kinds** the fram
 | `image` | `file` | A path or URL to a file |
 | `url`, `email` | `string` (+ `format`) | A validated string |
 | `markdown` | `text` (+ `format`) | A rich-content body (a source string) |
-| `richtext` | `json` (+ `format: prosemirror`) | A rich document edited in the visual app |
+| `richtext` | `json` (+ `format: richtext`) | A rich document edited in the visual app |
 | `json` | `json` | An opaque structured value (see `format`) |
 | `object`, `group` | `object` | A nested record — declare its `fields:`. `group` is the friendlier spelling |
 | `ref` | `ref` | A reference to another schema — write `{ ref: '@/person' }` |
@@ -327,12 +327,12 @@ A `format` marks a field as carrying rich content. It is **type-bound** — the 
 ```yaml
 fields:
   summary: { type: markdown }  # a source body (round-trips as markdown text)
-  body:    richtext            # a rich document, edited in the visual app (json + prosemirror)
+  body:    richtext            # a rich document, edited in the visual app (json + format: richtext)
 ```
 
-The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: prosemirror`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
+The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: richtext`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
 
-There is no `html` type or format. Content is never markup — a component decides how content renders — so a schema declaring one is refused, naming `richtext` and `markdown`.
+There is no `html` type or format. Content is never markup — a component decides how content renders — so a schema declaring one is refused, naming `richtext` and `markdown`. And `format: prosemirror`, the earlier name of `format: richtext`, is refused naming its successor.
 
 Other formats check a value rather than mark it — `email` and `url` on `string` and `text`, `currency` on `string` — and on a `date` the format is its precision ([A field's rules](#a-fields-rules)). A format the field's kind does not take is refused when the schema is built.
 
