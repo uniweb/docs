@@ -1229,9 +1229,9 @@ export default function Lesson({ content, block }) {
 
 The sequence is the section as written, headline included — so a component that draws `content.title` itself renders it twice if it also hands the whole sequence to either one.
 
-#### Both need the typography plugin
+#### Both need the prose stylesheet
 
-`<Prose>` emits Tailwind Typography's `prose` classes, and `<Render>` output is normally placed inside a container that carries them. Your foundation's stylesheet supplies the rules with one line — it brings the plugin with it, so there is nothing to install:
+`<Prose>` emits a `prose` container, and `<Render>` output is normally placed inside one. Your foundation's stylesheet supplies the rules with one line — there is nothing to install:
 
 ```css
 /* your foundation's styles.css, after the Tailwind import */
@@ -1240,9 +1240,20 @@ The sequence is the section as written, headline included — so a component tha
 
 Without it the markup is right and completely unstyled — lists lose their bullets and numbers, headings and spacing their typography. The foundation build warns when it renders `<Prose>` or `<Article>` with no prose styles in its CSS, and `uniweb doctor` flags it too.
 
-The same import is what makes body copy answer to the site's `theme.yml`. Typography ships its own greys, so without it long-form content is the one part of the page a site cannot restyle. After the import there is nothing more to do — and specifically, do not add `prose-invert`, a `dark:` variant, or a palette modifier like `prose-gray`. Each re-declares the variables the bridge just pointed at the theme, and the tokens already flip with the visitor's scheme.
+The rules are written for what `<Render>` emits — a tight list drawn without paragraphs, a button that says it is one, an image's credit, a document's file card — and take every color from the section's theme tokens, so long-form text follows the site's `theme.yml` and the visitor's light or dark scheme with nothing more to do. A `prose` container may sit inside another: nothing it declares changes the colors within it.
 
-**Use exactly one prose container per subtree.** The `--tw-prose-*` variables are inherited, so a `prose` container nested inside another silently resets all of them for everything inside it — the outer looks correctly themed and its contents do not. The section that renders the document is usually the better owner, since it then renders correctly under any layout; a layout should supply column width and padding only.
+**Size and rhythm.** `size` — `sm`, `base`, `lg` (the default), `xl`, `2xl` — picks a step. The classes are `prose-sm` … `prose-2xl`, and they work behind a breakpoint (`md:prose-lg`). Each step is a ratio of the site's reading size, which a site sets in `theme.yml` with the rest of the scale — `prose-size`, `prose-leading`, `prose-measure`, `prose-flow` and `prose-h1` … `prose-h4` ([Long-form text](./site-theming.md#long-form-text)). Unset, each step keeps its own line height, spacing and heading sizes. To declare the variables in your foundation, described so an editor can offer them, spread kit's declarations into `main.js`:
+
+```js
+import { proseVars } from '@uniweb/kit/prose-vars'
+
+export const vars = {
+  ...proseVars,
+  // your foundation's own
+}
+```
+
+**Overriding.** Every rule sits beneath Tailwind's utilities, so a utility class wins — on the container (`<Prose className="text-lg">`), or through an element variant: `prose-headings:font-display`, `prose-a:no-underline`, and one for each element (`prose-p:`, `prose-code:`, `prose-pre:`, `prose-table:` …). `not-prose` opts a subtree out. There are no palette modifiers and no `prose-invert`: the colors are the theme's, and `uniweb doctor` names any left in a class list.
 
 Both stamp an `id` on each heading, from the same generator, so `useHeadings` and any anchor link agree with whichever one rendered.
 

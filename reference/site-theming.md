@@ -475,6 +475,22 @@ The family loads and applies wherever the foundation wired it. (`vars: { font-se
 
 The three built-in roles are themselves just **defaults** — a foundation can retarget which elements a role paints (its `applyTo`) or add roles — so the fonts a given foundation exposes are part of its theme surface. Set whatever roles it offers in `fonts:` by name.
 
+### Long-form text
+
+Articles, documentation and other long-form text read their size and rhythm from `vars:`, when the foundation styles them with kit's prose stylesheet:
+
+```yaml
+# site/theme.yml
+vars:
+  prose-size: 1.0625rem   # the reading size (1rem); larger and smaller text scale from it
+  prose-leading: 1.7      # line height
+  prose-measure: 70ch     # line length (65ch)
+  prose-flow: 1.4em       # space between paragraphs and lists
+  prose-h2: 1.6em         # a heading's size, relative to the text — prose-h1 … prose-h4
+```
+
+Leave one out and the foundation's design decides it: each text size a component uses keeps its own line height, spacing and heading sizes until you set them. Colors need no setting here — long-form text takes the section's colors from your theme, light and dark alike.
+
 ## Code Block Syntax Highlighting
 
 Code blocks in markdown are syntax-highlighted with [Shiki](https://shiki.style). Sixty-five themes ship in the box, so the usual answer is to name one:
