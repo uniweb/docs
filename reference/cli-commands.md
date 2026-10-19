@@ -1172,6 +1172,8 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
 
+**In a git repository, a push sends what you have committed.** If the site's content has changes you have not committed, the push is refused before anything is sent, and it lists the files: commit them and push again, or run `uniweb push --commit -m "…"` to commit them first — the site's content only, so anything else you have staged stays staged. The commit a push is made from is where the next pull merges from, yours and a teammate's, which is how that pull tells your changes from the backend's. What the push then writes into your files — the ids the backend assigned, in `sync.json` and in new record files — it commits itself, as `uniweb`. Outside a repository, the files are sent as they are.
+
 **What the backend removes from your content, the push names.** The backend stores rich text only as far as a page can show it, and removes the rest as it stores it — a link a page would never follow, a style name that is not one. The push prints each removal beside the file it came from, and says so when this version of Uniweb would have kept it. The file keeps what was removed, so a pull would write the file without it.
 
 **The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
@@ -1198,7 +1200,7 @@ uniweb push --personal      # work in your personal workspace for this push
 
 ### Which site this is — `sync.json`
 
-The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. **Commit it**: it is how a teammate's clone reaches the same site instead of creating a second one. The CLI writes it; you never edit it.
+The first push to a backend records what that backend assigned — the site's id, its owner, the ids of its records and uploaded files — in `sync.json`, beside `site.yml`. It belongs in your history — it is how a teammate's clone reaches the same site instead of creating a second one — so in a git repository the push commits it, in a commit of its own. The CLI writes it; you never edit it.
 
 A project can sync with more than one backend — say, a local development server and production. Each gets its own section of `sync.json`, so the two sites never mix. **`push`, `pull` and `publish` go to the backend you are logged in to** — see [`uniweb login`](#uniweb-login); a script can aim a single run with `UNIWEB_SERVER`. They never talk to a backend you are not logged in to: logged in nowhere, they ask you to log in first, to https://uniweb.app unless you name another. If the backend they go to has no site for this project while it has one elsewhere, `push` and `publish` say so before creating a new site there.
 
@@ -1229,6 +1231,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--personal` | Work in your personal workspace for this push |
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
+| `--commit` | In a git repository, commit the site's content before pushing it — with `-m <message>`, or *Update the site's content* |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
@@ -1253,6 +1256,7 @@ uniweb pull
 - **A teammate's work arriving through git is kept like your own**, and a file the backend never had — a section nobody has pushed yet — is never deleted.
 - **What changed on the backend arrives**: edits, new pages and sections, renames, and pages and sections the backend removed — removed here too, unless you changed them, which is a conflict.
 - **Edits to different parts of a file combine silently**; only a genuine overlap gets conflict markers. Pull then exits non-zero, so `uniweb pull && uniweb push` never pushes conflict markers. Settle the conflict as in any merge, then `git commit`.
+- **When the backend has nothing new, the pull says so** — and lists the files where yours hold changes it does not have yet, which `uniweb push` sends.
 
 The first pull of a project whose history shares nothing with the backend yet — a repository started from files that were never pulled into it — has no common state to merge from: a file both sides hold alike merges silently, and every difference is a conflict to settle, your version against the backend's. A fresh clone of a repository that has been pushed from but never pulled into is in the same position when the backend cannot say which commit the last push was made from; when it can, the pull merges from that commit. `uniweb pull --force` takes the backend's version of every file that differs instead, and lists them; what they held stays in your history, in the commit before. Either way, later pulls merge from there. A pull in a repository needs git 2.27 or later.
 
@@ -1312,6 +1316,7 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 |--------|-------------|
 | `--no-git` | Skip the git remote half of the refresh |
 | `--force` | Passed to the push only: overwrite changes made on the backend since your last pull |
+| `--commit` | Passed to the push only: commit the site's content first, with `-m <message>` |
 
 ---
 
@@ -1350,7 +1355,7 @@ uniweb login
 uniweb publish
 ```
 
-`publish` pushes your local content first — the same push as `uniweb push`, refused the same way if the site changed on the backend since your last pull — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
+`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull, or, in a git repository, if its content is not committed (`--commit` commits it first) — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
@@ -1377,6 +1382,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--dry-run` | Resolve everything; release, sync and publish nothing. |
 | `--yes` | Skip confirmations (CI); never block on a prompt. Answers a change that only lowers what the site pays — never one that charges. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
+| `--commit` | In a git repository, commit the site's content before publishing it — with `-m <message>` — as [`uniweb push --commit`](#uniweb-push). |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping — as [`uniweb push --bump`](#uniweb-push). |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
