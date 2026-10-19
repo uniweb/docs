@@ -593,6 +593,8 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 | `@std/service` | Services a business offers |
 | `@std/product` | Things a business sells |
 | `@std/testimonial` | What a customer, client or patient said |
+| `@std/position` | A role someone held: a job, an appointment or a volunteer post |
+| `@std/qualification` | A degree, diploma or certificate someone earned |
 
 Add `@uniweb/schemas` as a dependency when a `@std/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
 
