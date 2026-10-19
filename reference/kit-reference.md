@@ -1193,35 +1193,33 @@ It fills the nearest positioned ancestor, so place it inside an element with `po
 
 ### Render vs Prose
 
-Kit has two renderers. They look interchangeable and are not — they read different inputs and handle different things.
+`<Prose>` is `<Render>` inside a typography container: one walk over the same content, plus the `prose` classes that style what it emits. Both read the parsed sequence (`content.sequence`) — or parse the ProseMirror document they are given, or the block's — and both render every kind of element a section holds, tables, callouts, insets, icons and math included. Tagged data blocks are left out of both: a component reads them from `content.data`.
 
 | | `<Render>` | `<Prose>` |
 |---|---|---|
-| **Reads** | Raw ProseMirror nodes (`block.rawContent`) | The parsed sequence (`content.sequence`) |
-| **Use for** | A whole document: a markdown file rendered as written | Section content the parser has split into title, items, paragraphs |
-| **Tables** | Yes | **No** |
-| **Also handles** | Lists, callouts (`alert`/`warning`), `details`, inline insets | Icons, math, data blocks |
-
-**Pick `<Render>` when the markdown file *is* the page.** Documentation, articles, anything mounted from a content repository. It covers the full node set, so a reference table or a callout survives.
+| **Emits** | The elements alone — no wrapper, no classes | The same elements, in a `prose` container whose `size` you pick |
+| **Use when** | You supply the container: your own type system, or a `prose` element of your own | You want kit's prose typography with nothing more to write |
 
 ```jsx
-// A section type that renders whatever the author wrote, whole
+// A section type that lays out what the author wrote with its own type system
 import { Render } from '@uniweb/kit'
 
 export default function Section({ block }) {
-  return <Render block={block} />
+  return (
+    <div className="doc-body">
+      <Render block={block} />
+    </div>
+  )
 }
 ```
 
-**Pick `<Prose>` when you have already taken the content apart** and want the narrative remainder rendered with typography.
-
 ```jsx
+// The section as written, with prose typography — and its data rendered your own way
 import { Prose } from '@uniweb/kit'
 
 export default function Lesson({ content, block }) {
   return (
     <>
-      <h2>{content.title}</h2>
       <Prose content={content} block={block} />
       {content.data.quiz && <Quiz data={content.data.quiz} />}
     </>
@@ -1229,7 +1227,7 @@ export default function Lesson({ content, block }) {
 }
 ```
 
-Reaching for `<Prose>` to render a document is the mistake worth naming: it renders, it looks right, and every table in the file is gone.
+The sequence is the section as written, headline included — so a component that draws `content.title` itself renders it twice if it also hands the whole sequence to either one.
 
 #### Both need the typography plugin
 
