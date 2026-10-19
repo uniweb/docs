@@ -590,6 +590,9 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 | `@std/project` | Portfolio/case studies |
 | `@std/publication` | Academic papers, research |
 | `@std/opportunity` | Jobs, grants, calls |
+| `@std/service` | Services a business offers |
+| `@std/product` | Things a business sells |
+| `@std/testimonial` | What a customer, client or patient said |
 
 Add `@uniweb/schemas` as a dependency when a `@std/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
 
