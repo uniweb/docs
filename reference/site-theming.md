@@ -491,6 +491,8 @@ vars:
 
 Leave one out and the foundation's design decides it: each text size a component uses keeps its own line height, spacing and heading sizes until you set them. Colors need no setting here — long-form text takes the section's colors from your theme, light and dark alike.
 
+Write each with its unit, as above — `prose-flow: 1.5` is not a length, and a value the browser cannot read is dropped without a word: the spacing goes to nothing. `prose-measure` reaches text the foundation leaves at a line length; a component that fills its column sets its own width, and there it changes nothing.
+
 ## Code Block Syntax Highlighting
 
 Code blocks in markdown are syntax-highlighted with [Shiki](https://shiki.style). Sixty-five themes ship in the box, so the usual answer is to name one:

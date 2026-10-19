@@ -1240,9 +1240,9 @@ The sequence is the section as written, headline included — so a component tha
 
 Without it the markup is right and completely unstyled — lists lose their bullets and numbers, headings and spacing their typography. The foundation build warns when it renders `<Prose>` or `<Article>` with no prose styles in its CSS, and `uniweb doctor` flags it too.
 
-The rules are written for what `<Render>` emits — a tight list drawn without paragraphs, a button that says it is one, an image's credit, a document's file card — and take every color from the section's theme tokens, so long-form text follows the site's `theme.yml` and the visitor's light or dark scheme with nothing more to do. A `prose` container may sit inside another: nothing it declares changes the colors within it.
+The rules are written for what `<Render>` emits — a tight list drawn without paragraphs, a button that says it is one, an image's credit, a document's file card — and take every color from the section's theme tokens, so long-form text follows the site's `theme.yml` and the visitor's light or dark scheme with nothing more to do. A `prose` container may sit inside another: it re-points no color, so its text is `--body` as the outer one's is, and a bare `prose` draws at the base step whatever step surrounds it.
 
-**Size and rhythm.** `size` — `sm`, `base`, `lg` (the default), `xl`, `2xl` — picks a step. The classes are `prose-sm` … `prose-2xl`, and they work behind a breakpoint (`md:prose-lg`). Each step is a ratio of the site's reading size, which a site sets in `theme.yml` with the rest of the scale — `prose-size`, `prose-leading`, `prose-measure`, `prose-flow` and `prose-h1` … `prose-h4` ([Long-form text](./site-theming.md#long-form-text)). Unset, each step keeps its own line height, spacing and heading sizes. To declare the variables in your foundation, described so an editor can offer them, spread kit's declarations into `main.js`:
+**Size and rhythm.** `size` — `sm`, `base`, `lg` (the default), `xl`, `2xl` — picks a step. The classes are `prose-sm` … `prose-2xl`, and they work behind a breakpoint (`md:prose-lg`). Each step is a ratio of the site's reading size, which a site sets in `theme.yml` with the rest of the scale — `prose-size`, `prose-leading`, `prose-measure`, `prose-flow` and `prose-h1` … `prose-h4` ([Long-form text](./site-theming.md#long-form-text)). Unset, each step keeps its own line height, spacing and heading sizes. `<Prose>` and `<Article>` fill their box (`max-w-none`), so `prose-measure` reaches a `prose` element you write without it; set their width on the box around them. To declare the variables in your foundation, described so an editor can offer them, spread kit's declarations into `main.js`:
 
 ```js
 import { proseVars } from '@uniweb/kit/prose-vars'
@@ -1253,7 +1253,7 @@ export const vars = {
 }
 ```
 
-**Overriding.** Every rule sits beneath Tailwind's utilities, so a utility class wins — on the container (`<Prose className="text-lg">`), or through an element variant: `prose-headings:font-display`, `prose-a:no-underline`, and one for each element (`prose-p:`, `prose-code:`, `prose-pre:`, `prose-table:` …). `not-prose` opts a subtree out. There are no palette modifiers and no `prose-invert`: the colors are the theme's, and `uniweb doctor` names any left in a class list.
+**Overriding.** Every rule sits beneath Tailwind's utilities, so a utility class wins — on the container (`<Prose className="text-lg">`), or through an element variant: `prose-headings:tracking-tight`, `prose-a:no-underline`, and one for each element (`prose-p:`, `prose-code:`, `prose-pre:`, `prose-table:` …). `prose-a:` styles links and leaves a content button (`[data-role="button"]`) its own look. `not-prose` opts a subtree out. There are no palette modifiers and no `prose-invert`: the colors are the theme's, and `uniweb doctor` flags any it finds in a foundation's components.
 
 Both stamp an `id` on each heading, from the same generator, so `useHeadings` and any anchor link agree with whichever one rendered.
 
