@@ -335,7 +335,7 @@ When a site is hosted on the Uniweb backend, its content lives there as data —
 - `uniweb push` — send your local edits back up (first push creates the site and mints its id).
 - `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
 - `uniweb sync` — `refresh`, then `push`.
-- `uniweb publish` — make the backend's current state **live**.
+- `uniweb publish` — `push`, then make the backend's current state **live**.
 
 **Nobody's work is overwritten without asking.** A push that would overwrite changes made in the apps since your last pull is refused before anything is written; merge them in with `uniweb pull` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge, then `git commit`. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
 
@@ -451,8 +451,8 @@ On Uniweb hosting a site's content also lives on the backend, with **git-style p
 
 **Two things worth stating plainly:**
 
-- **`uniweb publish` brings the foundation along.** When the site's local foundation changed, `publish` releases the new version to the catalog under your `@org` first — there is no separate site-bound auto-publish step, and `deploy` ships no foundation code.
-- **`publish` promotes the backend's current state.** It can include edits made in the apps as well as your synced local content; if you have unpushed local files, run `uniweb push` first to send them.
+- **`uniweb publish` brings the foundation along.** When the site's local foundation changed, `publish` releases the new version to the catalog under your `@org` first — there is no separate auto-publish step, and `deploy` ships no foundation code.
+- **`publish` pushes, then promotes the backend's current state.** It sends your local content the way `uniweb push` does — a push that is refused stops the publish before anything goes live — and the site goes live with edits made in the apps as well as yours.
 
 Going live on Uniweb hosting (`uniweb publish`) and cataloging a foundation as a standalone product (`uniweb register`) are independent operations — different schedules, people, intents. `publish` brings a single site's foundation along for you; `register` is the deliberate "this foundation is a multi-site product" step.
 
