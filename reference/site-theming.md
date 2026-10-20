@@ -527,6 +527,14 @@ code:
 
 Omit `theme:` and the overrides apply to the default (`github-dark`).
 
+Each side of a pair takes the same adjustments:
+
+```yaml
+code:
+  light: { theme: github-light, background: '#FFFDF9' }
+  dark: { theme: github-dark, background: '#0D0D0D' }
+```
+
 ### Naming every colour
 
 The full set, for a site that wants to hand-pick. Anything left out keeps the base theme's value — you never have to specify all of them:
@@ -553,6 +561,8 @@ code:
 ```
 
 Reach for this last. Picking a dozen syntax colours that stay legible together is a real design job, and the bundled themes have already done it.
+
+The build names anything in `code:` it can't use — a misspelled key, a theme name that isn't one, a colour that isn't one — and carries on without it. A colour may be any CSS colour: a hex value, `rgb()`, `oklch()`, a named colour or `var(--…)`.
 
 Shiki is lazy-loaded — nothing is downloaded until a page actually contains a code block. Until it arrives, a block shows its code as plain text in the same box, so nothing on the page moves when the colors come in. The box already has its theme's background and text color when they are known without loading the theme: the default theme's, or the `background` and `foreground` you declare. A theme named without them, or a light/dark pair, shows a muted surface until it loads, so declare both beside a named theme to paint them from the start.
 
