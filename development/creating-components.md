@@ -124,7 +124,7 @@ function Hero({ params, block }) {
 ```
 
 `theme: dark` is not among the params: it is one of the section's own settings — with
-`background`, `grid` and `vars` — which framework applies around your component. Here the
+`background`, `grid`, `vars` and `sticky` — which framework applies around your component. Here the
 runtime pins the section's dark context, and semantic tokens (`text-heading`) follow it. When a
 component needs the context for its own logic, it reads it with `useColorContext(block)`.
 

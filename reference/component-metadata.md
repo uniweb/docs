@@ -46,6 +46,7 @@ When `meta.js` is present:
 | `family` | No | — (the editor falls back to a generic illustration) |
 | `hidden` | No | `false` |
 | `background` | No | `false` |
+| `sticky` | No | `false` |
 | `inset` | No | `false` |
 | `children` | No | — |
 | `data` | No | — (the section receives no data of its own) |
@@ -765,7 +766,7 @@ params: {
 |---|---|---|
 | `type`, `id`, `hidden` | the section itself — its section type, its id, and a draft (`hidden: true`) | — |
 | `query`, `fetch` | the section's data | `content.data`, under the keys `data:` declares |
-| `theme`, `background`, `grid`, `vars` | the section's own settings, which framework applies — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout | `block`, when it needs one for its own logic: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid |
+| `theme`, `background`, `grid`, `vars`, `sticky` | the section's own settings, which framework applies — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout, and whether the section stays in view as the page scrolls | `block`, when it needs one for its own logic: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid, `block.sticky` |
 | `props` | params written as one map | `params` — its keys are merged in |
 | `data`, `preset`, `input` | nothing: `data:` is refused (it was `query:`'s old name); `preset:` and `input:` are ignored with a warning | — |
 
@@ -875,6 +876,30 @@ Only vars declared in `meta.js` are emitted — unknown var names in frontmatter
 | CSS scope | `:root` (global) | `#section-{id}` (scoped) |
 | Overridden by | `theme.yml` (`vars:`) | Section frontmatter (`vars:`) |
 | Context-aware types | Yes (`color`, `gradient`) | No (always context-independent) |
+
+---
+
+### Sticky
+
+Whether a section of this type stays in view as the page scrolls, unless its author says otherwise:
+
+```javascript
+// sections/Header/meta.js
+export default {
+  title: 'Header',
+  sticky: true,
+}
+```
+
+An author turns it off with `sticky: false` in the section's frontmatter (or on with `sticky: true`, for a type that declares nothing) — it is one of the section's own settings, so your component never receives it as a param. For a type that sits below another sticking element, a sub-navigation under the header, say how far below the top:
+
+```javascript
+export default {
+  sticky: { default: true, top: 'var(--header-height)' },
+}
+```
+
+`top` is one CSS length. The runtime makes sticky the box that can stay in view — the layout area's, for a section in the header or another area, stacked above the areas that scroll under it; the section's own wrapper, for a section in the body. A `sticky top-0` on your component's own markup cannot: it sits in boxes as tall as itself, so it scrolls away with the page (`uniweb dev` says so in the console). See [Component Patterns](../development/component-patterns.md#header-positioning-sticky-vs-fixed).
 
 ---
 

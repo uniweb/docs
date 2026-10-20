@@ -1431,7 +1431,7 @@ function SearchDialog({ isOpen, onClose }) {
 
 Because that does not work, and the reason is invisible.
 
-The runtime gives each layout area its own `view-transition-name` so the header, rails and body animate independently. That makes every area a stacking context **and** a containing block for fixed children — so a dialog rendered from inside your Header is sealed into the header's context and paints **under** the page body no matter what z-index it carries. Raising the number looks like it should help and never does, because the two elements are not competing in the same stacking context.
+The runtime gives each layout area its own `view-transition-name` so the header, rails and body animate independently, and that makes every area a stacking context. A `fixed` dialog inside an area is still placed against the viewport — what the area confines is where it paints in the stack. Areas sit above the body, so a dialog rendered from a section paints **under** the header and footer, whatever z-index it carries; one rendered from your Header paints under a footer or sidebar on the header's layer that comes after it. Raising the number looks like it should help and never does, because the elements are not competing in the same stacking context.
 
 `Overlay` renders into `document.body`, outside every area wrapper, where the z-index means what you expect.
 

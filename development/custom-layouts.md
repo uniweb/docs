@@ -197,6 +197,26 @@ export default function DocsLayout({ header, body, footer, left, right }) {
 
 Check the prop directly (`{left && ...}`) — if the area has content and isn't hidden, the prop is a React element. Otherwise it's null.
 
+### A Sticky Area
+
+A section that should stay in view as the page scrolls says so with `sticky: true` — its type's default in `meta.js`, or its author's frontmatter. The runtime makes the area's box sticky when any of its sections is, and a sticky box stays in view only within its parent. So where you put the area decides whether it can:
+
+```jsx
+// The area sits directly in the page column: it sticks, with nothing more.
+<div className="min-h-screen flex flex-col">
+  {header}
+  <main className="flex-1">{body}</main>
+</div>
+
+// The area sits in an element of yours, as tall as itself: make that element sticky.
+<div className="min-h-screen flex flex-col">
+  <header className={page.isSticky('header') ? 'sticky top-0 z-30' : undefined}>{header}</header>
+  <main className="flex-1">{body}</main>
+</div>
+```
+
+`page.isSticky(area)` is true when any section in the area is sticky. In `uniweb dev`, a sticky box that cannot move — an area your element confines — is named in the console. A layout whose page doesn't scroll (only its `<main>` does, `scroll: 'main'`) keeps its chrome in view anyway.
+
 ---
 
 ## A Real Layout: Documentation Sidebar

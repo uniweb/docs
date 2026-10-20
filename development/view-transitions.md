@@ -117,10 +117,12 @@ export default {
 
 `layers` mirrors `transitions`: an object overrides per region, and `layers: false` opts the layout out entirely so you can own the stacking in your own markup.
 
+**A sticky area is the one the framework does rank.** When a section in an area is `sticky` ([Component Metadata](../reference/component-metadata.md#sticky)), the area stays in view while the rest of the page scrolls under it, so it is stacked above every area that does not stick — otherwise a footer taller than the space below a stuck header would paint over the header at the bottom of the page. `layers` still ranks a sticky area you name.
+
 Two details worth knowing:
 
 - **The body is unstacked by default, not set to `0`.** A layer implies `position: relative`, and a positioned body wrapper would become the containing block for every absolutely-positioned element on the page. Lifting the chrome achieves the order without that. You can still set `body` explicitly if your design needs it.
-- **A modal is a different problem.** Stacking orders areas against each other; it cannot lift a dialog opened from the header above the page, because the dialog is still inside the header's context. That is what `<Overlay>` in `@uniweb/kit` is for — it renders out of the area entirely.
+- **A modal is a different problem.** Stacking orders areas against each other; it cannot lift a dialog opened from the header above the other areas, because the dialog is still inside the header's context — and one opened from a section is inside the body's, under every area. That is what `<Overlay>` in `@uniweb/kit` is for — it renders out of the area entirely.
 
 ---
 

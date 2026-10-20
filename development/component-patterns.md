@@ -697,51 +697,37 @@ Now the runtime wraps this component in `<nav>` instead of `<section>`. This is 
 
 ### Header positioning: sticky vs fixed
 
-The runtime wraps header sections in a bare `<header>` element (a semantic zone wrapper). Your component renders _inside_ this wrapper. This matters for CSS positioning because `sticky` only works relative to the nearest scrolling ancestor — and the `<header>` wrapper sits between your component and the scroll container.
+**To keep a header in view, make the section sticky — not its markup:**
 
-There are two clean approaches:
+```js
+// sections/Header/meta.js
+export default {
+  sticky: true,
+}
+```
 
-**Approach 1: Fixed positioning + placeholder (recommended)**
+`sticky` is one of a section's own settings. Your type defaults it, an author turns it off with `sticky: false` in the section's frontmatter, and the runtime makes sticky the box that can stay in view: in the built-in layout, the `<header>` it draws around the header area; in a layout of your own, the box the runtime gives the area. Your component renders in the flow as it would anywhere else, with no spacer to keep in step with its height. A section in the body can stick the same way — a sub-navigation, say — and `sticky: { default: true, top: 'var(--header-height)' }` keeps it below the header ([Component Metadata](../reference/component-metadata.md#sticky)).
 
-Use `fixed` inside the component. Fixed positioning is relative to the viewport, so it bypasses the zone wrapper entirely. A placeholder div reserves space in the document flow:
+**Why `sticky top-0` on your own markup does nothing.** `position: sticky` moves an element only within its parent's box, and a component's markup sits in boxes as tall as itself — the section's wrapper, and the area's. It has no room to move, so it scrolls away with the page. `uniweb dev` warns in the console when a page has a sticky element that cannot move. `Component.className` doesn't help: it styles the section's wrapper, which is as tall as the header too.
+
+**A header that floats over the page** — transparent over a hero, say — is not in the flow at all. Use `fixed` inside the component, which positions against the viewport whatever wraps it, and hold the header's place only where the design needs it:
 
 ```jsx
 function Header({ content, params }) {
-  const isFloating = params.floating
-
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur ...">
-        <nav className="max-w-6xl mx-auto px-4">...</nav>
+      <div className="fixed inset-x-0 top-0 z-50 bg-section/80 backdrop-blur">
+        <nav className="max-w-6xl mx-auto px-4 h-16">...</nav>
       </div>
-      {!isFloating && <div className="h-16" />}
+      {!params.floating && <div aria-hidden="true" className="h-16" />}
     </>
   )
 }
-
-Header.as = 'nav'
 ```
 
-This is the recommended approach because real-world headers almost always have parameterized behavior — a `floating` mode that overlaps the hero, transparent-to-solid transitions on scroll, show/hide based on scroll direction. All of that lives naturally in the component when positioning is `fixed`. The placeholder is conditional: present for normal headers, absent for floating headers that overlap content.
+The spacer has to match the header's height exactly, border included, and follow it when the header wraps on a narrow screen — which is why a header that is meant to sit in the flow should be sticky instead.
 
-**Approach 2: CSS on the zone wrapper**
-
-For headers with no scroll-dependent behavior, target the runtime's `<header>` element directly in your foundation's stylesheet:
-
-```css
-/* src/styles.css */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-```
-
-This lets `sticky` work naturally — the `<header>` itself becomes the sticky element. The component doesn't need to know about zone wrappers at all. This is a good reminder that CSS gives foundations full control over the runtime's HTML structure, even elements the framework generates. The limitation is that it's static — the component can't toggle it based on params or scroll state.
-
-**Custom layouts** are a third option: when a foundation exports its own Layout component, it renders the `<header>` element directly and can add `sticky` to it. See [Custom Layouts](custom-layouts.md) for details.
-
-> **Note:** `Component.className` and `Component.as` control the _section_ wrapper (the element immediately around your component), not the _zone_ wrapper (`<header>`, `<main>`, `<footer>`). Putting `sticky top-0` on `Component.className` won't make the header stick — the zone wrapper is the element that needs to be sticky.
+**Custom layouts** decide where their areas go. An area placed directly in the layout's page column sticks with nothing more; a layout that wraps an area in an element of its own makes that element sticky when `page.isSticky('header')`. See [Custom Layouts](custom-layouts.md#a-sticky-area).
 
 ### Custom Layouts
 
