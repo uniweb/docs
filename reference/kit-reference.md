@@ -381,7 +381,7 @@ The anchor ids match what `<Render>` and `<Prose>` stamp — same generator — 
 |--------|------|---------|-------------|
 | `levels` | number[] | `[2, 3]` | Heading levels to collect |
 | `root` | string | `'main'` | Selector to scan, for the DOM fallback |
-| `offset` | number | header height | Scroll offset in px; defaults to `--header-height` plus a little room |
+| `offset` | number | header height | Scroll offset in px; defaults to how far the header reaches — `--uw-sticky-top` when the header is a sticky section, else `--header-height` — plus a little room |
 
 Pair it with `website.getBranchHierarchy({ route, for: 'left' })` for the other half of a documentation shell — the navigation rail. See [Website](#website).
 

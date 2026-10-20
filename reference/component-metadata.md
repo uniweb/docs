@@ -891,15 +891,23 @@ export default {
 }
 ```
 
-An author turns it off with `sticky: false` in the section's frontmatter (or on with `sticky: true`, for a type that declares nothing) — it is one of the section's own settings, so your component never receives it as a param. For a type that sits below another sticking element, a sub-navigation under the header, say how far below the top:
+An author turns it off with `sticky: false` in the section's frontmatter (or on with `sticky: true`, for a type that declares nothing) — it is one of the section's own settings, so your component never receives it as a param.
+
+The runtime makes sticky the box that can stay in view:
+
+- **a section in the header** (or another layout area) — the area's box, stacked above the areas that scroll under it;
+- **a section in the body** — its own wrapper, which stays in view below whatever is stuck at the top: a sub-navigation sits under a sticky header with nothing to declare;
+- **a child section** that its parent renders as a section (kit's `<ChildGrid>`, or `<ChildBlocks wrapAs="div">`) — its own wrapper, which stays in view within the box its parent places it in. In `<ChildGrid>` that is its row: a side panel stays beside a long column and leaves with it, and on a phone, where the grid is one column, it scrolls with the page. A child rendered bare has no box of the runtime's; the component reads `block.sticky` and draws it itself.
+
+How far the stuck chrome reaches is measured in the browser and published as `--uw-sticky-top`, which a sticky section uses unless its type sets a `top` of its own — one CSS length, say for a gap below the header:
 
 ```javascript
 export default {
-  sticky: { default: true, top: 'var(--header-height)' },
+  sticky: { default: true, top: 'calc(var(--uw-sticky-top, 0px) + 1rem)' },
 }
 ```
 
-`top` is one CSS length. The runtime makes sticky the box that can stay in view — the layout area's, for a section in the header or another area, stacked above the areas that scroll under it; the section's own wrapper, for a section in the body. A `sticky top-0` on your component's own markup cannot: it sits in boxes as tall as itself, so it scrolls away with the page (`uniweb dev` says so in the console). See [Component Patterns](../development/component-patterns.md#header-positioning-sticky-vs-fixed).
+A `sticky top-0` on your component's own markup cannot stick: it sits in boxes as tall as itself, so it scrolls away with the page. Nor can a sticky section inside a box that clips with `overflow: hidden` — use `overflow: clip`, which clips the same and keeps it sticking. `uniweb dev` names both in the console. See [Component Patterns](../development/component-patterns.md#header-positioning-sticky-vs-fixed).
 
 ---
 
