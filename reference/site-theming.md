@@ -554,7 +554,7 @@ code:
 
 Reach for this last. Picking a dozen syntax colours that stay legible together is a real design job, and the bundled themes have already done it.
 
-Shiki is lazy-loaded — nothing is downloaded until a page actually contains a code block.
+Shiki is lazy-loaded — nothing is downloaded until a page actually contains a code block. Until it arrives, a block shows its code as plain text in the same box, so nothing on the page moves when the colors come in. The box already has its theme's background and text color when they are known without loading the theme: the default theme's, or the `background` and `foreground` you declare. A theme named without them, or a light/dark pair, shows a muted surface until it loads, so declare both beside a named theme to paint them from the start.
 
 ## Appearance (Light/Dark Mode)
 
