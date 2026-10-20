@@ -899,7 +899,7 @@ The runtime makes sticky the box that can stay in view:
 - **a section in the body** — its own wrapper, which stays in view below whatever is stuck at the top: a sub-navigation sits under a sticky header with nothing to declare;
 - **a child section** that its parent renders as a section (kit's `<ChildGrid>`, or `<ChildBlocks wrapAs="div">`) — its own wrapper, which stays in view within the box its parent places it in. In `<ChildGrid>` that is its row: a side panel stays beside a long column and leaves with it, and on a phone, where the grid is one column, it scrolls with the page. A child rendered bare has no box of the runtime's; the component reads `block.sticky` and draws it itself.
 
-How far the stuck chrome reaches is measured in the browser and published as `--uw-sticky-top`, which a sticky section uses unless its type sets a `top` of its own — one CSS length, say for a gap below the header:
+How far the stuck chrome reaches is measured in the browser and published as `--uw-sticky-top`. On a page whose header sticks, a link to a section (`#section-…`, as a search result or a contents entry writes it) lands below it, since each section in the body carries that much scroll margin. And a sticky section uses it unless its type sets a `top` of its own — one CSS length, say for a gap below the header:
 
 ```javascript
 export default {
