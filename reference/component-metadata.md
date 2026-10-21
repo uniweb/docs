@@ -190,14 +190,15 @@ function Hero({ content, params, block, website }) {
 |-------|------|-------------|
 | `title` | string | Display name in the editor. If omitted, inferred from the component name (`TeamRoster` → "Team Roster") |
 | `description` | string | What the component does |
-| `family` | string | The standard section family this component belongs to. Picks the editor's illustration and a label it can translate. Optional — see below |
+| `family` | string | The standard section family this component belongs to. Picks the editor's illustration, its icon and a label it can translate. Optional — see below |
 | `hidden` | boolean | If true, component is excluded from export entirely (internal helpers, not-yet-ready components) |
 | `inset` | boolean | If true, available for `@ComponentName` references in markdown |
 
 #### Family
 
 An editor that lets an author add a section has to draw something for each one.
-`family` is how it knows what to draw, and which translated label to show.
+`family` is how it knows what to draw — an illustration and an icon — and which
+translated label to show. The icon is the family's: there is no `icon` to declare.
 
 **Most components need no declaration.** The section type *is* the component
 name, so a component called `Hero`, `Footer` or `Pricing` already says what it

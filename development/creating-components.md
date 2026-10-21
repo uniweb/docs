@@ -156,7 +156,7 @@ Every field is optional. These two tell an editor what the section type is:
 export default {
   title: 'Feature Card',        // Display name (inferred from the name when left out)
   family: 'features',           // The standard section type it belongs to, so an editor
-                                // can show an illustration and a translated label
+                                // can show an illustration, an icon and a translated label
 }
 ```
 
