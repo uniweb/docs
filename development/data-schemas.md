@@ -288,6 +288,27 @@ other field is refused. It reaches one step: the course's own references open no
 link is made from the entry's side, by setting the field. And a backend refuses adding it to a field
 entries already hold a value in, so references written as plain ones never become access later.
 
+### A reference a purchase travels along: `sold_with`
+
+On a backend that sells access to records, a reference can say that buying the entry holding it
+also buys what it names. Declare `sold_with: true` on it:
+
+```yaml
+# foundation/schemas/course.yml
+name: course
+fields:
+  title:   { type: string }
+  lessons: { ref: '@/lesson', many: true, sold_with: true }   # a buyer of the course reads its lessons
+  mentor:  { ref: '@/person' }                                # buying the course buys nothing here
+```
+
+A buyer of a course reads, through it, the lessons its `lessons` field names — each element of a
+list is its own link — and onward along those entries' own `sold_with` fields, up to three steps
+(course → module → lesson → quiz). A reference without it carries nothing. It is a boolean, and only
+a reference — a `ref`, or a list of them — can declare it; any other field is refused. `false` says
+what leaving it out says. Unlike `readable_with`, it may be added to or removed from a field entries
+already fill.
+
 Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
 
 `required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and `required` binds the record that is *written*; it cannot force a record to *exist*. Put the flag on a field inside the record, and see [Constraints](#constraints) for "don't let this become empty".
