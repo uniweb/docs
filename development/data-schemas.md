@@ -357,6 +357,13 @@ There is no `html` type or format. Content is never markup — a component decid
 
 Other formats check a value rather than mark it — `email` and `url` on `string` and `text`, `currency` on `string` — and on a `date` the format is its precision ([A field's rules](#a-fields-rules)). A format the field's kind does not take is refused when the schema is built.
 
+`format: icon` on a `string` says the value is an icon name, written the way content names an icon: `lu-flame` is the icon `flame` of the family `lu`, as in `![](lu-flame)`. The value is kept as written — nothing checks it — and, like any string with a format, it is one value for every language:
+
+```yaml
+fields:
+  icon: { type: string, format: icon }   # like lu-flame
+```
+
 ### Translatable fields: `translatable`
 
 Text and rich-content fields are **translatable by default** — the framework keeps one value per locale. Set `translatable: false` to opt a field out (an ID, a slug, a machine code that's the same in every language):
