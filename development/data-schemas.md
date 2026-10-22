@@ -342,7 +342,7 @@ A `format` marks a field as carrying rich content. It is **type-bound** — the 
 | `format` | Valid on | Use it for |
 |---|---|---|
 | `markdown` | `text` | A markdown body that round-trips as plain source |
-| `prosemirror` | `json` | A rich document edited through a structured editor |
+| `richtext` | `json` | A rich document edited through a structured editor |
 | `scene` | `json` | A visual scene composition (rendered by `@uniweb/scene`) |
 
 ```yaml
