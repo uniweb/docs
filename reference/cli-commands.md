@@ -1011,7 +1011,7 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | Option | Description |
 |--------|-------------|
 | `--scope @scope` | A foundation whose name has no scope yet: register it under `@scope` — your personal scope or an organization's (resolves `@/x` → `@scope/x`) — and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@scope`; default `package.json::uniweb.scope`. |
-| `--org @org` | Work in `@org` for this command: a name with no scope yet registers under it. A sub-organization or project names no scope, so working in one, a name with no scope yet is asked for one — or, without a terminal, refused until you pass `--scope`. |
+| `--org @org` | Work in `@org` for this command: a name with no scope yet registers under it. A sub-organization or project names no scope: working in one, a name with no scope yet registers under its organization's — `@studio` for `@studio:acme` — when you are a member of that organization, and is otherwise asked for one, as when no workspace is chosen. |
 | `--personal` | Work in your personal workspace for this command: a name with no scope yet registers under your personal scope. |
 | `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
