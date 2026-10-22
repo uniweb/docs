@@ -953,14 +953,14 @@ uniweb login [options]
 
 ### Which workspace
 
-A login works in **one workspace** — your personal one, or an organization you belong to — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` (or `--personal`) switches the workspace on the backend you are logged in to, without logging in again — with no `--server` needed, whichever backend that is.
+A login works in **one workspace** — your personal one, an organization you belong to, or a sub-organization or project in one, named like `@studio:acme` — and every push, pull and publish works in it: a site it creates is created there, and a site kept in another workspace is refused. If you belong to no organization or project, it is your personal workspace. Otherwise `login` asks, or you name it with `--org @acme` or `--personal`. Already logged in, `uniweb login --org @other` (or `--personal`) switches the workspace on the backend you are logged in to, without logging in again — with no `--server` needed, whichever backend that is.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
 | `--server <url>` | The backend to log in to |
-| `--org @org` | Work in `@org`, an organization you belong to |
+| `--org @org` | Work in `@org` — an organization, sub-organization or project you belong to (`@studio:acme`); a unit with no handle is named by its uuid |
 | `--personal` | Work in your personal workspace |
 | `--browser` | Log in through the browser |
 | `--password` | Log in with a username and password |
@@ -1011,7 +1011,7 @@ Run from a foundation directory, a workspace root (you're prompted if there are 
 | Option | Description |
 |--------|-------------|
 | `--scope @scope` | A foundation whose name has no scope yet: register it under `@scope` — your personal scope or an organization's (resolves `@/x` → `@scope/x`) — and write the scope into its name in `main.js`. Refused when the name already carries a different scope. A schemas-only package: publish under `@scope`; default `package.json::uniweb.scope`. |
-| `--org @org` | Work in `@org` for this command: a name with no scope yet registers under it. |
+| `--org @org` | Work in `@org` for this command: a name with no scope yet registers under it. A sub-organization or project names no scope, so working in one, a name with no scope yet is asked for one — or, without a terminal, refused until you pass `--scope`. |
 | `--personal` | Work in your personal workspace for this command: a name with no scope yet registers under your personal scope. |
 | `--schema-only` | Register the data schemas only; skip the foundation code delivery. |
 | `--dry-run` | Print the `.uwx` (and the code-file plan); submit nothing. |
