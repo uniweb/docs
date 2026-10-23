@@ -600,7 +600,6 @@ Resolution order, on every page load:
 
 `respectSystemPreference` defaults to **true**. That makes `default:` a fallback rather than a guarantee — a dark-OS visitor gets dark on first visit even under `default: light`. Set `respectSystemPreference: false` to pin the default.
 
-<a id="rendering-a-toggle"></a>
 ### Rendering a toggle
 
 The runtime resolves the scheme and writes `scheme-dark` / `scheme-light` onto `<html>` **before the page paints** — on prerendered pages via an inline script in `<head>`, and in the SPA before the first render. There is no flash of the wrong scheme, and no work for you to do.

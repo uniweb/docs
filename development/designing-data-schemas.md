@@ -361,5 +361,3 @@ The schema is the stable contract in the middle: design it once, and it drives v
 - [Working with Data](./working-with-data.md) — how a schema's records reach your components at runtime: queries, what a section receives, parametric pages.
 - [Entity Content Structure](../reference/entity-content.md) — how a record is written: sections become keys, subsections become inline fields.
 - [Data Schemas as Contracts](../architecture/data-schemas-as-contracts.md) — why one schema serves validation, editor forms, and delivery at once.
-</content>
-</invoke>
