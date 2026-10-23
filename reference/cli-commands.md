@@ -1039,6 +1039,8 @@ export default {
 
 **`src` and `foundation` are refused** — they name the folder the code lives in, and every project in an org would register the same one. A foundation with no other name (a project scaffolded before names moved to `main.js` has `package.json` name `src`) is asked for one the first time you register, with a suggestion made from its folder; the answer is written to `main.js`, so it is asked once. Non-interactively (`--non-interactive`, CI, `--json`) and in a preview (`--dry-run`, `-o`), `register` refuses before anything is built or sent, and prints the line to add. The same holds when `uniweb push` or `uniweb publish` releases a local foundation, since they release through `register`.
 
+**The `@uniweb` scope is refused too** — it names the Uniweb framework's own packages and the system account of every Uniweb backend, so nothing registers under it, neither a foundation nor a data schema. `uniweb create` and `uniweb add` refuse a name typed under it (`uniweb create @uniweb/marketing`) before writing anything. `register` refuses a foundation already named under it — asking for another name at a terminal, and refusing otherwise, as above — and any scope it would register under that is `@uniweb`, whether it comes from `--scope`, `package.json::uniweb.scope` or the workspace you work in. So do `push` and `publish`, which release through `register`.
+
 `package.json::uniweb.id` and `uniweb.scope`, which used to set the name and the scope, are no longer read for a foundation: `register` refuses them and prints the `main.js` line that replaces them.
 
 #### Scope
