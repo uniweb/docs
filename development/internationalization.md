@@ -272,8 +272,11 @@ function LanguageSwitcher() {
 > renders a plain `<a>`, giving the full page load a language switch needs — a
 > normal SPA `<Link>` would not, because the other language is a separate build.
 >
-> If you need a `<select>` instead of links, prepend the base path yourself:
-> `window.location.href = website.basePath.replace(/\/$/, '') + website.getLocaleUrl(code)`.
+> If you need a `<select>` or a button instead of links, call
+> `website.switchLocale(code)`. It makes the same page load, base path included.
+> Where the site runs inside a host that switches languages itself, such as an
+> editor's preview, it hands the switch to that host, and so does a click on a
+> `<Link reload>` to another language.
 
 ### Website Locale API
 
@@ -295,6 +298,9 @@ function MyComponent() {
 
   // Get URL for switching languages (from current page)
   website.getLocaleUrl('es')  // '/es/about' (if currently on /about)
+
+  // Switch to a language from code, such as a <select>'s onChange
+  website.switchLocale('es')  // loads /es/about
 }
 ```
 

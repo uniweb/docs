@@ -825,6 +825,7 @@ function Header({ block }) {
     const locales = website.getLocales()    // All locale objects
     const active = website.getActiveLocale() // Current locale code
     const url = website.getLocaleUrl('es')   // URL for switching
+    website.switchLocale('es')               // Switch from code (a <select>)
   }
 
   // Search
@@ -843,6 +844,7 @@ function Header({ block }) {
 | `getLocales()` | array | Get all locale objects |
 | `getActiveLocale()` | string | Get current locale code |
 | `getLocaleUrl(code)` | string | Get URL for a locale |
+| `switchLocale(code)` | boolean | Show the current page in a locale: the page load a `<Link reload>` to `getLocaleUrl(code)` makes, or the switch of a host that does its own, like an editor's preview. `false` for a locale the site lacks |
 | `hasMultipleLocales()` | boolean | Check if multilingual |
 | `isSearchEnabled()` | boolean | Can this site be searched — by a server or the prebuilt index. In a component, prefer [`isSearchEnabled()`](#service-predicates) from kit |
 | `isServiceEnabled(name)` | boolean | Is there a provider for service `name`? The one implementation behind kit's [service predicates](#service-predicates); call it directly for a service kit ships no predicate for |
