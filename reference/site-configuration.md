@@ -610,7 +610,7 @@ them, before spending anything on an answer. Where it is honoured:
 | not declared | no check at all — nothing happens unless you ask for it |
 | your own site's origin | always accepted, without listing it |
 | a request with no `Origin` | **accepted** — see below |
-| matching | exact, per entry; no wildcards |
+| matching | by origin: `https://app.example.com/` is `https://app.example.com`, and a path is ignored; no wildcards. An entry that is not an `http(s)` URL matches nothing |
 
 > ⛔ **This is not a spend limit and cannot be made into one.** `Origin` is set by the browser
 > and enforced by the browser — anything that is not a browser sends whatever it likes, or
