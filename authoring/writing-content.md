@@ -206,7 +206,9 @@ This is one of the few cases where position matters in Uniweb content.
 
 ### Browsing available icons
 
-The easiest way to find icon names is to browse them visually at [react-icons.github.io/react-icons](https://react-icons.github.io/react-icons/). The icon names there match the ones you use in Uniweb — just use the short code prefix with a dash.
+The easiest way to find icon names is to browse them visually at [react-icons.github.io/react-icons](https://react-icons.github.io/react-icons/). An icon's name there is its component name: drop the family's prefix and write the rest in lowercase with dashes, after the short code. `LuBuilding2` is `lu-building2`, and `LuGrid2X2` is `lu-grid2-x2`.
+
+For Lucide, Heroicons and Feather, the name as the family's own site spells it works too. `lu-building-2` and `lu-grid-2x2` are the same icons, written as [lucide.dev](https://lucide.dev) writes them. If the build can't find an icon, its warning names it.
 
 ### Supported icon families
 
