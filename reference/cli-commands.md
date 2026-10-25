@@ -305,6 +305,9 @@ Start a development server for a site.
 uniweb dev                  # the workspace's single site
 uniweb dev <site>           # a specific site by package name
 uniweb dev --site <name>    # same, explicit flag form
+uniweb dev --port <n>       # on that port, or not at all
+uniweb dev --status         # print the running dev server's address
+uniweb dev --stop           # stop the running dev server
 ```
 
 A thin wrapper around the package manager's workspace-filtered `dev` script
@@ -314,6 +317,14 @@ with a notice pointing at `--site` for explicit selection.
 
 Markdown, `theme.yml`, and component edits hot-reload. New section types are
 picked up without restarting.
+
+**The dev server says where it is.** It takes a free port, moving past one another
+server holds, and once it listens `uniweb dev` prints `Serving <site> at <url>`. Read
+the address there, or from `uniweb dev --status`, rather than assuming a port: the one
+you would guess may be another project's server. While a site's dev server runs, a
+second `uniweb dev` points at it instead of starting another, and `uniweb dev --stop`
+stops it. `--port <n>` asks for that port and fails when it is taken, rather than
+moving to another.
 
 **A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
 their builds. `uniweb dev` builds any that isn't built, or whose sources changed since
