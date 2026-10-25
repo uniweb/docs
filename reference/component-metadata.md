@@ -462,7 +462,7 @@ background:
   position: center          # CSS background-position
   size: cover               # CSS background-size
 
-  # Video background (falls back to image on mobile or reduced-motion)
+  # Video background (its poster shows until the video plays, and instead of it for reduced motion)
   video: /videos/hero.mp4   # Auto-detects webm fallback if available
   poster: /images/hero.jpg  # Shown while video loads
 
@@ -487,6 +487,8 @@ background:
 ```
 
 **Accessibility**: Video backgrounds automatically respect `prefers-reduced-motion`. When users have reduced motion enabled, the poster image is shown instead of video.
+
+**The poster first**: a video background shows its poster until the video starts playing — on a pre-rendered page, that is what the section shows before the page's JavaScript loads. Give every video background a poster.
 
 **Format Fallback**: When you provide a `.mp4` video, the engine automatically tries a `.webm` version first (better compression). Just ensure both formats exist at the same path.
 

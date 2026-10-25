@@ -105,7 +105,7 @@ Without extra configuration, a Uniweb project gives you:
 
 - **File-based routing** — folder = route, no `react-router` config needed
 - **Hot reload** on both content and component changes
-- **Pre-rendered static HTML** for every page, with client-side hydration
+- **Pre-rendered static HTML** for every page — what search engines read and visitors see first, until the site's JavaScript renders the page in its place
 - **Localization** — locale detection, locale-aware URLs, translation extraction and matching
 - **Parametric pages** — a `[slug]` folder becomes one page per record of a query
 - **Records** — markdown, YAML or JSON files in `records/` become structured data, with automatic i18n support
