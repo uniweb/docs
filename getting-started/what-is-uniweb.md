@@ -97,6 +97,38 @@ Components receive guaranteed content structures — `title` is always a string,
 
 Beyond components, developers can customize layouts, theming, data fetching, and search — all through standard React and Vite patterns.
 
+## Optional visual authoring platform
+
+The uniweb CLI can sync projects with the visual authoring app at [uniweb.app](https://uniweb.app). With this approach, developers build components, schemas, and content structures in a normal codebase, and those definitions become the vocabulary authors use to create pages, manage content, and work with structured data.
+
+```text
+developer project ⇄ Uniweb App ⇄ author workspace
+       ↑                         ↑
+       └──── both keep working ──┘
+```
+
+**Start with a normal project. Connect the authoring environment when you want it.**
+
+```bash
+# Create a project
+npx uniweb create
+
+# Sign in when you want visual authoring
+pnpm uniweb login
+
+# Sync the project with the author workspace
+pnpm uniweb sync
+```
+
+### The CLI is the bridge between the two workflows
+
+| Command | What it does |
+| --- | --- |
+| `pnpm uniweb push` | Push local components, schemas, and content to the Uniweb App. |
+| `pnpm uniweb pull` | Bring authored content back into the local project. |
+| `pnpm uniweb sync` | Synchronize the local project and the app. |
+| `pnpm uniweb publish` | Synchronize with the app and publish. |
+
 ## Where to go from here
 
 **Want to build a site?** Start with the [Quickstart](quickstart) — you'll have a running project in minutes.
