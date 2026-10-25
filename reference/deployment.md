@@ -292,7 +292,7 @@ The adapter emits `.nojekyll` at the dist root. **This is critical:** without it
 > uniweb add ci --domain mysite.com      # custom domain at root
 > ```
 >
-> The generated workflow uses GitHub's official `actions/deploy-pages` flow (Settings → Pages → Source: GitHub Actions) and sets `UNIWEB_BASE` at build time so `site.yml` stays clean.
+> The generated workflow uses GitHub's official `actions/deploy-pages` flow (Settings → Pages → Source: GitHub Actions). Before the build it asks GitHub where Pages serves the site (`actions/configure-pages`) and hands that to the build as `UNIWEB_ORIGIN` and `UNIWEB_BASE`, so `site.yml` needs neither a base nor `seo.origin`, and every page states its canonical URL and sitemap entry on the address it is served at.
 
 ### Manual deploy (without the workflow)
 
@@ -300,7 +300,8 @@ If you'd rather not use a CI workflow, build locally and push to a branch yourse
 
 ```bash
 cd site
-UNIWEB_BASE=/<repo>/ uniweb build --host=github-pages   # or UNIWEB_BASE=/ for a custom domain
+UNIWEB_ORIGIN=https://<user>.github.io UNIWEB_BASE=/<repo>/ uniweb build --host=github-pages
+# a custom domain: UNIWEB_ORIGIN=https://mysite.com UNIWEB_BASE=/
 npx gh-pages -d dist --dotfiles                          # --dotfiles preserves .nojekyll
 ```
 

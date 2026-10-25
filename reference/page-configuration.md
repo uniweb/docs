@@ -669,7 +669,7 @@ seo:
 | `image` | string | Open Graph / social sharing image |
 | `ogTitle` | string | Social-card title (defaults to the page title) |
 | `ogDescription` | string | Social-card description (defaults to the page description) |
-| `canonical` | string | Canonical URL for this page |
+| `canonical` | string | Canonical URL for this page. By default a page is its own canonical, at its URL on the site's [address](./site-configuration.md#where-the-site-lives); set this only to name another URL. A path is made absolute on the address. A page naming another URL is left out of the sitemap |
 | `changefreq` | string | Sitemap hint: `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never` |
 | `priority` | number | Sitemap priority (0.0 to 1.0, default 0.5) |
 

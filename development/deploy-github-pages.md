@@ -88,7 +88,7 @@ uniweb add ci --domain mysite.com --force
 This adjusts a few things:
 
 - Writes `site/public/CNAME` containing `mysite.com`. Vite copies this into `dist/` on every build, so GitHub Pages keeps the custom-domain setting across deploys.
-- Bakes `UNIWEB_BASE: /` into the workflow (custom domains serve at the domain root, no `/repo/` prefix).
+- Bakes the domain into the workflow as the site's address — `UNIWEB_ORIGIN: https://mysite.com`, `UNIWEB_BASE: /` — since a custom domain serves at its root, and GitHub reports the domain only once a deploy has configured it.
 - Records the domain in `site/deploy.yml` so a later `uniweb add ci` (no flag) remembers it.
 
 After committing and pushing:
@@ -181,7 +181,9 @@ For everything else — most marketing sites, docs, blogs, portfolios — GitHub
 
 **The workflow ran but the page is 404.** The first deploy can take a minute or two after the workflow finishes — GitHub propagates the new artifact across its CDN. If it persists, check **Settings → Pages**: the source must be **GitHub Actions** (not "Deploy from a branch").
 
-**Asset paths look wrong (`/foo` instead of `/repo/foo`).** The workflow derives `UNIWEB_BASE` from your repo name automatically, but the value only takes effect during the GHA build. If you previewed `dist/` locally with `pnpm exec uniweb build` (no env var), the build used `/`. That's expected — the deployed build is the source of truth.
+**Asset paths look wrong (`/foo` instead of `/repo/foo`).** The workflow asks GitHub where Pages serves the site and passes it to the build (`UNIWEB_ORIGIN`, `UNIWEB_BASE`), but only during the GHA build. If you previewed `dist/` locally with `pnpm exec uniweb build` (no env vars), the build used `/` and stated no address. That's expected — the deployed build is the source of truth.
+
+**`uniweb doctor` says the workflow does not hand the build the site's address.** The workflow predates GitHub stating it: run `uniweb add ci --force` to regenerate it, and push. Until then the site's pages state no canonical URL and no `sitemap.xml` is written.
 
 **Custom domain shows "Not properly configured" in GitHub settings.** DNS is still propagating, or the `CNAME` file is missing from the deployed `dist/`. Confirm `site/public/CNAME` is committed and that the latest Actions run finished successfully.
 

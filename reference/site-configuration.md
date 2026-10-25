@@ -21,7 +21,7 @@ description: A brief description for SEO
 preview: /images/card.png            # The site's card image in the Uniweb apps (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
-  baseUrl: https://my-site.com       # Turns on sitemap.xml, robots.txt, absolute llms.txt links
+  origin: https://my-site.com        # Where it is served from: canonical URLs, sitemap.xml, absolute llms.txt links
   image: /og-default.png             # Default Open Graph / social-sharing image
   ogTitle: My Site
 
@@ -203,10 +203,11 @@ Site-level metadata for the homepage's social card and search — and the defaul
 ```yaml
 keywords: [components, react, cms]   # Default keywords (pages can override)
 seo:
-  baseUrl: https://acme.com          # Where the site lives — turns on sitemap.xml + robots.txt
+  origin: https://acme.com           # Where the site is served from — see "Where the site lives"
   image: /og-default.png             # Default Open Graph / social-card image
   ogTitle: Acme — Build with Components
   ogDescription: The component content platform.
+  twitterHandle: '@acme'             # The site's account, as twitter:site
   noindex: false                     # Set true to keep the whole site out of search
   robots:                            # robots.txt contents
     disallow: [/private]
@@ -215,20 +216,32 @@ seo:
 | Field | Type | Description |
 |-------|------|-------------|
 | `keywords` | string[] | Default meta keywords; a page's own `keywords` override |
-| `seo.baseUrl` | string | The site's public origin. **Setting it turns on `sitemap.xml` and `robots.txt`, and makes `llms.txt` links absolute** — all three are skipped or root-relative without it, because none of them can be written without knowing where the site lives. `uniweb doctor` warns when it is unset |
-| `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`. Only emitted alongside `seo.baseUrl` |
+| `seo.origin` | string | The origin the site is served from — a scheme and a host, `https://acme.com`. A site served under a path states that path as its `base:` (`https://user.github.io` with `base: /repo/`); an origin written with a path is refused. Not needed where the host states it — see below |
+| `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`, `additionalSitemaps` |
 | `seo.image` | string | Default Open Graph / social-sharing image (the site's social card) |
 | `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
 | `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
+| `seo.twitterHandle` | string | The site's X (Twitter) account, written as `twitter:site` |
 | `seo.noindex` | boolean | Keep the entire site out of search engines (cascades to every page) |
 
-`sitemap.xml` and `robots.txt` are **static-host artifacts**: `uniweb export` and
-`uniweb deploy --host <adapter>` write them into `dist/`. A site published to a
-backend does not get them from the build — what that host serves is the host's.
+**Cascade:** site-level `seo` and `keywords` are *defaults*. Each page overrides any field it sets — the page wins, the site fills the gaps. The social image is the field most worth setting once at the site level. The site's `description` is its home page's: other pages carry their own or none, since one description on every page would describe none of them.
 
-**Cascade:** site-level `seo` and `keywords` are *defaults*. Each page overrides any field it sets — the page wins, the site fills the gaps. The social image is the field most worth setting once at the site level.
+Every page's `<head>` carries **its own** tags — description, canonical, Open Graph, Twitter Card, robots, and `hreflang` alternates on a site in several languages. They are in the prerendered HTML, so crawlers and social unfurlers see them without running JavaScript, and the browser keeps them as a visitor moves between pages. These tags are the framework's: a tag of the same name in `head.html` is replaced. For arbitrary tags beyond these, use [Custom Head Injection](#custom-head-injection).
 
-These render into the static HTML `<head>` (Open Graph, Twitter Card, canonical, robots) for the homepage and every page, so crawlers and social unfurlers see them without running JavaScript. For arbitrary tags beyond these, use [Custom Head Injection](#custom-head-injection).
+### Where the site lives
+
+A page's canonical URL, its `og:url`, its social image, its `hreflang` alternates, its sitemap entry and the links in `llms.txt` are absolute URLs, and every one is made on the site's **address** — its origin and its base path, `https://acme.github.io/docs/`. Who states it depends on what serves the site:
+
+| Served by | The address comes from |
+|-----------|------------------------|
+| GitHub Pages, with the workflow `uniweb add ci --host=github-pages` writes | GitHub: the workflow reads where Pages serves the site — `<owner>.github.io/<repo>/`, or a custom domain — and hands it to the build |
+| Netlify, Vercel | the production URL the host states during the build (on Vercel, when the project exposes its system environment variables) |
+| a host that renders the pages itself | that host |
+| any other static host (`uniweb export`, S3, …) | `seo.origin`, with the site's base |
+
+A page's URL is the one its host answers with. A built page is a `<route>/index.html` file, which a static host serves at `<route>/`, so its canonical and its sitemap entry end in `/`. With no address, pages state no canonical or `og:url`, no `sitemap.xml` is written, and `llms.txt` links are root-relative — `uniweb doctor` says when that is the case.
+
+`sitemap.xml` and `robots.txt` are **static-host artifacts**: `uniweb export` and `uniweb deploy --host <adapter>` write them into `dist/`, from the pages the build wrote — each record page of a parametric page included. A crawler reads `robots.txt` only at a host's root, so a site served under a base path, like a GitHub project site, gets none; submit its sitemap to search engines directly. A site's own `public/robots.txt` or `public/sitemap.xml` is served as it is. A site published to a backend does not get them from the build — what that host serves is the host's.
 
 ---
 
@@ -1297,7 +1310,7 @@ site/
 
 > **And separately, on what to measure with.** A vendor's script sets its own cookies, which is what lets it report sessions and unique users; it counts page loads, so in-app navigation needs its own handling. [`services.tracking`](#tracking) loads no script and stores nothing on the visitor's device, reports every route change, and sends to an endpoint you provide — so it counts page views and events but not users or sessions. Different numbers, not better ones; many sites run both.
 
-> For social/SEO meta (Open Graph image, title, description, canonical, robots), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`. Reserve `head.html` for everything else.
+> For social/SEO meta (Open Graph image, title, description, canonical, robots, hreflang), use the structured [`seo:` block](#seo--social-sharing) instead — the runtime renders those into every page's `<head>`, and replaces a `head.html` tag of the same name. Reserve `head.html` for everything else.
 
 ### Example: Google Analytics
 
