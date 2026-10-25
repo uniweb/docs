@@ -685,7 +685,7 @@ Each language's HTML includes the correct `lang` attribute:
 
 ## Search Index
 
-With i18n enabled, separate search indexes are generated per language:
+With i18n enabled, each language gets its own search index, holding its pages and its record pages (a post, a book) in that language:
 
 ```
 dist/
@@ -697,6 +697,8 @@ dist/
 ```
 
 The search client automatically uses the correct index for the active language.
+
+Each language gets its own [agent-readable files](../reference/site-configuration.md#agent-readable-artifacts) the same way: `/es/llms.txt` lists the Spanish pages, record pages included, and links each one's markdown at its Spanish address (`/es/acerca-de.md`).
 
 ---
 

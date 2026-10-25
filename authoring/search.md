@@ -203,7 +203,7 @@ The academic template's `SearchModal` includes keyboard support:
 
 ## Multi-Locale Support
 
-For sites with multiple locales, separate search indexes are generated:
+A site in several languages gets one search index per language, holding that language's pages and its record pages:
 
 ```
 dist/

@@ -579,7 +579,9 @@ it asks your host to leave its own search off. See [Site Search](../authoring/se
 ## Agent-Readable Artifacts
 
 Every build emits an index and per-page markdown that an AI agent can read directly. **Free
-and on by default** — this block only turns things off or narrows them.
+and on by default** — this block only turns things off or narrows them. A site in several
+languages gets them in each: `/fr/llms.txt`, with each page's markdown at its address in that
+language (`/fr/a-propos.md` for `/about`).
 
 ```yaml
 agents:
