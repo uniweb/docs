@@ -323,8 +323,9 @@ server holds, and once it listens `uniweb dev` prints `Serving <site> at <url>`.
 the address there, or from `uniweb dev --status`, rather than assuming a port: the one
 you would guess may be another project's server. While a site's dev server runs, a
 second `uniweb dev` points at it instead of starting another, and `uniweb dev --stop`
-stops it. `--port <n>` asks for that port and fails when it is taken, rather than
-moving to another.
+stops it. These know the server `uniweb dev` started, not one started with `vite` in
+the site's folder. `--port <n>` asks for that port and fails when it is taken, rather
+than moving to another.
 
 **A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
 their builds. `uniweb dev` builds any that isn't built, or whose sources changed since
