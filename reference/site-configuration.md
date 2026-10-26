@@ -603,16 +603,7 @@ and silently excludes nothing.
 `seo.noindex` pages, `hidden` pages, `_`-prefixed drafts, parametric page templates and
 [knowledge pages](./page-configuration.md#agent-content-knowledge) are excluded already.
 
-A page with markdown also names it in its own head, at the address the index gives it, so an
-agent that lands on the HTML finds the markdown without the index:
-
-```html
-<link rel="alternate" type="text/markdown" href="/about.md">
-```
-
-With `markdown: false` there is no link. A page made from a record on request, as `uniweb dev`
-makes them, names none; a build writes each record's page, and links its markdown. On Uniweb
-hosting, a page's own address also answers with its markdown when a request asks for
+On Uniweb hosting, a page's own address also answers with its markdown when a request asks for
 `text/markdown`. A static host serves the files alone.
 
 ### Expected origins
