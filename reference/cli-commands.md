@@ -1308,6 +1308,18 @@ A project that was never pushed has no id to pull by — pull is a no-op with a 
 | `--dry-run` | Report what it would fetch; write nothing |
 | `--org @org` | Work in `@org` for this pull, instead of your login's workspace |
 
+### Moving a project to another repository
+
+A synced site meets the backend in its git history: each pull commits the site's content as the backend holds it, and the next pull merges from that commit. Copy the project into another repository and that history stays behind, and so does `.uniweb/`, which git never holds. The copy still knows which site it is, since `sync.json` comes along, but not where it last met the backend.
+
+To move one:
+
+1. In the old copy, run `uniweb sync`, so the backend holds what the files hold and nothing made in the app is waiting to be taken.
+2. Copy the project into the new repository without its `.git/`, and commit it there.
+3. Sign in to the site's workspace (`uniweb login --org @org`, or `--org` on the next command), then run `uniweb pull` in the site's folder. It merges the site's content once and records where the copy and the site meet; with step 1 done there is nothing to settle. Pulls and pushes work from there.
+
+When the old copy could not sync first, `uniweb status` says the copy shares no history with the site's content, and lists the files that say something else than the site does. The first `uniweb pull` makes each of them a conflict, yours against the backend's, and which side is right is yours to say: an edit made in the app since the last push is the backend's, a change made in the copy and never pushed is yours. A file that says the same, written another way, is left as it is. Don't use `--force` in either direction: it keeps one side in every file, and the other side's edits are gone.
+
 ---
 
 ## uniweb refresh
