@@ -2,16 +2,43 @@
 
 A Uniweb project's deployment shape depends on **who manages the content**. That single question decides where the site lives, what gets deployed, which commands you run, and how collaboration works.
 
+- **You and your authors — a synced site.** You work in your project, in files and git; authors work in the Uniweb app, composing pages from your section types. The CLI keeps the two in sync, and `uniweb publish` takes the site live on Uniweb hosting. See **[Synced](#synced--you-in-files-authors-in-the-app)**.
+- **Path 1: You manage the content.** You (or your dev team) write the markdown. Ship to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront — or to Uniweb's paid hosting (`uniweb publish`) if you need prerendered pages over live data or version propagation.
+- **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb app. The repo's `site/` is a test harness, not a deploy target.
+
 > **In a hurry?** Three commands and your site is live on GitHub Pages with a custom domain — see **[Path 1](#path-1--you-manage-the-content)** below. If you're building a foundation for clients who manage their own content, jump to **[Path 2](#path-2--you-ship-a-foundation-as-a-product)**.
 
-Two paths today:
+The same framework powers all three. The difference is the deployment artifact and who owns the content lifecycle.
 
-- **Path 1: You manage the content.** You (or your dev team) write the markdown. Ship to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront — or to Uniweb's paid hosting (`uniweb publish`) if you need prerendered pages over live data or version propagation.
-- **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb apps. The repo's `site/` is a test harness, not a deploy target.
+---
 
-A third path — git-style **content sync** with the Uniweb backend (`uniweb push`/`pull`/`clone`) — is available today; see **[Hybrid — git-style content sync](#hybrid--git-style-content-sync)**.
+## Synced — you in files, authors in the app
 
-The same framework powers both paths. The difference is the deployment artifact and who owns the content lifecycle.
+A synced site has two interfaces. You keep working in your project, in files and git. Authors work in the Uniweb app, where they compose pages from your section types, set the options each one declares in its `meta.js`, and manage records through your schemas, with live previews. Both edit the same site: its content lives on the Uniweb backend as well as in your files, and the CLI keeps the two in step with **git-style sync verbs**.
+
+Start from a normal project:
+
+```bash
+uniweb login              # one-time
+uniweb sync               # the first sync creates the site in the app, with its foundation
+```
+
+Or start from a site that already lives in the app: `uniweb site list` shows your sites with their uuids, and `uniweb clone <site-uuid>` makes a local project from one.
+
+From then on:
+
+- `uniweb clone <site-uuid>` — start a local file project, under git, from a site that already lives on the backend (often authored in the app).
+- `uniweb pull` — bring the backend's current content into your files. In a git repository it merges, like `git pull`: the backend's content is committed and merged into your branch, so your work — committed or not — is kept, and pages and sections removed on the backend are removed here too unless you changed them. Outside git it rewrites your files to match the backend (`--no-delete` keeps what the backend removed), asking first.
+- `uniweb push` — send your local edits back up (first push creates the site and mints its id). In a git repository it sends what you have committed; `--commit` commits the site's content first.
+- `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
+- `uniweb sync` — `refresh`, then `push`.
+- `uniweb publish` — `push`, then make the backend's current state **live** on Uniweb hosting (see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting)).
+
+**Nobody's work is overwritten without asking.** A push that would overwrite changes made in the app since your last pull is refused before anything is written; merge them in with `uniweb pull` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge, then `git commit`. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
+
+**A pushed site is a draft.** Authors see it in the app as soon as you push; visitors see nothing until the site goes live, with `uniweb publish` or from the app.
+
+**Collaboration happens on both sides at once:** teammates through git, authors through the app. `uniweb refresh` takes both kinds of change into your project.
 
 ---
 
@@ -27,7 +54,7 @@ Five sub-options under this path. They differ in *who builds*, *who uploads*, an
 | **Dashboard connect (CF Pages, Netlify, Vercel)** | The host | The host | Same outcome, no workflow file and no secrets |
 | **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy from the CLI; the only path for S3 + CloudFront |
 | **Manual export (`uniweb export`)** | Your machine | You, by hand | Any host the framework doesn't have an adapter for |
-| **Uniweb Cloud (`uniweb publish`)** | Your machine | The platform | Prerender over live data, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
+| **Uniweb Cloud (`uniweb publish`)** | The platform (your machine builds the foundation it releases) | Your machine | Prerender over live data, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
 
 Not sure? Run **`uniweb deploy`** with nothing configured and it walks you through the choice.
 
@@ -164,7 +191,7 @@ Free static hosts cover the typical case — markdown in your repo, push to depl
 | Foundation/runtime updates without redeploying | No — rebuild on each foundation change | Yes — propagation gated by site policy |
 | Edge SSR for SEO on dynamic content | No | Yes |
 | Custom domain on free tier | Yes | n/a (always paid) |
-| Visual editor for content authors | No | Yes (separate decision — see [Path 2](#path-2--you-ship-a-foundation-as-a-product)) |
+| Visual editor for content authors | No | Yes — a [synced site](#synced--you-in-files-authors-in-the-app), or [Path 2](#path-2--you-ship-a-foundation-as-a-product) |
 
 If your site's content lives in markdown and updates ship via git, free CI is the right call. Choose Uniweb hosting when:
 
@@ -191,7 +218,7 @@ pnpm install              # one-time dependency install
 uniweb publish
 ```
 
-`uniweb publish` handles login, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed — see [How a foundation reaches the catalog](#how-a-foundation-reaches-the-catalog)), syncs the content, and goes live — all in one flow.
+`uniweb publish` handles login, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed — see [How a foundation reaches the catalog](#how-a-foundation-reaches-the-catalog)), pushes the content, and goes live — all in one flow. It doesn't take authors' edits first: when they changed what you're pushing, it stops before anything goes live. Merge their edits in with `uniweb pull` (or `uniweb sync`), then publish again.
 
 **Local media.** Images, video, and PDFs you reference by a site-root path (`/images/hero.jpg`, with the file under `public/`) are uploaded to the platform's CDN and rewritten to durable serve URLs automatically — no manual asset step. On the Uniweb-hosting path, reference local media by a site-root path rather than a path relative to the markdown file (`./hero.jpg`). Media already hosted elsewhere — a full `https://…` URL — is left untouched and loaded from its source.
 
@@ -203,7 +230,7 @@ You're building a foundation for clients, content authors, or any team that won'
 
 The sites that use your foundation are managed in the **Uniweb app** — a visual editor designed for non-technical authors. They never see git, markdown, yaml, or React. They see *your* components, with live previews and visual controls for the params you defined. The foundation becomes the editor's native vocabulary for that site: you keep creative control of the design system, they get an editor that feels custom-built for them.
 
-This is a paid path (catalog + hosting + apps). The right shape when:
+This is a paid path (catalog + hosting + the app). The right shape when:
 
 - Site content has a life independent of the foundation's release cycle.
 - Content authors are not the same people as the developers — clients, writers, marketing teams.
@@ -326,21 +353,6 @@ This is one thing you give up when you don't deploy to the Uniweb platform: prop
 
 ---
 
-## Hybrid — git-style content sync
-
-When a site is hosted on the Uniweb backend, its content lives there as data — and you can work on it from a file project with **git-style sync verbs**:
-
-- `uniweb clone <site-uuid>` — start a local file project, under git, from a site that already lives on the backend (often authored in the apps).
-- `uniweb pull` — bring the backend's current content into your files. In a git repository it merges, like `git pull`: the backend's content is committed and merged into your branch, so your work — committed or not — is kept, and pages and sections removed on the backend are removed here too unless you changed them. Outside git it rewrites your files to match the backend (`--no-delete` keeps what the backend removed), asking first.
-- `uniweb push` — send your local edits back up (first push creates the site and mints its id).
-- `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
-- `uniweb sync` — `refresh`, then `push`.
-- `uniweb publish` — `push`, then make the backend's current state **live**.
-
-**Nobody's work is overwritten without asking.** A push that would overwrite changes made in the apps since your last pull is refused before anything is written; merge them in with `uniweb pull` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge, then `git commit`. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
-
----
-
 ## Reference
 
 ### Commands at a glance
@@ -350,11 +362,11 @@ When a site is hosted on the Uniweb backend, its content lives there as data —
 | `uniweb deploy` | The wizard — asks where the site should go, then does it. Remembers your answer in `deploy.yml`. |
 | `uniweb add ci --host=<adapter>` | Scaffold a CI workflow (+ PR previews) in your repo. The host runs `uniweb build` on each push. |
 | `uniweb add ci --target foundation` | Scaffold the workflow that publishes foundations at permanent versioned GitHub Pages URLs. |
-| `uniweb publish` | Go live on Uniweb Cloud — brings the foundation along, syncs content, publishes. The paid path. |
+| `uniweb publish` | Go live on Uniweb Cloud — brings the foundation along, pushes the content, goes live. The paid path. |
 | `uniweb deploy --host=<adapter>` | Push to a third-party static host — builds, uploads, invalidates in one step. |
 | `uniweb export` | Produce a self-contained `dist/` for any static host. You upload it yourself. `--host=<adapter>` adds host-specific helper files. |
 | `uniweb register --scope @org` | Register a foundation + its data schemas to the registry (path 2). |
-| `uniweb push` / `pull` / `refresh` / `sync` / `clone` | Git-style content sync with the Uniweb backend. |
+| `uniweb push` / `pull` / `refresh` / `sync` / `clone` | Git-style content sync with the Uniweb backend, and so with the app — see [Synced](#synced--you-in-files-authors-in-the-app). |
 | `uniweb build` | Inspect a build locally. For shipping, use `deploy`, `publish`, or `export`. |
 
 `--host=<adapter>` is the same option across `deploy`, `export`, and `add ci`. Each adapter implements only the operations it supports, and the CLI only ever offers you the ones that will work — see the adapter table below for who does what.
@@ -443,7 +455,7 @@ A Uniweb project is a workspace with two kinds of packages:
 
 | | What it does |
 |---|---|
-| `uniweb publish` | Go live on Uniweb hosting: bring the foundation along (release if its code changed), sync content, publish |
+| `uniweb publish` | Go live on Uniweb hosting: bring the foundation along (release if its code changed), push the content, go live |
 | `uniweb deploy --host=<adapter>` | Ship to a third-party static host: build → upload (the foundation is bundled into the site) |
 | `uniweb export` | Build a self-contained `dist/` for any static host; you upload it yourself |
 
@@ -452,7 +464,7 @@ On Uniweb hosting a site's content also lives on the backend, with **git-style p
 **Two things worth stating plainly:**
 
 - **`uniweb publish` brings the foundation along.** When the site's local foundation changed, `publish` releases the new version to the catalog under your `@org` first — there is no separate auto-publish step, and `deploy` ships no foundation code.
-- **`publish` pushes, then promotes the backend's current state.** It sends your local content the way `uniweb push` does — a push that is refused stops the publish before anything goes live — and the site goes live with edits made in the apps as well as yours.
+- **`publish` pushes, then promotes the backend's current state.** It sends your local content the way `uniweb push` does — a push that is refused stops the publish before anything goes live — and the site goes live with edits made in the app as well as yours.
 
 Going live on Uniweb hosting (`uniweb publish`) and cataloging a foundation as a standalone product (`uniweb register`) are independent operations — different schedules, people, intents. `publish` brings a single site's foundation along for you; `register` is the deliberate "this foundation is a multi-site product" step.
 
