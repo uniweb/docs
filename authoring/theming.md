@@ -32,6 +32,8 @@ colors:
 
 That single line generates a complete color palette — eleven shades from very light to very dark — that your entire site uses for buttons, links, accents, and highlights.
 
+> **Keep the quotes.** In YAML a `#` after a space starts a comment, so `primary: #3b82f6` without quotes leaves `primary` empty. The same goes for any value with a color inside it, such as a section's background gradient: quote the whole value. The build warns when it notices one.
+
 You can add more colors:
 
 ```yaml
