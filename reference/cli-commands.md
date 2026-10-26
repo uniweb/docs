@@ -1239,7 +1239,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 
 | Option | Description |
 |--------|-------------|
-| `--dry-run` | Report what would be pushed; submit nothing |
+| `--dry-run` | Report what would be pushed, and the workspace the push works in; submit nothing |
 | `-o <file>` | Write the `.uwx` package(s) instead of submitting |
 | `--org @org` | Work in `@org` for this push, instead of your login's workspace — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) |
 | `--personal` | Work in your personal workspace for this push |
@@ -1393,7 +1393,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 
 | Option | Description |
 |--------|-------------|
-| `--dry-run` | Resolve everything; release, sync and publish nothing. |
+| `--dry-run` | Resolve everything; release, sync and publish nothing. It names the backend and the workspace the publish works in, and warns when `sync.json` records the site as created in another — a site kept in another workspace stops the publish. |
 | `--yes` | Skip confirmations (CI); never block on a prompt. Answers a change that only lowers what the site pays — never one that charges. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--commit` | In a git repository, commit the site's content before publishing it — with `-m <message>` — as [`uniweb push --commit`](#uniweb-push). |
