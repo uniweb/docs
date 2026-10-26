@@ -293,9 +293,9 @@ On Uniweb hosting a foundation always lives in the catalog as `@org/name@version
 | Catalog visibility | Released under your `@org`, not surfaced as a separate product | Yes — a listed, license-gated product |
 | Multi-site shareable | Promote it later with a deliberate `uniweb register` | Yes — across whichever sites the foundation owner grants access |
 | Propagation | Yes — across every site whose policy permits the version jump | Yes — same |
-| Live example | [uniweb.io](https://www.uniweb.io/) | [proximify.com](https://www.proximify.com/) |
+| Live example | [uniweb.io](https://uniweb.io/) | [proximify.com](https://www.proximify.com/) |
 
-**Brought along by `uniweb publish`** is the natural choice when a foundation only powers one site. No separate register step, no naming ceremony — `uniweb publish` from the site directory releases the foundation (when its code changed) and takes it live with the content. [uniweb.io](https://www.uniweb.io/) ships exactly this way: one repo, one command.
+**Brought along by `uniweb publish`** is the natural choice when a foundation only powers one site. No separate register step, no naming ceremony — `uniweb publish` from the site directory releases the foundation (when its code changed) and takes it live with the content. [uniweb.io](https://uniweb.io/) ships exactly this way: one repo, one command.
 
 **Registered deliberately** is the natural choice when the foundation is a product across multiple sites. You register it once with `uniweb register`; consuming sites pin it by name and version. [proximify.com](https://www.proximify.com/) ships this way — its foundation is a catalog product the site's owner is licensed to use.
 
