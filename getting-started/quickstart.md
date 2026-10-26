@@ -12,6 +12,8 @@ Create your first Uniweb site in 5 minutes.
 npm install -g pnpm
 ```
 
+> **Working with an AI agent?** Ask it to run `npx uniweb@latest start` first. It prints a guide written for the agent: creating the project, reading its `AGENTS.md`, running it, and bringing the site into the Uniweb app. See [`uniweb start`](../reference/cli-commands#uniweb-start).
+
 ## Create a Project
 
 ```bash

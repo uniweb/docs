@@ -5,6 +5,7 @@ The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, gene
 ## Quick Reference
 
 ```bash
+uniweb start                   # A guide for an AI agent building a site for someone
 uniweb create [name]           # Create a new project (default: starter)
 uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb dev                     # Start a dev server for a site
@@ -32,6 +33,22 @@ uniweb status                  # Show a site's sync state (unpushed content)
 uniweb forget --server <url>  # Forget one backend (--all: make a copied project a new one)
 uniweb site <list|unpublish|delete>  # The sites in a workspace — list them, take one offline, delete one
 ```
+
+---
+
+## uniweb start
+
+Print a short guide for an AI agent building a website for someone.
+
+```bash
+npx uniweb@latest start
+```
+
+The guide, in Markdown, takes the agent through the whole path: create a project from `starter`, read its `AGENTS.md`, install and run it, sign the person in through their browser (`uniweb login --browser`), and bring the site into the Uniweb app (`push`) or take it live (`publish`). It assumes the person doesn't use a terminal: the agent runs every command, and the person only signs in, and pays when the site goes live, in their browser.
+
+Inside a Uniweb project, the guide starts from that project instead of creating one, and names the project's own package manager. Inside a workspace of another kind, it says to create the project somewhere else, since `create` does not make one inside another workspace.
+
+`start` asks nothing, writes nothing and makes no network request, so an agent can run it in any folder. The guide comes with the CLI that prints it, so `@latest` gives the current one. To run a site's dev server, use [`uniweb dev`](#uniweb-dev).
 
 ---
 
