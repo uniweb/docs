@@ -1201,7 +1201,7 @@ uniweb push
 
 Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` records it in [`sync.json`](#which-site-this-is--syncjson)); later pushes update it.
 
-**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb apps — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
+**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb app — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
 
 **In a git repository, a push sends what you have committed.** If the site's content has changes you have not committed, the push is refused before anything is sent, and it lists the files: commit them and push again, or run `uniweb push --commit -m "…"` to commit them first — the site's content only, so anything else you have staged stays staged. The commit a push is made from is where the next pull merges from, yours and a teammate's, which is how that pull tells your changes from the backend's. What the push then writes into your files — the ids the backend assigned, in `sync.json` and in new record files — it commits itself, as `uniweb`. Outside a repository, the files are sent as they are.
 
@@ -1209,7 +1209,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
 
-When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb apps can only open a site against a released foundation. `--no-release` sends the content against the version already released.
+When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb app can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
 A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json` — commit it. Unchanged code is not released again. The version picked is always the next patch (a pre-release gets its next pre-release); for a change that is not backwards compatible, set a higher minor or major version in `package.json` yourself before you push.
 
@@ -1312,7 +1312,7 @@ A project that was never pushed has no id to pull by — pull is a no-op with a 
 
 ## uniweb refresh
 
-Catch up with everything outside your working copy: your teammates' commits on the git remote **and** content authors' edits on the backend. Running only `git pull` misses every edit made in the Uniweb apps; running only `uniweb pull` misses your teammates.
+Catch up with everything outside your working copy: your teammates' commits on the git remote **and** content authors' edits on the backend. Running only `git pull` misses every edit made in the Uniweb app; running only `uniweb pull` misses your teammates.
 
 ```bash
 uniweb refresh
@@ -1353,7 +1353,7 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 
 ## uniweb clone
 
-Materialize a backend site as a **brand-new local file project** — the "git clone" of the site-content model. Use it to bootstrap a project from a site that already lives on the backend (typically authored in the Uniweb apps).
+Materialize a backend site as a **brand-new local file project** — the "git clone" of the site-content model. Use it to bootstrap a project from a site that already lives on the backend (typically authored in the Uniweb app).
 
 ```bash
 uniweb login
@@ -1386,7 +1386,7 @@ uniweb login
 uniweb publish
 ```
 
-`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull, or, in a git repository, if its content is not committed (`--commit` commits it first) — and then makes the backend's current version live, including edits made in the Uniweb apps. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the apps.
+`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull, or, in a git repository, if its content is not committed (`--commit` commits it first) — and then makes the backend's current version live, including edits made in the Uniweb app. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the app.
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 

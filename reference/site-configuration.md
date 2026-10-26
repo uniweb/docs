@@ -18,7 +18,7 @@ That's all you need to get started. Everything else has sensible defaults.
 # Identity
 name: My Site
 description: A brief description for SEO
-preview: /images/card.png            # The site's card image in the Uniweb apps (optional)
+preview: /images/card.png            # The site's card image in the Uniweb app (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
   origin: https://my-site.com        # Where it is served from: canonical URLs, sitemap.xml, absolute llms.txt links
@@ -91,10 +91,10 @@ preview: /images/card.png
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Site name (used in `<title>`, metadata), and the title on the site's card in the Uniweb apps |
+| `name` | string | Site name (used in `<title>`, metadata), and the title on the site's card in the Uniweb app |
 | `description` | string | Default meta description, and the line under the title on the site's card |
 | `tags` | list | What the site is for, as standard ids — [the site tags](https://github.com/uniweb/schemas#site-tags). Apps use them to filter and label sites, such as in a template picker. An id that is not on the list is kept, and simply has no label. |
-| `preview` | string | The image on the site's card in the Uniweb apps — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
+| `preview` | string | The image on the site's card in the Uniweb app — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
 
 ---
 
