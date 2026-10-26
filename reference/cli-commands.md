@@ -1449,7 +1449,7 @@ Run it when you begin, when you come back to the project, before you push, publi
 
 Each check ends in a state: `ok`, `attention`, `blocking` (a push or publish would be refused), `unknown` (it could not tell: no network, or not signed in), or `skipped`. A check it could not make is `unknown`, never `ok`. It signs nobody in: when you are not signed in, it says how.
 
-**Next** lists the commands to run, in an order that works from the top: settle conflicts and finish a merge, commit what else changed, take what others did (`uniweb refresh`, or `uniweb pull`), push, then go live. A step marked *ask the person first* — a commit, sharing commits, going live, which may cost money — is the site owner's to decide. When a newer Uniweb is out, the step is `npx uniweb@latest update`, then build and look at the pages.
+**Next** lists the commands to run, in an order that works from the top: settle conflicts and finish a merge, take what others did (`uniweb refresh`, or `uniweb pull`), commit what else changed, push, then go live. A step marked *ask the person first* — a commit, sharing commits, going live, which may cost money — is the site owner's to decide. When a newer Uniweb is out, the step is `npx uniweb@latest update`, then build and look at the pages.
 
 ```
 Acme — synced with https://uniweb.app · live on Uniweb Cloud at https://acme.example/ · also deployed to GitHub Pages
