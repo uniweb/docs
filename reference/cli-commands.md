@@ -1435,10 +1435,11 @@ uniweb status --offline   # only what this machine knows: no backend, npm, git r
 uniweb status --json      # one JSON document: { schema: 1, checks, next }
 ```
 
-Run it when you begin, when you come back to the project, before you push, publish or deploy, and after a command refuses. Run from a site, or a workspace with one site; in a workspace with several, it names them.
+Run it when you begin, when you come back to the project, before you push, publish or deploy, and after a command refuses. Run from a site, or a workspace with one site. At the root of a workspace with several sites it says what each one is — synced where, deployed where, built with which foundation, with pages from where, in how many languages — from their files alone, and how to get one site's checks.
 
 | Group | Checks |
 |---|---|
+| `project` | the workspace's sites and foundations, from its globs; the foundation this site is built with — its source here, or from the catalog or a URL — and the other sites a change to it reaches; its extensions; pages it takes from outside its folder, and whether that folder is its own git repository; the languages it is written in |
 | `git` | files in conflict, a merge waiting for its commit, the site's files not committed — in a git repository a push sends what is committed — and commits on the git remote you do not have |
 | `app` | your session and workspace; what changed on the backend since this copy last synced, by file — the files `uniweb pull` would change, translations and records included; what you hold that the backend lacks; who has the site open in the app; your foundation against its registered version |
 | `hosting` | where the site is live on the backend, and when it was published; the other hosts in `deploy.yml` — deployed by CI on every push, or by hand, and how far behind; the services the live site has, beside what `site.yml` asks for |
@@ -1514,7 +1515,7 @@ One document, versioned by `schema`:
 }
 ```
 
-Check ids are stable, and include `git.conflicts`, `git.uncommitted`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `app.services`, `hosting.deploys`, `uniweb.version`, `health.doctor` and `dev.server`. The document's `summary` is the line the status opens with, and `synced` lists every backend this copy holds a site on. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
+Check ids are stable, and include `project.workspace`, `project.foundation`, `project.mounts`, `project.languages`, `git.conflicts`, `git.uncommitted`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `app.services`, `hosting.deploys`, `uniweb.version`, `health.doctor` and `dev.server`. The document's `summary` is the line the status opens with, and `synced` lists every backend this copy holds a site on. Its `scope` is `site`; at a workspace of several sites it is `workspace`, with a `sites` list of what each one is. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
 
 `app.site`'s `detail.site_state` is `live`, `gone` or `unknown`. `gone` is said only on the backend's own word that it holds no such site — never for a failure to reach it — so a script can forget a binding on `gone` (`uniweb forget --server <url>`) without risking a second copy of a site that still exists.
 

@@ -69,6 +69,8 @@ In every layout, **folder and package name are the same string** — except in t
 
 That's the complete wiring. Workspace globs tell pnpm what's a package, `file:` tells the site where the foundation lives on disk, and `foundation:` tells the build which package it is. Everything else — directory names, nesting depth, number of packages — is convention.
 
+`uniweb status` reads this wiring for you. Run in a site, it names the foundation the site is built with and the other sites that use the same one — so you know what a change to a section type reaches — and the pages it mounts from outside its folder. Run at the root of a workspace with several sites, it says what each one is.
+
 ---
 
 ## Recipes
