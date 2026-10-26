@@ -29,7 +29,7 @@ uniweb pull                    # Pull backend site content to local files
 uniweb refresh                 # Catch up with the git remote and the backend (never pushes)
 uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
-uniweb status                  # Show a site's sync state (unpushed content)
+uniweb status                  # What changed in the app, in git and in Uniweb — and what to run
 uniweb forget --server <url>  # Forget one backend (--all: make a copied project a new one)
 uniweb site <list|unpublish|delete>  # The sites in a workspace — list them, take one offline, delete one
 ```
@@ -1427,38 +1427,85 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 
 ## uniweb status
 
-Show how a site's local files compare to the Uniweb backend — its **sync identity**, **unpushed content**, and the **foundation** it references. Local and offline by default: it runs the same emit + diff as `push`, with no backend round-trip.
+What to know before working on a site, and what to run about it: what changed in the Uniweb app since your copy last synced, what git holds, whether a newer Uniweb is out, what `uniweb doctor` finds, and whether the dev server is running. It changes nothing, and ends with the commands to run, in the order to run them.
 
 ```bash
-uniweb status
-uniweb status --json            # { synced, uuid, foundation, changed, unchanged }
-uniweb status --remote          # also asks the backend (it may ask you to log in)
-uniweb status --remote --json   # adds { remote: { site_state, site_state_detail, site, … } }
+uniweb status             # every check
+uniweb status --offline   # only what this machine knows: no backend, npm, git remote or dev server
+uniweb status --json      # one JSON document: { schema: 1, checks, next }
 ```
 
-Run from a site, or a workspace with one site. The content diff is exactly what `uniweb push` would send — so `changed: 0` means a `push` would be a no-op.
+Run it when you begin, before you push, and after a command refuses. Run from a site, or a workspace with one site; in a workspace with several, it names them.
 
-**`--remote`** asks the backend about the site this directory names on it — in the workspace you work in, or the one named with `--org` / `--personal`:
-
-| `site_state` | means |
+| Group | Checks |
 |---|---|
-| `live` | the backend holds the site — or holds it in another workspace, which `site_state_detail` names |
-| `gone` | the backend says it holds no such site: it was deleted there, or the backend was rebuilt. `uniweb forget --server <url>` clears the binding, and the next push creates a new site |
-| `unknown` | anything else — no answer, a refused credential, a backend that cannot say |
-| `null` | this directory names no site on that backend |
+| `git` | files in conflict, a merge waiting for its commit, the site's files not committed — in a git repository a push sends what is committed — and commits on the git remote you do not have |
+| `app` | your session and workspace; what changed on the backend since this copy last synced, by file — in the app, or pushed from another copy; what you hold that the backend lacks; whether the site is live; who has it open in the app; your foundation against its registered version |
+| `uniweb` | whether a newer Uniweb release is out than the project runs |
+| `health` | what `uniweb doctor` finds |
+| `dev` | the dev server, and its address |
 
-`gone` is said only on the backend's own word about this site — never for a failure to reach it — so a script can forget a binding on `gone` without risking a second copy of a site that still exists. `--remote` also says whether the synced draft differs from what is live, and whether a newer version of the foundation is registered.
+Each check ends in a state: `ok`, `attention`, `blocking` (a push or publish would be refused), `unknown` (it could not tell: no network, or not signed in), or `skipped`. A check it could not make is `unknown`, never `ok`. It signs nobody in: when you are not signed in, it says how.
 
-It also lists who has the site open in the Uniweb app right now, so you can follow up with them:
+**Next** lists the commands to run, in an order that works from the top: settle conflicts and finish a merge, take what others did (`uniweb refresh`, or `uniweb pull`), push, then go live. A step marked *ask the person first* — going live, which may cost money — is the site owner's to decide. When a newer Uniweb is out, the step is `npx uniweb@latest update`, then build and look at the pages.
 
 ```
-→ Open in the app now:
-    Ada Lovelace (@ada)
-      pages/about/1-hero.md (/about) · changed 3 min ago
-      layout/header.md · changed 1 h ago
+App — https://uniweb.app
+  ✓ Signed in to https://uniweb.app as @ada, working in @acme (your login).
+  ✗ 2 changes on the backend since this copy last synced — in the app, or pushed from another copy. You changed 1 of those files here too.
+      pages/home/1-hero.md
+      pages/about/page.yml
+  → Open in the app now: Ada Lovelace (@ada).
+      pages/home/1-hero.md (/) · changed 3 min ago
+
+Next
+  1. npx uniweb pull
+     take the 2 changes made on the backend
+  2. npx uniweb push --commit -m "<what you changed>"
+     commit your changes and send them to the app
 ```
 
-Each line is a tab that person has open, named by its file in your copy. A page or section added in the app since your last pull has no file yet, so it shows as, for example, `a section not in this copy (/blog)`. "Changed" is when that page or section last changed, by anyone, not necessarily that person. This is presence, not a lock: nothing stops a push because someone has the site open.
+"Open in the app" names each tab a person has open by its file in your copy; a page or section added in the app since your last pull has no file yet, so it shows as, for example, `a section not in this copy (/blog)`. "Changed" is when that page or section last changed, by anyone, not necessarily that person. This is presence, not a lock: nothing stops a push because someone has the site open.
+
+| Option | Description |
+|--------|-------------|
+| `--offline` | Ask nothing beyond this machine: no backend, npm, git remote or dev server. |
+| `--json` | One JSON document, below. |
+| `--org @org` | Ask the backend in `@org`'s workspace for this status, instead of your login's. |
+| `--personal` | Ask in your personal workspace for this status. |
+
+### `--json`
+
+One document, versioned by `schema`:
+
+```json
+{
+  "schema": 1,
+  "uniweb": "1.21.0",
+  "site": "site",
+  "backend": "https://uniweb.app",
+  "workspace": "@acme",
+  "offline": false,
+  "checks": [
+    {
+      "id": "app.changes",
+      "state": "attention",
+      "summary": "1 change on the backend since this copy last synced — in the app, or pushed from another copy.",
+      "blocks": [],
+      "files": ["pages/home/1-hero.md"]
+    }
+  ],
+  "next": [
+    { "command": "npx uniweb pull", "why": "take the 1 change made on the backend", "ask": false }
+  ]
+}
+```
+
+Check ids are stable, and include `git.conflicts`, `git.uncommitted`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `uniweb.version`, `health.doctor` and `dev.server`. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
+
+`app.site`'s `detail.site_state` is `live`, `gone` or `unknown`. `gone` is said only on the backend's own word that it holds no such site — never for a failure to reach it — so a script can forget a binding on `gone` (`uniweb forget --server <url>`) without risking a second copy of a site that still exists.
+
+The exit code is 0 whenever a status is produced, and 2 for a usage error: read the document, not the exit code, for what needs doing.
 
 ---
 
