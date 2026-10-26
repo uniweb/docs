@@ -198,7 +198,9 @@ useFormSubmit({
 ```
 
 `block` is worth passing: the submission then carries which section type and
-page it came from, so you don't assemble that by hand.
+page it came from, so you don't assemble that by hand. The page is the one the
+visitor was on when they sent the form. For a form in a layout area, such as a
+newsletter band in the footer, that is the page being shown, not the area.
 
 `summary` is a short human-readable digest — `{ title, subtitle, tag? }` — so
 whoever reads submissions can tell them apart at a glance. Pass a function to
