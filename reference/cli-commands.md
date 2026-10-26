@@ -1427,7 +1427,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 
 ## uniweb status
 
-What to know before working on a site, and what to run about it: what changed in the Uniweb app since your copy last synced, what git holds, whether a newer Uniweb is out, what `uniweb doctor` finds, and whether the dev server is running. It changes nothing, and ends with the commands to run, in the order to run them.
+What to know before working on a site, and what to run about it. It opens with what the site is — **synced** with a backend, so it can be edited in the Uniweb app; **published** on Uniweb Cloud; **deployed** to another host — then says what changed in the app since your copy last synced, what git holds, where the site is live and with which services, whether a newer Uniweb is out, what `uniweb doctor` finds, and whether the dev server is running. It changes nothing, and ends with the commands to run, in the order to run them.
 
 ```bash
 uniweb status             # every check
@@ -1435,12 +1435,13 @@ uniweb status --offline   # only what this machine knows: no backend, npm, git r
 uniweb status --json      # one JSON document: { schema: 1, checks, next }
 ```
 
-Run it when you begin, before you push, and after a command refuses. Run from a site, or a workspace with one site; in a workspace with several, it names them.
+Run it when you begin, when you come back to the project, before you push, publish or deploy, and after a command refuses. Run from a site, or a workspace with one site; in a workspace with several, it names them.
 
 | Group | Checks |
 |---|---|
 | `git` | files in conflict, a merge waiting for its commit, the site's files not committed — in a git repository a push sends what is committed — and commits on the git remote you do not have |
-| `app` | your session and workspace; what changed on the backend since this copy last synced, by file — in the app, or pushed from another copy; what you hold that the backend lacks; whether the site is live; who has it open in the app; your foundation against its registered version |
+| `app` | your session and workspace; what changed on the backend since this copy last synced, by file — the files `uniweb pull` would change, translations and records included; what you hold that the backend lacks; who has the site open in the app; your foundation against its registered version |
+| `hosting` | where the site is live on the backend, and when it was published; the other hosts in `deploy.yml` — deployed by CI on every push, or by hand, and how far behind; the services the live site has, beside what `site.yml` asks for |
 | `uniweb` | whether a newer Uniweb release is out than the project runs |
 | `health` | what `uniweb doctor` finds |
 | `dev` | the dev server, and its address |
@@ -1450,19 +1451,29 @@ Each check ends in a state: `ok`, `attention`, `blocking` (a push or publish wou
 **Next** lists the commands to run, in an order that works from the top: settle conflicts and finish a merge, take what others did (`uniweb refresh`, or `uniweb pull`), push, then go live. A step marked *ask the person first* — going live, which may cost money — is the site owner's to decide. When a newer Uniweb is out, the step is `npx uniweb@latest update`, then build and look at the pages.
 
 ```
+Acme — synced with https://uniweb.app · live on Uniweb Cloud at https://acme.example/ · also deployed to GitHub Pages
+
 App — https://uniweb.app
   ✓ Signed in to https://uniweb.app as @ada, working in @acme (your login).
-  ✗ 2 changes on the backend since this copy last synced — in the app, or pushed from another copy. You changed 1 of those files here too.
+  ✗ 2 files changed on the backend since this copy last synced — in the app, or pushed from another copy. You changed 1 of those files here too.
       pages/home/1-hero.md
       pages/about/page.yml
   → Open in the app now: Ada Lovelace (@ada).
       pages/home/1-hero.md (/) · changed 3 min ago
 
+Hosting
+  → Live on Uniweb Cloud at https://acme.example/, published 2 days ago — the app holds changes that are not live yet.
+  ✓ Also deployed to GitHub Pages.
+      GitHub Pages — target `pages`: deployed by CI on every push to main or master (.github/workflows/deploy-github-pages.yml)
+  ✓ Services on the live site: `search`, `submit`.
+
 Next
   1. npx uniweb pull
-     take the 2 changes made on the backend
+     take the 2 files changed on the backend
   2. npx uniweb push --commit -m "<what you changed>"
      commit your changes and send them to the app
+  3. npx uniweb publish
+     ask the person first — make those changes live — the person decides
 ```
 
 "Open in the app" names each tab a person has open by its file in your copy; a page or section added in the app since your last pull has no file yet, so it shows as, for example, `a section not in this copy (/blog)`. "Changed" is when that page or section last changed, by anyone, not necessarily that person. This is presence, not a lock: nothing stops a push because someone has the site open.
@@ -1481,27 +1492,29 @@ One document, versioned by `schema`:
 ```json
 {
   "schema": 1,
-  "uniweb": "1.21.0",
+  "uniweb": "1.21.1",
+  "summary": "Acme — synced with https://uniweb.app · live on Uniweb Cloud at https://acme.example/",
   "site": "site",
   "backend": "https://uniweb.app",
   "workspace": "@acme",
+  "synced": ["https://uniweb.app"],
   "offline": false,
   "checks": [
     {
       "id": "app.changes",
       "state": "attention",
-      "summary": "1 change on the backend since this copy last synced — in the app, or pushed from another copy.",
+      "summary": "1 file changed on the backend since this copy last synced — in the app, or pushed from another copy.",
       "blocks": [],
       "files": ["pages/home/1-hero.md"]
     }
   ],
   "next": [
-    { "command": "npx uniweb pull", "why": "take the 1 change made on the backend", "ask": false }
+    { "command": "npx uniweb pull", "why": "take the 1 file changed on the backend", "ask": false }
   ]
 }
 ```
 
-Check ids are stable, and include `git.conflicts`, `git.uncommitted`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `uniweb.version`, `health.doctor` and `dev.server`. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
+Check ids are stable, and include `git.conflicts`, `git.uncommitted`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `app.services`, `hosting.deploys`, `uniweb.version`, `health.doctor` and `dev.server`. The document's `summary` is the line the status opens with, and `synced` lists every backend this copy holds a site on. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
 
 `app.site`'s `detail.site_state` is `live`, `gone` or `unknown`. `gone` is said only on the backend's own word that it holds no such site — never for a failure to reach it — so a script can forget a binding on `gone` (`uniweb forget --server <url>`) without risking a second copy of a site that still exists.
 
