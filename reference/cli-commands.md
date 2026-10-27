@@ -899,9 +899,16 @@ uniweb i18n <command> [options]
 
 | Command | Description |
 |---------|-------------|
-| `extract` | Extract translatable strings to manifest |
-| `sync` | Update manifest with content changes |
-| `status` | Show translation coverage per locale |
+| `extract` | Extract translatable strings to manifest (alias: `sync`) |
+| `generate [locale...]` | Start locale files from the manifest (alias: `init`) |
+| `status [locale]` | What is left per locale: strings, and free-form translations |
+| `audit` | Find stale and missing string translations (`--clean` removes the stale ones) |
+| `status --freeform` | Each free-form translation: up to date, stale or orphaned |
+| `init-freeform <locale> <path> <id>` | Start a free-form translation from its source section |
+| `update-hash <locale> [<path> <id>]` | Mark a reviewed free-form translation current (`--all-stale` for every one) |
+| `move <old-path> <new-path>` | Move free-form translations when pages move |
+| `rename <path> <old-id> <new-id>` | Rename a free-form translation when its section is renamed |
+| `prune --freeform` | Remove orphaned free-form translations |
 
 ### Options
 
@@ -909,8 +916,9 @@ uniweb i18n <command> [options]
 |--------|-------------|
 | `--target <path>` | Specify site directory |
 | `--verbose` | Show detailed output |
-| `--dry-run` | Show changes without writing (sync only) |
-| `--locale <code>` | Filter to specific locale (status only) |
+| `--dry-run` | Show changes without writing (extract, prune) |
+| `--json` | Machine-readable output (status) |
+| `--missing` | List every untranslated string (status) |
 
 ### Workflow
 
@@ -936,7 +944,7 @@ Create `locales/{locale}.json` with translations:
 uniweb i18n status
 ```
 
-Shows which strings are translated per locale.
+Shows which strings are translated per locale. A site with free-form translations also gets each locale's count of them, naming any that are stale (their source section changed) or orphaned (their section is gone); `uniweb i18n status --freeform` lists each one.
 
 **4. After content changes:**
 ```bash
@@ -955,7 +963,7 @@ uniweb i18n extract
 uniweb i18n status
 
 # Status for specific locale
-uniweb i18n status --locale es
+uniweb i18n status es
 
 # Sync after content changes (dry run)
 uniweb i18n sync --dry-run

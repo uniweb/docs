@@ -512,6 +512,8 @@ uniweb i18n status es         # Spanish only
 uniweb i18n status --json     # Machine-readable output
 ```
 
+When the site has free-form translations, the summary also gives each language's count of them and names any that are stale or orphaned; `--json` carries them under `freeform`.
+
 **Additional options:**
 - `--missing` — List all untranslated strings instead of just a summary
 - `--missing --by-page` — Group missing strings by page

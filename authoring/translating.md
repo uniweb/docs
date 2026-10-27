@@ -193,7 +193,7 @@ This only adds missing strings — it never overwrites translations you've alrea
 uniweb i18n status
 ```
 
-Shows how complete each language is — for example, "Spanish: 92% (43/47 strings)".
+Shows how complete each language is — for example, "Spanish: 92% (43/47 strings)". If you keep [free-form translations](#free-form-translations), it also names the ones whose original has changed since.
 
 For more detail:
 
