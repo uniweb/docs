@@ -74,6 +74,13 @@ fill it without a framework change.
 answers for itself in the served payload — an endpoint when it will accept
 submissions for this site, and no address when it will not.
 
+**In `uniweb dev`, the dev server answers it.** It is the host while you work, so
+with `submit: true` it takes your forms itself: they show, and they can be filled
+in and sent before the site is published. Each submission is printed in the
+terminal and kept — the JSON an endpoint would receive, and any attachments — in
+the site's `.uniweb/dev-submissions/`, which a scaffolded project never commits.
+An address of your own is used in development as it is anywhere else.
+
 ⛔ **There is deliberately no explanatory string, and absence is not an error to
 report to a visitor.** No endpoint means draw no form — or degrade to something
 that still serves them, like a `mailto:` the site already carries in its
@@ -119,8 +126,9 @@ its own API and a site whose host handles it, with no code change.
 > declaration.
 
 > **Status:** host-supplied destinations are live on Uniweb Cloud, where form
-> handling is a service you ask for with `submit: true` and settle when you publish.
-> Anywhere else, an address of your own is how you provide one.
+> handling is a service you ask for with `submit: true` and settle when you publish,
+> and `uniweb dev` takes the same request locally. Anywhere else, an address of your
+> own is how you provide one.
 
 ---
 

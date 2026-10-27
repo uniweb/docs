@@ -737,6 +737,10 @@ A form's destination comes from the first of these that applies:
 3. **Neither** — there is nowhere to send a visitor's answers, so a component draws no form, or
    shows contact details the site already carries.
 
+In `uniweb dev` the dev server is your host, so `submit: true` is answered there: your forms show and
+can be sent while you work. Each submission is printed in the terminal and kept, attachments
+included, in the site's `.uniweb/dev-submissions/`, which a scaffolded project never commits.
+
 ### Full Options
 
 ```yaml
