@@ -514,6 +514,8 @@ The component handles both. The rendering code after normalization is identical 
 
 When a section type fetches data at runtime (`prerender: false`), there's a gap between the first render and data arrival. Without handling it, the page collapses — header and footer slam together while the section has nothing to show. The component renders immediately and controls its own loading UI.
 
+On a navigation within the site, the runtime fetches a page's data before it shows the page, so a section usually renders with its data already there. The loading state covers the rest: the first page of a visit, data that takes longer than that wait, and data a component fetches for itself.
+
 ```js
 // meta.js
 export default {

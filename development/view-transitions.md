@@ -130,16 +130,18 @@ Two details worth knowing:
 
 When [split content](../reference/site-configuration.md#split-content) is enabled, navigating to an unvisited page requires fetching its content from a `_pages/*.json` file. The current page stays on screen, still usable, while that content loads, and the page swaps once it has arrived. This holds for every navigation and every visitor, with or without view transitions, so no one sees a blank page between the two.
 
-The fetch usually starts before the click. A page starts loading when a visitor rests the pointer on a link to it, gives the link focus, or presses it, so by the time the click lands its content is often already there and the page changes at once. A pointer sweeping across a menu loads nothing, and nothing is loaded early for a connection that asks to save data.
+The same goes for the [data](../reference/data-fetching.md) a page's sections read, split content or not. Once the page's content is in, the runtime asks for what its sections will read and the site doesn't have yet: anything already fetched during the visit is used as it is. The page swaps when that data is in too, so its sections appear with their data instead of a loading state.
+
+The fetch usually starts before the click. A page starts loading, its content and then its data, when a visitor rests the pointer on a link to it, gives the link focus, or presses it. By the time the click lands it is often already there, and the page changes at once. A pointer sweeping across a menu loads nothing, and nothing is loaded early for a connection that asks to save data.
 
 With view transitions, the swap itself is animated:
 
-1. The content is fetched while the current page is still showing
+1. The content and data are fetched while the current page is still showing
 2. The browser captures the current page
-3. React renders the new page, its content already loaded
+3. React renders the new page, its content and data already loaded
 4. The browser crossfades from the old page to the new one
 
-If the content takes longer than a second to arrive (on a slow connection), navigation proceeds without the transition and the page fills in when the content arrives.
+If the page takes longer than a second to arrive (on a slow connection), navigation proceeds anyway. Without its content it goes without the transition and fills in when the content arrives; a section whose data is still coming shows its [loading state](./component-patterns.md#loading-states).
 
 ---
 
