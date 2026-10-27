@@ -130,6 +130,8 @@ Two details worth knowing:
 
 When [split content](../reference/site-configuration.md#split-content) is enabled, navigating to an unvisited page requires fetching its content from a `_pages/*.json` file. The current page stays on screen, still usable, while that content loads, and the page swaps once it has arrived. This holds for every navigation and every visitor, with or without view transitions, so no one sees a blank page between the two.
 
+The fetch usually starts before the click. A page starts loading when a visitor rests the pointer on a link to it, gives the link focus, or presses it, so by the time the click lands its content is often already there and the page changes at once. A pointer sweeping across a menu loads nothing, and nothing is loaded early for a connection that asks to save data.
+
 With view transitions, the swap itself is animated:
 
 1. The content is fetched while the current page is still showing
