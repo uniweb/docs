@@ -2,7 +2,7 @@
 
 Uniweb animates page navigation with smooth crossfades using the browser's native View Transitions API. Every SPA navigation is wrapped in `document.startViewTransition()`, which captures a screenshot of the current page, updates the DOM, and crossfades from old to new. No dependencies, no animation libraries — the browser handles it.
 
-This is enabled by default. In browsers that don't support the API, pages swap instantly without animation. When the user has `prefers-reduced-motion` enabled, transitions are skipped entirely.
+This is enabled by default. In browsers that don't support the API, pages swap instantly without animation. When the user has `prefers-reduced-motion` enabled, pages swap without animation too.
 
 ---
 
@@ -128,16 +128,16 @@ Two details worth knowing:
 
 ## Interaction with Split Content
 
-When [split content](../reference/site-configuration.md#split-content) is enabled, navigating to an unvisited page requires fetching its content from a `_pages/*.json` file. Without view transitions, there's a brief moment where the content hasn't loaded yet.
+When [split content](../reference/site-configuration.md#split-content) is enabled, navigating to an unvisited page requires fetching its content from a `_pages/*.json` file. The current page stays on screen, still usable, while that content loads, and the page swaps once it has arrived. This holds for every navigation and every visitor, with or without view transitions, so no one sees a blank page between the two.
 
-With view transitions, the content fetch happens *inside* the transition callback — behind the old page's screenshot. The sequence:
+With view transitions, the swap itself is animated:
 
-1. Browser captures screenshot of current page
-2. Content is fetched while the screenshot is displayed (~50-200ms)
-3. React renders the new page with content already loaded
-4. Browser crossfades from screenshot to new content
+1. The content is fetched while the current page is still showing
+2. The browser captures the current page
+3. React renders the new page, its content already loaded
+4. The browser crossfades from the old page to the new one
 
-The user never sees a loading state. If the fetch takes longer than 1 second (slow connection), navigation proceeds without the transition and the page renders normally.
+If the content takes longer than a second to arrive (on a slow connection), navigation proceeds without the transition and the page fills in when the content arrives.
 
 ---
 

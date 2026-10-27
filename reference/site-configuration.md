@@ -1132,7 +1132,7 @@ With `auto`, a 5-page marketing site stays bundled (fast, no extra requests), wh
 
 Once a page's content is loaded, it stays cached for the rest of the session — returning to a visited page is instant with no additional fetch.
 
-When [view transitions](../development/view-transitions.md#interaction-with-split-content) are active, the content fetch is hidden behind the transition animation — the user never sees a loading state.
+Navigating to a page whose content hasn't loaded yet keeps the current page on screen until it arrives, so the user never sees a blank page. With [view transitions](../development/view-transitions.md#interaction-with-split-content), the swap is animated.
 
 ---
 
