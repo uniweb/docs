@@ -677,7 +677,7 @@ Diagnose project configuration issues.
 uniweb doctor
 ```
 
-The doctor command checks your workspace and reports errors and warnings. Run it from the workspace root or from any site/foundation directory.
+The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). Only an error makes it exit `1`; a recommendation is an improvement, never a failure. Run it from the workspace root or from any site/foundation directory, and `uniweb doctor --fix` repairs what it can.
 
 ### What It Checks
 
@@ -689,6 +689,10 @@ The doctor command checks your workspace and reports errors and warnings. Run it
 - Foundation dependency in `package.json` (correct `file:` path)
 - The installed foundation is the one in your workspace, and resolves the `@uniweb/*` versions it declares — a `file:` dependency satisfied by a copy rather than a link leaves the dev server serving code your builds never see
 - Foundation is built (`dist/entry.js` exists)
+- Where the site lives: an address for its canonical URLs, `sitemap.xml` and social image, from its host or `seo.origin`
+- What a link to it shows: the social image (`seo.image`, the site's or a page's) is in the project, in a format link previews draw, and close to 1200×630; each page has a description, under about 160 characters
+- The favicon `site.yml` names is in the project, and one in `public/` is named in `site.yml`
+- The pages read as the build reads them: a `page.yml` that does not parse stops `uniweb build`, and doctor names it
 
 **For each extension:**
 - Declares `extension: true` in `main.js`

@@ -19,6 +19,7 @@ That's all you need to get started. Everything else has sensible defaults.
 name: My Site
 description: A brief description for SEO
 preview: /images/card.png            # The site's card image in the Uniweb app (optional)
+favicon: /favicon.svg                # The tab icon, a file in public/ (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
   origin: https://my-site.com        # Where it is served from: canonical URLs, sitemap.xml, absolute llms.txt links
@@ -87,6 +88,7 @@ name: My Site
 description: Build modern websites with components
 tags: [business, landing-page]
 preview: /images/card.png
+favicon: /favicon.svg
 ```
 
 | Field | Type | Description |
@@ -95,6 +97,7 @@ preview: /images/card.png
 | `description` | string | Default meta description, and the line under the title on the site's card |
 | `tags` | list | What the site is for, as standard ids — [the site tags](https://github.com/uniweb/schemas#site-tags). Apps use them to filter and label sites, such as in a template picker. An id that is not on the list is kept, and simply has no label. |
 | `preview` | string | The image on the site's card in the Uniweb app — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
+| `favicon` | string | The tab icon every page links: a site-root path to a file in `public/` (`/favicon.svg`, `/favicon.ico`), or a URL. `uniweb push` uploads a file of the site's own. Left unset, a static build links `public/favicon.svg`, `.ico` or `.png` when there is one, but a site published with `uniweb publish` links only the one named here — so name it. |
 
 ---
 
@@ -218,7 +221,7 @@ seo:
 | `keywords` | string[] | Default meta keywords; a page's own `keywords` override |
 | `seo.origin` | string | The origin the site is served from — a scheme and a host, `https://acme.com`. A site served under a path states that path as its `base:` (`https://user.github.io` with `base: /repo/`); an origin written with a path is refused. Not needed where the host states it — see below |
 | `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`, `additionalSitemaps` |
-| `seo.image` | string | Default Open Graph / social-sharing image (the site's social card) |
+| `seo.image` | string | Default Open Graph / social-sharing image (the site's social card). Link previews draw it at 1.91:1, so a 1200×630 JPEG or PNG fills one whole; most draw no SVG. `uniweb doctor` checks it is there, and its format and size |
 | `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
 | `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
 | `seo.twitterHandle` | string | The site's X (Twitter) account, written as `twitter:site` |
@@ -239,7 +242,7 @@ A page's canonical URL, its `og:url`, its social image, its `hreflang` alternate
 | a host that renders the pages itself | that host |
 | any other static host (`uniweb export`, S3, …) | `seo.origin`, with the site's base |
 
-A page's URL is the one its host answers with. A built page is a `<route>/index.html` file, which a static host serves at `<route>/`, so its canonical and its sitemap entry end in `/`. With no address, pages state no canonical or `og:url`, no `sitemap.xml` is written, and `llms.txt` links are root-relative — `uniweb doctor` says when that is the case.
+A page's URL is the one its host answers with. A built page is a `<route>/index.html` file, which a static host serves at `<route>/`, so its canonical and its sitemap entry end in `/`. With no address, pages state no canonical or `og:url`, no `sitemap.xml` is written, and the social image and `llms.txt` links are root-relative — `uniweb doctor` says when that is the case.
 
 `sitemap.xml` and `robots.txt` are **static-host artifacts**: `uniweb export` and `uniweb deploy --host <adapter>` write them into `dist/`, from the pages the build wrote — each record page of a parametric page included. A crawler reads `robots.txt` only at a host's root, so a site served under a base path, like a GitHub project site, gets none; submit its sitemap to search engines directly. A site's own `public/robots.txt` or `public/sitemap.xml` is served as it is. A site published to a backend does not get them from the build — what that host serves is the host's.
 
