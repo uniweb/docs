@@ -692,6 +692,7 @@ The doctor command checks your workspace and reports errors (✗), warnings (⚠
 - Where the site lives: an address for its canonical URLs, `sitemap.xml` and social image, from its host or `seo.origin`
 - What a link to it shows: the social image (`seo.image`, the site's or a page's) is in the project, in a format link previews draw, and close to 1200×630; each page has a description, under about 160 characters
 - The favicon `site.yml` names is in the project, and one in `public/` is named in `site.yml`
+- The touch icon `site.yml` names is in the project: a PNG, square, at least 180×180, with no transparent pixels; an `apple-touch-icon.png` in `public/` is named in `site.yml`, and a site with none is recommended one
 - The pages read as the build reads them: a `page.yml` that does not parse stops `uniweb build`, and doctor names it
 
 **For each extension:**

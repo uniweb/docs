@@ -20,6 +20,7 @@ name: My Site
 description: A brief description for SEO
 preview: /images/card.png            # The site's card image in the Uniweb app (optional)
 favicon: /favicon.svg                # The tab icon, a file in public/ (optional)
+touchIcon: /touch-icon.png           # The home-screen icon, a 180×180 PNG in public/ (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
 seo:                                 # Site-level social card + SEO defaults
   origin: https://my-site.com        # Where it is served from: canonical URLs, sitemap.xml, absolute llms.txt links
@@ -89,6 +90,7 @@ description: Build modern websites with components
 tags: [business, landing-page]
 preview: /images/card.png
 favicon: /favicon.svg
+touchIcon: /touch-icon.png
 ```
 
 | Field | Type | Description |
@@ -98,6 +100,7 @@ favicon: /favicon.svg
 | `tags` | list | What the site is for, as standard ids — [the site tags](https://github.com/uniweb/schemas#site-tags). Apps use them to filter and label sites, such as in a template picker. An id that is not on the list is kept, and simply has no label. |
 | `preview` | string | The image on the site's card in the Uniweb app — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
 | `favicon` | string | The tab icon every page links: a site-root path to a file in `public/` (`/favicon.svg`, `/favicon.ico`), or a URL. `uniweb push` uploads a file of the site's own. Left unset, a static build links `public/favicon.svg`, `.ico` or `.png` when there is one, but a site published with `uniweb publish` links only the one named here — so name it. |
+| `touchIcon` | string | The icon iOS puts on a home screen and Safari shows on its start page: a site-root path to a PNG in `public/` (`/touch-icon.png`), or a URL. Neither uses an SVG favicon. Make it 180×180 with no transparency — iOS draws a transparent pixel black. `uniweb push` uploads a file of the site's own. Left unset, iOS asks a static host for `/apple-touch-icon.png`, but a site published with `uniweb publish` has only the one named here. |
 
 ---
 
