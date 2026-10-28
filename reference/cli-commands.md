@@ -1604,7 +1604,7 @@ With `--json`, `list` prints one JSON object on stdout:
 ] }
 ```
 
-`status` is `null` for a site that was never published.
+`status` is `null` for a site that was never published. `url` is where the site's visitors go: its own domain while one is active, otherwise the address it was published to.
 
 ---
 
