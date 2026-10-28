@@ -173,14 +173,16 @@ Paths relative to the markdown file:
 
 ### Absolute Paths (Site Root)
 
-Paths starting with `/` are resolved from the site's `public/` or `assets/` folder:
+Paths starting with `/` name a file in the site's `public/` folder, which is served as it is, at that address:
 
 ```markdown
-![Hero](/images/hero.jpg) <!-- public/images/hero.jpg or assets/images/hero.jpg -->
+![Hero](/images/hero.jpg) <!-- public/images/hero.jpg -->
 ![Logo](/brand/logo.svg) <!-- public/brand/logo.svg -->
 ```
 
-The build system checks `public/` first, then `assets/`.
+Keep in `public/` what needs a fixed address: a favicon, a font, a file other sites link to. Media a page shows belongs beside the page. A static build ships a page's own media once, processed; a file in `public/` it also copies as it is.
+
+A site's `assets/` folder no longer serves `/` paths. A build stops on a path that only `assets/` holds, and says how to move the file: beside the page that uses it, or into `public/`.
 
 ### External URLs
 
@@ -222,20 +224,12 @@ To use your own poster, specify it explicitly:
 ![Demo](./demo.mp4){role=video poster=./custom-poster.jpg}
 ```
 
-### Automatic PDF Previews
+### PDF Previews
 
-PDFs without an explicit `preview` attribute get an auto-generated preview thumbnail (requires pdf-lib):
-
-```markdown
-![Report](./report.pdf)
-
-<!-- Auto-generates: /assets/report-thumb-a1b2c3d4.webp -->
-```
-
-To use your own preview, specify it explicitly:
+A PDF's preview is the image you name. The build makes none:
 
 ```markdown
-![Report](./report.pdf){preview=./report-cover.jpg}
+![Report](./report.pdf){role=pdf preview=./report-cover.jpg}
 ```
 
 ## Media Assets: Images, Videos, Documents, and Icons

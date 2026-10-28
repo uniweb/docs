@@ -109,7 +109,7 @@ Without extra configuration, a Uniweb project gives you:
 - **Localization** — locale detection, locale-aware URLs, translation extraction and matching
 - **Parametric pages** — a `[slug]` folder becomes one page per record of a query
 - **Records** — markdown, YAML or JSON files in `records/` become structured data, with automatic i18n support
-- **Media processing** — image optimization, video poster generation, PDF preview thumbnails
+- **Media processing** — image optimization and video poster generation
 - **Search indexing** — content is indexed at build time for client-side search
 - **Section backgrounds** — image, video, gradient, and color backgrounds rendered by the engine (components don't repeat this logic)
 - **Semantic theming** — CSS tokens that resolve per-section based on context, controlled by the site
