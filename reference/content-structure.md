@@ -180,9 +180,12 @@ Paths starting with `/` name a file in the site's `public/` folder, which is ser
 ![Logo](/brand/logo.svg) <!-- public/brand/logo.svg -->
 ```
 
-Keep in `public/` what needs a fixed address: a favicon, a font, a file other sites link to. Media a page shows belongs beside the page. A static build ships a page's own media once, processed; a file in `public/` it also copies as it is.
+Where a page's media goes depends on where the site is published:
 
-A site's `assets/` folder no longer serves `/` paths. A build stops on a path that only `assets/` holds, and says how to move the file: beside the page that uses it, or into `public/`.
+- **Published with Uniweb** (`uniweb publish`): keep it in `public/`. A push uploads the media pages name by a `/` path; a relative path is not uploaded, and the push says so.
+- **A static build** (`uniweb build`, `uniweb export`): either works. A file beside the page ships once, processed. A file in `public/` is copied as it is, so one a page names ships a processed copy as well.
+
+A site's `assets/` folder no longer serves `/` paths. A build stops on a path that only `assets/` holds: move the file to the same path in `public/`.
 
 ### External URLs
 
