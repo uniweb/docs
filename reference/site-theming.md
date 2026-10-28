@@ -459,6 +459,8 @@ The build emits one `@font-face` rule per face plus a `<link rel="preload">` hin
 
 Write `src` as a path from the site root even when the site is deployed under a subdirectory (`base: /docs/`, a GitHub Pages project site). The build prefixes the base for you, so the same `theme.yml` works at the root and under a prefix. A `src` that is already absolute (`https://…`, `//…`) is left alone.
 
+A site you publish with Uniweb gets the same fonts: `uniweb push` uploads each face's file with the site's other media, and the published pages load it from wherever the host serves that media.
+
 ### Fonts beyond the three roles
 
 A design sometimes needs a typeface beyond `body`/`heading`/`code` — an editorial serif for pull-quotes, a display face for a hero. A foundation declares these as **font roles** of its own (a `type: 'font'` variable; see [Foundation Variables](#foundation-variables)). You set them exactly like the built-in roles — by name in the `fonts:` block:
