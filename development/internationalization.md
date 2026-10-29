@@ -356,6 +356,8 @@ Generates `locales/manifest.json` with all translatable content:
 
 One unit per block element — a heading, a paragraph, a list item — never a fragment of one, and never two joined. A `\n` inside a `source` is a line break *within* one paragraph.
 
+An image is a unit of its own, keyed by its alt text, with the image as written for its `markup` (`![alt](file)`). Its translation is words, the alt text, or an image that also names the file this language shows. See [Images](../authoring/translating.md#images) in the translating guide. An image with no alt text has nothing to translate.
+
 **`source` is the key; `markup` is the prompt.** The hash is computed over `source`, the element's flattened plain text, so adding a link or bolding a phrase does **not** move the hash and does not orphan the existing translation. `markup` is that same element as inline Markdown, and appears only when the element carries formatting the plain text has lost. It is what `uniweb i18n init` seeds a language file with, and what a translator should work from — except where `markupVaries` says the string's places differ in formatting, when `init` seeds its plain words (see *The same words in several places*, below).
 
 The `contexts` array shows where the string appears, and `field` indicates the content type (title, paragraph, link label, etc.).

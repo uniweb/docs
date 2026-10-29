@@ -137,6 +137,35 @@ Note that **coverage cannot catch this** — a translation with the link missing
 counts as translated, so a site can report 100% and render with no links at all.
 Read the `Loses markup` line, not just the percentage.
 
+#### Images
+
+An image is translated by its alt text. Words alone give it its alt text in this language,
+and the page keeps showing the same file:
+
+```json
+{
+  "2d093636": "La superposition de publication"
+}
+```
+
+To show another file in this language — a screenshot of the app in French, say — write the
+image, with the file it shows here:
+
+```json
+{
+  "2d093636": "![La superposition de publication](/docs-media/fr/publishing-progress.png)"
+}
+```
+
+Name the file with a `/` path, a file in your site's `public/` folder. A caption and a video's
+poster can be given the same way:
+`![Visite guidée](/videos/tour-fr.mp4 "Légende"){poster=/videos/tour-fr.jpg}`. What the
+translation leaves out stays as the original has it.
+
+An image with no alt text has nothing to translate. Two images with the same alt text share one
+translation, so give one of them its own with an override (see
+[When the Same String Needs Different Translations](#when-the-same-string-needs-different-translations)).
+
 ### 5. Build with translations
 
 ```bash
