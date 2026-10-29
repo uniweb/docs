@@ -1510,7 +1510,7 @@ import { Link } from '@uniweb/kit'
 function Navigation() {
   return (
     <nav>
-      <Link to="page:home">Home</Link>
+      <Link to="page:/">Home</Link>
       <Link to="page:about#team">Our Team</Link>
       <Link to="/external" target="_blank">External</Link>
     </nav>

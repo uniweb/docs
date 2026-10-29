@@ -53,12 +53,16 @@ id: contact
 
 ### Page IDs (Optional)
 
-By default, pages are referenced by their route path:
+By default, pages are referenced by their route path, and the homepage's route is `/`:
 
 ```markdown
 [About Us](page:about)
 [API Docs](page:docs/api)
+[Home](page:/)
 ```
+
+A page is named by its route or by its ID, never by its folder: the homepage lives in
+`pages/home/` but is `page:/`, unless you give it an ID.
 
 For pages that might move, add an explicit ID in `page.yml`:
 
@@ -78,6 +82,8 @@ The `page:` protocol supports pages, sections, and combinations:
 |--------|-------------|
 | `page:about` | `/about` |
 | `page:docs/api` | `/docs/api` |
+| `page:/` | `/` (the homepage) |
+| `page:/#features` | `/#section-features` |
 | `page:about#contact` | `/about#section-contact` |
 | `page:installation` | Route of page with `id: installation` |
 | `page:installation#requirements` | Same page, scrolls to requirements section |
