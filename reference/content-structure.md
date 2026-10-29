@@ -182,7 +182,7 @@ Paths starting with `/` name a file in the site's `public/` folder, which is ser
 
 Keep a page's media beside the page, and keep in `public/` what needs a fixed address: a favicon, a font, a file other sites link to. Both reach a site published with Uniweb (`uniweb publish`) and a static build (`uniweb build`, `uniweb export`).
 
-A static build ships a file beside a page once, processed. A file in `public/` is copied as it is, so one a page names ships a processed copy as well. A push does not upload a file outside the site's folder, such as one in a mounted folder: keep that one in `public/`.
+A static build ships a file beside a page once, processed. A file in `public/` is copied as it is, so one a page names ships a processed copy as well. A push uploads a page's media wherever the page lives, a mounted folder included. A file outside the site and the folders it mounts is not uploaded: keep that one in `public/`.
 
 A site's `assets/` folder no longer serves `/` paths. A build stops on a path that only `assets/` holds: move the file to the same path in `public/`.
 
