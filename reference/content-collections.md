@@ -207,9 +207,12 @@ It lives in the directory it organizes, the way a pages folder's `folder.yml` do
 |---|---|---|
 | no `records/` folder | no records | the backend's records are left as they are |
 | a `records/` folder | every record in it | every record in it is sent |
+| a `records/` folder holding only files no data schema types — data with no `schema:` | those files, as static data | the backend's records are left as they are — the CLI says so |
 | an empty `records/` folder | no records | the backend's records are removed — the CLI asks first |
 
 Records pushed to a backend are served once the site is published.
+
+**Moving records to another schema.** A record keeps its type. To store records under another schema, move their files into its folder and delete the `$uuid` line from each — they go up as new records, and the old ones are removed. When *every* record in `records/` moves at once, push twice: first with `records/` there and empty, which removes the backend's records once you confirm, then with the moved records in it.
 ---
 
 ## File Formats
