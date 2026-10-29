@@ -157,8 +157,10 @@ image, with the file it shows here:
 }
 ```
 
-Name the file with a `/` path, a file in your site's `public/` folder. A caption and a video's
-poster can be given the same way:
+Name the file with a `/` path, a file in your site's `public/` folder, and a build converts it as it
+does the page's own images. A `./` path does not work here, since a translation file is in no page's
+folder; the build says which translation holds one. A caption and a video's poster can be given the
+same way:
 `![Visite guidée](/videos/tour-fr.mp4 "Légende"){poster=/videos/tour-fr.jpg}`. What the
 translation leaves out stays as the original has it.
 
