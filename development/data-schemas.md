@@ -132,6 +132,8 @@ sections:
 
 The flat `fields:` form is the common case; reach for `sections:` only when a single record genuinely can't express the content.
 
+**The brief** is the section marked `brief: true`: one per schema, a single record, at any depth but under a list. A brief inside a group of sections is fine; one under a `many` section stops the build, since that section holds a record for each item of the list. With no section marked, the first top-level single section is the brief, unless it says `brief: false`. Choose it before the schema is first registered: a backend does not move a schema's brief afterwards.
+
 **The `fields:` form is one section.** It is `sections:` with a single section named `brief`, marked `brief: true` — the whole record is its own card. When a schema outgrows it, write that section out and add the others beside it:
 
 ```yaml
