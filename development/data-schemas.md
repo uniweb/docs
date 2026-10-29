@@ -53,10 +53,28 @@ linkable: true                # may other schemas reference this one? (default: 
 grantable: true               # may an entry be shared, one at a time? (default: yes)
 ```
 
-`label`, `plural` and `description` are plain strings in the source language — translations live
-in `locales/`, so `label: { en: 'Session' }` is a different shape and is rejected rather than
-quietly accepted. `plural` is written out because it cannot be worked out from the label: a
-`Person` schema's entries are `People`.
+`label`, `plural` and `description` are plain strings in the source language, so
+`label: { en: 'Session' }` is a different shape and is rejected rather than quietly accepted.
+Their other languages go in `i18n` (below). `plural` is written out because it cannot be worked
+out from the label: a `Person` schema's entries are `People`.
+
+**`i18n`** holds the schema's labels in other languages. Each language maps a label's path to its
+text:
+
+```yaml
+i18n:
+  fr:
+    model.label: Séance
+    model.plural: Séances
+    section.brief.field.title.label: Titre
+```
+
+A path is `model.label`, `model.plural` or `model.description`; `section.<path>.label` or
+`.description`; or `section.<path>.field.<key>.label` or `.description`. A section is named by
+its full path from the top, `contributions/publications` for a nested one, and the one section of
+a `fields:` schema is `brief`. A path that names no section or field of the schema stops the build,
+and so does the schema's own `source_locale`. Every register sends the whole set, so a language you
+take out is removed.
 
 **`icon`** names the schema's icon with a framework icon name, written `family-name` — `lu-user` is
 the icon `user` of the Lucide family `lu`, the same spelling content uses for an icon
