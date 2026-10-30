@@ -8,12 +8,12 @@ This is enabled by default. In browsers that don't support the API, pages swap i
 
 ## What You Get for Free
 
-Without any configuration, every Uniweb site animates navigation — and for layouts with named areas, it does the *right* thing automatically. The runtime gives each rendered area (`header`, `left`, `right`, `footer`, …) plus the body its own `view-transition-name`, so the browser animates them independently:
+Without any configuration, every Uniweb site animates navigation — and for layouts with named areas, it does the *right* thing automatically. The runtime gives each rendered area (`header`, `left`, `right`, `footer`, …) its own `view-transition-name`, so the browser animates it on its own, and everything else crossfades as the page:
 
 - **Persistent chrome** — a header, sidebar, or footer that's the same across pages — stays put, no crossfade.
 - **The body** — the part that actually changes — crossfades to the new page.
 
-You don't declare anything. A page whose site fills layout areas — `header`, `left`, `right`, `footer` in its `layout/` folder — already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, `uw-body`, and so on. A layout with no named areas simply crossfades the page body, which is the sensible default.
+You don't declare anything. A page whose site fills layout areas — `header`, `left`, `right`, `footer` in its `layout/` folder — already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, and so on. A layout with no named areas simply crossfades the page, which is the sensible default.
 
 The `transitions` map below is an **override** for advanced cases — you don't need it for the common "header stays, content crossfades" effect.
 
@@ -29,7 +29,6 @@ export default {
   areas: ['header', 'footer', 'left', 'right'],
   transitions: {
     header: 'header',
-    body: 'main',
     left: 'sidebar',
     footer: 'footer',
   },
@@ -45,6 +44,20 @@ With this in place, same-layout navigation (page to page within docs) looks like
 - **Footer** — same name → stays put
 
 The user sees only the main content area transition. Everything else is visually static. It feels like just the article content changing — smooth and fast.
+
+### Naming the Body
+
+The body has no name by default, and crossfades with the page. Give it one (`body: 'main'`) only when it has to morph between layouts, as below, because a name decides what the browser captures. The page is captured at the size of the viewport. A named element is captured as one image: Safari captures all of it, the part off-screen included, at the device's resolution, and paints every filter in it while the page waits. On a phone, a long page makes an image of over 100 MB.
+
+Measured on a long marketing page at 3× in WebKit, with a desktop CPU, a tap stalled the main thread for up to 842 ms with a named body and up to 271 ms without. Chromium did not stall at all, which is why this doesn't show on a desktop in Chrome. On an iPhone the same page froze for about 30 seconds.
+
+The same goes for what a page paints. A large `filter: blur()` is painted again for every capture. A decorative glow looks the same as a radial gradient, which costs a fraction:
+
+```css
+.glow {
+  mask-image: radial-gradient(closest-side, #000, rgb(0 0 0 / 0.6) 40%, rgb(0 0 0 / 0.09) 80%, transparent);
+}
+```
 
 ### Cross-Layout Morphing
 
@@ -72,7 +85,7 @@ No custom animation code. The browser handles the spatial interpolation based on
 
 ### Rules
 
-- Every rendered area is given an independent transition automatically, named `uw-<area>` (and `uw-body` for the page body). An explicit `transitions` entry replaces that name.
+- Every rendered area is given an independent transition automatically, named `uw-<area>`. The page body has none and crossfades with the page. An explicit `transitions` entry replaces a name, or gives the body one.
 - Transition names must be unique on the page. Two elements with the same `view-transition-name` at the same time causes the transition to be skipped. Elements with `display: none` (like a mobile sidebar hidden on desktop) are excluded from this check.
 - Names are arbitrary CSS identifiers. Use descriptive names (`header`, `main`, `sidebar`) — they appear in devtools.
 - To exclude a region, set its entry to `null` (it folds back into the page crossfade); to drop per-region names for a whole layout, set `transitions: false` (the layout gets one whole-page crossfade).
@@ -121,7 +134,7 @@ export default {
 
 Two details worth knowing:
 
-- **The body is unstacked by default, not set to `0`.** A layer implies `position: relative`, and a positioned body wrapper would become the containing block for every absolutely-positioned element on the page. Lifting the chrome achieves the order without that. You can still set `body` explicitly if your design needs it.
+- **The body is unstacked by default, not set to `0`.** A layer implies `position: relative`, and a positioned body wrapper would become the containing block for every absolutely-positioned element on the page. Lifting the chrome achieves the order without that: the body's wrapper is a stacking context with no position (`isolation: isolate`), so a `z-index` on a section stays inside the body. You can still set `body` explicitly if your design needs it. With `viewTransitions: false` or `transitions: false` that wrapper is gone too, and a section's `z-index` competes with the areas directly.
 - **A modal is a different problem.** Stacking orders areas against each other; it cannot lift a dialog opened from the header above the other areas, because the dialog is still inside the header's context — and one opened from a section is inside the body's, under every area. That is what `<Overlay>` in `@uniweb/kit` is for — it renders out of the area entirely.
 
 ---
@@ -150,9 +163,9 @@ If the page takes longer than a second to arrive (on a slow connection), navigat
 The browser creates pseudo-elements for each transitioning area that you can style with standard CSS:
 
 ```css
-/* Faster crossfade for the main content area */
-::view-transition-old(main),
-::view-transition-new(main) {
+/* Faster crossfade for the page, the body included */
+::view-transition-old(root),
+::view-transition-new(root) {
   animation-duration: 0.2s;
   animation-timing-function: ease-in-out;
 }
@@ -163,6 +176,6 @@ The browser creates pseudo-elements for each transitioning area that you can sty
 }
 ```
 
-The names in parentheses match your regions' `view-transition-name`s — the values from your layout's `transitions` map, or the automatic `uw-<area>` / `uw-body` names when you haven't set one. If you intend to write this CSS, giving regions explicit names via the `transitions` map keeps the selectors readable. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
+The names in parentheses match your regions' `view-transition-name`s — the values from your layout's `transitions` map, or the automatic `uw-<area>` names when you haven't set one — and `root` is the page, which holds the body unless your layout names it. If you intend to write this CSS, giving regions explicit names via the `transitions` map keeps the selectors readable. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
 
 Without any custom CSS, the browser uses a default ~250ms crossfade — which already looks good for most sites.
