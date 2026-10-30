@@ -11,6 +11,7 @@ uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb dev                     # Start a dev server for a site
 uniweb build                   # Build the current project
 uniweb snapshot                # Compose a preview image of a site (its site.yml preview:)
+uniweb snapshot --share        # Make a site's link preview image (its site.yml seo.image)
 uniweb export                  # Build dist/ for any static host (no Uniweb account)
 uniweb inspect <path>          # Show the parsed content shape of a section or page
 uniweb rename <type> <old> <new>  # Rename a foundation, site, or extension workspace-wide
@@ -571,6 +572,37 @@ side: left
 
 It takes the same settings as the flags, without the dashes: `route`, `layout`, `tone`, `gap`, `overlap`, `strip`, `side`, `frame`, `size`, `scale`, `quality`, `hide` (a list), and `out` (relative to the site folder). Nothing else reads this file: building and publishing the site leave it alone.
 
+### A link preview image
+
+What a link to your site shows when someone shares it is a different image from its card: one screen, large enough to read in a feed. `--share` makes it, as the first view of the page filling a 1200×630 PNG, with no frame and no background.
+
+```bash
+uniweb snapshot --share                            # build, capture, write site/public/share-card.png
+uniweb snapshot --share --route /pricing           # from another page
+uniweb snapshot --share --css share-card.css --save  # arrange it, and keep that for next time
+```
+
+It writes `site/public/share-card.png` and sets `seo.image` in `site.yml` when it has none, so every page without an image of its own shows it ([SEO & Social Sharing](site-configuration.md#seo--social-sharing)). An image you named is never replaced, and `preview:` is left alone.
+
+A first view is made for visitors, and a picture often wants less of it: no menu or buttons, and larger text. `--hide` hides elements by selector, and `--css` applies a stylesheet before capturing, which can arrange the view however suits the image. The capture is 1440 pixels wide, so sizes in the stylesheet are in that scale.
+
+```css
+/* share-card.css */
+header nav, .hero-buttons { display: none; }
+.hero h1 { font-size: 72px; }
+```
+
+`--save` keeps this run's flags in `site/snapshot.yml`, under `share:`, apart from the card's look:
+
+```yaml
+# site/snapshot.yml
+share:
+  hide: ['.cookie-banner']
+  css: share-card.css
+```
+
+`--share` takes `--route`, `--size`, `--scale`, `--quality`, `--out`, `--hide`, `--css`, `--save` and where the site comes from (`--dev`, `--url`, `--no-build`), and none of the look. What is pinned to the lower half of the view, such as a chat button, is left out.
+
 ### Options
 
 | Option | Description |
@@ -590,6 +622,9 @@ It takes the same settings as the flags, without the dashes: `route`, `layout`, 
 | `--out <file>` | Where to write the image, or with `--compare` the sheet: `.webp`, `.png`, `.jpg` or `.avif` |
 | `--hide <selector>` | Hide matching elements before capturing, such as a cookie banner (repeatable) |
 | `--no-set-preview` | Write the image without changing `site.yml` |
+| `--share` | Make [a link preview image](#a-link-preview-image) instead of the card |
+| `--css <file>` | With `--share`: a stylesheet to apply before capturing |
+| `--no-set-image` | With `--share`: write the image without changing `site.yml` |
 
 ### Examples
 

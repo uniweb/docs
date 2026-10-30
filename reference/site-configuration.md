@@ -224,7 +224,7 @@ seo:
 | `keywords` | string[] | Default meta keywords; a page's own `keywords` override |
 | `seo.origin` | string | The origin the site is served from — a scheme and a host, `https://acme.com`. A site served under a path states that path as its `base:` (`https://user.github.io` with `base: /repo/`); an origin written with a path is refused. Not needed where the host states it — see below |
 | `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`, `additionalSitemaps` |
-| `seo.image` | string | Default Open Graph / social-sharing image (the site's social card). Link previews draw it at 1.91:1, so a 1200×630 JPEG or PNG fills one whole; most draw no SVG. `uniweb doctor` checks it is there, and its format and size |
+| `seo.image` | string | Default Open Graph / social-sharing image (the site's social card). Link previews draw it at 1.91:1, so a 1200×630 JPEG or PNG fills one whole; most draw no SVG. `uniweb doctor` checks it is there, and its format and size, and [`uniweb snapshot --share`](cli-commands.md#a-link-preview-image) makes one from the site |
 | `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
 | `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
 | `seo.twitterHandle` | string | The site's X (Twitter) account, written as `twitter:site` |
