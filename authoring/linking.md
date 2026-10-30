@@ -74,6 +74,14 @@ title: Installation Guide
 
 Now `page:installation` resolves correctly even if you later move the page to `pages/setup/install/`.
 
+### Sites you also edit in the Uniweb app
+
+The app links a page by an ID it creates, a code like `3f58142d`, which it keeps in the page's
+`page.yml`. `uniweb pull` writes the app's links as the page's path, `[AI](page:ai)`, and
+`uniweb push` stores them by the code again, so they keep working when the page is renamed in the
+app. An ID you chose yourself, like `installation`, is written as you wrote it. Leave the `id:` the
+app put in a `page.yml`: it is how a push knows which page a path names.
+
 ## Link Syntax
 
 The `page:` protocol supports pages, sections, and combinations:
