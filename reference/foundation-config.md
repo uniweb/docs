@@ -471,6 +471,24 @@ export default {
 | `getOptions` | `(website, hostOptions) → { adapterOptions }` (can be async) | No | Foundation-specific assembly: meta from `website.config`, typst preamble, stylesheets, cover image bytes, etc. The returned `adapterOptions` go to the Press format adapter. `hostOptions` are the rest-args the host passes to `compileDocument` — use them to branch on caller intent (e.g., `mode: 'server'` vs `mode: 'sources'` for typst). Omit when the default Press adapter output suits the format unchanged. |
 | `via` | string | No | Press format to compile through. Defaults to the output key itself. Use when the user-facing name differs from the Press adapter — `pdf` aliased to `typst`, for instance, so a headless host can fetch the typst source bundle and finish compile with its own typst binary. |
 | `extension` | string | No | Default file extension the host uses when deriving an output filename. Convention only — the host can override. |
+| `paper` | boolean | No | What the output does with a page size. `true`: it honors one (below). `false`: the format has no pages to size, as with EPUB. Absent says nothing, so `unipress compile --paper` refuses rather than produce a file at the wrong size. |
+
+### The paper a document prints on
+
+A document names its paper with `paper: a4` or `paper: letter` at the top of `document.yml`, which your foundation reads from `website.config.paper`. A host can name one for a single build: `unipress compile --paper letter` reaches `getOptions` as `hostOptions.paper`, and should win over anything in the document.
+
+```js
+function buildDocxOptions(website, hostOptions = {}) {
+  const paper = hostOptions.paper ?? website.config?.paper
+  return {
+    adapterOptions: {
+      ...(paper ? { pageSize: paper === 'letter' ? pageSizes.LETTER : pageSizes.A4 } : {}),
+    },
+  }
+}
+```
+
+Each adapter takes the page its own way: `pageSize` for Word (`pageSizes` from `@uniweb/press/docx`), `paper` for Excel, and your own template or stylesheet for Typst, LaTeX and Paged.js. Declare `paper: true` on each output that honors it.
 
 ### How the shape fits the compile flow
 
