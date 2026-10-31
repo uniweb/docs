@@ -43,11 +43,12 @@ Print a short guide for an AI agent building a website for someone.
 
 ```bash
 npx uniweb@latest start
+npx uniweb@latest start --template docs
 ```
 
-The guide, in Markdown, takes the agent through the whole path: create a project from `starter`, read its `AGENTS.md`, install and run it, sign the person in through their browser (`uniweb login --browser`), and bring the site into the Uniweb app (`push`) or take it live (`publish`). It assumes the person doesn't use a terminal: the agent runs every command, and the person only signs in, and pays when the site goes live, in their browser.
+The guide, in Markdown, takes the agent through the whole path: create a project from `starter`, or from the template `--template` names, read its `AGENTS.md`, install and run it, sign the person in through their browser (`uniweb login --browser`), and bring the site into the Uniweb app (`push`) or take it live (`publish`). It assumes the person doesn't use a terminal: the agent runs every command, and the person only signs in, and pays when the site goes live, in their browser.
 
-Inside a Uniweb project, the guide starts from that project instead of creating one, and names the project's own package manager. Inside a workspace of another kind, it says to create the project somewhere else, since `create` does not make one inside another workspace.
+Inside a Uniweb project, the guide starts from that project instead of creating one, and names the project's own package manager. Inside a workspace of another kind, it says to create the project somewhere else, since `create` does not make one inside another workspace. In a folder holding a Uniweb project one level down, it names that project, so a later session goes there instead of creating another.
 
 `start` asks nothing, writes nothing and makes no network request, so an agent can run it in any folder. The guide comes with the CLI that prints it, so `@latest` gives the current one. To run a site's dev server, use [`uniweb dev`](#uniweb-dev).
 
