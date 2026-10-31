@@ -62,7 +62,7 @@ Not sure? Run **`uniweb deploy`** with nothing configured and it walks you throu
 
 ```bash
 # A) From a freshly-cloned GitHub repo (recommended):
-npm create uniweb . --template starter
+npm create uniweb@latest . -- --template starter
 uniweb add ci --host=github-pages
 # Commit, push, enable Pages in repo settings → live site
 
