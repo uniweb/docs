@@ -165,7 +165,7 @@ Foundations must build before sites — prerender needs each foundation's built 
 }
 ```
 
-With several sites, `uniweb dev` runs the first one, `uniweb dev <site>` any other, and `uniweb add site` adds a `dev:<site>` script for each site after the first.
+With several sites, `uniweb dev` runs the one you are in (from the workspace root, the first one), `uniweb dev <site>` any other, and `uniweb add site` adds a `dev:<site>` script for each site after the first.
 
 ### Co-located projects
 
@@ -451,11 +451,11 @@ For a project with several sites, add each one by its folder — `uniweb add sit
 
 ### Moving a site or a foundation
 
-A move is a `git mv` plus every place that names the old folder: the site's `file:` dependency, the workspace globs, `.gitignore` and your own scripts. Commit the renames on their own, so `git log --follow` and `git blame` read straight through them. Three things give no error when you miss them:
+A move is a `git mv` plus every place that names the old folder: the site's `file:` dependency, the workspace globs, `.gitignore` and your own scripts. Commit the renames on their own, so `git log --follow` and `git blame` read straight through them, and run `uniweb doctor` when you are done. Three things to watch:
 
-- **A site's package name.** A site named for the folder around it confuses npm, which reads `npm -w docs` as every package in `docs/`: `uniweb dev docs` then starts the foundation's dev script instead of the site's. In a project folder the site is `docs-site`, as `uniweb add project` names it.
-- **A foundation that loses a level.** Moving `foundations/docs/src/*` up to `docs/src/` also changes the paths in its `package.json` (`main`, `exports`, `imports`) and any `@source` in `styles.css` that reaches `node_modules`. A stale `@source` still builds, and the CSS quietly loses every class it found there. Compare the foundation's `dist/` before and after.
-- **A site synced with a backend.** A pull merges against the last commit it synced, at the path the site had then. So settle the site before the move: commit, then push and pull until neither has anything to do. After the move, run `uniweb pull --force` once in the site's new folder. With nothing pending it changes no file, and the next sync starts from there. Until you do, `uniweb status` and `uniweb pull` read the site's files as changed.
+- **A site's package name.** A site named for the folder around it confuses npm, which reads `npm -w docs` as every package in `docs/`, so a script using it runs the foundation's script first. In a project folder the site is `docs-site`, as `uniweb add project` names it. `uniweb doctor` names one that is not.
+- **A foundation that loses a level.** Moving `foundations/docs/src/*` up to `docs/src/` also changes the paths in its `package.json` (`main`, `exports`, `imports`) and any `@source` in `styles.css` that reaches `node_modules`. A stale `@source` still builds, with a warning, and the CSS is missing every class it found there.
+- **A site synced with a backend.** A pull merges against the last commit it synced, and no commit from before the move holds the site where it is now. So settle the site before the move: commit, then push and pull until neither has anything to do. After the move, run `uniweb pull` once in the site's new folder. With nothing pending it changes no file and records where the site is. A file that does differ is a conflict for you to settle.
 
 ### Adding an extension
 

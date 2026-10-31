@@ -321,8 +321,8 @@ The `add` command lists the new package in `pnpm-workspace.yaml` and `package.js
 Start a development server for a site.
 
 ```bash
-uniweb dev                  # the workspace's single site
-uniweb dev <site>           # a specific site by package name
+uniweb dev                  # the site you are in, or the workspace's single site
+uniweb dev <site>           # a specific site: its package name, or its project's folder
 uniweb dev --site <name>    # same, explicit flag form
 uniweb dev --port <n>       # on that port, or not at all
 uniweb dev --status         # print the running dev server's address
@@ -330,9 +330,13 @@ uniweb dev --stop           # stop the running dev server
 ```
 
 A thin wrapper around the package manager's workspace-filtered `dev` script
-(`pnpm --filter <site> dev`, or `npm -w <site> run dev`). It picks the single
-site automatically. In a multi-site workspace the first site runs by default,
+(`pnpm --filter <site> dev`, or `npm -w <folder> run dev`). With no name, the
+folder you stand in says which site: the one you are in, or the one in your
+project's folder. From the root of a multi-site workspace the first site runs,
 with a notice pointing at `--site` for explicit selection.
+
+`push`, `pull`, `publish` and `status` read the folder the same way: from
+`marketing/` or `marketing/src/`, they work on `marketing/site`.
 
 Markdown, `theme.yml`, and component edits hot-reload. New section types are
 picked up without restarting.
