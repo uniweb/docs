@@ -377,7 +377,7 @@ When a source sentence changes a little, its old translation stays until someone
 { "c0f1a2b3": { "default": "Acerca de PandaWatch", "outdated": { "/about:hero": "About PandaWatch" } } }
 ```
 
-The old translation still shows on your site, and `uniweb i18n status` lists the entry as outdated. To finish it, replace the entry with the new translation as a plain string, or with the same words as a plain string if they still hold. **Still correct** in the app does the same.
+The old translation still shows on your site, and `uniweb i18n status` lists the entry as outdated. To finish it, write the new translation in the entry: new words end the flag, and the next `uniweb i18n sync` or pull takes `outdated` out of the file. If the words still hold, make the entry a plain string of them, as **Still correct** does in the app.
 
 An edit counts as small when the old and new text share at least half of their words, counted across both. Any other edit keeps nothing, and the row shows the source language until it is translated. So do a page's title, an image's alt text, a data block's strings and a record's body: only a heading, paragraph or list item in a page's section keeps its translation.
 
