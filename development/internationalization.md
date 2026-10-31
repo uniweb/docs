@@ -369,6 +369,18 @@ The `contexts` array shows where the string appears, and `field` indicates the c
 - `--records-only` — Extract only record content (skip pages)
 - `--no-records` — Skip records (pages only)
 
+### Outdated Translations
+
+When someone edits a source sentence in the Uniweb app, the app keeps the old translation until it is reviewed, because a slightly outdated sentence reads better than a sudden switch of language. A pull records that in the locale file:
+
+```json
+{ "c0f1a2b3": { "default": "Acerca de PandaWatch", "outdated": { "/about:hero": "About PandaWatch" } } }
+```
+
+The old translation still shows on your site, and `uniweb i18n status` lists the entry as outdated. To finish it, replace the entry with the new translation as a plain string. If it is still right, choose **Still correct** in the app.
+
+A pull may also write `locales/_kept.json`. It holds what the app keeps for a section that your files have no place for, such as a language you removed from the site, and a push sends it back. Commit it and leave it alone.
+
 ### Initialize Language Files
 
 ```bash
