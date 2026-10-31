@@ -371,13 +371,17 @@ The `contexts` array shows where the string appears, and `field` indicates the c
 
 ### Outdated Translations
 
-When someone edits a source sentence in the Uniweb app, the app keeps the old translation until it is reviewed, because a slightly outdated sentence reads better than a sudden switch of language. A pull records that in the locale file:
+When a source sentence changes a little, its old translation stays until someone reviews it, because a slightly outdated sentence reads better than a sudden switch of language. An edit in the Uniweb app does this, and a pull records it. An edit in a file does it too, at `uniweb i18n sync` or at `uniweb push`. Either way the locale file then says:
 
 ```json
 { "c0f1a2b3": { "default": "Acerca de PandaWatch", "outdated": { "/about:hero": "About PandaWatch" } } }
 ```
 
-The old translation still shows on your site, and `uniweb i18n status` lists the entry as outdated. To finish it, replace the entry with the new translation as a plain string. If it is still right, choose **Still correct** in the app.
+The old translation still shows on your site, and `uniweb i18n status` lists the entry as outdated. To finish it, replace the entry with the new translation as a plain string, or with the same words as a plain string if they still hold. **Still correct** in the app does the same.
+
+An edit counts as small when the old and new text share at least half of their words, counted across both. Any other edit keeps nothing, and the row shows the source language until it is translated. So do a page's title, an image's alt text, a data block's strings and a record's body: only a heading, paragraph or list item in a page's section keeps its translation.
+
+`uniweb i18n sync` compares with the manifest it replaces, so it needs one from before the edit. `uniweb build` alone keeps nothing, so run `uniweb i18n sync` first.
 
 A pull may also write `locales/_kept.json`. It holds what the app keeps for a section that your files have no place for, such as a language you removed from the site, and a push sends it back. Commit it and leave it alone.
 
@@ -501,7 +505,7 @@ After content updates, sync the manifest to detect additions, removals, and chan
 uniweb i18n sync
 ```
 
-Reports what changed (new strings, removed strings, modified strings). Use `--dry-run` to preview without writing changes.
+Reports what changed (new strings, removed strings, modified strings). Use `--dry-run` to preview without writing changes. A string edited a little keeps its old translation until someone reviews it (see [Outdated Translations](#outdated-translations)).
 
 It also reports **remarked** strings — an element whose words are unchanged but whose inline Markdown is not, typically an author adding a link to an existing sentence:
 

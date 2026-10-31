@@ -992,7 +992,7 @@ Shows which strings are translated per locale. A site with free-form translation
 uniweb i18n sync
 ```
 
-Detects changes, updates manifest, flags strings needing re-translation.
+Detects changes, updates the manifest and flags strings needing re-translation. A small edit keeps its old translation until someone reviews it, flagged `outdated` in the locale file.
 
 ### Examples
 
