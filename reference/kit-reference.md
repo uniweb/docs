@@ -375,6 +375,8 @@ Headings come back nested — each carries `{ id, text, level, children }`. The 
 
 The anchor ids match what `<Render>` and `<Prose>` stamp — same generator — so `scrollTo` always finds its target.
 
+`activeId` is the last heading to have come up to the line under the header. A page usually ends before its last headings can get that far, so over the last stretch of scrolling the line comes down the screen, and each of them gets its turn. A heading the reader asked for, through `scrollTo` or the page's address, stays marked until they scroll on from it, wherever the page came to rest.
+
 #### Options
 
 | Option | Type | Default | Description |

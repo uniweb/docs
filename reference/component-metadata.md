@@ -910,6 +910,8 @@ export default {
 }
 ```
 
+CSS reads the variable as it changes. If your own code reads it, read it when you need it, never once at mount: the runtime sets it after your component's effects have run, and it moves when the header wraps.
+
 A `sticky top-0` on your component's own markup cannot stick: it sits in boxes as tall as itself, so it scrolls away with the page. Nor can a sticky section inside a box that clips with `overflow: hidden` — use `overflow: clip`, which clips the same and keeps it sticking. `uniweb dev` names both in the console. See [Component Patterns](../development/component-patterns.md#header-positioning-sticky-vs-fixed).
 
 ---
