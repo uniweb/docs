@@ -735,6 +735,9 @@ The doctor command checks your workspace and reports errors (✗), warnings (⚠
 - The touch icon `site.yml` names is in the project: a PNG, square, at least 180×180, with no transparent pixels; an `apple-touch-icon.png` in `public/` is named in `site.yml`, and a site with none is recommended one
 - The pages read as the build reads them: a `page.yml` that does not parse stops `uniweb build`, and doctor names it
 
+**For each foundation:**
+- `styles.css` names what Tailwind has to read: it warns about a `@source` that finds nothing, and about a folder that writes classes no `@source` names, since a site build and `uniweb dev` would miss every class only that folder uses
+
 **For each extension:**
 - Declares `extension: true` in `main.js`
 - Doesn't declare theme variables (`vars`) or layouts
