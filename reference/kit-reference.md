@@ -377,6 +377,8 @@ The anchor ids match what `<Render>` and `<Prose>` stamp — same generator — 
 
 `activeId` is the last heading to have come up to the line under the header. A page usually ends before its last headings can get that far, so over the last stretch of scrolling the line comes down the screen, and each of them gets its turn. A heading the reader asked for, through `scrollTo` or the page's address, stays marked until they scroll on from it, wherever the page came to rest.
 
+Both `activeId` and `scrollTo` work on the window's scroll. In a layout where an inner element scrolls, such as a `<main>` with `overflow-y: auto` inside a full-height shell, the list still renders, but `activeId` doesn't follow the reader and `scrollTo` doesn't move the page. To use this hook, let the page itself scroll and make the rails `sticky`.
+
 #### Options
 
 | Option | Type | Default | Description |
