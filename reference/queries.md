@@ -132,7 +132,7 @@ defaults to the query name ([What a section receives](./data-fetching.md#what-a-
 
 ## `scope` — a branch of the folder
 
-`records/folder.yml` can place records in folders ([Records → Folders](./content-collections.md#folders)).
+`records/folder.yml` can place records in folders ([Records → Folders](./content-collections.md#folders-recordsfolderyml)).
 `scope:` reads one branch:
 
 ```yaml
@@ -144,7 +144,7 @@ spring:
 A scope holds the named folder and everything below it, at segment boundaries. A record does not
 carry its folder, so a `where` cannot name one: `path` in a `where` is a field of the record's own,
 like any other name. What a record's entry in `folder.yml` says about it, a query reads like any
-field — `where: { $tags: featured }`, `sort: $label` ([Records → Folders](./content-collections.md#folders)).
+field — `where: { $tags: featured }`, `sort: $label` ([Records → Folders](./content-collections.md#folders-recordsfolderyml)).
 
 On a parametric page, `scope: :dir` reads the branch the URL names — see
 [route variables](#route-variables).

@@ -64,7 +64,7 @@ expects, per `content.data` key, in its `meta.js`
   the record as it is stored, each section under its own name, the brief's included.
 
 Both carry `$name`, the record's name ([below](#names)); `$tags` and `$label` when its
-entry in `records/folder.yml` gives them ([Folders](./content-collections.md#folders));
+entry in `records/folder.yml` gives them ([Folders](./content-collections.md#folders-recordsfolderyml));
 and a reference as the record it points at, reduced to its brief: `{ entity, brief }`,
 `entity` being that record's id where it has one.
 

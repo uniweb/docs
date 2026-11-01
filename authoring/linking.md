@@ -104,6 +104,17 @@ For setup instructions, see the [Installation Guide](page:installation).
 Have questions? Visit our [contact form](page:about#contact).
 ```
 
+### Links written as files
+
+Docs kept in a repository link to each other by file, because that's what works on GitHub and in an editor. They work on the site too. A relative link to a markdown file leads to the page that file became, built or pushed, and its anchor to that page's heading, whether it's GitHub's anchor or the site's:
+
+```markdown
+[Deploying](./deploying.md)                  <!-- /docs/guides/deploying -->
+[Setup](../guides/deploying.md#first-setup)  <!-- /docs/guides/deploying#first-setup -->
+```
+
+A file that didn't become a page (a `README.md`, one that's been moved) stays as written, and the build names it, since it leads nowhere. Use `page:` for a link that should survive moving the file.
+
 ## Cross-Page Scrolling
 
 When navigating to a page with a hash (e.g., `page:about#contact`), the runtime:
