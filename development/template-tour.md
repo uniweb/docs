@@ -35,7 +35,7 @@ A documentation site with versioned content (`pages/docs/v1/`, `pages/docs/v2/`)
 
 **Params for layout control.** `DocSection/meta.js` exposes `show_navigation` (previous/next links) and `max_width` (`prose`, `lg`, `xl`, `full`). The content author controls both per page, and the component maps `params.max_width` to a class. Params doing real work without any theming machinery.
 
-**Navigation integration.** `LeftPanel` builds the sidebar from the site's page hierarchy — `website.getBranchHierarchy()` for the current branch, `getPageHierarchy()` otherwise. The clearest example of a section type that consumes the site's routing data rather than markdown content.
+**Navigation integration.** `LeftPanel` builds the sidebar from the site's page hierarchy (`website.getPageHierarchy()`), narrowed to the version and the section being read. The clearest example of a section type that consumes the site's routing data rather than markdown content.
 
 **API reference with a data schema.** `ApiReference/meta.js` uses its `data:` field to declare the schema of an API definition (method, path, parameters, request body, response). Content authors write API specs in tagged YAML blocks (`yaml:api`) and the component renders interactive documentation. This shows how a `meta.js` `data:` entry can structure complex domain-specific content without any query.
 

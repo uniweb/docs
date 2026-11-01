@@ -213,6 +213,20 @@ function DeprecationBanner() {
 }
 ```
 
+## Where It Works
+
+Versioning is a feature of a static build: `uniweb build`, `uniweb export` and `uniweb deploy --host`.
+
+On a site published to a Uniweb backend, version folders are ordinary pages. Each version keeps its folder in the URL (`/docs/v2/intro`), the labels in `versions:` aren't sent, and `useVersion` reports no version. A sidebar built from the page tree lists every version's pages.
+
+On a static build, a few things need care:
+
+- **A scope's own URL can lead to the oldest version.** A scope with no content redirects to its first page, which is in `v1/`. Add `redirect: /docs/intro` to the scope's `page.yml`.
+- **A folder named like a version becomes one.** `pages/rest/v1/users/` is served at `/rest/users`, with no warning.
+- **`getVersionUrl` only rewrites the path.** It doesn't check that the page exists in the target version, and it leaves out the site's `base` and language. A page only one version has, or a folder promoted to the homepage, gets a link that leads to the not-found page.
+- **Search, the sitemap and `llms.txt` list every version.** Each page is its own canonical, deprecated or not. To keep a page out of them, set `seo: { noindex: true }` in its `page.yml`.
+- **Page ids must be unique across versions.** If you copy a version's folder and keep its ids, `page:` links in both copies lead to the same page, with no warning. Give the older version's pages their own ids (`v1-intro`), and update the links in that version to match.
+
 ## SSG Behavior
 
 Version switching uses full page navigation (not SPA routing). This ensures:

@@ -896,6 +896,8 @@ website.getBranchHierarchy({
 
 Under `/docs/reference/cli` it returns the documentation tree; under `/blog/a-post` it returns the blog's. When the route matches no branch — the site root, usually — it returns the whole hierarchy. Pages come back in the order the build settled on, so there is nothing to sort.
 
+It reads the route's first segment as the branch. So it also returns the whole hierarchy under a folder promoted to the homepage, and on a route that starts with a version (`/v1/guide`). Under `/docs`, it returns every version's pages. See [One Version at a Time](./navigation-patterns.md#one-version-at-a-time).
+
 Pair it with [`useHeadings`](#useheadings) for the two halves of a documentation shell.
 
 ### Page
