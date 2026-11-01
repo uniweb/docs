@@ -29,7 +29,7 @@ Every template styles its section types with kit's semantic tokens (`@uniweb/kit
 
 ## docs — Documentation Site
 
-A documentation site with versioned content (`pages/docs/v1/`, `pages/docs/v2/`), API reference pages, search, and syntax highlighting.
+A documentation site with a sidebar, API reference pages, search, and syntax highlighting. It starts with one version, and the same foundation handles [older versions](../reference/versioning.md) if you add them later.
 
 ### What to study here
 
