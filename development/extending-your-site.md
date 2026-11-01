@@ -104,7 +104,7 @@ site/
 └── ...
 ```
 
-Files in `public/` are served at the site root. The manifest references them by filename.
+In a static build, files in `public/` are served at the site root. The manifest references them by filename.
 
 ### Step 4: Build and verify
 
