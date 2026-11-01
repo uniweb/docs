@@ -717,7 +717,7 @@ Diagnose project configuration issues.
 uniweb doctor
 ```
 
-The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). Only an error makes it exit `1`; a recommendation is an improvement, never a failure. Run it from the workspace root or from any site/foundation directory, and `uniweb doctor --fix` repairs what it can.
+The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). Run it from inside a site for that site's findings, or from the workspace root for every site's. Only an error makes it exit `1`; a recommendation is an improvement, never a failure. Run it from the workspace root or from any site/foundation directory, and `uniweb doctor --fix` repairs what it can.
 
 ### What It Checks
 

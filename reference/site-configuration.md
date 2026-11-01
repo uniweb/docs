@@ -225,7 +225,7 @@ seo:
 | `seo.origin` | string | The origin the site is served from — a scheme and a host, `https://acme.com`. A site served under a path states that path as its `base:` (`https://user.github.io` with `base: /repo/`); an origin written with a path is refused. Not needed where the host states it — see below |
 | `seo.robots` | object | `robots.txt` contents — `disallow`, `allow`, `crawlDelay`, `contentSignals`, `additionalSitemaps` |
 | `seo.image` | string | Default Open Graph / social-sharing image (the site's social card). Link previews draw it at 1.91:1, so a 1200×630 JPEG or PNG fills one whole; most draw no SVG. `uniweb doctor` checks it is there, and its format and size, and [`uniweb snapshot --share`](cli-commands.md#a-link-preview-image) makes one from the site |
-| `seo.ogTitle` | string | Default social title; a page's own title or `seo.ogTitle` wins |
+| `seo.ogTitle` | string | The home page's social title, and the default for a page with no title. A page's own `seo.ogTitle` wins, and elsewhere so does its title |
 | `seo.ogDescription` | string | Default social description; a page's description or `seo.ogDescription` wins |
 | `seo.twitterHandle` | string | The site's X (Twitter) account, written as `twitter:site` |
 | `seo.noindex` | boolean | Keep the entire site out of search engines (cascades to every page) |
@@ -1257,7 +1257,7 @@ paths:
   pages/docs: ../../../docs
 ```
 
-This makes the external `docs/` directory appear as the `docs` subfolder under `pages/`. The site's own `pages/` directory provides the rest of the pages. Multiple subfolder mounts are supported:
+This makes the external `docs/` directory appear as the `docs` subfolder under `pages/`. A mount is one level under `pages/`: `pages/docs/guides` is refused. The site's own `pages/` directory provides the rest of the pages. Multiple subfolder mounts are supported:
 
 ```yaml
 paths:
@@ -1267,7 +1267,7 @@ paths:
 
 #### Giving a mounted route a layout or a title
 
-Add a local folder for the route holding a `folder.yml` — `folder.yml` rather than `page.yml`, because what is mounted is a folder of pages, and that filename is also what tells the build how to read the mounted tree:
+Add a local folder for the route holding a `folder.yml`. It says how this site presents the branch, and what it leaves unset comes from the mounted directory's own `folder.yml`:
 
 ```
 site/
