@@ -359,14 +359,14 @@ export default function Footer({ content }) {
 import { useVersion } from '@uniweb/kit'
 
 export default function Sidebar({ content }) {
-  const { isVersioned, currentVersion, isDeprecatedVersion } = useVersion()
+  const { isVersioned, currentVersion, isOlderVersion } = useVersion()
 
   return (
     <aside>
       {isVersioned && (
         <div className="version-badge">
-          {currentVersion?.label}
-          {isDeprecatedVersion && <span className="deprecated">Legacy</span>}
+          {currentVersion.label ?? 'Latest'}
+          {isOlderVersion && <span className="older">Older version</span>}
         </div>
       )}
 

@@ -168,34 +168,24 @@ These are small observable value stores — plain keys with values. No reactive 
 
 ### useVersion
 
-Access version information for versioned documentation.
+Which version of the docs a page belongs to, where each other version leads from it, and the page tree of what's being read. See [Versioning](./versioning.md).
 
 ```jsx
-import { useVersion } from '@uniweb/kit'
+import { Link, useVersion } from '@uniweb/kit'
 
 function VersionSwitcher() {
-  const {
-    isVersioned,
-    currentVersion,
-    versions,
-    getVersionUrl,
-    isDeprecatedVersion
-  } = useVersion()
+  const { isVersioned, currentVersion, versions } = useVersion()
 
-  if (!isVersioned) return null
+  if (!isVersioned || versions.length < 2) return null
 
   return (
-    <select
-      value={currentVersion?.id}
-      onChange={(e) => window.location.href = getVersionUrl(e.target.value)}
-    >
-      {versions.map(v => (
-        <option key={v.id} value={v.id}>
-          {v.label}
-          {v.deprecated && ' (deprecated)'}
-        </option>
+    <ul>
+      {versions.map((version) => (
+        <li key={version.id} aria-current={version.id === currentVersion.id}>
+          <Link href={version.href}>{version.label ?? 'Latest'}</Link>
+        </li>
       ))}
-    </select>
+    </ul>
   )
 }
 ```
@@ -204,16 +194,14 @@ function VersionSwitcher() {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `isVersioned` | boolean | Is current page in a versioned scope? |
-| `currentVersion` | object | `{ id, label, latest, deprecated }` |
-| `versions` | array | All versions in current scope |
-| `latestVersionId` | string | ID of the latest version |
-| `versionScope` | string | Route where versioning starts |
-| `isLatestVersion` | boolean | Is current the latest version? |
-| `isDeprecatedVersion` | boolean | Is current version deprecated? |
-| `getVersionUrl(id)` | function | Compute URL for a version |
-| `hasVersionedContent` | boolean | Does site have any versioned content? |
-| `versionedScopes` | object | Map of scope → `{ versions, latestId }` |
+| `isVersioned` | boolean | Is the page in a section with version folders? |
+| `versions` | array | The section's versions, latest first: `{ id, label, latest, route, href }` |
+| `currentVersion` | object | The one being read |
+| `latestVersion` | object | The section's latest |
+| `isOlderVersion` | boolean | Reading anything but the latest? |
+| `versionScope` | string | The route of the folder holding the versions |
+| `holds(route)` | function | Does a page belong with what's being read? |
+| `hierarchy(options)` | function | `website.getPageHierarchy(options)`, keeping to what's being read |
 
 ### useThemeData
 
@@ -852,9 +840,6 @@ function Header({ block }) {
 | `hasMultipleLocales()` | boolean | Check if multilingual |
 | `isSearchEnabled()` | boolean | Can this site be searched — by a server or the prebuilt index. In a component, prefer [`isSearchEnabled()`](#service-predicates) from kit |
 | `isServiceEnabled(name)` | boolean | Is there a provider for service `name`? The one implementation behind kit's [service predicates](#service-predicates); call it directly for a service kit ships no predicate for |
-| `isVersionedRoute(route)` | boolean | Check if route is versioned |
-| `getVersionScope(route)` | string | Get version scope for route |
-| `getVersionUrl(version, route)` | string | Compute versioned URL |
 
 #### getPageHierarchy Options
 
@@ -862,7 +847,8 @@ function Header({ block }) {
 website.getPageHierarchy({
   for: 'header',        // layout area name — checked against each page's hideIn
   nested: true,         // Include children (default: true)
-  includeHidden: false  // Include hidden pages (default: false)
+  includeHidden: false, // Include hidden pages (default: false)
+  under: '/docs'        // The pages below this route, whether or not it's listed itself
 })
 ```
 
@@ -918,12 +904,6 @@ function Layout({ block }) {
   // Layout flags
   if (page.hasHeader()) { /* render header */ }
   if (page.hasFooter()) { /* render footer */ }
-
-  // Versioning
-  if (page.isVersioned()) {
-    const version = page.getVersion()
-    const versions = page.getVersions()
-  }
 }
 ```
 
@@ -949,10 +929,6 @@ function Layout({ block }) {
 | `getAreaBlocks(name)` | Block[] | Get blocks for a named layout area |
 | `getLayoutAreas()` | object | Get all layout areas as `{ name: Block[] }` |
 | `getLayoutParams()` | object | Get layout params from page.yml |
-| `isVersioned()` | boolean | Is page in versioned scope? |
-| `getVersion()` | object | Current version info |
-| `getVersions()` | array | All versions in scope |
-| `getVersionUrl(id)` | string | URL for version switch |
 
 ### Block
 

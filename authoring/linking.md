@@ -135,7 +135,6 @@ This works in both SPA mode (development) and with pre-rendered pages (productio
 **Page IDs** are optional. Add them when:
 - The page is frequently linked to from other pages
 - You anticipate reorganizing your site structure
-- The page is part of a versioned documentation set
 - You want URLs to survive localization (same ID across `/en/` and `/es/`)
 
 ## Comparison with Other Approaches

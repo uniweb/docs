@@ -707,32 +707,17 @@ See [Parametric Pages](./dynamic-routes.md) for the full guide.
 
 ## Versioned Documentation
 
-For versioned docs, folder structure triggers version detection:
+A folder named `v1`, `v2` or `v2.1` holds an older version of the pages beside it, at its own URL:
 
 ```
 pages/docs/
-├── page.yml              # Optional version metadata
-├── v1/
-│   └── intro/
-└── v2/
-    └── intro/
+├── guide/             # the latest, at /docs/guide
+└── v1/                # an older version
+    ├── page.yml       # title: "1.x"
+    └── guide/         # /docs/v1/guide
 ```
 
-Configure version labels in the parent:
-
-```yaml
-# pages/docs/page.yml
-title: Documentation
-versions:
-  v2:
-    label: "2.0 (Current)"
-    latest: true
-  v1:
-    label: "1.0 (Legacy)"
-    deprecated: true
-```
-
-See [Versioning](./versioning.md) for details.
+`uniweb add version` makes one. See [Versioning](./versioning.md) for details.
 
 ---
 

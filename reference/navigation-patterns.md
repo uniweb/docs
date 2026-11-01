@@ -392,24 +392,19 @@ const footerNav = content.data?.['footer-nav'] || []
 
 ### One Version at a Time
 
-The page hierarchy holds every version of a [versioned](./versioning.md) section, each page saying which is its own. A menu or sidebar that lists them as they come shows a reader on v2 the pages of v1 too, under the same names, so filter by the version being read:
+A site with [older versions](./versioning.md) of its docs has their pages in its page tree, in folders named `v1`, `v2`. `useVersion` gives the tree of what's being read: the version on this page, and the latest in any other versioned section.
 
 ```jsx
-import { useVersion, useWebsite } from '@uniweb/kit'
+import { useVersion } from '@uniweb/kit'
 
 function Sidebar() {
-  const { website } = useWebsite()
-  const { currentVersion } = useVersion()
-
-  const pages = website.getPageHierarchy({
-    for: 'left',
-    filter: (page) => !currentVersion || !page.version || page.version.id === currentVersion.id,
-  })
+  const { hierarchy } = useVersion()
+  const pages = hierarchy({ for: 'left' })
   // …
 }
 ```
 
-The filter applies at every level of the tree, and keeps pages outside any version. Previous and next links need the same rule, or the first page of v2 leads back to the last page of v1.
+It takes the options of `getPageHierarchy`, and on a site with no version folders it's the whole tree, so a foundation can use it from the start. Reading an older version, its pages take the place of the latest's, so the menu keeps its shape. Previous and next links need the same care: filter the flat list with `holds(page.route)`.
 
 ### Social Links (Icon-Only)
 

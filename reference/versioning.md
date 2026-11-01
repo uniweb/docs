@@ -1,293 +1,187 @@
 # Documentation Versioning
 
-A convention-based versioning system for documentation sites that keeps multiple versions of content accessible without complex configuration.
+Keep the docs for an older release available beside the current ones.
 
-## The Problem
-
-Documentation sites often need to maintain multiple versions:
-
-- API documentation with breaking changes between major versions
-- Framework guides that differ across releases
-- Product documentation for supported versions
-
-Traditional approaches require explicit configuration, version manifests, or CMS-level features. This adds complexity and makes content reorganization difficult.
-
-## Scoped Versioning
-
-Uniweb uses **scoped versioning**—versioning applies to specific subtrees of your site, not the entire site. Marketing pages stay unversioned while documentation can have multiple versions.
-
-```
-pages/
-├── home/              # Not versioned (marketing)
-├── about/             # Not versioned (marketing)
-├── pricing/           # Not versioned (marketing)
-└── docs/              # Versioned scope
-    ├── v1/            # Version 1 (older)
-    │   ├── intro/
-    │   └── api/
-    └── v2/            # Version 2 (latest)
-        ├── intro/
-        └── api/
-```
-
-Routes stay within their scope:
-- `/docs/intro` (latest v2)
-- `/docs/v1/intro` (older v1)
-- `/about` (unversioned, no prefix)
-
-## Convention-Based Detection
-
-Versioning is triggered automatically by folder naming:
-
-| Folder | Detected As |
-|--------|-------------|
-| `v1/` | Version 1 |
-| `v2/` | Version 2 |
-| `v1.0/` | Version 1.0 |
-| `v2.1/` | Version 2.1 |
-| `next/` | Not a version |
-| `legacy/` | Not a version |
-
-Versions are sorted by number, with the highest becoming the "latest" version. The latest version's content appears at the scope root (no version prefix in URL).
+Most docs need one version, the current one. Add another when readers still on an older release would be misled by the current docs, and not before.
 
 ## How It Works
 
-### File Structure
+A version is a folder named `v1`, `v2` or `v2.1`, beside the pages it's an older version of. The folder's URL is its path, like any other folder's.
 
 ```
-pages/docs/
-├── page.yml           # Optional: version metadata
-├── v1/
-│   ├── intro/
-│   │   ├── page.yml
-│   │   └── content.md
-│   └── api/
-│       ├── page.yml
-│       └── reference.md
-└── v2/
-    ├── intro/
-    │   ├── page.yml
-    │   └── content.md
-    └── api/
-        ├── page.yml
-        └── reference.md
+pages/
+├── home/
+├── about/
+└── docs/
+    ├── getting-started/   # the latest, at /docs/getting-started
+    ├── guide/             # /docs/guide
+    ├── v2/                # an older version, at /docs/v2/…
+    │   ├── page.yml       # title: "2.x"
+    │   ├── getting-started/
+    │   └── guide/
+    └── v1/                # an older version, at /docs/v1/…
 ```
 
-### Generated Routes
+- **The pages beside the folders are the latest.** You keep writing where you've always written, and their URLs never change.
+- **A version is ordinary pages.** Nothing rewrites its URLs, so links to it keep working, and a site you build and a site you publish to a Uniweb backend have the same ones.
+- **A version's label is its page's `title`**, or `label`, in the `page.yml` inside the folder. With none, it's the folder's name.
 
-| Page | Route |
-|------|-------|
-| v2/intro (latest) | `/docs/intro` |
-| v2/api (latest) | `/docs/api` |
-| v1/intro | `/docs/v1/intro` |
-| v1/api | `/docs/v1/api` |
+Pages outside the folder holding the versions, like `home` and `about` above, aren't versioned.
 
-### Version Metadata (Optional)
+## Freezing a Release
 
-Customize version labels and mark deprecated versions in `page.yml`:
+When a release is about to stop being the latest, freeze its docs:
 
-```yaml
-# pages/docs/page.yml
-title: Documentation
-
-versions:
-  v2:
-    label: "2.0 (Current)"
-    latest: true
-  v1:
-    label: "1.0 (Legacy)"
-    deprecated: true
+```bash
+uniweb add version v2                  # freezes pages/docs as pages/docs/v2
+uniweb add version v2 --label "2.x"    # and what a version switcher calls it
+uniweb add version v2 --in manual      # another folder under pages/
+uniweb add version v2 --in .           # all of pages/, for a site that's nothing but docs
+uniweb add version v2 --dry-run        # says what would happen, and writes nothing
 ```
 
-Without explicit configuration, versions are auto-detected and the highest version is marked as latest.
+With no `--in`, it uses the folder that already holds versions, or else `docs`.
 
-## Building Version Switchers
+This copies the pages into the new folder and leaves everything you have as it was: its files, its URLs and its links. It also does what a plain copy gets wrong:
 
-Use the `useVersion` hook to build version switching UI:
+- **The links in the copy lead to the copy.** A link written as `page:guide`, `page:docs/guide` or `/docs/guide` becomes a path into the new folder. Links to pages outside the docs stay as they are. Links in code samples stay as written, since they're words about a link.
+- **The copy has no page IDs.** An ID has to be unique across a site, so `page:guide` still means the latest page. A frozen copy doesn't move, so it doesn't need them.
+- **Search engines are told to leave it out**, with `seo: { noindex: true }` in its `page.yml`, so they send people to the latest docs. Use `--keep-in-search` to leave that out. To change your mind later, edit the file.
+- **Translations written by hand come along.** Free-form translations of those pages are copied too. Run `uniweb i18n extract` afterwards if the site has other languages.
+
+A folder [mounted from another repository](./site-configuration.md) gets the copy in that repository, since that's where its pages live.
+
+## What Readers Get
+
+These come with a foundation built on `useVersion`, like the `docs` template's:
+
+- **A version switcher.** It leads to the same page in the other version, or to the nearest page to it when that version doesn't have it. It never leads to a page that doesn't exist, and it keeps the site's `base` and the reader's language.
+- **A notice on older versions**, leading to the same page in the latest.
+- **A sidebar and previous/next links that keep to one version.**
+
+Some things work for any foundation:
+
+- **Search on the site keeps to the version being read.** A reader on an older version who searches for something that version doesn't have gets results from the latest. A host's search service decides what it indexes, and if it holds no older versions, readers on them get the latest's results.
+- **Search engines, the sitemap and `llms.txt` get the latest.** A folder's `noindex` covers every page in it. The exception is a version folder with content of its own, whose `noindex` speaks only for that page. For one of those, `uniweb add version` writes it on each page of the copy, and a page you add to that version later needs it too.
+
+A foundation that doesn't use `useVersion` shows a version folder as an ordinary group of pages in its menus, so its pages are still reachable.
+
+## Building a Switcher
+
+`useVersion` tells a foundation which version a page belongs to, and where each of the others leads from it:
 
 ```jsx
-import { useVersion } from '@uniweb/kit'
+import { Link, useVersion } from '@uniweb/kit'
 
-function VersionSwitcher() {
-  const {
-    isVersioned,
-    currentVersion,
-    versions,
-    getVersionUrl
-  } = useVersion()
+function VersionSwitcher({ params }) {
+  const { isVersioned, currentVersion, versions } = useVersion()
 
-  // Don't render on non-versioned pages
-  if (!isVersioned) return null
+  // Draw nothing on a page with no other version
+  if (!isVersioned || versions.length < 2) return null
 
   return (
-    <select
-      value={currentVersion?.id}
-      onChange={(e) => window.location.href = getVersionUrl(e.target.value)}
-    >
-      {versions.map(v => (
-        <option key={v.id} value={v.id}>
-          {v.label}
-          {v.latest && ' (latest)'}
-          {v.deprecated && ' (deprecated)'}
-        </option>
+    <ul>
+      {versions.map((version) => (
+        <li key={version.id} aria-current={version.id === currentVersion.id}>
+          <Link href={version.href}>{version.label ?? params.latestLabel}</Link>
+        </li>
       ))}
-    </select>
+    </ul>
   )
 }
 ```
 
-### Version Hook API
+`label` is null for the pages beside the version folders, since they have no page of their own to name them. It's the foundation's to say what they're called: "Latest", or a param a site can set to `3.x`.
 
-```js
-const {
-  isVersioned,        // boolean - is current page versioned?
-  currentVersion,     // { id, label, latest, deprecated } | null
-  versions,           // Array of version objects
-  latestVersionId,    // string - ID of latest version
-  versionScope,       // string - route where versioning starts (e.g., '/docs')
-  isLatestVersion,    // boolean - is current version the latest?
-  isDeprecatedVersion,// boolean - is current version deprecated?
-  getVersionUrl,      // (targetVersion) => string - compute URL for version switch
-  hasVersionedContent,// boolean - does site have any versioned content?
-  versionedScopes,    // Object - all versioned scopes in site
-} = useVersion()
-```
+Pass `href` to `<Link>`, which adds the site's `base` and the reader's language.
 
-### Page-Level Access
-
-Pages within versioned sections have version context:
+### A Notice on Older Versions
 
 ```jsx
-function DocPage({ block }) {
-  const page = block.page
-
-  if (page.isVersioned()) {
-    const version = page.getVersion()      // Current version
-    const versions = page.getVersions()    // All versions
-    const url = page.getVersionUrl('v1')   // URL for v1
-  }
-}
-```
-
-### Website-Level Access
-
-Access version information from the website instance:
-
-```js
-const website = block.website
-
-// Check if route is versioned
-website.isVersionedRoute('/docs/intro')  // true
-website.isVersionedRoute('/about')       // false
-
-// Get version scope for a route
-website.getVersionScope('/docs/intro')   // '/docs'
-
-// Get version metadata for a scope
-website.getVersionMeta('/docs')
-// { versions: [...], latestId: 'v2' }
-
-// Compute URL for version switch
-website.getVersionUrl('v1', '/docs/intro')
-// '/docs/v1/intro'
-```
-
-## Deprecation Warnings
-
-Show warnings for deprecated versions:
-
-```jsx
-function DeprecationBanner() {
-  const { isDeprecatedVersion, currentVersion, getVersionUrl, latestVersionId } = useVersion()
-
-  if (!isDeprecatedVersion) return null
+function OlderVersionNotice({ content }) {
+  const { isOlderVersion, latestVersion } = useVersion()
+  if (!isOlderVersion) return null
 
   return (
-    <div className="warning-banner">
-      You're viewing docs for {currentVersion.label}.
-      <a href={getVersionUrl(latestVersionId)}>
-        View latest version
-      </a>
+    <div role="note">
+      <Span text={content.title} />
+      <Link href={latestVersion.href}>{content.links[0]?.label}</Link>
     </div>
   )
 }
 ```
 
-## Where It Works
+A section like this can sit in the [header area](./layout-areas.md) of every page, since it draws nothing except on an older version. Its words belong in its markdown, where they can be translated.
 
-Versioning is a feature of a static build: `uniweb build`, `uniweb export` and `uniweb deploy --host`.
+### Menus That Keep to One Version
 
-On a site published to a Uniweb backend, version folders are ordinary pages. Each version keeps its folder in the URL (`/docs/v2/intro`), the labels in `versions:` aren't sent, and `useVersion` reports no version. A sidebar built from the page tree lists every version's pages.
+`hierarchy` takes the options of `website.getPageHierarchy` and gives the tree of what's being read: the version on this page, and the latest in any other versioned section. On a site with no version folders, it's the whole tree.
 
-On a static build, a few things need care:
+```jsx
+function Sidebar() {
+  const { hierarchy } = useVersion()
+  const pages = hierarchy({ for: 'left' })
+  // …
+}
+```
 
-- **A scope's own URL can lead to the oldest version.** A scope with no content redirects to its first page, which is in `v1/`. Add `redirect: /docs/intro` to the scope's `page.yml`.
-- **A folder named like a version becomes one.** `pages/rest/v1/users/` is served at `/rest/users`, with no warning.
-- **`getVersionUrl` only rewrites the path.** It doesn't check that the page exists in the target version, and it leaves out the site's `base` and language. A page only one version has, or a folder promoted to the homepage, gets a link that leads to the not-found page.
-- **Search, the sitemap and `llms.txt` list every version.** Each page is its own canonical, deprecated or not. To keep a page out of them, set `seo: { noindex: true }` in its `page.yml`.
-- **Page ids must be unique across versions.** If you copy a version's folder and keep its ids, `page:` links in both copies lead to the same page, with no warning. Give the older version's pages their own ids (`v1-intro`), and update the links in that version to match.
+Reading an older version, its pages take the place of the latest's in the tree, so a menu has the same shape on every version.
 
-## SSG Behavior
-
-Version switching uses full page navigation (not SPA routing). This ensures:
-
-1. **Correct static HTML** - Each version's pages are pre-rendered
-2. **No stale content** - No risk of mixing versions via client-side state
-3. **SEO-friendly** - Search engines see proper URLs per version
-4. **Simple mental model** - Version switch = full reload
-
-## Best Practices
-
-1. **Use semantic version folders** - `v1/`, `v2/` not `version-1/`, `old/`
-
-2. **Keep latest version at scope root** - Users get current docs by default
-
-3. **Mark deprecated versions explicitly** - Helps users find current content
-
-4. **Version entire sections, not individual pages** - Keeps content organization consistent
-
-5. **Use version switcher in navigation** - Make it easy to find other versions
-
-6. **Show deprecation banners** - Guide users to current documentation
-
-## Technical Details
-
-### Data Flow
-
-1. **Build time**: `content-collector.js` detects version folders and builds version metadata
-2. **Page data**: Each page within a versioned scope receives `version`, `versionMeta`, `versionScope`
-3. **Site data**: `versionedScopes` map is included in site output
-4. **Runtime**: `Website` class provides version APIs, `useVersion` hook provides React access
-
-### Route Calculation
-
-For a versioned scope at `/docs` with versions v1, v2 (latest):
-
-| Version | Folder | Route |
-|---------|--------|-------|
-| v2 (latest) | `docs/v2/intro` | `/docs/intro` |
-| v1 | `docs/v1/intro` | `/docs/v1/intro` |
-
-The latest version gets no URL prefix within its scope. Older versions get their version ID as a prefix.
-
-### Version URL Computation
-
-`getVersionUrl(targetVersion, currentRoute)` handles the transformation:
+For a flat list, `holds(route)` says whether a page belongs with what's being read:
 
 ```js
-// Current: /docs/intro (latest v2)
-getVersionUrl('v1', '/docs/intro')
-// → '/docs/v1/intro'
-
-// Current: /docs/v1/intro
-getVersionUrl('v2', '/docs/v1/intro')
-// → '/docs/intro' (latest has no prefix)
+const { holds } = useVersion()
+const pages = website.getPageHierarchy({ nested: false }).filter((page) => holds(page.route))
 ```
+
+### Reference
+
+```js
+const {
+  isVersioned,     // boolean: the page is in a section with version folders
+  versions,        // the section's versions, latest first
+  currentVersion,  // the one being read
+  latestVersion,   // the section's latest
+  isOlderVersion,  // boolean: reading anything but the latest
+  versionScope,    // the route of the folder holding the versions, e.g. '/docs'
+  holds,           // (route) => boolean
+  hierarchy,       // (options) => the page tree of what's being read
+} = useVersion()
+```
+
+| Version field | Description |
+|---|---|
+| `id` | The folder's name, or `latest` for the pages beside the folders |
+| `label` | The folder page's `label` or `title`, else its name. Null for the pages beside the folders |
+| `latest` | Whether this is the section's latest |
+| `route` | Where the version starts: `/docs/v1`, or `/docs` for the pages beside the folders |
+| `href` | Where it leads from the page being read |
+
+## URLs That Name Their Version
+
+With no pages beside the folders, the newest folder is the latest, and every URL says its version:
+
+```
+pages/api/
+├── v1/   # /api/v1/users
+└── v2/   # /api/v2/users, the latest
+```
+
+This suits an API, where a version in the URL is the point. For docs, those URLs age: a link to `/docs/v2/guide` stays on v2 after the next release.
+
+## Things to Keep in Mind
+
+- **Version whole sections, and keep few.** Each version you keep is one more set of pages in the site's page list, and one more thing to look after.
+- **Older versions render with today's foundation.** It has to keep the section types they use. If an old version needs its old design, or you have many, publish it as its own site, under its own `base`.
+- **A folder named like a version is one.** `pages/rest/v1/users/` keeps its URL, `/rest/v1/users`, and `useVersion` reports it as a version of `/rest`.
+- **With version folders directly in `pages/`, the whole site is versioned.** `/about` reads as the latest and a switcher can appear on it, leading to the older version's first page. To keep pages out of it, put the docs in a folder of their own.
+- **Copying a version folder by hand keeps its IDs.** The build warns about two pages with one ID, since a `page:` link leads to only one of them. `uniweb add version` avoids it.
 
 ---
 
 ## See Also
 
-- [Page Configuration](./page-configuration.md) — Version metadata in page.yml
-- [Linking](../authoring/linking.md) — Stable page references across versions
-- [Navigation Patterns](./navigation-patterns.md) — Building version-aware navigation
+- [Page Configuration](./page-configuration.md) — `seo`, `hideIn` and the rest of `page.yml`
+- [Linking](../authoring/linking.md) — Page references
+- [Navigation Patterns](./navigation-patterns.md) — Building navigation
+- [CLI Commands](./cli-commands.md) — `uniweb add version`

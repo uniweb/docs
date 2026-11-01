@@ -175,6 +175,7 @@ uniweb add site [name] [options]
 uniweb add extension <name> [options]
 uniweb add section <Name> [options]
 uniweb add ci [options]
+uniweb add version <name> [options]
 ```
 
 Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If there's no workspace yet, create one with `uniweb create --blank`.
@@ -230,6 +231,21 @@ uniweb add section Hero --starter --json   # the declaration and the content, pi
 
 The content is derived from what the component says it expects — there is no key to author
 it in. See [Component Metadata → Content](./component-metadata.md#content).
+
+### Version Options
+
+`uniweb add version` freezes a site's docs as an older version beside them, in a folder named `v2` or `v2.1`, and leaves the docs themselves as they were. See [Versioning](./versioning.md).
+
+```bash
+uniweb add version v2                  # freezes pages/docs as pages/docs/v2
+uniweb add version v2 --in manual      # another folder under pages/ (. for all of it)
+uniweb add version v2 --label "2.x"    # what a version switcher calls it
+uniweb add version v2 --keep-in-search # leave it open to search engines
+uniweb add version v2 --dry-run        # say what would happen, and write nothing
+uniweb add version v2 --json           # what it did, pipeable
+```
+
+With no `--in`, it uses the folder that already holds versions, or else `docs`. In a workspace with several sites, `--site <name>` says which.
 
 ### CI Options
 
