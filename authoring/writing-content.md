@@ -174,6 +174,20 @@ These resolve to the correct URL even if pages get moved around. See the [Linkin
 
 ---
 
+## Adding Footnotes
+
+Write a mark where the note belongs, and the note anywhere in the same file:
+
+```markdown
+The first proof came much later.[^1]
+
+[^1]: Smith, 1987. A bare URL works too.
+```
+
+The mark becomes a number that links to the note, and the notes are listed at the end of the section. The section type draws them, and any built on kit's `<Prose>` does it for you. A book template sets them at the foot of the page in a PDF.
+
+A mark with no note stays as written, and so does a note with no mark, so a typo shows on the page.
+
 ## Adding Icons
 
 Icons use the image syntax with a special name format:
