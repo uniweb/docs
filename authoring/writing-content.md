@@ -124,16 +124,16 @@ Links work like standard markdown:
 [Learn more](/about)
 ```
 
-### Standalone links become buttons
+### Links on their own line
 
-When a link is the only thing on a line, it's treated as an action and typically appears as a button:
+When a link is the only thing on a line, it's one of the section's links, separate from its text:
 
 ```markdown
 [Get Started](/signup)
 [Learn More](/docs)
 ```
 
-You don't need to specify how the button looks — the section type handles that. Just provide the label and destination.
+How it looks is up to the section type, which might draw it as a button, a menu item or a plain link. Just provide the label and destination.
 
 ### Links inside text stay inline
 
