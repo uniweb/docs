@@ -317,7 +317,7 @@ The attribute syntax is more flexible—it allows combining role with other attr
 
 | Attribute   | Description                              |
 | ----------- | ---------------------------------------- |
-| `width`     | Image width, in pixels. With `height`, it holds the image's place on the page while its file loads, so use the file's own size. A static build fills both in for a local file when you give neither. In a PDF, only a width with a unit (`50%`, `10cm`) sizes the image |
+| `width`     | Image width, in pixels. With `height`, it holds the image's place on the page while its file loads, so use the file's own size. A static build fills both in for a local file when you give neither, and so does a backend-hosted site for a file it holds. In a PDF, only a width with a unit (`50%`, `10cm`) sizes the image |
 | `height`    | Image height, in pixels                  |
 | `loading`   | `lazy` or `eager`                        |
 | `fit`       | CSS object-fit: `cover`, `contain`, etc. |
