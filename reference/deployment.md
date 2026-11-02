@@ -427,7 +427,7 @@ For build-time configuration, use Vite's env variables:
 ```bash
 # .env.production
 VITE_API_URL=https://api.example.com
-VITE_ANALYTICS_ID=UA-XXXXX
+VITE_ANALYTICS_ID=G-XXXXXXXXXX
 ```
 
 Access in code:
