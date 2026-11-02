@@ -1,6 +1,6 @@
 # Uniweb Documentation
 
-Source content for the [Uniweb documentation site](https://docs.uniweb.app).
+Source content for the [Uniweb documentation site](https://uniweb.io/docs).
 
 ## What's here
 
