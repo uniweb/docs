@@ -1468,7 +1468,7 @@ pages/
 
 **Key point:** Each folder is its own page with its own route. Parent and child folders don't conflict—`/docs` and `/docs/getting-started` are separate pages that both exist.
 
-The `index:` setting in `site.yml` only controls which page becomes the root `/` route—it doesn't affect other pages or create any "container" behavior.
+The `index:` setting in `site.yml` controls which page becomes the root `/` route. Pages inside that folder move up with it: with `index: home`, `pages/home/team/` is at `/team`, not `/home/team`. If the folder has no content of its own, `/` leads to its first page. Every other folder keeps its route.
 
 > **Note for developers coming from other site frameworks:**
 > Uniweb treats every page folder as a distinct route. Nested pages do **not** replace or "take over" their parent folder.
