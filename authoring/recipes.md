@@ -889,11 +889,28 @@ until a visitor agrees, rather than loaded and then asked to behave.
 add a few inline configuration lines or a `data-…` attribute on the tag, and those have nowhere to go
 in a URL. **Google Analytics, Google Tag Manager and Meta's pixel all run inline lines:** from a URL
 alone, Google Analytics sends nothing, and Tag Manager never gets the page-load event its inline line
-pushes. On Uniweb Cloud, where `head.html` does not apply, a snippet like that has to run from your
-foundation's code, which takes someone who can change the foundation. See
+pushes. On Uniweb Cloud, where `head.html` does not apply, Google's two have
+[their own setting](#google-analytics-or-tag-manager-on-uniweb-cloud), and any other snippet like that
+has to run from your foundation's code, which takes someone who can change the foundation. See
 [Tracking](../reference/site-configuration.md#third-party-scripts) for the full reference.
 
-### Google Analytics
+### Google Analytics or Tag Manager on Uniweb Cloud
+
+Name the ID, in `site.yml` or in the app's site settings:
+
+```yaml
+# site.yml
+services:
+  google:
+    id: G-XXXXXXXXXX     # or GTM-XXXXXXX for a Tag Manager container
+```
+
+Your host loads Google's tag from your next publish on, with no code and no `head.html`. A pull or a
+push keeps the file and the app the same. See
+[Google Analytics and Tag Manager](../reference/site-configuration.md#google-analytics-and-tag-manager)
+for the rest, including consent.
+
+### Google Analytics through `head.html`
 
 Where `head.html` applies, as above:
 
@@ -910,7 +927,7 @@ Where `head.html` applies, as above:
 
 Replace `G-XXXXXXXXXX` with your Measurement ID (found in Google Analytics → Admin → Data Streams).
 
-### Google Tag Manager
+### Google Tag Manager through `head.html`
 
 The same file, with the first of the two snippets Google gives you for your `GTM-XXXXXXX` container.
 The second is a `<noscript>` block meant for just after `<body>`, which `head.html` can't reach, so

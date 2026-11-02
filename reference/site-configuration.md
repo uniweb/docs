@@ -490,8 +490,8 @@ i18n:
 
 ## Site Services
 
-Search, form submissions, tracking, an assistant, accounts and live records are **services**, and
-a site configures all of them in one place — `services:`, one entry per service:
+Search, form submissions, tracking, an assistant, accounts, live records and Google's tags are
+**services**, and a site configures all of them in one place — `services:`, one entry per service:
 
 ```yaml
 services:
@@ -501,6 +501,7 @@ services:
   tracking: { consent: required }
   backend: true                             # ask your host for the site's own backend
   records: true                             # ask your host to deliver your records live
+  google: { id: G-XXXXXXXXXX }              # ask your host to load Google's tag
 ```
 
 Each entry is one of:
@@ -524,6 +525,8 @@ as text, and text is an address. Write `true` or `false`.
   data schema is answered by it on a host that offers it; without it, those pages show no records
   there. A static build reads records from the files it writes, and ignores the entry. Pushing and
   pulling records works either way.
+- **`google` has your host load Google's tag** for the IDs you name. A static build ignores the
+  entry. See [Google Analytics and Tag Manager](#google-analytics-and-tag-manager).
 
 **On a site you push or publish, `services` is also what you ask your host for.** `uniweb push`
 and `uniweb publish` send each service `site.yml` lists, as it says it, and switch off one you have
@@ -1129,7 +1132,45 @@ for an attribute on the tag. Get it from your vendor's own install instructions.
 >
 > **Google Analytics, Google Tag Manager and Meta's pixel are in the second group.**
 > From a URL alone, `gtag.js` sends nothing and `gtm.js` never gets the page-load
-> event its inline line pushes.
+> event its inline line pushes. Google's two have an entry of their own, below.
+
+### Google Analytics and Tag Manager
+
+Neither can load from a `scripts` entry, so what you write depends on who builds your pages.
+
+**On Uniweb Cloud** (`uniweb publish`), name the ID and your host loads Google's tag:
+
+```yaml
+services:
+  google:
+    id: G-XXXXXXXXXX       # a Measurement ID, or GTM-XXXXXXX for a Tag Manager container
+```
+
+For both, `id` takes a list: `id: [G-XXXXXXXXXX, GTM-XXXXXXX]`.
+
+This needs no code and no `head.html`, so it works on any foundation, and it takes effect at your
+next `uniweb publish`. The app's site settings edit the same entry, and a pull or a push carries a
+change across. `enabled: false` beside `id` turns it off and keeps the ID.
+
+- **It is separate from `services.tracking`.** It asks your host for nothing else, and nothing you
+  `track()` reaches Google.
+- **Leave `services.tracking.scripts` unset beside it.** A site's own list replaces what your host
+  states, so Google's tag would not load. `uniweb push`, `uniweb publish` and `uniweb status` say so
+  when a file has both.
+- **It loads the way a `scripts` entry does:** once per page load, and never in an editing preview
+  or during prerendering. `uniweb dev` has no host, so it does not load there either.
+- **Google's tag sets Google's cookies on your visitors' devices.** Whether that takes their consent
+  where you operate is your decision. To hold the tag until a visitor answers, write
+  `tracking: { enabled: false, consent: required }` beside it, leaving out `enabled: false` if you
+  also want your host's collector, and draw the question with a component, as in
+  [Consent](#consent). With the gate on and nothing asking, the tag never loads.
+
+**Anywhere else** (`uniweb export`, `uniweb deploy --host=<adapter>`), no host is there to load it
+and the entry does nothing. Paste Google's snippet into [`head.html`](#custom-head-injection) instead.
+
+**In-app navigation** does not reload the page. Google Analytics counts it as a page view through
+Enhanced measurement, in your data stream's settings: the page-view option has an advanced setting
+for browser-history events, which has to be on.
 
 ### What is and isn't stored
 
@@ -1404,7 +1445,7 @@ site/
 </script>
 ```
 
-Replace `G-XXXXXXXXXX` with your Measurement ID from Google Analytics. On Uniweb Cloud this file is not applied, as above, so Google's tag has to run from your foundation's code there.
+Replace `G-XXXXXXXXXX` with your Measurement ID from Google Analytics. On Uniweb Cloud this file is not applied, as above: use [`services.google`](#google-analytics-and-tag-manager) there.
 
 ### How it works
 

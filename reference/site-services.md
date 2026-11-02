@@ -110,8 +110,9 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `assistant` | where an assistant surface answers | site or host |
 | `backend` | the site's own backend — accounts, per-visitor data, member writes | host (see below) |
 | `records` | where live record queries are answered | **host only** — asked for with `records: true` |
+| `google` | which Google Analytics and Tag Manager IDs your host loads Google's tag for | **host only** — asked for with `google: { id: … }` |
 
-Three of them deserve a note.
+Four of them deserve a note.
 
 **`search` has a local fallback, so its absence is not the whole question.** A site can carry a
 prebuilt index that needs no address at all, which is the default. That is why the question a
@@ -135,6 +136,10 @@ with a data schema only through `records`, so a site it publishes asks for it �
 under `services:` — or its pages show none of them. Either way a component reads `content.data`
 identically, which is the whole point — a foundation cannot tell, and never needs to. See
 [Data Sources](../development/data-sources.md).
+
+**`google` holds IDs rather than an address, and no component reads it.** Your host acts on it, on a
+site it publishes. See
+[Google Analytics and Tag Manager](./site-configuration.md#google-analytics-and-tag-manager).
 
 ---
 
@@ -182,6 +187,8 @@ a host:
 - **`records` is the exception**: a site asks its host for it, with `records: true`, and cannot
   give an address of its own. With no host, its queries read the files the build compiled, which is
   why a site with no host is the default case rather than a degraded one.
+- **`google` needs a host too.** With none, the entry does nothing, and Google's tag goes in
+  [`head.html`](./site-configuration.md#custom-head-injection).
 
 Deleting every service declaration leaves a site that still works. The features that needed one
 disappear; nothing breaks.
