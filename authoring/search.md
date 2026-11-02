@@ -90,7 +90,7 @@ Every provider returns the same result shape, so a search UI is written once.
 | `id` | Stable identifier for the hit |
 | `type` | `page`, `section`, or `record` |
 | `route` | Page route the hit belongs to |
-| `href` | Where to navigate — includes the `#anchor` when there is one |
+| `href` | Where to navigate — includes the `#anchor` when there is one. It's a route on the site, with no language or base path in it, so follow it with kit's `<Link>`, which adds both |
 | `title` | The hit's own title |
 | `pageTitle` | Title of the containing page |
 | `excerpt` | Short plain-text summary |
