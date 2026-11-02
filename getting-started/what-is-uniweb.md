@@ -161,10 +161,10 @@ The framework can also be used on its own: content in markdown, built and deploy
 
 **Want to build a site?** Start with the [Quickstart](quickstart) — you'll have a running project in minutes.
 
-**Writing content for an existing site?** Go to [Writing Content](../authoring/writing-content) for the complete guide to markdown authoring.
+**Writing content for an existing site?** Go to [Writing Content](../authoring/writing-content.md) for the complete guide to markdown authoring.
 
-**Building components?** After the Quickstart, head to [Building with Uniweb](../development/building-with-uniweb) for the developer perspective.
+**Building components?** After the Quickstart, head to [Building with Uniweb](../development/building-with-uniweb.md) for the developer perspective.
 
-**Looking up a specific feature?** The [Reference](../reference/site-configuration) section has configuration details, API docs, and feature specifications.
+**Looking up a specific feature?** The [Reference](../reference/site-configuration.md) section has configuration details, API docs, and feature specifications.
 
-**Unfamiliar term?** Check the [Glossary](../reference/glossary) for quick definitions of workspace, foundation, section type, and other Uniweb concepts.
+**Unfamiliar term?** Check the [Glossary](../reference/glossary.md) for quick definitions of workspace, foundation, section type, and other Uniweb concepts.

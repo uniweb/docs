@@ -49,7 +49,7 @@ An empty workspace with no packages. Use `uniweb add` to grow it incrementally �
 pnpm create uniweb my-workspace --blank
 ```
 
-This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures) for the layout recipes, and [CLI Commands](../reference/cli-commands) for the `add` command.
+This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures.md) for the layout recipes, and [CLI Commands](../reference/cli-commands.md) for the `add` command.
 
 > **Backward compatibility:** `--template blank` still works as an alias for `--blank`.
 
@@ -131,5 +131,5 @@ pnpm create uniweb my-site --template https://github.com/user/repo
 
 ## See Also
 
-- [CLI Commands](../reference/cli-commands) — Full `create` command reference
-- [Quickstart](./quickstart) — Create your first site step by step
+- [CLI Commands](../reference/cli-commands.md) — Full `create` command reference
+- [Quickstart](./quickstart.md) — Create your first site step by step

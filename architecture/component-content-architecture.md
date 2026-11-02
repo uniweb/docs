@@ -189,7 +189,7 @@ Each step is independently useful. A foundation can be at step 2 for its Hero an
 
 This also means CCA subsumes the classic React SPA. When every convention is stripped away — no meta.js, no content separation, no semantic theming, no layout system — what's left is a Vite + React project with file-based routing. CCA is what you get when you add structure to that baseline, one convention at a time.
 
-See [Converting Existing Designs](../development/converting-existing) for the practical migration path from a monolithic React page to a fully portable CCA foundation.
+See [Converting Existing Designs](../development/converting-existing.md) for the practical migration path from a monolithic React page to a fully portable CCA foundation.
 
 ---
 
@@ -197,8 +197,8 @@ See [Converting Existing Designs](../development/converting-existing) for the pr
 
 This page describes the architecture. The rest of the documentation shows how to use it:
 
-- **[What is Uniweb](../getting-started/what-is-uniweb)** — The practical introduction: what a project looks like, what each audience does
-- **[Building with Uniweb](../development/building-with-uniweb)** — The developer view: how foundations and sites connect
-- **[Thinking in Contexts](../development/thinking-in-contexts)** — Deep dive into semantic theming and why components don't make color decisions
-- **[Foundation Categories](../development/foundation-categories)** — The bundled-to-portable spectrum and when each approach makes sense
-- **[Custom Layouts](../development/custom-layouts)** — How layout components work and when to build one
+- **[What is Uniweb](../getting-started/what-is-uniweb.md)** — The practical introduction: what a project looks like, what each audience does
+- **[Building with Uniweb](../development/building-with-uniweb.md)** — The developer view: how foundations and sites connect
+- **[Thinking in Contexts](../development/thinking-in-contexts.md)** — Deep dive into semantic theming and why components don't make color decisions
+- **[Foundation Categories](../development/foundation-categories.md)** — The bundled-to-portable spectrum and when each approach makes sense
+- **[Custom Layouts](../development/custom-layouts.md)** — How layout components work and when to build one

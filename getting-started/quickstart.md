@@ -12,7 +12,7 @@ Create your first Uniweb site in 5 minutes.
 npm install -g pnpm
 ```
 
-> **Working with an AI agent?** Ask it to run `npx uniweb@latest start` first. It prints a guide written for the agent: creating the project, reading its `AGENTS.md`, running it, and bringing the site into the Uniweb app. See [`uniweb start`](../reference/cli-commands#uniweb-start).
+> **Working with an AI agent?** Ask it to run `npx uniweb@latest start` first. It prints a guide written for the agent: creating the project, reading its `AGENTS.md`, running it, and bringing the site into the Uniweb app. See [`uniweb start`](../reference/cli-commands.md#uniweb-start).
 
 ## Create a Project
 
@@ -216,12 +216,12 @@ Upload the contents of `site/dist/`.
 
 | Want to... | Read |
 |------------|------|
-| Understand content structure | [Content Structure](../reference/content-structure) |
-| Create custom components | [Component Metadata](../reference/component-metadata) |
-| Configure your site | [Site Configuration](../reference/site-configuration) |
-| Add multiple languages | [Internationalization](../development/internationalization) |
-| Load external data | [Data Fetching](../reference/data-fetching) |
-| Generate a page per record | [Parametric Pages](../reference/dynamic-routes) |
+| Understand content structure | [Content Structure](../reference/content-structure.md) |
+| Create custom components | [Component Metadata](../reference/component-metadata.md) |
+| Configure your site | [Site Configuration](../reference/site-configuration.md) |
+| Add multiple languages | [Internationalization](../development/internationalization.md) |
+| Load external data | [Data Fetching](../reference/data-fetching.md) |
+| Generate a page per record | [Parametric Pages](../reference/dynamic-routes.md) |
 
 ## Common Templates
 
@@ -242,4 +242,4 @@ pnpm create uniweb my-project --template none
 pnpm create uniweb my-workspace --blank
 ```
 
-See [Templates](./templates) for all options.
+See [Templates](./templates.md) for all options.
