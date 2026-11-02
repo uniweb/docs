@@ -6,6 +6,7 @@ The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, gene
 
 ```bash
 uniweb start                   # A guide for an AI agent building a site for someone
+uniweb guide [name]            # Print a guide to building with Uniweb: content, foundation, theme, …
 uniweb create [name]           # Create a new project (default: starter)
 uniweb add <type> [name]       # Add a project, foundation, site, or extension
 uniweb dev                     # Start a dev server for a site
@@ -51,6 +52,21 @@ The guide, in Markdown, takes the agent through the whole path: create a project
 Inside a Uniweb project, the guide starts from that project instead of creating one, and names the project's own package manager. Inside a workspace of another kind, it says to create the project somewhere else, since `create` does not make one inside another workspace. In a folder holding a Uniweb project one level down, it names that project, so a later session goes there instead of creating another.
 
 `start` asks nothing, writes nothing and makes no network request, so an agent can run it in any folder. The guide comes with the CLI that prints it, so `@latest` gives the current one. To run a site's dev server, use [`uniweb dev`](#uniweb-dev).
+
+---
+
+## uniweb guide
+
+Print a guide to building with Uniweb, in Markdown.
+
+```bash
+uniweb guide                     # list the guides
+uniweb guide content             # print one
+uniweb guide content foundation  # print several
+uniweb guide content --path      # print where its file is, to read instead
+```
+
+A project's `AGENTS.md` says which guide a task needs. The guides ship with the CLI, so in a project they describe the version the project pins. They need no network and no project, so `npx uniweb@latest guide start` works in an empty folder. See [AGENTS.md and the Guides](./agent-guides.md).
 
 ---
 

@@ -15,6 +15,7 @@ pages:
   - layout-areas
   - versioning
   - cli-commands
+  - agent-guides
   - framework-versions
   - deployment
   - ...
