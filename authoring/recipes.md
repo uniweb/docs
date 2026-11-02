@@ -864,8 +864,8 @@ That's it. The build injects it into every page automatically.
 
 ### ⭐ For a tracking script, there is a shorter way that works everywhere
 
-If the service gave you a single `<script src="…">` line and nothing else, you can skip `head.html`
-and name the URL instead:
+If the service gave you a single `<script src="…">` line, with no `data-…` attributes on it and nothing
+else around it, you can skip `head.html` and name the URL instead:
 
 ```yaml
 # site.yml
@@ -886,13 +886,16 @@ move around your site, and if you add `consent: required` the script is **never 
 until a visitor agrees, rather than loaded and then asked to behave.
 
 **Use `head.html` instead when** the service's snippet has more than a `<script src>` in it — some
-add a few inline configuration lines, and those have nowhere to go in a URL. **Google Analytics and
-Google Tag Manager both do:** from a URL alone, Google Analytics sends nothing, and Tag Manager never
-gets the page-load event its inline line pushes. On Uniweb Cloud, where `head.html` does not apply, a
-snippet like that has to run from your foundation's code. See
+add a few inline configuration lines or a `data-…` attribute on the tag, and those have nowhere to go
+in a URL. **Google Analytics, Google Tag Manager and Meta's pixel all run inline lines:** from a URL
+alone, Google Analytics sends nothing, and Tag Manager never gets the page-load event its inline line
+pushes. On Uniweb Cloud, where `head.html` does not apply, a snippet like that has to run from your
+foundation's code, which takes someone who can change the foundation. See
 [Tracking](../reference/site-configuration.md#third-party-scripts) for the full reference.
 
 ### Google Analytics
+
+Where `head.html` applies, as above:
 
 ```html
 <!-- site/head.html -->
@@ -906,6 +909,12 @@ snippet like that has to run from your foundation's code. See
 ```
 
 Replace `G-XXXXXXXXXX` with your Measurement ID (found in Google Analytics → Admin → Data Streams).
+
+### Google Tag Manager
+
+The same file, with the first of the two snippets Google gives you for your `GTM-XXXXXXX` container.
+The second is a `<noscript>` block meant for just after `<body>`, which `head.html` can't reach, so
+leave it out. It only does anything for a visitor with JavaScript off.
 
 ### Multiple scripts
 
