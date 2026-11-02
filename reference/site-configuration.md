@@ -1164,6 +1164,9 @@ change across. `enabled: false` beside `id` turns it off and keeps the ID.
   `tracking: { enabled: false, consent: required }` beside it, leaving out `enabled: false` if you
   also want your host's collector, and draw the question with a component, as in
   [Consent](#consent). With the gate on and nothing asking, the tag never loads.
+- **A browser or extension that blocks trackers blocks Google's tag too.** Brave is one. A visit from
+  it never reaches Google, so Google's numbers can run below your visits, and checking an install
+  from it looks like the install failed.
 
 **Anywhere else** (`uniweb export`, `uniweb deploy --host=<adapter>`), no host is there to load it
 and the entry does nothing. Paste Google's snippet into [`head.html`](#custom-head-injection) instead.

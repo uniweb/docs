@@ -906,7 +906,8 @@ services:
 ```
 
 Your host loads Google's tag from your next publish on, with no code and no `head.html`. A pull or a
-push keeps the file and the app the same. See
+push keeps the file and the app the same. To check it, visit from a browser that doesn't block
+trackers: from Brave, say, nothing reaches Google. See
 [Google Analytics and Tag Manager](../reference/site-configuration.md#google-analytics-and-tag-manager)
 for the rest, including consent.
 
