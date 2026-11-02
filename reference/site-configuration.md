@@ -1177,10 +1177,19 @@ and the entry does nothing. Paste Google's snippet into [`head.html`](#custom-he
 Enhanced measurement, in your data stream's settings: the page-view option has an advanced setting
 for browser-history events, which has to be on. A new stream has it on.
 
-A Google Analytics tag inside a Tag Manager container counts in-app navigation the same way. Any
+A Google Analytics tag inside a Tag Manager container counts in-app navigation the same way, and
+Meta's pixel sends a page view on these changes unless told not to, so neither needs a trigger for
+it. Google warns that giving a Google Analytics tag a second route counts page views twice. Any
 other tag on *All Pages* runs once per page load, on the page a visit starts on. To run it on every
 page, give it a *History Change* trigger as well. That trigger fires before the new page's title is
 set, so the tag reads the new page's path and the previous page's title.
+
+A foundation sends a container its own events by pushing them, and a *Custom Event* trigger picks
+them up. No guard is needed: on a site with no container, the array is simply never read.
+
+```js
+(window.dataLayer = window.dataLayer || []).push({ event: 'brochure_download' })
+```
 
 **To check a Tag Manager install,** use [Tag Assistant](https://tagassistant.google.com/), which
 connects to a published page and lists the tags that fired. A mistyped `GTM-` ID gives no error:

@@ -936,7 +936,8 @@ The second is a `<noscript>` block meant for just after `<body>`, which `head.ht
 leave it out. It only does anything for a visitor with JavaScript off.
 
 Moving between a site's pages doesn't reload the document, so a tag on *All Pages* runs only on the
-page a visit starts on. To run a tag on every page, give it a *History Change* trigger as well.
+page a visit starts on. To run a tag on every page, give it a *History Change* trigger as well,
+unless it follows those changes itself, as a Google Analytics tag and Meta's pixel do.
 
 ### Multiple scripts
 
