@@ -864,8 +864,8 @@ That's it. The build injects it into every page automatically.
 
 ### ⭐ For a tracking script, there is a shorter way that works everywhere
 
-If the service gave you a single `<script src="…">` line and nothing else — most analytics tools
-and tag managers do — you can skip `head.html` and name the URL instead:
+If the service gave you a single `<script src="…">` line and nothing else, you can skip `head.html`
+and name the URL instead:
 
 ```yaml
 # site.yml
@@ -878,12 +878,18 @@ services:
 Same script, same service, same data. The difference is **who loads it**: the site's runtime does,
 so it works on every host — including Uniweb Cloud, where `head.html` does not apply.
 
+On a site you publish, an entry like this also asks your host for its own collector. To load only the
+script, add `enabled: false` beside `scripts`.
+
 It also gets you two things a pasted snippet does not: it is loaded once per page even as visitors
 move around your site, and if you add `consent: required` the script is **never fetched at all**
 until a visitor agrees, rather than loaded and then asked to behave.
 
 **Use `head.html` instead when** the service's snippet has more than a `<script src>` in it — some
-add a few inline configuration lines, and those have nowhere to go in a URL. See
+add a few inline configuration lines, and those have nowhere to go in a URL. **Google Analytics and
+Google Tag Manager both do:** from a URL alone, Google Analytics sends nothing, and Tag Manager never
+gets the page-load event its inline line pushes. On Uniweb Cloud, where `head.html` does not apply, a
+snippet like that has to run from your foundation's code. See
 [Tracking](../reference/site-configuration.md#third-party-scripts) for the full reference.
 
 ### Google Analytics

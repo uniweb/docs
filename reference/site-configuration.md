@@ -1015,8 +1015,8 @@ used.
 
 ### Third-party scripts
 
-If you also use a vendor's own analytics or tag manager, name its script and the
-framework loads it:
+If you also use a vendor's own analytics, and its install is a single script, name
+that script and the framework loads it:
 
 ```yaml
 services:
@@ -1047,6 +1047,9 @@ services:
 The vendor's script measures its own way, with its own storage, and reports to
 the vendor. Nothing is shared or translated between it and the events above.
 
+On a site you publish, an entry with no endpoint also asks your host for its
+collector. To load only the script, add `enabled: false` beside `scripts`.
+
 What the framework guarantees about the load:
 
 - **Once per page load**, as an `async` script in `<head>`.
@@ -1066,6 +1069,10 @@ Get it from your vendor's own install instructions.
 > Others also run a few inline lines to configure themselves, and those lines
 > have nowhere to go here — for that, use
 > [`head.html`](#custom-head-injection), noting which hosts apply it.
+>
+> **Google Analytics and Google Tag Manager are in the second group.** From a URL
+> alone, `gtag.js` sends nothing and `gtm.js` never gets the page-load event its
+> inline line pushes.
 
 ### What is and isn't stored
 
