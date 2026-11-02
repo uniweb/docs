@@ -479,6 +479,8 @@ cd site
 uniweb build
 ```
 
+A page that fails to render stops the build. It exits non-zero and names the error, the section type and the pages, so a deploy doesn't go on with pages missing.
+
 ### Pre-rendering (SSG)
 
 Pre-rendering generates static HTML at build time for fast loads and SEO.

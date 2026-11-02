@@ -305,7 +305,7 @@ export default function DocsLayout({
 A few things to notice:
 
 - The header is sticky with `backdrop-blur` for a translucent effect
-- Sidebars use `sticky top-16` — they stick below the header (4rem = 16 in Tailwind's spacing)
+- Sidebars use `sticky top-16` — they stick below the header (4rem = 16 in Tailwind's spacing). A header that can change height, one that wraps or has a second row, needs `top-[var(--uw-sticky-top,0px)]` instead: the runtime measures how far down a sticky section's area reaches
 - `min-w-0` on main prevents flex children from overflowing
 - The whole thing is wrapped in `flex flex-col` with `min-h-screen` so the page always fills the viewport
 
