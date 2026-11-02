@@ -604,6 +604,10 @@ const { submit, status, error, canSubmit } = useFormSubmit({
 })
 ```
 
+A form a provider of the site's own accepts is reported as a `conversion` named
+`form_<formId>`, or `form` with no id, so don't report it again. See
+[Conversions and engagements](./site-configuration.md#conversions-and-engagements).
+
 | Returns | |
 |---|---|
 | `status` | `'idle'` · `'submitting'` · `'success'` · `'error'` |

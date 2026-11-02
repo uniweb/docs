@@ -920,9 +920,61 @@ kit, so they are worth recognising if you build a dashboard:
 | `section_view` | the runtime, on pages with `trackSections` | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
 | `read_depth` | `useReadingDepth()` in a long section | `depth` — 25, 50, 75, 100 |
+| `conversion` | see below | `name` |
+| `engagement` | see below | `name` |
 
 Any other event name is one a component chose; there is no list of permitted
 names. See the AGENTS.md guide in your project for the component side.
+
+### Conversions and engagements
+
+`conversion` says a visitor did something this site counts. `engagement` says
+they did something worth knowing that is not a result in itself. Both carry
+**`name`**, and nothing of their own beyond it: a phone number, an email address,
+a link and a form's fields all stay on the page.
+
+Some are reported with no code in your foundation:
+
+| event | `name` | when |
+| --- | --- | --- |
+| `conversion` | `phone`, `email` | a visitor taps a `tel:` or `mailto:` link |
+| `conversion` | `form`, or `form_<formId>` | a form sent through `useFormSubmit` is accepted by a provider of your own. Your host's submit address counts its own, so nothing is sent for those |
+| `conversion` | `sign_up` | a sign-up through `@uniweb/api` is accepted. It says someone asked, since the answer is the same for an address already taken |
+| `engagement` | `sign_in` | a sign-in through `@uniweb/api` succeeds, including on the way back from a provider |
+
+The first row needs only the runtime. The others are code your foundation bundles,
+so they start when the foundation is rebuilt, and nothing in it has to change.
+
+**A link or a page counts when you say so.** Nothing can tell by itself that one
+link is your sign-up and another your sign-in:
+
+```yaml
+services:
+  tracking:
+    conversions:
+      - { name: signup, link: https://app.example.com/signup }
+      - { name: call_office, link: 'tel:+15551234' }
+      - { name: booked, page: /thanks }
+```
+
+A `link` is a whole address, compared without its query or fragment. A `page` is a
+path of this site, in any of its languages. A name you give a phone number replaces
+`phone` for that number.
+
+**A component sends its own:**
+
+```jsx
+block.track('conversion', { name: 'quote_requested' })
+```
+
+Keep names short, since a collector may cut a long one, and use one name for each
+thing a report should count. A tap, a listed link and a listed page count once per
+page load, so a double tap is one; a reload is a new page load.
+
+**What `emit` does here.** The events with no code above are part of `all`, and
+`standard` leaves them out. Where your host supplies the collector they are sent
+if it declares them. A `conversions` list asks for itself, so it is sent under any
+`emit` unless your host declines the event.
 
 ### Choosing what is sent (`emit`)
 
@@ -957,9 +1009,9 @@ your host to leave its collector off.
 | `all` | everything the framework emits, **including events added in later releases** |
 | a list | exactly those event names, e.g. `[page_view, section_view]` |
 
-`standard` and `all` select the same events today. They differ the moment a new
-automatic event ships: `all` picks it up, `standard` does not, so **a framework
-release never grows what a site sends**.
+`all` also sends what `standard` leaves out, such as `section_click` and
+`conversion`. A new automatic event joins `all` and never `standard`, so **a
+framework release never grows what a `standard` site sends**.
 
 ### Where your host supplies the collector
 
