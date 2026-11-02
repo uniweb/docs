@@ -89,6 +89,7 @@ No custom animation code. The browser handles the spatial interpolation based on
 - Transition names must be unique on the page. Two elements with the same `view-transition-name` at the same time causes the transition to be skipped. Elements with `display: none` (like a mobile sidebar hidden on desktop) are excluded from this check.
 - Names are arbitrary CSS identifiers. Use descriptive names (`header`, `main`, `sidebar`) — they appear in devtools.
 - To exclude a region, set its entry to `null` (it folds back into the page crossfade); to drop per-region names for a whole layout, set `transitions: false` (the layout gets one whole-page crossfade).
+- An area with no height of its own has nothing to capture, so the runtime folds it back into the page crossfade for you. That is the usual case for a header that overlays the page: a bar that is `fixed`, or `absolute` in a box it doesn't fill. It stays on screen and crossfades with the page. To have it move on its own, give the bar itself a `view-transition-name`.
 
 ---
 
