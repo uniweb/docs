@@ -159,7 +159,7 @@ The framework can also be used on its own: content in markdown, built and deploy
 
 ## Where to go from here
 
-**Want to build a site?** Start with the [Quickstart](quickstart) — you'll have a running project in minutes.
+**Want to build a site?** Start with the [Quickstart](quickstart.md) — you'll have a running project in minutes.
 
 **Writing content for an existing site?** Go to [Writing Content](../authoring/writing-content.md) for the complete guide to markdown authoring.
 
