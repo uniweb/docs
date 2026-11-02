@@ -1136,9 +1136,11 @@ for an attribute on the tag. Get it from your vendor's own install instructions.
 
 ### Google Analytics and Tag Manager
 
-Neither can load from a `scripts` entry, so what you write depends on who builds your pages.
+Neither can load from a `scripts` entry, so what you do depends on who builds your pages.
 
-**On Uniweb Cloud** (`uniweb publish`), name the ID and your host loads Google's tag:
+**On Uniweb Cloud** (`uniweb publish`, or publishing from the Uniweb app), name the ID and your host
+loads Google's tag. In the app, add it on the *Google Analytics and Tag Manager* card, in your site's
+Settings under Features. In your files, it is this entry in `site.yml`:
 
 ```yaml
 services:
@@ -1149,9 +1151,11 @@ services:
 For both, `id` takes a list: `id: [G-XXXXXXXXXX, GTM-XXXXXXX]`. If your container already sends to
 that Measurement ID, list only the container, so pages aren't counted twice.
 
+The card and the entry are one setting: `uniweb pull` writes what the card holds into `site.yml`, and
+`uniweb push` shows what the file says on the card.
+
 This is free and needs no code and no `head.html`, so it works on any foundation, and it takes effect
-at your next `uniweb publish`. The app's site settings don't offer it yet, so set it in `site.yml`.
-`enabled: false` beside `id` turns it off and keeps the ID.
+at your next publish. The card's switch, or `enabled: false` beside `id`, turns it off and keeps the ID.
 
 - **It is separate from `services.tracking`.** It asks your host for nothing else, and nothing you
   `track()` reaches Google.
@@ -1162,9 +1166,9 @@ at your next `uniweb publish`. The app's site settings don't offer it yet, so se
   or during prerendering. `uniweb dev` has no host, so it does not load there either.
 - **Google's tag sets Google's cookies on your visitors' devices.** Whether that takes their consent
   where you operate is your decision. To hold the tag until a visitor answers, write
-  `tracking: { enabled: false, consent: required }` beside it, leaving out `enabled: false` if you
-  also want your host's collector, and draw the question with a component, as in
-  [Consent](#consent). With the gate on and nothing asking, the tag never loads.
+  `tracking: { enabled: false, consent: required }` under `services:` in `site.yml`, leaving out
+  `enabled: false` if you also want your host's collector, and draw the question with a component,
+  as in [Consent](#consent). With the gate on and nothing asking, the tag never loads.
 - **A browser or extension that blocks trackers blocks Google's tag too.** Brave is one. A visit from
   it never reaches Google, so Google's numbers can run below your visits, and checking an install
   from it looks like the install failed.
