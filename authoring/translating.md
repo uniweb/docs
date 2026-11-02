@@ -43,7 +43,7 @@ Here's the full process, step by step.
 uniweb build
 ```
 
-The translation tools work from the built content, so you need a fresh build first.
+The translation tools read your pages from their source files, and your records from what a build leaves in `public/data/`. So you need a fresh build when your site has records.
 
 ### 2. Extract translatable strings
 

@@ -909,9 +909,9 @@ query string never leave the page, so a link someone shares with a search term
 or a token in it cannot deposit that into your analytics.
 
 `section_view` goes out the first time a section is at least half visible, once
-per section per page view. It is **off unless a page asks for it** with
-`trackSections: true` in that page's `page.yml`, because every section of every
-page is a volume of data most sites have no question for.
+per section per page view. It is in the default `emit` for
+your own endpoint, and `trackSections` in a page's `page.yml` overrides the site in
+either direction, since its cost grows with the length of the page.
 
 Everything else is sent by components. Two ship with the framework's component
 kit, so they are worth recognising if you build a dashboard:
@@ -920,7 +920,7 @@ kit, so they are worth recognising if you build a dashboard:
 | --- | --- | --- |
 | `page_view` | the runtime, automatically | `path`, `first_of_load?`, `continues?`, `referrer?`, `utm_*?` |
 | `outbound_click` | the runtime, automatically | `hostname` |
-| `section_view` | the runtime, on pages with `trackSections` | `section`, `section_id` |
+| `section_view` | the runtime, unless `emit` or a page's `trackSections` says no | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
 | `read_depth` | `useReadingDepth()` in a long section | `depth` — 25, 50, 75, 100 |
 | `conversion` | see below | `name` |

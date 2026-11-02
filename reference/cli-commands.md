@@ -1171,7 +1171,7 @@ A registered version is immutable, so there is **no registry-rename flag**. To r
 
 ### Foundation runtime policy
 
-A foundation's build records the `@uniweb/runtime` version it actually linked against — read from `node_modules`, not chosen — into `dist/runtime-pin.json`, and `uniweb register` sends it with the foundation, so the version it built against travels with it. (What consumes that is covered below: today it is carried, not enforced.)
+A foundation's build records the `@uniweb/runtime` version it actually linked against — read from `node_modules`, not chosen — into `dist/runtime-pin.json`, and `uniweb register` sends it with the foundation, so the version it built against travels with it. (What that version is for is covered below.)
 
 **There is nothing to declare for this.** Whether two runtime versions are compatible is determined by the framework, not by a per-foundation setting: a foundation author has no way to evaluate whether anything their code can reach has changed between two runtime releases.
 
@@ -1187,9 +1187,7 @@ A foundation's build records the `@uniweb/runtime` version it actually linked ag
 }
 ```
 
-That freezes sites using the foundation on the recorded version. Use it only when one of those two things is true: a frozen foundation stops receiving runtime fixes, including security ones. Sites cannot override the choice.
-
-The field is emitted into `dist/runtime-pin.json` alongside the resolved runtime version:
+The field is emitted into `dist/runtime-pin.json` alongside the resolved runtime version. It is not sent at register, and the framework does not act on it; whether a host reads the file is that host's to say:
 
 ```json
 // dist/runtime-pin.json (auto-generated)
@@ -1204,11 +1202,11 @@ The field is emitted into `dist/runtime-pin.json` alongside the resolved runtime
 
 This is the part that is easy to read backwards, so it is worth stating plainly.
 
-`runtime-pin.json` **records what your build binds to**. It does not choose the runtime a site runs, and structurally it cannot: a site loads a primary foundation **plus any extensions**, and each of those emits its own pin — while a site has exactly **one** runtime. **Pins are plural; the choice is singular.** The runtime a site runs is selected by `site.yml::runtime`.
+`runtime-pin.json` **records what your build binds to**. It does not choose the runtime a site runs, and structurally it cannot: a site loads a primary foundation **plus any extensions**, and each of those emits its own pin — while a site has exactly **one** runtime. **Pins are plural; the choice is singular.** The runtime a site runs is the host's to select.
 
 The pin's use is **validation**: checking that a site's chosen runtime satisfies the floor of *every* foundation that site loads. That is `max()` over the primary foundation's floor and each extension's — so only something holding all of them can compute it, which is why it is not done at build time.
 
-`uniweb register` reads the pin and carries it with the foundation, so a floor stated at build time reaches whatever resolves the site later. ⚠️ **The check itself is not implemented anywhere yet** — today the floor is stated and carried, not enforced. Declare `runtimePolicy` for when it lands; don't design around it having an effect now.
+`uniweb register` reads the pin and carries it with the foundation, so a floor stated at build time reaches whatever resolves the site later. The framework states the floor and carries it; acting on it is the host's. Don't design around `runtimePolicy` having an effect.
 
 #### What happens when fields aren't set
 

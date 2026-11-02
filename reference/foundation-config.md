@@ -50,7 +50,7 @@ The `uniweb` block in `package.json` carries platform-specific configuration tha
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `runtimePolicy` | `"exact"` | (unset) | **Escape hatch, rarely needed.** Sites using this foundation are given a compatible runtime automatically; compatibility is the framework's determination, not a per-foundation setting. Set `"exact"` only if the foundation depends on undocumented runtime internals or was audited against exactly one runtime build — it freezes sites on the recorded version and they stop receiving runtime fixes. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy). |
+| `runtimePolicy` | `"exact"` | (unset) | **Rarely needed.** A statement that the foundation depends on undocumented runtime internals, or was audited against exactly one runtime build. It is recorded in `dist/runtime-pin.json` and not sent at register: the framework does not act on it, and whether a host reads the file is that host's to say. See [`uniweb register`](./cli-commands.md#foundation-runtime-policy). |
 
 > **Removed:** `uniweb.id`, which set the registered name from `package.json`, and `uniweb.scope`, which set the organization it registers under. Both live in `main.js`'s `name` now (`name: '@acme/marketing'`); `uniweb register` refuses a leftover and says what to write instead. (A schemas-only package, which has no `main.js`, still records its scope in `uniweb.scope` — see [`uniweb register`](./cli-commands.md#scope).)
 

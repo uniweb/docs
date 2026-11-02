@@ -37,7 +37,7 @@ uniweb build
 uniweb i18n extract
 ```
 
-This scans your built content and generates `locales/manifest.json` with all translatable strings keyed by content hash.
+This reads your pages from their source files, and your records from what a build leaves in `public/data/`, and generates `locales/manifest.json` with all translatable strings keyed by content hash.
 
 ### 4. Initialize Language Files
 
