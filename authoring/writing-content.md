@@ -381,6 +381,8 @@ flowchart LR
 
 Whether the page draws it depends on the site's foundation. Where it doesn't, readers see the text as a code block. A diagram with a mistake in its syntax also stays text, which is how you'll notice one.
 
+Leave colors out of a diagram and it takes the site's, in light and dark. A color you set stays that color in both, so a pale `fill` makes its labels hard to read on a dark page.
+
 ---
 
 ## Styling Text

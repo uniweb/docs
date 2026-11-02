@@ -1320,7 +1320,7 @@ The prerendered page holds the source as a code block, since drawing takes a bro
 
 #### Colors and fonts
 
-Colors come from the section's tokens where the diagram sits (`--section`, `--card`, `--body`, `--subtle`, `--border`, and the `--primary-*` and `--secondary-*` shades for a pie chart), so it follows `theme.yml`, the section's context and the visitor's scheme, and it's drawn again when the scheme changes. A diagram can still choose its own: a `classDef` for its nodes, or a `%%{init: {"theme": "forest"}}%%` line. Mermaid only reads `themeVariables` in that line when it also names a theme. Labels use the system font, because a picture can't reach a site's web fonts.
+Colors come from the section's tokens where the diagram sits (`--section`, `--card`, `--body`, `--subtle`, `--border`, and the `--primary-*` and `--secondary-*` shades for a pie chart), so it follows `theme.yml`, the section's context and the visitor's scheme, and it's drawn again when the scheme changes. A diagram can still choose its own: a `classDef` for its nodes, or a `%%{init: {"theme": "forest"}}%%` line. Mermaid only reads `themeVariables` in that line when it also names a theme. A color a diagram sets stays that color in every scheme, so a pale `fill` with no `color` leaves its labels unreadable on a dark page. Labels use the system font, because a picture can't reach a site's web fonts.
 
 #### It is a picture
 

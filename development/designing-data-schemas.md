@@ -269,7 +269,7 @@ flowchart LR
   student -.->|buys| course
   purchase -.->|grants access to| course
   progress -.->|tracks| course
-  classDef notcontent fill:#f6f4ff,stroke-dasharray:5 5
+  classDef notcontent stroke-dasharray:5 5
   class backend,student,purchase,progress notcontent
 ```
 
