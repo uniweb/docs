@@ -1149,9 +1149,9 @@ services:
 For both, `id` takes a list: `id: [G-XXXXXXXXXX, GTM-XXXXXXX]`. If your container already sends to
 that Measurement ID, list only the container, so pages aren't counted twice.
 
-This needs no code and no `head.html`, so it works on any foundation, and it takes effect at your
-next `uniweb publish`. The app's site settings edit the same entry, and a pull or a push carries a
-change across. `enabled: false` beside `id` turns it off and keeps the ID.
+This is free and needs no code and no `head.html`, so it works on any foundation, and it takes effect
+at your next `uniweb publish`. The app's site settings don't offer it yet, so set it in `site.yml`.
+`enabled: false` beside `id` turns it off and keeps the ID.
 
 - **It is separate from `services.tracking`.** It asks your host for nothing else, and nothing you
   `track()` reaches Google.

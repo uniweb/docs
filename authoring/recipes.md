@@ -896,7 +896,7 @@ has to run from your foundation's code, which takes someone who can change the f
 
 ### Google Analytics or Tag Manager on Uniweb Cloud
 
-Name the ID, in `site.yml` or in the app's site settings:
+Name the ID in `site.yml`:
 
 ```yaml
 # site.yml
@@ -905,9 +905,8 @@ services:
     id: G-XXXXXXXXXX     # or GTM-XXXXXXX for a Tag Manager container
 ```
 
-Your host loads Google's tag from your next publish on, with no code and no `head.html`. A pull or a
-push keeps the file and the app the same. To check it, visit from a browser that doesn't block
-trackers: from Brave, say, nothing reaches Google. For a container,
+Your host loads Google's tag from your next publish on, for free, with no code and no `head.html`. To
+check it, visit from a browser that doesn't block trackers: from Brave, say, nothing reaches Google. For a container,
 [Tag Assistant](https://tagassistant.google.com/) shows the tags that fired. See
 [Google Analytics and Tag Manager](../reference/site-configuration.md#google-analytics-and-tag-manager)
 for the rest, including consent.

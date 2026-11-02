@@ -26,7 +26,7 @@ Without a global install, run it in the project as `npx uniweb guide`. The guide
 | [`theme`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/theme.md) | change colors, fonts, light/dark, tokens, `styles.css` |
 | [`start`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/start.md) | start a project, grow the workspace, learn from a template |
 | [`data`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/data.md) | work with records, queries, `[slug]` pages, external APIs, schemas, Loom |
-| [`services`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/services.md) | add search, forms, tracking, an assistant |
+| [`services`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/services.md) | add search, forms, tracking, Google Analytics or Tag Manager, an assistant |
 | [`backend`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/backend.md) | have a site with accounts or member data |
 | [`i18n`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/i18n.md) | add a language |
 | [`ship`](https://cdn.jsdelivr.net/npm/uniweb@latest/partials/guides/ship.md) | publish, deploy, push/pull, register, set up CI, update |
