@@ -7,10 +7,10 @@ Every Uniweb project has an `AGENTS.md` at its root: the manual for that project
 ```bash
 uniweb guide               # list the guides
 uniweb guide content       # print one
-uniweb guide theme --path  # print where its file is, for a tool that cuts long output
+uniweb guide theme --path  # print where its file is
 ```
 
-Without a global install, run it in the project as `npx uniweb guide`. The guides ship with the CLI, so in a project they describe the version the project pins, and [`uniweb update`](./cli-commands.md#uniweb-update) moves them forward along with `AGENTS.md`.
+Without a global install, run it in the project as `npx uniweb guide`. A tool that cuts long output can take the path and read the file instead. The guides ship with the CLI, so in a project they describe the version the project pins, and [`uniweb update`](./cli-commands.md#uniweb-update) moves them forward along with `AGENTS.md`.
 
 `AGENTS.md` tries to fit the limits tools set on instruction files, such as Codex's `project_doc_max_bytes`, but a tool may still cut it. Near its top it says how to tell: it ends with the line `End of AGENTS.md`, and an agent that can't see that line should read the rest of the file itself.
 
