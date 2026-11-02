@@ -1181,7 +1181,7 @@ It fills the nearest positioned ancestor, so place it inside an element with `po
 
 ### Render vs Prose
 
-`<Prose>` is `<Render>` inside a typography container: one walk over the same content, plus the `prose` classes that style what it emits. Both read the parsed sequence (`content.sequence`) — or parse the ProseMirror document they are given, or the block's — and both render every kind of element a section holds, tables, callouts, insets, icons and math included. Tagged data blocks are left out of both: a component reads them from `content.data`.
+`<Prose>` is `<Render>` inside a typography container: one walk over the same content, plus the `prose` classes that style what it emits. Both read the parsed sequence (`content.sequence`) — or parse the ProseMirror document they are given, or the block's — and both render every kind of element a section holds, tables, callouts, insets, icons and math included. Tagged data blocks are left out of both: a component reads them from `content.data`, or [draws them in place](#drawing-an-element-your-own-way).
 
 | | `<Render>` | `<Prose>` |
 |---|---|---|
@@ -1216,6 +1216,41 @@ export default function Lesson({ content, block }) {
 ```
 
 The sequence is the section as written, headline included — so a component that draws `content.title` itself renders it twice if it also hands the whole sequence to either one.
+
+#### Drawing an element your own way
+
+Pass `components` to replace how one type of element is drawn, and kit keeps drawing the rest. `Render`, `Prose`, `Article` and `Section` all take it. An entry is keyed by the element's type and receives `{ element, block, children }`, where `children` holds the rendered contents of a container.
+
+| Type | What the author wrote | What it receives |
+|---|---|---|
+| `codeBlock` | A fence with a language | `element.text`, `element.attrs.language` |
+| `dataBlock` | A tagged fence, such as ` ```json:quiz ` | `element.tag`, `element.data` |
+| `concept_block` | A ` ```md:faq ` fence | `element.tag`, `children` |
+| `blockquote`, `table`, `image`, … | The rest of the vocabulary | `element`, and `children` for a container |
+
+```jsx
+import { Prose, Code, Mermaid } from '@uniweb/kit'
+
+// A fence by its language: everything else stays kit's
+function CodeBlock({ element: { text, attrs } }) {
+  return attrs?.language === 'mermaid'
+    ? <Mermaid source={text} />
+    : <Code content={text} language={attrs?.language} />
+}
+
+// A data block where the author put it, among the prose
+function Block({ element }) {
+  return element.tag === 'quiz' ? <Quiz data={element.data} /> : null
+}
+
+const components = { codeBlock: CodeBlock, dataBlock: Block }
+
+export default function Lesson({ content, block }) {
+  return <Prose content={content} block={block} components={components} />
+}
+```
+
+A foundation that wants the same everywhere wraps `Prose` once in a component of its own and uses that in its sections.
 
 #### Both need the prose stylesheet
 
@@ -1256,6 +1291,44 @@ sections sit in with Tailwind's `@container` class (`container-type: inline-size
 it rather than the viewport, or set `--prose-full-width`. A component built on them declares
 `sequence: { placement: true }` in its `meta.js`, so a visual editor offers its authors all four
 ([Sequence](./component-metadata.md#sequence--content-rendered-as-written)).
+
+### Mermaid
+
+Draws a diagram from its [Mermaid](https://mermaid.js.org/) source. It's your foundation's choice: nothing in kit draws one on its own, so a ` ```mermaid ` fence is a code block until you pass it here. For a fence among the prose, use [`components`](#drawing-an-element-your-own-way):
+
+```jsx
+<Prose content={content} block={block} components={{ codeBlock: CodeBlock }} />
+```
+
+For a diagram in a slot of its own, an author writes a tagged fence such as ` ```mermaid:flow `, and the section declares `flow` in `meta.js` and draws it:
+
+```jsx
+<Mermaid source={content.data.flow} />
+```
+
+#### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `source` | `string` | The diagram's text |
+| `alt` | `string` | What the picture says, for someone who can't see it. Defaults to the diagram's own `accTitle` and `accDescr`, else its source |
+| `className` | `string` | Classes on the `<figure data-kind="diagram">` |
+
+#### What a reader meets
+
+The prerendered page holds the source as a code block, since drawing takes a browser. It's what a crawler and a reader without JavaScript get. When the block comes near the view, the engine loads and the diagram replaces the code. The page can move at that moment, by the difference in height. A diagram with a syntax error stays code and leaves a note in the console.
+
+#### Colors and fonts
+
+Colors come from the section's tokens where the diagram sits (`--section`, `--card`, `--body`, `--subtle`, `--border`, and the `--primary-*` and `--secondary-*` shades for a pie chart), so it follows `theme.yml`, the section's context and the visitor's scheme, and it's drawn again when the scheme changes. A `%%{init: …}%%` line in the diagram still wins. Labels use the system font, because a picture can't reach a site's web fonts.
+
+#### It is a picture
+
+A diagram's source is content, and whoever wrote it may not be the person who wrote the foundation. So the engine runs in a sandboxed frame with no access to the page, its cookies or its storage, and what it draws is shown as an `<img>`, which can't run a script or style the page. A diagram's nodes therefore can't be clicked, and its text can't be selected.
+
+#### What it costs
+
+A foundation that doesn't import `Mermaid` carries nothing of it. One that does adds about 3 KB, gzipped, and no files to what it registers, because the engine isn't bundled: a page loads an exact release from a public CDN, once, when its first diagram comes near the view. That was about 650 KB for a flowchart on a `docs` page. A page with no diagram loads none of it.
 
 ---
 

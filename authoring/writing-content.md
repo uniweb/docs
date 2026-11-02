@@ -367,6 +367,20 @@ tiers:
 
 Code blocks without a tag (just `` ```js `` or `` ```python ``) are code snippets — display content that shows formatted code on the page with syntax highlighting. They don't get parsed as data.
 
+### Diagrams
+
+A code block in the `mermaid` language holds a diagram, in [Mermaid](https://mermaid.js.org/intro/)'s text syntax, the same text GitHub draws:
+
+````markdown
+```mermaid
+flowchart LR
+  write[Write the page] --> preview[Preview it]
+  preview --> publish[Publish]
+```
+````
+
+Whether the page draws it depends on the site's foundation. Where it doesn't, readers see the text as a code block. A diagram with a mistake in its syntax also stays text, which is how you'll notice one.
+
 ---
 
 ## Styling Text

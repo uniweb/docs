@@ -1292,6 +1292,12 @@ content.snippets[0]
 
 The `language` attribute is a display hint for syntax highlighting renderers, not a parsing format. Filter by language when needed: `content.snippets.filter(s => s.language === 'css')`.
 
+### Diagrams
+
+A ` ```mermaid ` fence is a code snippet like any other, and the same text GitHub draws as a diagram. Whether a page draws it is the foundation's choice, with kit's [`Mermaid`](./kit-reference.md#mermaid); on a site that doesn't, it shows as code.
+
+For a diagram in a slot of its own, give the fence a tag. ` ```mermaid:flow ` isn't a snippet: its text is the value of `content.data.flow`, for a section that declares `flow`, since a tag on a language the reader can't parse keeps the text as written.
+
 ### The Distinction
 
 | | Tagged data blocks | Code snippets |
