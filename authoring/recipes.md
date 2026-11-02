@@ -907,9 +907,10 @@ services:
 
 Your host loads Google's tag from your next publish on, with no code and no `head.html`. A pull or a
 push keeps the file and the app the same. To check it, visit from a browser that doesn't block
-trackers: from Brave, say, nothing reaches Google. See
+trackers: from Brave, say, nothing reaches Google. A mistyped `GTM-` ID gives no error, so check a
+container with [Tag Assistant](https://tagassistant.google.com/). See
 [Google Analytics and Tag Manager](../reference/site-configuration.md#google-analytics-and-tag-manager)
-for the rest, including consent.
+for the rest, including consent, and which Tag Manager triggers run on every page.
 
 ### Google Analytics through `head.html`
 
@@ -933,6 +934,9 @@ Replace `G-XXXXXXXXXX` with your Measurement ID (found in Google Analytics → A
 The same file, with the first of the two snippets Google gives you for your `GTM-XXXXXXX` container.
 The second is a `<noscript>` block meant for just after `<body>`, which `head.html` can't reach, so
 leave it out. It only does anything for a visitor with JavaScript off.
+
+Moving between a site's pages doesn't reload the document, so a tag on *All Pages* runs only on the
+page a visit starts on. To run a tag on every page, give it a *History Change* trigger as well.
 
 ### Multiple scripts
 

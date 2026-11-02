@@ -1146,7 +1146,9 @@ services:
     id: G-XXXXXXXXXX       # a Measurement ID, or GTM-XXXXXXX for a Tag Manager container
 ```
 
-For both, `id` takes a list: `id: [G-XXXXXXXXXX, GTM-XXXXXXX]`.
+For both, `id` takes a list: `id: [G-XXXXXXXXXX, GTM-XXXXXXX]`. List two only when they send to
+different places. A container that also sends to the Measurement ID beside it competes with it: a
+landing page can count twice, and the container's own tags can fail to fire.
 
 This needs no code and no `head.html`, so it works on any foundation, and it takes effect at your
 next `uniweb publish`. The app's site settings edit the same entry, and a pull or a push carries a
@@ -1173,7 +1175,18 @@ and the entry does nothing. Paste Google's snippet into [`head.html`](#custom-he
 
 **In-app navigation** does not reload the page. Google Analytics counts it as a page view through
 Enhanced measurement, in your data stream's settings: the page-view option has an advanced setting
-for browser-history events, which has to be on.
+for browser-history events, which has to be on. A new stream has it on.
+
+A Google Analytics tag inside a Tag Manager container counts in-app navigation the same way. Any
+other tag on *All Pages* runs once per page load, on the page a visit starts on. To run it on every
+page, give it a *History Change* trigger as well. That trigger fires before the new page's title is
+set, so the tag reads the new page's path and the previous page's title.
+
+**To check a Tag Manager install,** use [Tag Assistant](https://tagassistant.google.com/), which
+connects to a published page and lists the tags that fired. A mistyped `GTM-` ID gives no error:
+Google answers any well-formed ID with an empty container, which loads and tracks nothing. After you
+publish a new container version, a browser that visited recently can run the previous one for up to
+15 minutes, the time Google lets it keep a copy.
 
 ### What is and isn't stored
 
