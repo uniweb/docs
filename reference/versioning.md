@@ -62,7 +62,8 @@ These come with a foundation built on `useVersion`, like the `docs` template's:
 Some things work for any foundation:
 
 - **Search on the site keeps to the version being read.** A reader on an older version who searches for something that version doesn't have gets results from the latest. A host's search service decides what it indexes, and if it holds no older versions, readers on them get the latest's results.
-- **Search engines, the sitemap and `llms.txt` get the latest.** A folder's `noindex` covers every page in it. The exception is a version folder with content of its own, whose `noindex` speaks only for that page. For one of those, `uniweb add version` writes it on each page of the copy, and a page you add to that version later needs it too.
+- **Search engines get the latest.** A folder's `noindex` covers every page in it. The exception is a version folder with content of its own, whose `noindex` speaks only for that page. For one of those, `uniweb add version` writes it on each page of the copy, and a page you add to that version later needs it too.
+- **A site you build leaves older versions out of its sitemap and `llms.txt`.** A host that writes those files itself decides what they list.
 
 A foundation that doesn't use `useVersion` shows a version folder as an ordinary group of pages in its menus, so its pages are still reachable.
 
