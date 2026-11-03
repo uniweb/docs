@@ -923,7 +923,7 @@ kit, so they are worth recognising if you build a dashboard:
 | `section_view` | the runtime, unless `emit` or a page's `trackSections` says no | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
 | `read_depth` | `useReadingDepth()` in a long section | `depth` — 25, 50, 75, 100 |
-| `conversion` | see below | `name` |
+| `conversion` | see below | `name`, `landing?` |
 | `engagement` | see below | `name` |
 
 Any other event name is one a component chose; there is no list of permitted
@@ -934,7 +934,8 @@ names. See the AGENTS.md guide in your project for the component side.
 `conversion` says a visitor did something this site counts. `engagement` says
 they did something worth knowing that is not a result in itself. Both carry
 **`name`**, and nothing of their own beyond it: a phone number, an email address,
-a link and a form's fields all stay on the page.
+a link and a form's fields all stay on the page. A conversion can also carry how
+the visitor arrived, when you ask for it (`landing`, below).
 
 Some are reported with no code in your foundation:
 
@@ -982,6 +983,27 @@ Keep names short, since a collector may cut a long one, and use one name for eac
 thing a report should count. A tap, a listed link, a listed page and an act reported
 with `trackAction` count once per page load, so a double tap is one; a reload is a new
 page load.
+
+**A conversion can carry how the visitor arrived.** Name the query keys of the
+address a visitor arrives at, and each `conversion` carries their values as
+`landing`, for the keys that address had:
+
+```yaml
+services:
+  tracking:
+    landing: [utm_source, utm_medium, utm_campaign, utm_content, utm_term]
+```
+
+```json
+{ "event": "conversion", "visit": "b3f1…", "path": "/pricing", "name": "signup",
+  "landing": { "utm_source": "newsletter", "utm_campaign": "spring" } }
+```
+
+The values are read once, when the page first loads, and kept in memory for that page
+load, so a conversion on a later page still carries them. Only the keys you name are
+read, and only a `conversion` carries them. A query can hold a search term or a
+token, so name only what your collector needs. Where your host supplies the
+collector it may name the keys itself; a list of your own replaces its.
 
 **What `emit` does here.** The events with no code above are part of `all`, and
 `standard` leaves them out. Where your host supplies the collector they are sent
