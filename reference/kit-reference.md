@@ -700,6 +700,29 @@ failure or a false success.
 
 ---
 
+### trackAction
+
+Report something a visitor did in a section, counted the way the section's author
+chose: a `conversion` when `converts` is `true`, an `engagement` otherwise.
+
+```jsx
+import { trackAction } from '@uniweb/kit'
+
+<CopyButton onCopied={() => trackAction(block, 'command_copied', params.copyConverts)} />
+```
+
+| Argument | |
+|---|---|
+| `block` | the section's block. The page, the section type and the section are attached from it |
+| `name` | what the visitor did, such as `command_copied`. The only field sent |
+| `converts` | the section's param saying whether this counts as a conversion. Only `true` does |
+
+It reports each name once per page load, so a second copy is the same copy. With no
+tracking destination it does nothing, so a call needs no guard. How to offer the choice
+to an author: [What Counts as a Conversion](../development/component-patterns.md#what-counts-as-a-conversion).
+
+---
+
 ### Service predicates
 
 One per service, no arguments. Call one **before rendering UI for that service**; `false` means

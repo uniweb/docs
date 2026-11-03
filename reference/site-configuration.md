@@ -969,15 +969,19 @@ every page's data, so anyone can read each `link`. A query isn't compared, so le
 any token out of it. And like any `tracking` entry with no endpoint, it asks your
 host for its collector.
 
-**A component sends its own:**
+**A component sends its own**, for what only it can see. A section can let its author
+choose whether an act counts as a conversion, with kit's `trackAction`
+([What Counts as a Conversion](../development/component-patterns.md#what-counts-as-a-conversion)):
 
 ```jsx
-block.track('conversion', { name: 'quote_requested' })
+trackAction(block, 'command_copied', params.copyConverts) // a conversion, or an engagement when the author says no
+block.track('conversion', { name: 'quote_requested' })    // always a conversion
 ```
 
 Keep names short, since a collector may cut a long one, and use one name for each
-thing a report should count. A tap, a listed link and a listed page count once per
-page load, so a double tap is one; a reload is a new page load.
+thing a report should count. A tap, a listed link, a listed page and an act reported
+with `trackAction` count once per page load, so a double tap is one; a reload is a new
+page load.
 
 **What `emit` does here.** The events with no code above are part of `all`, and
 `standard` leaves them out. Where your host supplies the collector they are sent

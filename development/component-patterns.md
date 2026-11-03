@@ -669,6 +669,42 @@ But — as discussed in the [Front Desk Pattern](#the-front-desk-pattern) sectio
 
 ---
 
+## What Counts as a Conversion
+
+A visitor does things in your sections: copies a command, watches a video, works out a quote. Which of those is a *result* for the site — a conversion, what its campaigns are judged by — depends on the site, not on the component. A video in a Hero is the point of one landing page and decoration on another. So let the author decide, the way params let them decide everything else.
+
+Declare one boolean param for each act your section can report, labeled in the author's words, and turned on by default for the act the section exists for:
+
+```js
+// meta.js
+params: {
+  copyConverts: {
+    type: 'boolean',
+    label: 'Copying the command is a conversion',
+    hint: 'Off, a copy is still counted, as an engagement',
+    default: true,
+  },
+}
+```
+
+Then report the act with kit's `trackAction`:
+
+```jsx
+import { trackAction } from '@uniweb/kit'
+
+<CopyButton onCopied={() => trackAction(block, 'command_copied', params.copyConverts)} />
+```
+
+With the param on, the act is a `conversion`. Off, it's an `engagement`: something worth knowing that isn't a result in itself, so it's still counted without inflating a conversion rate. Each name counts once per page load, so a second copy is the same copy. The author names nothing and sets up no event: the page, the section type and the section come from the block.
+
+- **Name the act, not the section**: `command_copied`, `video_watched`, `quote_requested`. Use the same name in every section that offers the same act, so the two add up. Keep it short, since a collector may cut a long one, and keep anything that varies out of it.
+- **Report the act that shows intent**: a copy that worked, a video watched past halfway, a quote worked out. Not a hover, and not a press of play.
+- **Don't add a param for a link.** A link counts by its address in the site's [`conversions` list](../reference/site-configuration.md#conversions-and-engagements), wherever it appears, and a param on top of that would count one click twice.
+- **Don't report what is reported already**: a tap on a phone number or an email address, a form sent through `useFormSubmit`, a sign-up through `@uniweb/api`.
+- **Turn it on by default only for what the section is for.** Copying is the point of a command box. Playing a video in a Hero usually isn't, so that one starts off.
+
+---
+
 ## Page Layout
 
 The runtime's default Layout renders every page as three areas — `<header>`, `<main>`, `<footer>` — stacked vertically. Sections within each area render sequentially. This is what you get without any configuration:
