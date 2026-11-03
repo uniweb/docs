@@ -1084,8 +1084,9 @@ function EventGrid({ content, block }) {
 |------|------|---------|-------------|
 | `lines` | number | `3` | Number of placeholder bars to render |
 | `className` | string | `''` | Additional CSS classes |
+| `label` | string | none | A word for a screen reader, when you have one |
 
-Uses `animate-pulse` and the `--border` CSS variable for styling. Includes `role="status"` and `aria-label="Loading"` for accessibility.
+Uses `animate-pulse` and the `--border` CSS variable for styling. Says `role="status"` and `aria-busy="true"` for accessibility.
 
 ### Visual
 
@@ -1354,13 +1355,14 @@ It takes the same place in `Render`, `Article` and `Section`, beside whatever el
 | `children` | `node` | The picture: anything that draws one `<img>` |
 | `minScale` | `number` | The smallest it opens at, against its own size, for a picture with words in it. Past that the reader scrolls. `Mermaid` passes `0.75`. Without it, a picture fits the window |
 | `disabled` | `boolean` | Draw the picture and offer nothing |
-| `labels` | `object` | `{ enlarge, enlarged, close }`, what a screen reader calls the button, the open picture and its close button, in a language kit doesn't say them in. Kit says them in English and French |
 
 #### What a reader meets
 
 A small button in the picture's corner, and a zoom cursor over it, once the picture has loaded. The picture opens above the page, and Escape, a click outside it or its close button puts it away. It opens as large as the window allows, up to its own size. When that wouldn't show anything new, as with a wide picture on a phone, it opens at its own size and the reader pans across it.
 
 It's offered only when opening shows the picture at least 1.2 times as large as the page does. So an icon, a photo already at its size and a picture inside a link get nothing. The prerendered page doesn't change, since the button comes after the browser has measured.
+
+It says nothing of its own, so it works in any language. A screen reader hears the button and the open picture named by what the author wrote: the picture's alt text, or the heading above it when the alt is too long to be a name, as a diagram's source is. The button's role says it opens a dialog, and the close button is a `×`. A picture with no alt and no heading above it has nothing to be named by, so its button stays a target for a pointer and a screen reader doesn't meet it. Give a picture an alt.
 
 #### Styling
 
@@ -1616,6 +1618,24 @@ function Navigation() {
   )
 }
 ```
+
+With no `title`, a link to a social service, an email address or a phone number shows that name, address or number as its tooltip. Any other link has none, and its text says where it goes. A link holding only an icon should get its name from you, through `aria-label` or `title`.
+
+---
+
+## Words
+
+Kit is bundled into foundations for sites in any language, so its components bring no words of their own. They use what the author wrote, a role or a symbol. Where a word would help, a component takes it as a prop, and where that word comes from is your foundation's to decide: a constant for a foundation made for one site, or the site's content for one made for many.
+
+| Component | Prop | Without it |
+|-----------|------|------------|
+| `Media` | `playLabel` | The play button is named by the video's caption or alt text, or `▶` |
+| `Asset` | `downloadLabel` | The download button is named by the file |
+| `Disclaimer` | `closeLabel` | A `×` at the top, and no button at the foot |
+| `Prose` | `footnoteBackLabel` | A footnote's link back is the `↩` it shows, with `role="doc-backlink"` |
+| `DataPlaceholder` | `label` | `role="status"` and `aria-busy="true"` |
+
+Cross-references are the one place kit holds words, because they're typography: `book.xrefStyle` picks a named style, as a citation style does, and `book.xref.<kind>` or a foundation's `xref.kinds` replaces any of them.
 
 ---
 
