@@ -1313,6 +1313,7 @@ For a diagram in a slot of its own, an author writes a tagged fence such as ` ``
 | `source` | `string` | The diagram's text |
 | `alt` | `string` | What the picture says, for someone who can't see it. Defaults to the diagram's own `accTitle` and `accDescr`, else its source |
 | `className` | `string` | Classes on the `<figure data-kind="diagram">` |
+| `enlarge` | `boolean` | Offer to open it larger when the page shows it smaller than it was drawn, with [`Enlargeable`](#enlargeable). On by default |
 
 #### What a reader meets
 
@@ -1328,7 +1329,46 @@ A diagram's source is content, and whoever wrote it may not be the person who wr
 
 #### What it costs
 
-A foundation that doesn't import `Mermaid` carries nothing of it. One that does adds about 3 KB, gzipped, and no files to what it registers, because the engine isn't bundled: a page loads an exact release from a public CDN, once, when its first diagram comes near the view. That was about 650 KB for a flowchart on a `docs` page. A page with no diagram loads none of it.
+A foundation that doesn't import `Mermaid` carries nothing of it. One that does adds about 5 KB, gzipped, and no files to what it registers, because the engine isn't bundled: a page loads an exact release from a public CDN, once, when its first diagram comes near the view. That was about 650 KB for a flowchart on a `docs` page. A page with no diagram loads none of it.
+
+### Enlargeable
+
+A picture a reader can open larger. A column shows a wide picture much smaller than it was made, and on a phone a diagram's labels can come to a few pixels, so this puts the same picture over the page at a size that can be read. `Mermaid` does this on its own. For an image in a page's body, pass `EnlargeableImage` through `components`, which keeps the figure, the caption and the placement:
+
+```jsx
+import { Prose, EnlargeableImage } from '@uniweb/kit'
+
+<Prose content={content} block={block} components={{ image: EnlargeableImage }} />
+```
+
+It takes the same place in `Render`, `Article` and `Section`, beside whatever else you draw your own way. For a picture a section draws itself, put it around that:
+
+```jsx
+<Enlargeable><Image value={content.images[0]} /></Enlargeable>
+```
+
+#### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `node` | The picture: anything that draws one `<img>` |
+| `minScale` | `number` | The smallest it opens at, against its own size, for a picture with words in it. Past that the reader scrolls. `Mermaid` passes `0.75`. Without it, a picture fits the window |
+| `disabled` | `boolean` | Draw the picture and offer nothing |
+| `labels` | `object` | `{ enlarge, close }`, the buttons' names for a screen reader, in a language kit doesn't say them in. Kit says them in English and French |
+
+#### What a reader meets
+
+A small button in the picture's corner, and a zoom cursor over it, once the picture has loaded. The picture opens above the page, and Escape, a click outside it or its close button puts it away. It opens as large as the window allows, up to its own size. When that wouldn't show anything new, as with a wide picture on a phone, it opens at its own size and the reader pans across it.
+
+It's offered only when opening shows the picture at least 1.2 times as large as the page does. So an icon, a photo already at its size and a picture inside a link get nothing. The prerendered page doesn't change, since the button comes after the browser has measured.
+
+#### Styling
+
+`[data-enlargeable]` is the box around the picture, and `[data-enlarged]` is the layer it opens in, which is `Overlay`'s. What opens leaves its section behind, so it takes that section's `--section` for its ground.
+
+#### What it costs
+
+A foundation that doesn't import it carries nothing of it. One that does adds about 2 KB, gzipped, and every foundation that imports `Mermaid` has it.
 
 ---
 
