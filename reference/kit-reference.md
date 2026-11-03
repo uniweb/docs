@@ -1354,7 +1354,7 @@ It takes the same place in `Render`, `Article` and `Section`, beside whatever el
 | `children` | `node` | The picture: anything that draws one `<img>` |
 | `minScale` | `number` | The smallest it opens at, against its own size, for a picture with words in it. Past that the reader scrolls. `Mermaid` passes `0.75`. Without it, a picture fits the window |
 | `disabled` | `boolean` | Draw the picture and offer nothing |
-| `labels` | `object` | `{ enlarge, close }`, the buttons' names for a screen reader, in a language kit doesn't say them in. Kit says them in English and French |
+| `labels` | `object` | `{ enlarge, enlarged, close }`, what a screen reader calls the button, the open picture and its close button, in a language kit doesn't say them in. Kit says them in English and French |
 
 #### What a reader meets
 
