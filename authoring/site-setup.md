@@ -49,6 +49,8 @@ pages/
 └── contact/       → /contact
 ```
 
+A page's name can hold accents and punctuation (`À-propos`, `Equipment-&-Resources`, `Step-1:-install`), but not `?`, `#` or `%`. A web address reads those three as part of its own syntax, so a link to the page would break. The build stops and names the folder, page file or `slug:` that holds one.
+
 ### Setting the Homepage
 
 Tell the site which folder should be the homepage:
