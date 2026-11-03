@@ -8,46 +8,43 @@ This is enabled by default. In browsers that don't support the API, pages swap i
 
 ## What You Get for Free
 
-Without any configuration, every Uniweb site animates navigation — and for layouts with named areas, it does the *right* thing automatically. The runtime gives each rendered area (`header`, `left`, `right`, `footer`, …) its own `view-transition-name`, so the browser animates it on its own, and everything else crossfades as the page:
+Without any configuration, every Uniweb site crossfades the page on navigation:
 
-- **Persistent chrome** — a header, sidebar, or footer that's the same across pages — stays put, no crossfade.
-- **The body** — the part that actually changes — crossfades to the new page.
+- **What changes** — usually the body — crossfades to the new page.
+- **What stays** — a header, sidebar or footer that looks the same and sits in the same place on both pages — doesn't visibly change, because the old page and the new one agree there.
 
-You don't declare anything. A page whose site fills layout areas — `header`, `left`, `right`, `footer` in its `layout/` folder — already gets per-region transitions; the runtime names them `uw-header`, `uw-left`, and so on. A layout with no named areas simply crossfades the page, which is the sensible default.
-
-The `transitions` map below is an **override** for advanced cases — you don't need it for the common "header stays, content crossfades" effect.
+You don't declare anything. A bar that is `fixed` or sticky stays steady the same way.
 
 ---
 
-## Overriding the Defaults
+## Naming an Area
 
-Add a `transitions` map to a layout's `meta.js` only when you want to *change* the automatic names — to pick CSS-friendly names, group areas across different layouts (see below), or opt a region out:
+A name takes an area out of the page's crossfade: the browser captures it on its own and animates it from where it was on screen to where it lands. Add a `transitions` map to a layout's `meta.js` when you want that movement — an area that changes shape between two layouts (see below) — or to style an area's animation in CSS:
 
 ```js
 // src/layouts/DocsLayout/meta.js
 export default {
   areas: ['header', 'footer', 'left', 'right'],
   transitions: {
-    header: 'header',
     left: 'sidebar',
-    footer: 'footer',
   },
 }
 ```
 
-The keys are area names (`header`, `body`, `left`, `footer`). The values are `view-transition-name` CSS identifiers. The runtime wraps each area in a thin `<div>` with that name, so the browser can track and animate them independently.
+The keys are area names (`header`, `body`, `left`, `footer`). The values are `view-transition-name` CSS identifiers. The runtime puts the name on the thin `<div>` it wraps the area in, so the browser can track and animate it independently.
 
-With this in place, same-layout navigation (page to page within docs) looks like this:
-- **Header** — same name, same position → stays put, no animation
-- **Sidebar** — same name, same position → stays put
-- **Body** — content changes → crossfades
-- **Footer** — same name → stays put
+### What a Name Costs
 
-The user sees only the main content area transition. Everything else is visually static. It feels like just the article content changing — smooth and fast.
+A name changes what the browser does with that box, so name only what you mean to move:
+
+- **The box moves.** A navigation resets the scroll, so a box that scrolls with the page lands somewhere else, and everything in it goes along. A bar that is `fixed` inside such a box drops through the page and comes back from above. A visible footer slides off the bottom of the screen.
+- **The box is captured at its own size.** A box with no height is captured as nothing, whatever overflows it, so a bar that overlays the page — `fixed`, or `absolute` in a box it doesn't fill — is gone for the length of the transition.
+- **The box cuts off what's behind it.** A named element is a backdrop root, so a `backdrop-filter` inside it sees nothing past it: a bar's frosted glass blurs nothing, at rest too.
+- **Safari can lose a bar.** In WebKit, a named bar that stays in place, `fixed` or stuck, can fade out over the transition and come back at the end.
 
 ### Naming the Body
 
-The body has no name by default, and crossfades with the page. Give it one (`body: 'main'`) only when it has to morph between layouts, as below, because a name decides what the browser captures. The page is captured at the size of the viewport. A named element is captured as one image: Safari captures all of it, the part off-screen included, at the device's resolution, and paints every filter in it while the page waits. On a phone, a long page makes an image of over 100 MB.
+Give the body a name (`body: 'main'`) only when it has to morph between layouts, as below, because a name decides what the browser captures. The page is captured at the size of the viewport. A named element is captured as one image: Safari captures all of it, the part off-screen included, at the device's resolution, and paints every filter in it while the page waits. On a phone, a long page makes an image of over 100 MB.
 
 Measured on a long marketing page at 3× in WebKit, with a desktop CPU, a tap stalled the main thread for up to 842 ms with a named body and up to 271 ms without. Chromium did not stall at all, which is why this doesn't show on a desktop in Chrome. On an iPhone the same page froze for about 30 seconds.
 
@@ -85,11 +82,10 @@ No custom animation code. The browser handles the spatial interpolation based on
 
 ### Rules
 
-- Every rendered area is given an independent transition automatically, named `uw-<area>`. The page body has none and crossfades with the page. An explicit `transitions` entry replaces a name, or gives the body one.
+- An area or the body has a name only when its layout's `transitions` gives it one. Everything without one crossfades with the page.
 - Transition names must be unique on the page. Two elements with the same `view-transition-name` at the same time causes the transition to be skipped. Elements with `display: none` (like a mobile sidebar hidden on desktop) are excluded from this check.
 - Names are arbitrary CSS identifiers. Use descriptive names (`header`, `main`, `sidebar`) — they appear in devtools.
-- To exclude a region, set its entry to `null` (it folds back into the page crossfade); to drop per-region names for a whole layout, set `transitions: false` (the layout gets one whole-page crossfade).
-- An area with no height of its own has nothing to capture, so the runtime folds it back into the page crossfade for you. That is the usual case for a header that overlays the page: a bar that is `fixed`, or `absolute` in a box it doesn't fill. It stays on screen and crossfades with the page. To have it move on its own, give the bar itself a `view-transition-name`.
+- `transitions: false` gives a layout no names, and takes away the wrapper on its body (see [Stacking](#stacking-which-area-paints-on-top)).
 
 ---
 
@@ -104,15 +100,15 @@ export default {
 }
 ```
 
-This is a foundation-level setting, not site-level, because the foundation is the authority on page structure. To opt out more narrowly instead, set a single region to `null` in a layout's `transitions` map, or set `transitions: false` on the layout to drop per-region names entirely.
+This is a foundation-level setting, not site-level, because the foundation is the authority on page structure.
 
 ---
 
 ## Stacking: which area paints on top
 
-Naming a region has a second consequence that is easy to miss: **`view-transition-name` makes an element a stacking context.** Each area wrapper becomes its own stacking world, and a `z-index` set on something *inside* an area cannot lift it past a different area — no matter how large the number.
+The runtime wraps each area in a thin `<div>`, and that wrapper is easy to miss: **it is a stacking context.** Each area becomes its own stacking world, and a `z-index` set on something *inside* an area cannot lift it past a different area — no matter how large the number.
 
-That matters most for the most ordinary thing a layout has: a sticky or fixed header. Without an order, area wrappers all sit at `auto` and paint in DOM order, so a body rendered after the header paints over it — including over its clicks.
+That matters most for the most ordinary thing a layout has: a sticky or fixed header. Sections routinely form stacking contexts of their own, and without an order the areas and the body paint in DOM order, so a body rendered after the header paints over it — including over its clicks.
 
 **You get a sane order by default.** Every area is stacked above the page body, so chrome sits over content and a fixed header behaves the way you expect. Nothing to declare.
 
@@ -161,7 +157,7 @@ If the page takes longer than a second to arrive (on a slow connection), navigat
 
 ## Customizing Animations with CSS
 
-The browser creates pseudo-elements for each transitioning area that you can style with standard CSS:
+The browser creates pseudo-elements for the page, and for each area you name, that you can style with standard CSS:
 
 ```css
 /* Faster crossfade for the page, the body included */
@@ -177,6 +173,6 @@ The browser creates pseudo-elements for each transitioning area that you can sty
 }
 ```
 
-The names in parentheses match your regions' `view-transition-name`s — the values from your layout's `transitions` map, or the automatic `uw-<area>` names when you haven't set one — and `root` is the page, which holds the body unless your layout names it. If you intend to write this CSS, giving regions explicit names via the `transitions` map keeps the selectors readable. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
+The names in parentheses match the values in your layout's `transitions` map, and `root` is the page, which holds everything you haven't named. This CSS goes in your foundation's `styles.css` or the site's custom CSS.
 
 Without any custom CSS, the browser uses a default ~250ms crossfade — which already looks good for most sites.
