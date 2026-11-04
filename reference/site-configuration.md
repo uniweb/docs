@@ -1456,6 +1456,8 @@ paths:
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
 
+`paths:` belongs to your project, not to the site's content: `uniweb push` does not send it, and `uniweb pull` never changes it. A copy made with `uniweb clone` keeps its pages under its own `pages/` and `layout/`, mounted pages included.
+
 A `pages` directory with its own `folder.yml` or `page.yml` keeps the order and the homepage it declares there, exactly as it would mounted below the root — see [From the Pages Directory](#from-the-pages-directory).
 
 ### Per-Subfolder Mounting
