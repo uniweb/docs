@@ -15,6 +15,7 @@ uniweb/docs/                  # Public repo — content only
 │   └── about-this-docs.md   # ← This file
 ├── authoring/
 ├── development/
+├── marketing/
 ├── reference/
 ├── architecture/
 └── folder.yml

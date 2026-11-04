@@ -785,6 +785,11 @@ services:
 Off unless you set it. With no destination configured, nothing is collected and
 nothing is sent — components that report events simply do nothing.
 
+This section lists every option. What to count and why, and how to set up a
+campaign, are in the guides: [Measuring Visits](../marketing/measuring-visits.md),
+[Conversions and Engagements](../marketing/conversions.md) and
+[Advertising](../marketing/advertising.md).
+
 ### Full Options
 
 ```yaml
