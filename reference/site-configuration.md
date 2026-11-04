@@ -1497,6 +1497,20 @@ layout: DocsLayout        # cascades to every page under /docs
 
 If the mounted directory is empty — an unfetched git submodule, most often — the build says so rather than quietly producing a route with no pages under it. In a production build it fails outright.
 
+#### A mount that is its own repository
+
+A mounted folder in a repository of its own — a git submodule, or a clone beside the site — is read as it is on disk, and nothing moves it for you: a `git pull` of the site leaves a submodule's checkout where it was, and a `uniweb pull` never writes into a mount. The sync commands keep it current:
+
+- [`uniweb status`](cli-commands.md#uniweb-status) says whether it is at the latest of the branch it follows, whether a submodule's checkout is the commit your repository records, and whether it holds uncommitted changes;
+- [`uniweb refresh`](cli-commands.md#uniweb-refresh) takes its latest, and commits a submodule's new pin on its own;
+- [`uniweb push`](cli-commands.md#uniweb-push) and `uniweb publish` stop before sending one that is not current. In a terminal they offer to take its latest first, and `--mounts-as-is` sends it as it is.
+
+The branch a submodule follows is the one `.gitmodules` names for it, else its remote's default branch:
+
+```bash
+git config -f .gitmodules submodule.docs.branch stable   # follow stable instead
+```
+
 ### Use Cases
 
 - **Separate content repo** — Content in a git submodule, maintained by a different team

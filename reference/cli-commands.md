@@ -1293,6 +1293,8 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **In a git repository, a push sends what you have committed.** If the site's content has changes you have not committed, the push is refused before anything is sent, and it lists the files: commit them and push again, or run `uniweb push --commit -m "…"` to commit them first — the site's content only, so anything else you have staged stays staged. The commit a push is made from is where the next pull merges from, yours and a teammate's, which is how that pull tells your changes from the backend's. What the push then writes into your files — the ids the backend assigned, in `sync.json` and in new record files — it commits itself, as `uniweb`. Outside a repository, the files are sent as they are.
 
+**Pages mounted from another repository go only when current.** A page folder that [`paths:` mounts](site-configuration.md#per-subfolder-mounting) from a repository of its own — a git submodule, or a clone beside the site — is sent as it is on disk, and a pull never writes into it. So the push stops when such a folder is not current: behind the latest of the branch it follows, a submodule checked out at a commit other than the one your repository records, or holding changes no commit has. In a terminal it offers to take the latest first, as [`uniweb refresh`](#uniweb-refresh) does; `--yes` takes it without asking. A submodule's checkout ahead of what your repository records is committed with `--commit`. `--mounts-as-is` sends the folders as they are. A remote that cannot be reached is said, and its folder goes as it is.
+
 **What the backend removes from your content, the push names.** The backend stores rich text only as far as a page can show it, and removes the rest as it stores it — a link a page would never follow, a style name that is not one. The push prints each removal beside the file it came from, and says so when this version of Uniweb would have kept it. The file keeps what was removed, so a pull would write the file without it.
 
 **The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
@@ -1351,6 +1353,7 @@ A copy placed outside the workspace cannot be told apart from a teammate's clone
 | `--all` | Send every record (bypass the changed-only cache) |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing |
 | `--commit` | In a git repository, commit the site's content before pushing it — with `-m <message>`, or *Update the site's content* |
+| `--mounts-as-is` | Send the page folders mounted from other repositories as they are, current or not |
 | `--no-release` | Send the content against the foundation version already released; release nothing |
 | `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping |
 | `--foundation <dir>` | Use this local foundation for the data-schema shape |
@@ -1412,19 +1415,22 @@ When the old copy could not sync first, `uniweb status` says the copy shares no 
 
 ## uniweb refresh
 
-Catch up with everything outside your working copy: your teammates' commits on the git remote **and** content authors' edits on the backend. Running only `git pull` misses every edit made in the Uniweb app; running only `uniweb pull` misses your teammates.
+Catch up with everything outside your working copy: your teammates' commits on the git remote, content authors' edits on the backend, and the latest of any repository the site mounts a page folder from. Running only `git pull` misses every edit made in the Uniweb app; running only `uniweb pull` misses your teammates.
 
 ```bash
 uniweb refresh
 ```
 
-It runs `git pull` first — merging, never rebasing, since a rebase would rewrite the commits a pull of the backend made — then `uniweb pull`, and ends by reporting what it checked, what it skipped, and whether you have unpushed changes. It **never pushes** — it cannot ship anything, so it is safe to run at the start of every working session. It stops if `git pull` fails or leaves conflicts — where it could not put your uncommitted changes back, too — and exits non-zero if the merge leaves conflicts.
+It runs `git pull` first — merging, never rebasing, since a rebase would rewrite the commits a pull of the backend made — then takes each mounted repository to the latest of the branch it follows, then runs `uniweb pull`, and ends by reporting what it checked, what it skipped, and whether you have unpushed changes.
+
+A mounted repository follows, for a git submodule, the branch `.gitmodules` names for it (`git config -f .gitmodules submodule.<name>.branch <branch>`), else its remote's default branch; for a clone on a branch, that branch's upstream. A submodule is checked out at the commit your repository records first (a `git pull` moves the record and leaves the checkout), then moved to that branch's latest, and its new pin is committed on its own. A clone is fast-forwarded. Neither moves over uncommitted changes in it, backwards, or from a commit its branch does not contain — a pin somewhere else on purpose — and refresh says which it left. It **never pushes** — it cannot ship anything, so it is safe to run at the start of every working session. It stops if `git pull` fails or leaves conflicts — where it could not put your uncommitted changes back, too — and exits non-zero if the merge leaves conflicts.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--no-git` | Skip the git remote; backend only |
+| `--no-git` | Skip every git remote, the mounted repositories' too; backend only |
+| `--no-mounts` | Leave the mounted repositories where they are |
 | `--no-backend` | Skip the backend; git only |
 
 ---
@@ -1446,8 +1452,10 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 | Option | Description |
 |--------|-------------|
 | `--no-git` | Skip the git remote half of the refresh |
+| `--no-mounts` | Leave the mounted repositories where they are; the push then stops on one that is not current |
 | `--force` | Passed to the push only: overwrite changes made on the backend since your last pull |
 | `--commit` | Passed to the push only: commit the site's content first, with `-m <message>` |
+| `--mounts-as-is` | Passed to the push only: send the page folders mounted from other repositories as they are |
 
 ---
 
@@ -1486,7 +1494,7 @@ uniweb login
 uniweb publish
 ```
 
-`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull, or, in a git repository, if its content is not committed (`--commit` commits it first) — and then makes the backend's current version live, including edits made in the Uniweb app. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the app.
+`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull; in a git repository, if its content is not committed (`--commit` commits it first); or if a page folder mounted from another repository is not current (`--mounts-as-is` publishes it as it is) — and then makes the backend's current version live, including edits made in the Uniweb app. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the app.
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
@@ -1516,6 +1524,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 | `--yes` | Skip confirmations (CI); never block on a prompt. Answers a change that only lowers what the site pays — never one that charges. |
 | `--force` | Overwrite changes made on the backend since your last pull, instead of refusing — as `uniweb push --force`. |
 | `--commit` | In a git repository, commit the site's content before publishing it — with `-m <message>` — as [`uniweb push --commit`](#uniweb-push). |
+| `--mounts-as-is` | Publish the page folders mounted from other repositories as they are, current or not — see [`uniweb push`](#uniweb-push). |
 | `--no-release` | Ship the content against the foundation version already released; release nothing. Refused if the foundation was never released. |
 | `--bump` | When the registry holds a newer version of the foundation than yours, release yours above it instead of stopping — as [`uniweb push --bump`](#uniweb-push). |
 | `--no-save` | Skip recording this publish in `deploy.yml`. |
@@ -1617,7 +1626,7 @@ One document, versioned by `schema`:
 }
 ```
 
-Check ids are stable, and include `project.workspace`, `project.foundation`, `project.mounts`, `project.languages`, `git.conflicts`, `git.uncommitted`, `git.other`, `git.remote`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `app.services`, `hosting.deploys`, `hosting.workflows`, `uniweb.version`, `health.doctor` and `dev.server`. The document's `summary` is the line the status opens with, and `synced` lists every backend this copy holds a site on. Its `scope` is `site`; at a workspace of several sites it is `workspace`, with a `sites` list of what each one is. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
+Check ids are stable, and include `project.workspace`, `project.foundation`, `project.mounts`, `project.languages`, `git.conflicts`, `git.uncommitted`, `git.other`, `git.remote`, `git.mounts`, `app.session`, `app.site`, `app.changes`, `app.unpushed`, `app.live`, `app.editors`, `app.foundation`, `app.services`, `hosting.deploys`, `hosting.workflows`, `uniweb.version`, `health.doctor` and `dev.server`. The document's `summary` is the line the status opens with, and `synced` lists every backend this copy holds a site on. Its `scope` is `site`; at a workspace of several sites it is `workspace`, with a `sites` list of what each one is. A check may carry `files`, `lines` and a `detail` of its own. A `next` step's `command` is `null` when the step is not one command — settling conflicts, say — and its `why` says what to do.
 
 `app.site`'s `detail.site_state` is `live`, `gone` or `unknown`. `gone` is said only on the backend's own word that it holds no such site — never for a failure to reach it — so a script can forget a binding on `gone` (`uniweb forget --server <url>`) without risking a second copy of a site that still exists.
 
