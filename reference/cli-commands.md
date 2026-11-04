@@ -1490,7 +1490,7 @@ uniweb publish
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
-**Records your pushes took out of the site's folder** — their files deleted, or moved to another schema — stay on the backend, where no site serves them. Once the site is live, `publish` offers to delete them, with a count. It keeps any record another site's folder places, and says so. `--yes` deletes them without asking. With no terminal and no `--yes`, they stay and `publish` says how to finish. Declined, they stay and aren't asked about again.
+**Records a push took out of the site's folder** — their files deleted, or moved to another schema — are off the live site at once, and stay on the backend, where no site serves them. `push` and `publish` offer to delete them, with a count. They keep any record another site's folder places, and say so. `--yes` deletes them without asking. With no terminal and no `--yes`, they stay and the command says how to finish. Declined, they stay and aren't asked about again.
 
 **When the backend needs something first.** If the site can't go live until something is settled — a plan, a payment, a change to what the site's plan covers — `publish` shows the backend's message and opens the page in the app where you settle it; run `uniweb publish` again afterwards. Your content is already pushed, so nothing is lost. When the only thing owed is a change to a plan the site already has, such as one more language, the backend may let you confirm it at the terminal instead. `publish` then shows its sentence, which names the change, its price and the card, and asks:
 
