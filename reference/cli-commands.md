@@ -1384,6 +1384,8 @@ The first pull of a project whose history shares nothing with the backend yet �
 
 What your repository ignores travels in no commit, so no merge can bring it: media a pull fetches into a folder you keep out of git are placed where your files lack them, and never over a file you have.
 
+**Pages mounted from outside the site's folder** ([`paths:` mounts](site-configuration.md#per-subfolder-mounting)) are left as the folder has them, and the pull names each one an author changed in the app, which the next push sends back as the folder has it. A mount marked `writable: true` is written like the site's own pages, and merged with them, where your site's repository holds it — see [Edits made in the app](site-configuration.md#edits-made-in-the-app).
+
 Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask. A site in a folder that the repository around it ignores — a scratch directory, say — is outside git too: that repository can never hold its history.
 
 A project that was never pushed has no id to pull by — pull is a no-op with a clear message.

@@ -1499,9 +1499,24 @@ layout: DocsLayout        # cascades to every page under /docs
 
 If the mounted directory is empty — an unfetched git submodule, most often — the build says so rather than quietly producing a route with no pages under it. In a production build it fails outright.
 
+#### Edits made in the app
+
+A pull leaves a mounted folder as it is on disk, and names each of its pages an author changed in the Uniweb app: the next push sends the folder's version, which undoes that edit. To keep such edits, make them in the mounted folder, or let `uniweb pull` write them there:
+
+```yaml
+paths:
+  pages/docs:
+    path: ../docs
+    writable: true
+```
+
+With `writable: true`, a pull writes the app's edits to those pages into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
+
+A pull writes into a mounted folder only where it can merge into it: a folder your site's own repository holds, beside the site's folder or inside it, or, for a site in no repository, a folder inside the site's. A mount marked `writable: true` anywhere else stops the pull and says why, and [`uniweb status`](cli-commands.md#uniweb-status) says it too. A mount in a repository of its own, below, is read-only to a pull.
+
 #### A mount that is its own repository
 
-A mounted folder in a repository of its own — a git submodule, or a clone beside the site — is read as it is on disk, and nothing moves it for you: a `git pull` of the site leaves a submodule's checkout where it was, and a `uniweb pull` never writes into a mount. The sync commands keep it current:
+A mounted folder in a repository of its own — a git submodule, or a clone beside the site — is read as it is on disk, and nothing moves it for you: a `git pull` of the site leaves a submodule's checkout where it was, and a `uniweb pull` never writes into one. The sync commands keep it current:
 
 - [`uniweb status`](cli-commands.md#uniweb-status) says whether it is at the latest of the branch it follows, whether a submodule's checkout is the commit your repository records, and whether it holds uncommitted changes;
 - [`uniweb refresh`](cli-commands.md#uniweb-refresh) takes its latest, and commits a submodule's new pin on its own;
