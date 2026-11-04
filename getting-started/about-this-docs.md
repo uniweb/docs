@@ -16,6 +16,7 @@ uniweb/docs/                  # Public repo — content only
 ├── authoring/
 ├── development/
 ├── reference/
+├── architecture/
 └── folder.yml
 ```
 
@@ -35,16 +36,15 @@ This separation has practical benefits:
 
 ## How it connects
 
-The site's `site.yml` points to the content repository using the `paths.pages` setting:
+The site's `site.yml` mounts the content repository as its `/docs` branch, with a `paths:` entry:
 
 ```yaml
 # site.yml (in the private web repo)
-foundation: docs
 paths:
-  pages: ../../../docs    # Points to the public docs repo
+  pages/docs: ../../external/uniweb-docs    # the public docs repo, checked out in the web repo
 ```
 
-This path resolution is relative to the site directory. The site reads pages from one location while the foundation renders them from another. From the user's perspective, it's one coherent website.
+The path is relative to the site's folder. Every page under `/docs` comes from the mount, while the site's own `pages/docs/` holds the branch's title and layout. From the reader's side, it's one coherent website.
 
 ## The foundation provides the look
 
@@ -56,7 +56,7 @@ The docs foundation — the React components that render these pages — knows n
 - Search functionality
 - Responsive layout and theming
 
-The same foundation could render entirely different documentation — a different product, a different company, different content structure — just by pointing to a different `paths.pages` location.
+The same foundation could render entirely different documentation — a different product, a different company, different content structure — just by mounting a different folder.
 
 ## What you don't see
 

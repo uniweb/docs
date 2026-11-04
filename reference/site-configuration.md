@@ -842,7 +842,8 @@ someone did in what order.
 
 ### The events
 
-Three events are sent automatically, with no component involvement.
+The runtime sends these by itself, with no component involvement. The first three
+are the default for a collector of your own (`standard`).
 
 `page_view` goes out on every route change, including the first:
 
@@ -913,6 +914,15 @@ per section per page view. It is in the default `emit` for
 your own endpoint, and `trackSections` in a page's `page.yml` overrides the site in
 either direction, since its cost grows with the length of the page.
 
+`time_on_page` goes out once for each page a visitor opens, when they first
+leave it: for another page, another tab or app, or by closing it. It carries
+**`durationMs`**, the time until then. A phone can discard a page in the
+background without warning, so the report doesn't wait for the page to close,
+and a reader who switches away and comes back is counted up to the switch.
+
+`section_click` goes out for a click inside a section, with the section it
+landed in. Neither of these two is in `standard`.
+
 Everything else is sent by components. Two ship with the framework's component
 kit, so they are worth recognising if you build a dashboard:
 
@@ -921,6 +931,8 @@ kit, so they are worth recognising if you build a dashboard:
 | `page_view` | the runtime, automatically | `path`, `first_of_load?`, `continues?`, `referrer?`, `utm_*?` |
 | `outbound_click` | the runtime, automatically | `hostname` |
 | `section_view` | the runtime, unless `emit` or a page's `trackSections` says no | `section`, `section_id` |
+| `time_on_page` | the runtime, when selected — not in `standard` | `durationMs` |
+| `section_click` | the runtime, when selected — not in `standard` | `section`, `section_id` |
 | `video_milestone` | `<Media>` playing a video | `milestone`, `src` |
 | `read_depth` | `useReadingDepth()` in a long section | `depth` — 25, 50, 75, 100 |
 | `conversion` | see below | `name`, `landing?` |
@@ -1063,10 +1075,10 @@ unset means *whatever my host offers*, and the set grows if your host starts
 collecting something new. That is your host's decision, announced by them, and
 it is the same event that changes your bill or your quota.
 
-**If you would rather pin it, name it.** `emit: standard` gives you exactly the
-three events above and nothing a host adds later; `emit: minimal` gives you one;
-a list gives you precisely what you write. Any of those beats the host's default,
-including narrowing to less than the host offers.
+**If you would rather pin it, name it.** `emit: standard` gives you exactly
+`page_view`, `outbound_click` and `section_view`, and nothing a host adds later;
+`emit: minimal` gives you one; a list gives you precisely what you write. Any of
+those beats the host's default, including narrowing to less than the host offers.
 
 **`emit` does not limit what components send.** `block.track()` and
 `useTracker()` are unaffected — it governs only the events the framework emits

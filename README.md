@@ -11,6 +11,7 @@ getting-started/    Introduction, quickstart, templates
 authoring/          Writing content, theming, records, translations
 development/        Building foundations, component patterns, data fetching
 reference/          Configuration files, kit API, CLI commands
+architecture/       How content, components and data fit together
 ```
 
 ## Using these docs
