@@ -34,17 +34,46 @@ So the loop needs three things:
 Give each ad a link with campaign tags, so your own reports can tell its visitors apart:
 
 ```text
-https://example.com/start?utm_source=X&utm_medium=paid_social&utm_campaign=spring&utm_content=video
+https://example.com/start?utm_source=X&utm_medium=paid_social&utm_campaign=spring&utm_term=developers&utm_content=video
 ```
 
+- **One tag for each level you compare:** the campaign in `utm_campaign`, the ad group in
+  `utm_term`, and the ad in `utm_content`. On a search ad, `utm_term` usually holds the keyword
+  instead.
 - **Keep paid and free apart:** `utm_medium=paid_social` on an ad and `social` on a post. With the
   same tags, the visitors an ad bought are counted with those a post brought for free.
-- **`utm_content` names the ad** when a campaign has several. Page views carry only the source,
-  medium and campaign; a conversion carries whatever its [`landing`](./conversions.md#carrying-the-campaign)
-  list names.
+- **Keep all five tags in [`landing`](./conversions.md#carrying-the-campaign).** Page views carry
+  only the source, medium and campaign; a conversion carries whatever that list names.
 - **The platform adds its own click ID** to the address, `twclid` from X and `fbclid` from Meta, so
   leave it out of the link you give it.
 - **Land on a page that isn't a conversion,** or every click counts as one.
+
+### Let the platform fill in the names
+
+You don't have to write a link for each ad. A platform fills in placeholders in an ad's link when it
+shows the ad. In X Ads Manager, `{{campaign_name}}`, `{{adgroup_name}}` and `{{ad_name}}` become the
+names you gave the campaign, the ad group and the ad, so one link serves every ad:
+
+```text
+https://example.com/start?utm_source=X&utm_medium=paid_social&utm_campaign={{campaign_name}}&utm_term={{adgroup_name}}&utm_content={{ad_name}}
+```
+
+- **Names or IDs.** X also offers `{{campaign_id}}`, `{{adgroup_id}}` and `{{ad_id}}`. Names read
+  better in a report; IDs survive a rename and match the platform's own reports. Choose before the
+  ads run, and leave the names alone once they do, or one ad's visitors can end up in two rows.
+- **Name things the way you want them in a report:** short, and in one style, such as
+  `spring-launch` and `developers`. The name is the tag.
+- **Tag only what you'll compare.** Each different set of values is a row of its own in a campaign
+  report. `{{placement}}` and `{{site_source}}` say where an ad was shown, and in a tag they multiply
+  every ad's rows by the places it appeared. A key other than the five `utm_` tags reaches your
+  reports only through a conversion's `landing`, and only if the list names it.
+- **Don't name a live campaign `test`.** With `{{campaign_name}}` in its link, every visitor would
+  arrive with the test tag, and no conversion would reach the platform
+  ([Test before you spend](#test-before-you-spend)).
+- **Each platform has its own spelling.** Meta's are `{{campaign.name}}`, `{{adset.name}}` and
+  `{{ad.name}}`. Check the list your platform offers.
+- **After a click on the live ad, read the address you land on.** A misspelled placeholder can arrive
+  as written.
 
 ---
 
