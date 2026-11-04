@@ -329,6 +329,38 @@ a reference — a `ref`, or a list of them — can declare it; any other field i
 what leaving it out says. Unlike `readable_with`, it may be added to or removed from a field entries
 already fill.
 
+### A field a site's visitor may fill: `visitor_fills`
+
+On a backend, a site's visitors can submit an entry of a type without an account, for example a
+registration or an inquiry, and confirm it by email. A field marked `visitor_fills: true` is one a
+visitor may fill. A type takes submissions from visitors only when at least one of its fields is
+marked; there is no other switch:
+
+```yaml
+# foundation/schemas/inquiry.yml
+name: inquiry
+fields:
+  name:    { type: string, required: true, visitor_fills: true }
+  email:   { type: email, required: true, visitor_fills: true }
+  message: { type: text, visitor_fills: true }
+  status:  { type: string, enum: [new, answered] }   # set by the site's owner, never by a visitor
+```
+
+Mark each field separately. A section has no shorthand, so a field added later stays closed until
+you mark it. The build refuses `visitor_fills`:
+
+- on a nested record or a list of records, and on any field inside one. Mark the fields of a top-level
+  section: a `fields:` schema's fields, or the fields of any section under `sections:`, single or `many: true`;
+- on a `file` or `image` field, since a visitor can't upload files;
+- on a reference that also declares `readable_with` or `sold_with`, since the visitor's choice would
+  then decide who reads the entry, or what it is sold with. A plain reference, or a field that picks
+  from a list, may be marked;
+- when a section marks any field but leaves a `required` field in it unmarked, since no visitor could
+  then submit it. A section with no marked field is left alone.
+
+It is a boolean; `false` means the same as leaving it out. Changing it doesn't change the type's
+data shape, so it may be added or removed while entries exist.
+
 Every list has an element type: `many: true` takes it from the field itself, and the lower-level `array` + `items:` states it explicitly. Writing `type: array` with no `items:` leaves it genuinely unknown, and a registered schema records the elements as opaque rather than guessing at them.
 
 `required` holds on a list of values (`{ type: string, many: true, required: true }`) and on a list of references. It does **not** hold on a list of *records* or on a nested `object` — both become sections once the schema is [registered](#registering-schemas), and `required` binds the record that is *written*; it cannot force a record to *exist*. Put the flag on a field inside the record, and see [Constraints](#constraints) for "don't let this become empty".
