@@ -1501,22 +1501,13 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 
 #### Edits made in the app
 
-A pull leaves a mounted folder as it is on disk, and names each of its pages an author changed in the Uniweb app: the next push sends the folder's version, which undoes that edit. To keep such edits, make them in the mounted folder, or let `uniweb pull` write them there:
+When an author changes a mounted page in the Uniweb app, `uniweb pull` writes the change into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
 
-```yaml
-paths:
-  pages/docs:
-    path: ../docs
-    writable: true
-```
-
-With `writable: true`, a pull writes the app's edits to those pages into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
-
-A pull writes into a mounted folder only where it can merge into it: a folder your site's own repository holds, beside the site's folder or inside it; a folder in a git submodule of that repository, below; or, for a site in no repository, a folder inside the site's. A mount marked `writable: true` anywhere else, such as a clone beside the site that your repository does not record, stops the pull and says why, and [`uniweb status`](cli-commands.md#uniweb-status) says it too.
+A pull writes into a mounted folder wherever it can merge the change with your work there: a folder your site's own repository holds, beside the site's folder or inside it; a folder in a git submodule of that repository, below; or, for a site in no repository, a folder inside the site's. Anywhere else — a clone beside the site that your repository does not record, a folder in no repository — the change is **held**: the app keeps the author's version, your files keep theirs, and a push leaves that page alone while its file is unchanged, and stops if you changed the file too. The pull and [`uniweb status`](cli-commands.md#uniweb-status) name each held page. To have a pull write such edits, make the folder a submodule of your site's repository; to put the folder's version back over the author's, `uniweb push --force`.
 
 A link one of its files writes as a file, `[the guide](./guide/start.md)`, which works on GitHub and in an editor, stays as written: a pull changes a link only where the app changed it.
 
-The mounted route itself, `/docs`, is named by its key in `paths:` and its local folder. Where an author renames it in the app, a pull renames both, `pages/docs` to `pages/help`; where an author removes it, a pull removes the entry and the local folder. Either way the mounted folder is left as it is, and a mount marked `writable: true` stays writable under its new name.
+The mounted route itself, `/docs`, is named by its key in `paths:` and its local folder. Where an author renames it in the app, a pull renames both, `pages/docs` to `pages/help`; where an author removes it, a pull removes the entry and the local folder. Either way the mounted folder is left as it is.
 
 #### A mount that is its own repository
 
@@ -1532,7 +1523,7 @@ The branch a submodule follows is the one `.gitmodules` names for it, else its r
 git config -f .gitmodules submodule.docs.branch stable   # follow stable instead
 ```
 
-A submodule marked `writable: true` takes the app's edits on a pull as a commit in the submodule, made with your own git identity and naming the files it changed. The pull merges that commit into the submodule's checkout and records it in your repository, and `uniweb refresh` takes the submodule's latest by merging rather than fast-forwarding, since its checkout then has commits of its own. Push the submodule before your repository — the pull says how — or a clone of the site cannot check out the commit it records. A clone beside the site stays read-only to a pull.
+A submodule takes the app's edits on a pull as a commit in the submodule, made with your own git identity and naming the files it changed. The pull merges that commit into the submodule's checkout and records it in your repository, and `uniweb refresh` takes the submodule's latest by merging, where its checkout holds commits of its own. Push the submodule before your repository — the pull says how — or a clone of the site cannot check out the commit it records. A clone beside the site, which your repository does not record, holds the app's edits instead.
 
 ### Use Cases
 
