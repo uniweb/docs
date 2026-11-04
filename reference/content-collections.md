@@ -208,11 +208,11 @@ It lives in the directory it organizes, the way a pages folder's `folder.yml` do
 | no `records/` folder | no records | the backend's records are left as they are |
 | a `records/` folder | every record in it | every record in it is sent |
 | a `records/` folder holding only files no data schema types — data with no `schema:` | those files, as static data | the backend's records are left as they are — the CLI says so |
-| an empty `records/` folder | no records | the backend's records are removed — the CLI asks first |
+| an empty `records/` folder | no records | every record leaves the site's folder — the CLI asks first |
 
-Records pushed to a backend are served once the site is published.
+Records pushed to a backend are served once the site is published. A record that leaves the folder, because its file was deleted or `records/` was emptied, is no longer served after the next publish, and the backend keeps it.
 
-**Moving records to another schema.** A record keeps its type. To store records under another schema, move their files into its folder and delete the `$uuid` line from each — they go up as new records, and the old ones are removed. When *every* record in `records/` moves at once, push twice: first with `records/` there and empty, which removes the backend's records once you confirm, then with the moved records in it.
+**Moving records to another schema.** A record keeps its type, so a record moved to another schema goes up as a new one. Move the files into the new schema's folder without renaming them, delete the `$uuid` line from each, and push. Each new record takes the old one's place in the site's folder, and the backend keeps the old record. To give the files new names, rename them in a later push. A page that routes records by `[uuid]` ([Dynamic Routes](./dynamic-routes.md)) gives a moved record a new address; one that routes them by `[slug]` keeps it.
 ---
 
 ## File Formats
