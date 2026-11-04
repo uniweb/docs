@@ -1512,11 +1512,13 @@ paths:
 
 With `writable: true`, a pull writes the app's edits to those pages into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
 
-A pull writes into a mounted folder only where it can merge into it: a folder your site's own repository holds, beside the site's folder or inside it, or, for a site in no repository, a folder inside the site's. A mount marked `writable: true` anywhere else stops the pull and says why, and [`uniweb status`](cli-commands.md#uniweb-status) says it too. A mount in a repository of its own, below, is read-only to a pull.
+A pull writes into a mounted folder only where it can merge into it: a folder your site's own repository holds, beside the site's folder or inside it; a folder in a git submodule of that repository, below; or, for a site in no repository, a folder inside the site's. A mount marked `writable: true` anywhere else, such as a clone beside the site that your repository does not record, stops the pull and says why, and [`uniweb status`](cli-commands.md#uniweb-status) says it too.
+
+A link one of its files writes as a file, `[the guide](./guide/start.md)`, which works on GitHub and in an editor, stays as written: a pull changes a link only where the app changed it.
 
 #### A mount that is its own repository
 
-A mounted folder in a repository of its own — a git submodule, or a clone beside the site — is read as it is on disk, and nothing moves it for you: a `git pull` of the site leaves a submodule's checkout where it was, and a `uniweb pull` never writes into one. The sync commands keep it current:
+A mounted folder in a repository of its own — a git submodule, or a clone beside the site — is read as it is on disk, and nothing moves it for you: a `git pull` of the site leaves a submodule's checkout where it was. The sync commands keep it current:
 
 - [`uniweb status`](cli-commands.md#uniweb-status) says whether it is at the latest of the branch it follows, whether a submodule's checkout is the commit your repository records, and whether it holds uncommitted changes;
 - [`uniweb refresh`](cli-commands.md#uniweb-refresh) takes its latest, and commits a submodule's new pin on its own;
@@ -1527,6 +1529,8 @@ The branch a submodule follows is the one `.gitmodules` names for it, else its r
 ```bash
 git config -f .gitmodules submodule.docs.branch stable   # follow stable instead
 ```
+
+A submodule marked `writable: true` takes the app's edits on a pull as a commit in the submodule, made with your own git identity and naming the files it changed. The pull merges that commit into the submodule's checkout and records it in your repository, and `uniweb refresh` takes the submodule's latest by merging rather than fast-forwarding, since its checkout then has commits of its own. Push the submodule before your repository — the pull says how — or a clone of the site cannot check out the commit it records. A clone beside the site stays read-only to a pull.
 
 ### Use Cases
 
