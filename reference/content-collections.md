@@ -212,7 +212,7 @@ It lives in the directory it organizes, the way a pages folder's `folder.yml` do
 
 Records pushed to a backend are served once the site is published. A record that leaves the folder, because its file was deleted or `records/` was emptied, is no longer served after the next publish, and the backend keeps it.
 
-**Moving records to another schema.** A record keeps its type, so a record moved to another schema goes up as a new one. Move the files into the new schema's folder without renaming them, delete the `$uuid` line from each, and push. Each new record takes the old one's place in the site's folder, and the backend keeps the old record. To give the files new names, rename them in a later push. A page that routes records by `[uuid]` ([Dynamic Routes](./dynamic-routes.md)) gives a moved record a new address; one that routes them by `[slug]` keeps it.
+**Moving records to another schema.** Move the files into the new schema's folder, renamed or not, and push. A record keeps its type, so each moved record goes up as a new record of the new schema, in the place the old one had in the site's folder, and the push lists them. Leave each file's `$uuid` line as it is: that is how the push knows which record moved. The backend keeps the old records, where no site serves them. A field holding a secret stays with the old record, so the push names any such field, to be set again in the app. A page that routes records by `[uuid]` ([Dynamic Routes](./dynamic-routes.md)) gives a moved record a new address; one that routes them by `[slug]` keeps it.
 ---
 
 ## File Formats
