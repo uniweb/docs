@@ -882,7 +882,7 @@ import arrowRight from '@uniweb/icons/families/lu/arrow-right.js'
 <Icon svg={arrowRight} size="16" />
 ```
 
-`@uniweb/icons` holds Lucide (`lu`), Heroicons v1 and v2 (`hi`, `hi2`) and Feather (`fi`): the drawings the corpus serves, one module per icon, named as the corpus spells them (`building2.js`). Add it to the foundation's dependencies. For another family, import its SVG as a string from that family's own package and pass it as `svg`.
+`@uniweb/icons` holds Lucide (`lu`), Heroicons v1 and v2 (`hi`, `hi2`) and Feather (`fi`): the drawings the corpus serves, one module per icon, named as the corpus spells them (`building2.js`). Add it to the foundation's dependencies. For another family, import its SVG as a string from that family's own package and pass it as `svg`, or draw that package's own component.
 
 A name your code writes itself (`<Icon icon="lu-arrow-right" />`) works too, but it is fetched like an author's: until the browser has it, a prerendered page can show an empty box in its place.
 
