@@ -100,7 +100,7 @@ pages/
 └── 10-contact/    → /contact
 ```
 
-`10-` comes after `2-`, and numbered folders come before the rest. In `pages:` and `index:`, a numbered folder is named without its number: `about`, not `2-about`.
+`10-` comes after `2-`, and numbered folders come before the rest. A number counts only with a dash after it, so `3d-printing/` is `/3d-printing`. In `pages:` and `index:`, a numbered folder is named without its number: `about`, not `2-about`.
 
 ### Hiding Pages from Navigation
 

@@ -478,7 +478,7 @@ When a page has multiple sections, the number before the dash sets the display o
 
 Need to add a section between existing ones? Use decimals — `2.5-testimonials.md` goes between `2-features.md` and `3-cta.md` without renaming anything.
 
-The number prefix doesn't appear anywhere on your site. It's only for ordering.
+The number prefix doesn't appear anywhere on your site. It's only for ordering. A number counts as one only with a dash after it, or as the whole name: `3d-printing.md` is a section called `3d-printing`, and `404/` is the page `404`.
 
 ## Pages with Child Pages
 
