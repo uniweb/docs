@@ -1482,20 +1482,19 @@ Renders icons from multiple sources: library icons, URLs, direct SVG, or built-i
 
 ```jsx
 import { Icon } from '@uniweb/kit'
+import house from '@uniweb/icons/families/lu/house.js'
 
-// String ref (recommended for library icons)
+// An icon your code draws: imported, so it is in the page from the first render
+<Icon svg={house} />
+
+// A name, as an author writes one: its drawing is fetched from the icon corpus
 <Icon icon="lu-house" />         // dash format
 <Icon icon="lu:house" />         // colon format
 <Icon icon="lucide:house" />     // full library name
-
-// Explicit library + name
 <Icon library="lucide" name="house" />
 
 // From URL
 <Icon url="/icons/custom.svg" />
-
-// Direct SVG content
-<Icon svg="<svg>...</svg>" />
 
 // Built-in icons (no library needed)
 <Icon name="check" />
@@ -1510,13 +1509,13 @@ import { Icon } from '@uniweb/kit'
 | `library` | string | — | Icon library shortcode (`lu`, `hi`, `fi`, etc.) |
 | `name` | string | — | Icon name within the library |
 | `url` | string | — | URL to fetch SVG from |
-| `svg` | string | — | Direct SVG content |
+| `svg` | string | — | SVG content, such as an icon imported from `@uniweb/icons` |
 | `size` | string | `'24'` | Icon size in pixels |
 | `color` | string | — | Icon color (defaults to `currentColor`) |
 | `preserveColors` | boolean | `false` | Keep original SVG colors instead of using `currentColor` |
 | `className` | string | — | Additional CSS classes |
 
-The string `icon` prop is the most concise way to use library icons. The same string formats work in markdown (`![](lu-house)`), in YAML data (`icon: lu:house`), and in JSX (`<Icon icon="lu-house" />`).
+A name is the form an author writes, in markdown (`![](lu-house)`), in YAML data (`icon: lu:house`) or in a record's field, and a component passes it on: `<Icon icon={record.icon} />`. Its drawing is fetched, so a name written in your own code can leave an empty box in a prerendered page until the browser has it. Import an icon your code draws instead: `@uniweb/icons` holds Lucide, Heroicons and Feather, one module per icon ([Foundation Configuration](./foundation-config.md#icons)).
 
 ### parseIconRef
 

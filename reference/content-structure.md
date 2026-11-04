@@ -384,6 +384,7 @@ Icons can be referenced in three ways:
 ```markdown
 ![Logo](./logo.svg){role=icon}
 ![Logo](icon:./logo.svg)
+![check](/icons/check.svg){role=icon}
 ```
 
 **2. Named icons from icon libraries:**
@@ -423,13 +424,7 @@ Supported icon library prefixes (browse icons visually at [react-icons.github.io
 | `size` | Icon size in pixels (default: 24) |
 | `color` | Icon color (CSS color value) |
 
-**Important:** Named icons require foundation support. The foundation must include the icon library to render named icons. See [Foundation Configuration](./foundation-config.md#icon-libraries) for setup instructions.
-
-If your foundation doesn't include an icon library, use URL-based icons instead:
-
-```markdown
-![check](/icons/check.svg){role=icon}
-```
+A named icon's drawing is fetched from the icon corpus, so neither the site nor its foundation installs anything for it. The section draws it with kit's `<Icon>` ([Foundation Configuration](./foundation-config.md#icons)).
 
 ### Clickable Images and Videos
 
