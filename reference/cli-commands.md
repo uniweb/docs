@@ -1652,15 +1652,24 @@ The next push from the copy creates a new site. Neither form touches `site.yml` 
 
 ## uniweb site
 
-The sites in a workspace on the backend you are logged in to — list them, take one offline, or delete one.
+The sites in a workspace on the backend you are logged in to: list them, take one offline, delete one, or set a secret one of its services uses.
 
 ```bash
-uniweb site list [--json]              # each site's name, uuid, and whether it is published
-uniweb site unpublish [<site-uuid>]    # take a site offline — its content stays
-uniweb site delete [<site-uuid>]       # delete a site — final
+uniweb site list [--json]                        # each site's name, uuid, and whether it is published
+uniweb site unpublish [<site-uuid>]              # take a site offline — its content stays
+uniweb site delete [<site-uuid>]                 # delete a site — final
+uniweb site secret <service> <name> [<site-uuid>]          # set a secret; it asks for the value
+uniweb site secret <service> <name> --clear [<site-uuid>]  # clear it
 ```
 
-The workspace is the one you chose at login, or `--org @handle` / `--personal` for this command. Without a uuid, `unpublish` and `delete` act on the site this project is synced to on that backend. `uniweb site list` shows each site's uuid — the one [`uniweb clone`](#uniweb-clone) takes, too.
+The workspace is the one you chose at login, or `--org @handle` / `--personal` for this command. Without a uuid, `unpublish`, `delete` and `secret` act on the site this project is synced to on that backend. `uniweb site list` shows each site's uuid — the one [`uniweb clone`](#uniweb-clone) takes, too.
+
+**`secret` sets a value a service of the site needs and no file may hold,** such as an ad platform's token (`uniweb site secret x token`, [Ad platforms](./site-configuration.md#ad-platforms-x-and-meta)).
+
+- **It asks for the value** at a prompt that doesn't show what you type, and answers with only its last characters.
+- **No argument or file ever carries the value.** With no terminal to ask in, the command refuses. A value typed as an argument is refused without being shown, since it is already in your shell's history.
+- **Only an admin of the site can set one.**
+- **The live site has it from its next publish.** That goes for `--clear` too, which asks first and takes `--yes`.
 
 **`delete` is final**: there is no trash and no restore. Only the site's owner, or an admin of its workspace, can delete it.
 

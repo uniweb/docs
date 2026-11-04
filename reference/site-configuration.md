@@ -1211,6 +1211,55 @@ Tag Manager's *History Change* trigger, as on any site that changes pages withou
 connects to a published page and shows the tags that fired. Start there if nothing seems to fire:
 Google doesn't report a mistyped ID as an error.
 
+### Ad platforms: X and Meta
+
+**On Uniweb Cloud**, your host can send the conversions your site reports to X or Meta from its
+servers, so the platform learns which of its ad clicks convert. Nothing goes in your pages, and no
+platform tag runs. Name the platform's pixel in `site.yml`, and map each conversion to the event you
+made for it on the platform:
+
+```yaml
+services:
+  x:
+    pixel: 'o1abc'                  # your X pixel ID
+    events:
+      signup: 'tw-o1abc-o2def'      # a conversion your site reports → its event in X
+  meta:
+    pixel: '1234567890123456'       # your Meta dataset (pixel) ID
+    events:
+      signup: CompleteRegistration
+```
+
+Then set each platform's token. A token never goes in a file:
+
+```bash
+uniweb site secret x token          # asks for it, without showing what you type
+uniweb site secret meta token
+```
+
+X gives the token in Ads Manager, in the conversion setup's *Generate access token*. Meta gives it in
+Events Manager, under your dataset's Settings → Conversions API → *Generate access token*. The rows
+and the tokens take effect at your next publish.
+
+- **What is sent:** a conversion from a visitor who arrived through one of the platform's ads, as
+  their landing address shows (`twclid` for X, `fbclid` for Meta). It carries the click, the
+  visitor's IP address and browser, the page and the time.
+  - A conversion name with no entry in `events` is not sent.
+  - An engagement is never sent.
+- **A landing address with `utm_campaign=test` marks a test click,** and its conversions are never
+  sent. So you can check a setup without the platform counting it.
+- **If `site.yml` names its own `tracking.landing`, keep `twclid` and `fbclid` in it.** Your list
+  replaces your host's, and a conversion that carries its click names its ad itself.
+- **Quote the pixel ID.** A long one written bare is read as a number and can lose digits, so the
+  build stops and asks you to quote it.
+- **`enabled: false` beside `pixel` turns a platform off** and keeps its settings.
+- **A site copied from a template doesn't get the template's rows.**
+- **Say it in your privacy policy.** Each conversion sent gives the platform the visitor's IP address,
+  browser and ad click.
+
+**Anywhere else** (`uniweb export`, `uniweb deploy --host=<adapter>`), no host is there to send them,
+and a build leaves these rows out.
+
 ### What is and isn't stored
 
 > **Nothing is stored on the visitor's device.** No cookie, no local storage —
