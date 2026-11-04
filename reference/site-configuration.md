@@ -1237,7 +1237,7 @@ uniweb site secret x token          # asks for it, without showing what you type
 uniweb site secret meta token
 ```
 
-X gives the token in Ads Manager, in the conversion setup's *Generate access token*. Meta gives it in
+X gives the token in Ads Manager's Events Manager, at **Install Pixel → Manual → Conversion API → Generate access token**: a token made elsewhere in the pixel setup is refused, `401`. Meta gives it in
 Events Manager, under your dataset's Settings → Conversions API → *Generate access token*. The rows
 and the tokens take effect at your next publish.
 
