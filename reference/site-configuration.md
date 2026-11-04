@@ -264,7 +264,7 @@ pages: [home, about, ...]
 The `...` wildcard means "all remaining pages here." Pages before `...` appear first in that order; pages after `...` appear last. Everything else fills the middle.
 
 - First item becomes the homepage (route `/`)
-- Other items get their folder name as route (`/about`, `/docs`, `/pricing`)
+- Other items get their folder name as route (`/about`, `/docs`, `/pricing`), less any number it starts with: `2-about/` is `/about`, ordered by its number and named `about` here
 - `...` expands to all pages not explicitly listed, in their natural order
 
 ```yaml

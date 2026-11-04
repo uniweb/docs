@@ -61,7 +61,7 @@ index: home
 
 The `home` folder becomes `/` (the root URL). Everything else keeps its folder name as the route.
 
-Without `index:`, the site picks the page with the lowest `order` value in its `page.yml`, or the first folder alphabetically.
+Without `index:`, the site picks the page that comes first: the lowest `order` value in its `page.yml`, then a folder's number (below), then the first folder alphabetically.
 
 ### Controlling Page Order
 
@@ -90,6 +90,17 @@ order: 2
 ```
 
 Lower numbers come first. Pages without an `order` appear after ordered pages.
+
+Or number the folders, as you number a page's sections. The number orders them and never appears in the address:
+
+```
+pages/
+├── 1-services/    → /services
+├── 2-about/       → /about
+└── 10-contact/    → /contact
+```
+
+`10-` comes after `2-`, and numbered folders come before the rest. In `pages:` and `index:`, a numbered folder is named without its number: `about`, not `2-about`.
 
 ### Hiding Pages from Navigation
 
