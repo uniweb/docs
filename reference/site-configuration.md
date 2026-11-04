@@ -1456,7 +1456,7 @@ paths:
 
 Paths are resolved relative to the site root. Absolute paths are also supported.
 
-`paths:` belongs to your project, not to the site's content: `uniweb push` does not send it, and `uniweb pull` never changes it. A copy made with `uniweb clone` keeps its pages under its own `pages/` and `layout/`, mounted pages included.
+`paths:` belongs to your project, not to the site's content: `uniweb push` does not send it, and `uniweb pull` never changes where it points. A copy made with `uniweb clone` keeps its pages under its own `pages/` and `layout/`, mounted pages included.
 
 A `pages` directory with its own `folder.yml` or `page.yml` keeps the order and the homepage it declares there, exactly as it would mounted below the root — see [From the Pages Directory](#from-the-pages-directory).
 
@@ -1515,6 +1515,8 @@ With `writable: true`, a pull writes the app's edits to those pages into the mou
 A pull writes into a mounted folder only where it can merge into it: a folder your site's own repository holds, beside the site's folder or inside it; a folder in a git submodule of that repository, below; or, for a site in no repository, a folder inside the site's. A mount marked `writable: true` anywhere else, such as a clone beside the site that your repository does not record, stops the pull and says why, and [`uniweb status`](cli-commands.md#uniweb-status) says it too.
 
 A link one of its files writes as a file, `[the guide](./guide/start.md)`, which works on GitHub and in an editor, stays as written: a pull changes a link only where the app changed it.
+
+The mounted route itself, `/docs`, is named by its key in `paths:` and its local folder. Where an author renames it in the app, a pull renames both, `pages/docs` to `pages/help`; where an author removes it, a pull removes the entry and the local folder. Either way the mounted folder is left as it is, and a mount marked `writable: true` stays writable under its new name.
 
 #### A mount that is its own repository
 
