@@ -307,6 +307,54 @@ their file did not, instead of reporting a flat failure or a false success.
 
 ---
 
+## Protected addresses
+
+A host may protect a form's address with a small proof-of-work puzzle: before it
+accepts a submission, the visitor's browser spends a moment of computing, which a
+person doesn't notice and a bulk sender pays for on every message. Kit handles
+it, so a form component needs no change.
+
+The host says so in the service's declaration, with a `challenge` address beside
+the endpoint:
+
+```json
+{ "submit": { "endpoint": "/forms", "challenge": "/forms/challenge" } }
+```
+
+With a `challenge`, `useFormSubmit` and `submitForm` fetch a puzzle there, solve
+it, and send the answer with the first request in an `X-Proof` header. Without
+one, nothing changes. Uploads and the finalize don't carry a proof: the
+submission id from the first request stands for them. The puzzle is
+[ALTCHA](https://altcha.org)'s v1 format, and the header holds the Base64 JSON
+its solver produces, so an endpoint of your own can protect itself with any
+ALTCHA v1 server library.
+
+A refused proof is a `403` with an `X-Uniweb-Error` header naming why:
+`proof-missing`, `proof-invalid`, `proof-expired` or `proof-replayed`. An expired
+puzzle (a visitor who took a long time) is solved again and sent once more; the
+others throw, with the code on `error.code`.
+
+For a service other than `submit`, the same step is available on its own:
+
+```js
+import { resolveService, resolveServiceAddress, sendWithProof } from '@uniweb/kit'
+
+const { url } = resolveService(website, 'requests')
+const challenge = resolveServiceAddress(website, 'requests', 'challenge')
+
+const res = await sendWithProof(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload),
+}, { challenge })
+```
+
+`resolveServiceAddress` reads any address a service's declaration names beside
+its endpoint (`challenge`, `confirm`, …), from the same declaration the endpoint
+came from, with the site's base path applied.
+
+---
+
 ## See Also
 
 - [Site Configuration](../reference/site-configuration.md#form-submissions) — the `services.submit` entry

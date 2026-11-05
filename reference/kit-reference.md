@@ -618,6 +618,12 @@ A form a provider of the site's own accepts is reported as a `conversion` named
 | `submit(values, overrides?)` | send; rejects on failure |
 | `reset()` | back to `idle` |
 
+When the host protects the address with a puzzle (a `challenge` beside the
+endpoint), the hook solves it and sends the answer for you. See
+[Protected addresses](../development/receiving-form-submissions.md#protected-addresses);
+`sendWithProof`, `resolveServiceAddress` and `solveChallenge` do the same for
+any other service.
+
 ---
 
 ### useFormValues
