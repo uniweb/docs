@@ -321,8 +321,20 @@ the endpoint:
 { "submit": { "endpoint": "/forms", "challenge": "/forms/challenge" } }
 ```
 
-With a `challenge`, `useFormSubmit` and `submitForm` fetch a puzzle there, solve
-it, and send the answer with the first request in an `X-Proof` header. Without
+With a `challenge`, `submitForm` fetches a puzzle there, solves it, and sends
+the answer with the first request in an `X-Proof` header. To have it solved
+while the visitor types instead of when they press Send, wire the hook's
+`prepare` to the form's first focus:
+
+```jsx
+const { submit, prepare, canSubmit } = useFormSubmit({ block })
+
+<form onFocus={prepare} onSubmit={…}>
+```
+
+Don't call it when the form mounts: a host counts puzzle fetches against the
+same per-visitor limit as sends, so a fetch on every page view spends that
+limit on forms nobody opens. Without
 one, nothing changes. Uploads and the finalize don't carry a proof: the
 submission id from the first request stands for them. The puzzle is
 [ALTCHA](https://altcha.org)'s v1 format, and the header holds the Base64 JSON
@@ -331,16 +343,21 @@ ALTCHA v1 server library.
 
 A refused proof is a `403` with an `X-Uniweb-Error` header naming why:
 `proof-missing`, `proof-invalid`, `proof-expired` or `proof-replayed`. An expired
-puzzle (a visitor who took a long time) is solved again and sent once more; the
-others throw, with the code on `error.code`.
+puzzle (a visitor who took a long time) is solved again and sent once more. A
+host may also refuse an answer sent too soon after its puzzle was issued
+(`proof-too-soon`, with `Retry-After`); the same answer is sent once more after
+that wait. The others throw, with the code on `error.code`.
 
 For a service other than `submit`, the same step is available on its own:
 
 ```js
-import { resolveService, resolveServiceAddress, sendWithProof } from '@uniweb/kit'
+import { resolveService, resolveServiceAddress, prepareProof, sendWithProof } from '@uniweb/kit'
 
 const { url } = resolveService(website, 'requests')
 const challenge = resolveServiceAddress(website, 'requests', 'challenge')
+
+// On the form's first focus, so the answer is ready by Send (optional):
+prepareProof(challenge)
 
 const res = await sendWithProof(url, {
   method: 'POST',

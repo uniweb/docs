@@ -615,13 +615,14 @@ A form a provider of the site's own accepts is reported as a `conversion` named
 | `response` | the endpoint's reply on success, or `null` |
 | `canSubmit` | whether this site declares a destination |
 | `canUploadFiles` | whether attachments can be delivered — check before rendering a file input |
+| `prepare()` | solve a host's puzzle ahead of Send; wire to the form's first focus (optional) |
 | `submit(values, overrides?)` | send; rejects on failure |
 | `reset()` | back to `idle` |
 
 When the host protects the address with a puzzle (a `challenge` beside the
 endpoint), the hook solves it and sends the answer for you. See
 [Protected addresses](../development/receiving-form-submissions.md#protected-addresses);
-`sendWithProof`, `resolveServiceAddress` and `solveChallenge` do the same for
+`prepareProof`, `sendWithProof` and `resolveServiceAddress` do the same for
 any other service.
 
 ---
