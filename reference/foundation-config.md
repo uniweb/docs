@@ -399,6 +399,8 @@ export default {
 }
 ```
 
+A section type meant for one of these areas names it with `area:` in its own `meta.js` (`area: 'left'`; see [Component Metadata](./component-metadata.md)). An editor then offers it where an author fills that area. When every layout declares its `areas`, the build warns about a type naming one that none of them draws.
+
 ### Per-Page Layout Selection
 
 Pages select a layout and configure it in `page.yml`:
