@@ -48,6 +48,7 @@ When `meta.js` is present:
 | `background` | No | `false` |
 | `sticky` | No | `false` |
 | `inset` | No | `false` |
+| `area` | No | `false` |
 | `children` | No | — |
 | `data` | No | — (the section receives no data of its own) |
 | `content` | No | — |
@@ -193,6 +194,7 @@ function Hero({ content, params, block, website }) {
 | `family` | string | The standard section family this component belongs to. Picks the editor's illustration, its icon and a label it can translate. Optional — see below |
 | `hidden` | boolean | If true, component is excluded from export entirely (internal helpers, not-yet-ready components) |
 | `inset` | boolean | If true, available for `@ComponentName` references in markdown |
+| `area` | boolean | If true, meant for a layout area — a header, a footer, a side panel — and left out of a page's sections in an editor. See below |
 
 #### Family
 
@@ -1224,6 +1226,17 @@ export default {
 ```
 
 This guides editors; it does not restrict markdown. The runtime renders any section type in either position.
+
+A component with `area: true` is meant for a layout area, the header, footer or a side panel a layout draws: a visual editor offers it when an author fills an area, and leaves it out of the sections it offers for a page. A site's header or the navigation down its side are such components. One meant for a page as well adds `section: true`:
+
+```javascript
+// sections/Header/meta.js
+export default {
+  area: true,                // offered for the site's layout areas, not for a page
+}
+```
+
+It guides editors too: any section type renders in a layout area or on a page. Where nothing is declared, an editor can only go by where a site already uses a type. `uniweb doctor` suggests `area: true` for a type whose family or name is `header` or `footer` and that declares neither `area` nor `section`; `section: true` alone says the type is a page's.
 
 Inset components receive `content.title` (from the `[description]` text) and `params` (from `{key=value}` attributes). At runtime, the parent section accesses insets via `block.insets` (separate from `block.childBlocks`).
 
