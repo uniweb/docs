@@ -147,7 +147,7 @@ pages: [getting-started, configuration, ...]
 
 Pages listed before `...` appear first, in that order. The rest appear after in their natural order. Without `...`, only listed pages appear in navigation.
 
-This works at any level — put `folder.yml` in a subfolder to create nested documentation. A subfolder with `page.yml` instead switches back to page mode (multiple sections per page).
+This works at any level — put `folder.yml` in a subfolder to create nested documentation. Inside folder mode every page is one `.md` file holding one section, and every subfolder is in folder mode too: the build stops on a subfolder with a `page.yml` of its own. A page of several sections goes outside the folder.
 
 For the full reference, see [Content Mode](../reference/site-configuration.md#content-mode).
 

@@ -345,10 +345,10 @@ To activate folder mode for the entire site, place a `folder.yml` in the `pages/
 The mode set by `folder.yml` or `page.yml` cascades to descendant folders:
 
 1. `folder.yml` in a directory → folder mode for that folder and all descendants
-2. `page.yml` in a directory → page mode for that folder and all descendants
+2. `page.yml` in a directory → page mode for that folder and all descendants, where its parent is in page mode
 3. Neither → inherit from parent (default: page mode)
 
-A single `folder.yml` at the top of a docs tree applies folder mode to the entire tree. A subfolder can override back to page mode with a `page.yml`.
+A single `folder.yml` at the top of a docs tree applies folder mode to the entire tree. Inside it, each page is one `.md` file holding one section, so the build stops on a subfolder with a `page.yml` of its own, a parametric one included: a page of several sections goes outside the folder. A folder that holds no `.md` page of its own can take a `page.yml` in place of its `folder.yml`, which puts it and its subfolders in page mode.
 
 ### folder.yml
 
