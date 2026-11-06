@@ -124,15 +124,18 @@ export default {
     },
   },
 
+  // The header lies over this section when it opens a page (an author can turn it off)
+  underHeader: true,
+
   // Static — neighbors read via getNextBlockInfo().context
   context: {
-    allowTranslucentTop: true,
+    tone: 'photo',
   },
 
   // Dynamic — neighbors read via getNextBlockInfo().state
   // Component can update with useBlockState()
   initialState: {
-    allowTranslucentTop: true,
+    tone: 'photo',
   },
 }
 ```
@@ -781,7 +784,7 @@ params: {
 |---|---|---|
 | `type`, `id`, `hidden` | the section itself — its section type, its id, and a draft (`hidden: true`) | — |
 | `query`, `fetch` | the section's data | `content.data`, under the keys `data:` declares |
-| `theme`, `background`, `grid`, `vars`, `sticky` | the section's own settings, which framework applies — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout, and whether the section stays in view as the page scrolls | `block`, when it needs one for its own logic: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid, `block.sticky` |
+| `theme`, `background`, `grid`, `vars`, `sticky`, `underHeader` | the section's own settings, which framework applies — the color context and the background around your component, the section's theme and your component's CSS variables in the page stylesheet, the child layout, whether the section stays in view as the page scrolls, and whether the header lies over it when it opens a page | `block`, when it needs one for its own logic: `useColorContext(block)` for the context (a light or dark logo, say), `<SectionBackground block={block} />` to draw the background itself, `<ChildGrid from={block} />` for the grid, `block.sticky`, `block.underHeader` |
 | `props` | params written as one map | `params` — its keys are merged in |
 | `data`, `preset`, `input` | nothing: `data:` is refused (it was `query:`'s old name); `preset:` and `input:` are ignored with a warning | — |
 
@@ -927,6 +930,32 @@ CSS reads the variable as it changes. If your own code reads it, read it when yo
 A `sticky top-0` on your component's own markup cannot stick: it sits in boxes as tall as itself, so it scrolls away with the page. Nor can a sticky section inside a box that clips with `overflow: hidden` — use `overflow: clip`, which clips the same and keeps it sticking. `uniweb dev` names both in the console. See [Component Patterns](../development/component-patterns.md#header-positioning-sticky-vs-fixed).
 
 ---
+
+
+### Under the header
+
+Whether the header lies over a section of this type when it opens a page — a hero whose picture should reach the top of the window, under a see-through header:
+
+```javascript
+// sections/Hero/meta.js
+export default {
+  title: 'Hero',
+  underHeader: true,
+}
+
+// sections/Header/meta.js
+export default {
+  title: 'Header',
+  sticky: true,
+  height: '4rem',   // the bar's height before the browser measures it
+}
+```
+
+On a page whose first section says so, the runtime lays the header over it: the header's box takes no room in the flow, so the section starts at the top of the window, and the header keeps its own height, stuck if it sticks. An author turns it off for one section with `underHeader: false`; it is one of the section's own settings, so your component never receives it as a param.
+
+- **The section** keeps its content clear of the header by `--uw-header-height`, which the runtime gives it — `padding-top: var(--uw-header-height)` on its content, while its background reaches up behind the bar. It is the header type's `height` on the first paint, which no prerender can measure, then what the browser measures, so a header that wraps on a phone is still cleared. `height` takes any CSS length, `var(--header-height)` included; without one the section starts at `0px` until measured.
+- **The header** paints itself see-through over such a section: `block.getNextBlockInfo()?.underHeader` is true there, and its box carries `data-uw-header="over"` for a stylesheet. When to turn opaque — on scroll, with a menu open — is the header's own choice.
+- **Keep the bar in the flow.** The runtime measures what the header holds, so `--uw-sticky-top` and links to a section clear it. A bar the header makes `absolute` or `fixed` itself leaves nothing to measure.
 
 ### Presets
 
@@ -1334,7 +1363,7 @@ sections:
 
 ## Cross-Block Communication
 
-Section types sometimes need to coordinate with their neighbors. The typical case: a Header needs to know whether the section below it supports a floating translucent overlay. A Hero with a full-bleed background does; a plain text section doesn't.
+Section types sometimes need to coordinate with their neighbors. The typical case: a Header adapting to the section below it — a light logo over a photograph, a dark one over a plain page. (Whether the header lies over that section at all is a section setting, `underHeader`, above; the header reads it as `getNextBlockInfo().underHeader`.)
 
 The section that **owns the capability declares it** in its `meta.js`. The section that **needs to adapt reads it** via `getNextBlockInfo()`, `getPrevBlockInfo()`, or `getFirstBodyBlockInfo()`.
 
@@ -1343,10 +1372,10 @@ The section that **owns the capability declares it** in its `meta.js`. The secti
 Declares permanent facts about the component type. Never changes at runtime.
 
 ```javascript
-// Hero/meta.js — "I always support a translucent header over me"
+// Hero/meta.js — "I always open with a photograph"
 export default {
   context: {
-    allowTranslucentTop: true,
+    tone: 'photo',
   },
 }
 ```
@@ -1355,20 +1384,20 @@ export default {
 // Header/index.jsx — adapts based on what's below
 const nextBlockInfo = block.getNextBlockInfo()
 // nextBlockInfo.context  → static (meta.js)
-const isFloating = nextBlockInfo?.context?.allowTranslucentTop || false
+const overPhoto = nextBlockInfo?.context?.tone === 'photo'
 ```
 
-Use `context` when the capability is inherent to the component type — every instance of Hero always supports translucent headers, regardless of its content or state.
+Use `context` when the fact is inherent to the component type — every instance of Hero opens with a photograph, regardless of its content or state.
 
 ### initialState (dynamic)
 
 Declares an initial value that the component can change at runtime via `useBlockState()`. Neighbors see changes immediately.
 
 ```javascript
-// Hero/meta.js — starts translucent-ready, but component logic may disable it
+// Hero/meta.js — starts with a photograph, but component logic may change it
 export default {
   initialState: {
-    allowTranslucentTop: true,
+    tone: 'photo',
   },
 }
 ```
@@ -1377,8 +1406,8 @@ export default {
 // Hero/index.jsx — updates state based on runtime conditions
 function Hero({ content, block }) {
   const [state, setState] = block.useBlockState(useState)
-  // state.allowTranslucentTop is true initially (from meta.js)
-  // Component logic can change it: setState({ allowTranslucentTop: false })
+  // state.tone is 'photo' initially (from meta.js)
+  // Component logic can change it: setState({ tone: 'plain' }) when no picture loads
 }
 ```
 
@@ -1386,16 +1415,14 @@ function Hero({ content, block }) {
 // Header/index.jsx — reads dynamic state, falls back to static context
 const nextBlockInfo = block.getNextBlockInfo()
 // nextBlockInfo.state    → dynamic (useBlockState)
-const isFloating = nextBlockInfo?.state?.allowTranslucentTop
-  ?? nextBlockInfo?.context?.allowTranslucentTop
-  ?? false
+const overPhoto = (nextBlockInfo?.state?.tone ?? nextBlockInfo?.context?.tone) === 'photo'
 ```
 
-Use `initialState` when the capability depends on runtime conditions — a Hero might disable the translucent overlay after a user interaction or based on loaded data.
+Use `initialState` when the fact depends on runtime conditions — a Hero whose picture fails to load says so, and the header picks its other logo.
 
 ### Key names are yours to design
 
-`allowTranslucentTop`, `expanded`, `playing` — these are not framework fields. Design whatever protocol your foundation's sections need to coordinate.
+`tone`, `expanded`, `playing` — these are not framework fields. Design whatever protocol your foundation's sections need to coordinate.
 
 ---
 

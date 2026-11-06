@@ -217,6 +217,8 @@ A section that should stay in view as the page scrolls says so with `sticky: tru
 
 `page.isSticky(area)` is true when any section in the area is sticky. In `uniweb dev`, a sticky box that cannot move — an area your element confines — is named in the console. A layout whose page doesn't scroll (only its `<main>` does, `scroll: 'main'`) keeps its chrome in view anyway.
 
+When a page opens with a section that lies under the header (`underHeader`, a section setting), the runtime gives the header's area wrapper no height, so the header lies over the body and the section starts at the top. An element of yours around `{header}` follows with nothing to change, as long as it adds no height of its own (no padding or min-height) and does not clip what overflows it.
+
 ---
 
 ## A Real Layout: Documentation Sidebar
