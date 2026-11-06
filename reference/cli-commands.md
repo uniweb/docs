@@ -770,7 +770,7 @@ The doctor command checks your workspace and reports errors (✗), warnings (⚠
 - The pages read as the build reads them: a `page.yml` that does not parse stops `uniweb build`, and doctor names it
 
 **For each foundation:**
-- `styles.css` names what Tailwind has to read: it warns about a `@source` that finds nothing, and about a folder that writes classes no `@source` names, since a site build and `uniweb dev` would miss every class only that folder uses
+- `styles.css` names what Tailwind has to read: it warns about a `@source` that finds nothing, and about a folder that writes classes no `@source` names, since a site build and `uniweb dev` would miss every class only that folder uses. `@import "tailwindcss" source("./")`, which new projects have, reads the whole foundation and leaves no folder to name
 - Its default section type, the one that renders a section naming no `type:`. That's the `defaultSection` in `main.js`; without one, a section type named `Section` if the foundation has one; otherwise none, where each section names its own and one that doesn't shows "Component not found". Only a `defaultSection` naming no section type is a warning. Where one of the foundation's types stands out as a default, doctor suggests it
 
 **For each extension:**
