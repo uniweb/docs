@@ -446,12 +446,17 @@ export default {
 
 | Value | Behavior |
 |-------|----------|
-| `'self'` | The component draws its own background; the runtime draws none behind the section. To draw the author's background itself, the component renders kit's `<SectionBackground block={block} />` |
+| `'self'` | The component paints everything behind its content: the runtime draws no background layer, and the section's wrapper is left unpainted, so the page shows through where the component paints nothing. To draw the author's background itself, the component renders kit's `<SectionBackground block={block} />` |
 | anything else, or left out | The runtime draws the author's background behind the component |
 
 `true` and `false` change nothing at render; an editor may read them to decide whether to offer a background setting.
 
-`background` is about the author's `background:` alone. Whatever its value, the section's wrapper is painted with its context's surface color (`--section`), so a section with `theme: dark` is a dark band across the page. A component that takes the section's context for a panel narrower than the section, rather than for the whole band, has to clear the band's color itself. ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
+A section's wrapper is otherwise painted with its context's surface color (`--section`), so a section with `theme: dark` is a dark band across the page. With `'self'` the context still sets the section's colors, and the component decides where its surface goes: on a panel narrower than the section, `bg-section` on the panel; across the whole band, `bg-section` on the wrapper:
+
+```jsx
+export default function Banner({ content }) { /* … */ }
+Banner.className = 'bg-section'   // the band, as a section without 'self' has it
+``` ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
 
 **Frontmatter Background Options**
 

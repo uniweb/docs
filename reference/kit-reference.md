@@ -1188,7 +1188,7 @@ Each child renders as a section, in a `div`: its own `theme:` and `background:` 
 
 ### SectionBackground
 
-The background the author set on a section, drawn by the runtime's own renderer — for a component that places it itself. The runtime draws a section's background behind every section; a component that paints its own declares `background: 'self'` in `meta.js`, and the runtime then draws none. With `SectionBackground` it can still draw the author's image, video, gradient or color, with its overlay, wherever it wants. From `@uniweb/kit`.
+The background the author set on a section, drawn by the runtime's own renderer — for a component that places it itself. The runtime draws a section's background behind every section; a component that paints its own declares `background: 'self'` in `meta.js`, and the runtime then draws none, and leaves the section's surface color to the component too. With `SectionBackground` it can still draw the author's image, video, gradient or color, with its overlay, wherever it wants. From `@uniweb/kit`.
 
 ```jsx
 import { SectionBackground } from '@uniweb/kit'

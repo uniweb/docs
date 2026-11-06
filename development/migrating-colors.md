@@ -45,7 +45,7 @@ For each section, the runtime:
 
 The component inside the wrapper doesn't have to do any of this — the runtime does it for every section, from what the author chose. So a component need not know whether it sits on a photo or a solid color: it uses semantic tokens and they resolve correctly. Relying on this is the recommendation, because it leaves the background and the context to the author.
 
-A component can still paint its own background — a hero with a built-in gradient, a video of its own. It declares `background: 'self'` in its `meta.js`, and the runtime then draws no background layer behind it. To draw the author's background itself, somewhere of its choosing, it renders kit's `<SectionBackground block={block} />`.
+A component can still paint its own background — a hero with a built-in gradient, a video of its own. It declares `background: 'self'` in its `meta.js`, and the runtime then draws no background layer behind it and leaves its wrapper unpainted: the component paints its context's surface itself, with `bg-section`, where it wants it. To draw the author's background itself, somewhere of its choosing, it renders kit's `<SectionBackground block={block} />`.
 
 ### Context vs scheme
 
@@ -636,7 +636,7 @@ function Header({ content, block }) {
 </div>
 ```
 
-These should declare `background: 'self'` in `meta.js` so the runtime doesn't render an occluded background layer behind the component.
+These should declare `background: 'self'` in `meta.js`, so the runtime renders no background layer behind the component and leaves the section's wrapper unpainted: what shows around the component is the page's own surface, or a `bg-section` the component gives its wrapper.
 
 For most components, neither exception applies. Use semantic tokens.
 
