@@ -191,6 +191,8 @@ colors:
     950: "#450a0a"
 ```
 
+This is also how to match a design written in Tailwind's palette. A `neutral` preset (`slate`, `stone`, `zinc`, `gray`, `neutral`) is that family's shade 500, and its other shades are derived from it the way any color's are, so they are not Tailwind's: `slate`'s 900 comes out lighter and greyer than Tailwind's `slate-900`. To reproduce a Tailwind scale shade for shade, give its shades as above.
+
 ## Color Contexts
 
 Contexts define semantic color tokens for different section backgrounds. Content authors apply them via the `theme` frontmatter parameter:

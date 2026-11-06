@@ -158,7 +158,7 @@ The hook subscribes to the keyed slot of the active page's (or website's) state,
 
 | State | Where it goes |
 | --- | --- |
-| Filter / sort / toggle state that reshapes already-loaded data | `page.state` or `website.state` |
+| Filter / sort / toggle state that reshapes already-loaded data — and that a visitor coming back to the list expects to find as they left it | `page.state` or `website.state` |
 | Cross-section coordination on a single page (active tab across a tab group, collapsed sidebar state) | `page.state` |
 | Cross-page UI (appearance preference, authenticated user, cart open/closed) | `website.state` |
 | Component-internal UI state (modal open, input focus, hover) | React's `useState` — not these hooks |
@@ -1203,7 +1203,7 @@ function Hero({ content, block }) {
 }
 ```
 
-It fills the nearest positioned ancestor, so place it inside an element with `position: relative`, before the content. It draws nothing for a section without a background.
+It fills the nearest positioned ancestor, so place it inside an element with `position: relative`, before the content. The layer sits at `z-index: 0`, set on the element, so a class can't lower it: raise the content above it instead (`relative z-10`), as the example does. A positioned element left at the default stacking paints under the layer. It draws nothing for a section without a background.
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -1649,6 +1649,29 @@ function Navigation() {
 ```
 
 With no `title`, a link to a social service, an email address or a phone number shows that name, address or number as its tooltip. Any other link has none, and its text says where it goes. A link holding only an icon should get its name from you, through `aria-label` or `title`.
+
+#### A link back to a list
+
+A link opens its page at the top, as a new step in the visitor's history, even the page they just left. The runtime brings a page back where the visitor left it only when they go back or forward. So on a detail page, a link to its list should be a `back` link:
+
+```jsx
+<Link to="/store" back>All solutions</Link>
+```
+
+When the step before this one is that page, a plain click steps back to it, scrolled where the visitor left it. Otherwise, on a page opened directly or reached from elsewhere, or with a key held for a new tab, it is an ordinary link. It renders as any link does, so the prerendered page and a copied address are unaffected. Pages compare by path: the step back keeps its own query string and fragment. Browsers that can't tell what the step before was (anything older than Safari 26.2, Firefox 147 or Chrome 102) get the ordinary link.
+
+For a button, such as a close ✕ on a detail view, `useGoBack` does the same:
+
+```jsx
+import { useGoBack } from '@uniweb/kit'
+
+function Detail({ block }) {
+  const close = useGoBack('/store')
+  return <button onClick={close} aria-label={block.properties.closeLabel}>✕</button>
+}
+```
+
+The list comes back as the visitor left it only if its view does too: keep a filter or a search in [`usePageState`](#usepagestate--usewebsitestate), which stays with the page, rather than in a component's own state, which starts over when the page mounts again.
 
 ---
 

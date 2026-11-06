@@ -449,7 +449,9 @@ export default {
 | `'self'` | The component draws its own background; the runtime draws none behind the section. To draw the author's background itself, the component renders kit's `<SectionBackground block={block} />` |
 | anything else, or left out | The runtime draws the author's background behind the component |
 
-`true` and `false` change nothing at render; an editor may read them to decide whether to offer a background setting. ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
+`true` and `false` change nothing at render; an editor may read them to decide whether to offer a background setting.
+
+`background` is about the author's `background:` alone. Whatever its value, the section's wrapper is painted with its context's surface color (`--section`), so a section with `theme: dark` is a dark band across the page. A component that takes the section's context for a panel narrower than the section, rather than for the whole band, has to clear the band's color itself. ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
 
 **Frontmatter Background Options**
 
