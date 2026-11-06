@@ -612,6 +612,28 @@ background:
 
 **Overlays** add a semi-transparent layer between the background and your content, making text easier to read over busy images. Use `type: dark` for light text on dark overlay, or `type: light` for dark text on light overlay. Adjust `opacity` (0 to 1) to control how strong the overlay is.
 
+An overlay can also fade, dark where the text is and clear where the picture should show:
+
+```yaml
+---
+type: Hero
+theme: dark
+background:
+  image: /images/team.jpg
+  overlay:
+    enabled: true
+    opacity: 1                     # draw the colors as written
+    gradient:
+      angle: 90                    # direction in degrees: 90 runs left to right, 180 top to bottom
+      start: 'rgba(0,0,0,0.8)'     # the color where it starts
+      startPosition: 0             # where that color is, in percent
+      end: 'rgba(0,0,0,0)'         # the color where it ends, here transparent
+      endPosition: 60
+---
+```
+
+Every field of `gradient` is optional: without them it runs top to bottom, from 70% black to transparent. `opacity` applies to the whole gradient too, and is 0.5 when left out, so give `opacity: 1` to draw the colors as written. An overlay is drawn only with `enabled: true`.
+
 > **Note:** A few section types may render their own background (for example, sections with special visual effects). In those cases, the section type's built-in background takes priority. Your template's documentation will mention this if it applies.
 
 ---

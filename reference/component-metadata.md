@@ -482,11 +482,14 @@ background:
     enabled: true
     type: dark              # 'dark' or 'light'
     opacity: 0.5
-    # Or gradient overlay
+    # Or gradient overlay — each field optional, these are the defaults;
+    # opacity (0.5 when left out) applies to it too
     gradient:
+      angle: 180              # degrees
       start: 'rgba(0,0,0,0.7)'
+      startPosition: 0        # percent
       end: 'rgba(0,0,0,0)'
-      angle: 180
+      endPosition: 100
 ---
 ```
 
