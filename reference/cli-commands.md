@@ -344,7 +344,7 @@ uniweb add site --project docs
 
 ### Workspace Config
 
-The `add` command lists the new package in `pnpm-workspace.yaml` and `package.json::workspaces` — only where no pattern there covers its folder already, so a workspace listing `*/sites/*` keeps its file unchanged when a site is added under it. It edits just the `packages:` list: comments and the file's other settings stay as they are. It also updates the root `package.json` scripts (`dev`, `build`, `preview`, and `dev:<site>` / `preview:<site>` for each site after the first), removing the per-site scripts it wrote for a site that no longer exists; a script you wrote yourself is left alone. You don't need to manage these manually.
+The `add` command lists the new package in `pnpm-workspace.yaml` and `package.json::workspaces` — only where no pattern there covers its folder already, so a workspace listing `*/sites/*` keeps its file unchanged when a site is added under it. It edits just the `packages:` list: comments and the file's other settings stay as they are. It also adds the root `package.json` scripts a new site needs: `dev` and `preview` for the workspace's first site, `dev:<site>` and `preview:<site>` for each one after it, and `build` when the workspace has none. It never changes a script that is already there, adds none under a name the workspace already uses or for a command it already runs, and says which scripts it added. `uniweb rename` updates the scripts of the site it renames.
 
 ---
 
