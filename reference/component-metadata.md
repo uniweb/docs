@@ -459,7 +459,11 @@ A section's wrapper is otherwise painted with its context's surface color (`--se
 ```jsx
 export default function Banner({ content }) { /* … */ }
 Banner.className = 'bg-section'   // the band, as a section without 'self' has it
-``` ⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
+```
+
+A header whose bar is ever see-through — over a section that opens the page under it, or frosted as the page scrolls under it — is such a component: with `'self'` the bar paints itself, and without it the band's surface sits behind the bar ([Under the header](#under-the-header)).
+
+⛔ This table listed `'manual'` for a component that draws its own background until 2026-09-28 — the runtime has only ever read `'self'`.
 
 **Frontmatter Background Options**
 
@@ -947,14 +951,15 @@ export default {
 export default {
   title: 'Header',
   sticky: true,
-  height: '4rem',   // the bar's height before the browser measures it
+  height: '4rem',       // the bar's height before the browser measures it
+  background: 'self',   // the bar paints itself: see-through over the hero, solid elsewhere
 }
 ```
 
 On a page whose first section says so, the runtime lays the header over it: the header's box takes no room in the flow, so the section starts at the top of the window, and the header keeps its own height, stuck if it sticks. An author turns it off for one section with `underHeader: false`; it is one of the section's own settings, so your component never receives it as a param.
 
 - **The section** keeps its content clear of the header by `--uw-header-height`, which the runtime gives it — `padding-top: var(--uw-header-height)` on its content, while its background reaches up behind the bar. It is the header type's `height` on the first paint, which no prerender can measure, then what the browser measures, so a header that wraps on a phone is still cleared. `height` takes any CSS length, `var(--header-height)` included; without one the section starts at `0px` until measured.
-- **The header** paints itself see-through over such a section: `block.getNextBlockInfo()?.underHeader` is true there, and its box carries `data-uw-header="over"` for a stylesheet. When to turn opaque — on scroll, with a menu open — is the header's own choice.
+- **The header** paints itself see-through over such a section: `block.getNextBlockInfo()?.underHeader` is true there, and its box carries `data-uw-header="over"` for a stylesheet. When to turn opaque — on scroll, with a menu open — is the header's own choice, and so is its background everywhere: its type says `background: 'self'`, and the bar paints `bg-section` where it is solid. Without it the theme paints the header's section with its surface, a solid band over the opening section.
 - **Keep the bar in the flow.** The runtime measures what the header holds, so `--uw-sticky-top` and links to a section clear it. A bar the header makes `absolute` or `fixed` itself leaves nothing to measure.
 
 ### Presets

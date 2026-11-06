@@ -610,23 +610,26 @@ A ghost/outline button variant:
 
 Two patterns legitimately use hardcoded colors.
 
-**Headers** float across contexts — transparent over a dark hero, opaque when scrolled. They manage their own background and may use hardcoded colors for the transparent state. Even so, nav links can use `text-subtle` and `hover:text-body` when the header is in a normal state:
+**Headers** float across contexts — transparent over a dark hero, opaque when scrolled. They manage their own background, so the header's type says `background: 'self'` (with `sticky: true` to stay in view, and the hero's type says `underHeader: true` to lie under it), and may use hardcoded colors for the transparent state. Even so, nav links can use `text-subtle` and `hover:text-body` when the header is in a normal state:
 
 ```jsx
+// meta.js: { sticky: true, background: 'self' }
 function Header({ content, block }) {
-  const [scrolled, setScrolled] = useState(false)
+  const scrolled = useScrolled()
   return (
-    <header className={cn(
-      'sticky top-0 z-50 backdrop-blur-md transition-shadow',
+    <div className={cn(
+      'backdrop-blur-md transition-shadow',
       scrolled ? 'bg-section/80 shadow-sm' : 'bg-transparent'
     )}>
       <nav className="text-subtle">
         <a className="hover:text-body transition-colors">{label}</a>
       </nav>
-    </header>
+    </div>
   )
 }
 ```
+
+Without `background: 'self'`, the theme paints the header's section with its surface, and `bg-transparent` shows that solid band rather than the hero.
 
 **Self-managing components** render their own background and set their own context class, overriding the wrapper's context:
 

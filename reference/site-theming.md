@@ -769,7 +769,7 @@ Most components should use semantic tokens exclusively. Two patterns legitimatel
 
 ### Floating overlays
 
-A Header doesn't live *inside* a context — it floats *across* them. When it's transparent over a dark hero, the text must be white. When the user scrolls and it gets a white background, the text must be dark. When a dropdown opens, the panel is always light.
+A Header doesn't live *inside* a context — it floats *across* them. When it's transparent over a dark hero, the text must be white. When the user scrolls and it gets a white background, the text must be dark. When a dropdown opens, the panel is always light. Its type says `background: 'self'`, so the header's section is left unpainted and the bar's own classes decide what shows behind it ([Component Metadata](./component-metadata.md#under-the-header)).
 
 These are absolute visual requirements, not contextual ones:
 
