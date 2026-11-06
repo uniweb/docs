@@ -38,7 +38,7 @@ The keys are area names (`header`, `body`, `left`, `footer`). The values are `vi
 A name changes what the browser does with that box, so name only what you mean to move:
 
 - **The box moves.** A navigation resets the scroll, so a box that scrolls with the page lands somewhere else, and everything in it goes along. A bar that is `fixed` inside such a box drops through the page and comes back from above. A visible footer slides off the bottom of the screen.
-- **The box is captured at its own size.** A box with no height is captured as nothing, whatever overflows it, so a bar that overlays the page — `fixed`, or `absolute` in a box it doesn't fill — is gone for the length of the transition.
+- **The box is captured at its own size.** A box with no height is captured as nothing, whatever overflows it, so a bar that overlays the page — `fixed`, or `absolute` in a box it doesn't fill — is gone for the length of the transition. That is why a header lying over a page's opening section ([`underHeader`](../reference/component-metadata.md#under-the-header)) goes unnamed on that page: its box takes no room there, and the page crossfades as an unnamed one does.
 - **The box cuts off what's behind it.** A named element is a backdrop root, so a `backdrop-filter` inside it sees nothing past it: a bar's frosted glass blurs nothing, at rest too.
 - **Safari can lose a bar.** In WebKit, a named bar that stays in place, `fixed` or stuck, can fade out over the transition and come back at the end.
 
