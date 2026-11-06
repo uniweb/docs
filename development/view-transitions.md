@@ -31,14 +31,14 @@ export default {
 }
 ```
 
-The keys are area names (`header`, `body`, `left`, `footer`). The values are `view-transition-name` CSS identifiers. The runtime puts the name on the thin `<div>` it wraps the area in, so the browser can track and animate it independently.
+The keys are area names (`header`, `body`, `left`, `footer`). The values are `view-transition-name` CSS identifiers. The runtime puts the name on the thin `<div>` it wraps the area in, so the browser can track and animate it independently. The header's goes on a `<div>` just inside that one, which keeps the header's height on every page, including one whose opening section lies under the header.
 
 ### What a Name Costs
 
 A name changes what the browser does with that box, so name only what you mean to move:
 
 - **The box moves.** A navigation resets the scroll, so a box that scrolls with the page lands somewhere else, and everything in it goes along. A bar that is `fixed` inside such a box drops through the page and comes back from above. A visible footer slides off the bottom of the screen.
-- **The box is captured at its own size.** A box with no height is captured as nothing, whatever overflows it, so a bar that overlays the page — `fixed`, or `absolute` in a box it doesn't fill — is gone for the length of the transition. That is why a header lying over a page's opening section ([`underHeader`](../reference/component-metadata.md#under-the-header)) goes unnamed on that page: its box takes no room there, and the page crossfades as an unnamed one does.
+- **The box is captured at its own size.** A box with no height is captured as nothing, whatever overflows it, so a bar that overlays the page — `fixed`, or `absolute` in a box it doesn't fill — is gone for the length of the transition. A header lying over a page's opening section ([`underHeader`](../reference/component-metadata.md#under-the-header)) sits in a box that takes no room, which is why its name goes on the element inside, the header's own height: a named header is captured on every page and pairs across them.
 - **The box cuts off what's behind it.** A named element is a backdrop root, so a `backdrop-filter` inside it sees nothing past it: a bar's frosted glass blurs nothing, at rest too.
 - **Safari can lose a bar.** In WebKit, a named bar that stays in place, `fixed` or stuck, can fade out over the transition and come back at the end.
 
@@ -112,7 +112,7 @@ That matters most for the most ordinary thing a layout has: a sticky or fixed he
 
 **You get a sane order by default.** Every area is stacked above the page body, so chrome sits over content and a fixed header behaves the way you expect. Nothing to declare.
 
-What the framework does *not* do is rank one piece of chrome against another. Area names are yours — `header` and `left` are conventions, but `topbar`, `rail` and `statusbar` are equally valid — so guessing that one outranks another from its name would be wrong as often as right. Areas are equal by default; where two genuinely overlap, say so:
+What the framework does *not* do is rank one piece of chrome against another. Area names are yours — `header` and `left` are conventions, but `topbar`, `rail` and `statusbar` are equally valid — so guessing that one outranks another from its name would be wrong as often as right. One name does carry meaning: `header` is the area the runtime lays over a page's opening section that asks for it ([`underHeader`](../reference/component-metadata.md#under-the-header)). Areas are equal by default; where two genuinely overlap, say so:
 
 ```js
 // layouts/Docs/meta.js
@@ -125,7 +125,7 @@ export default {
 }
 ```
 
-`layers` mirrors `transitions`: an object overrides per region, and `layers: false` opts the layout out entirely so you can own the stacking in your own markup.
+`layers` mirrors `transitions`: an object overrides per region, and `layers: false` opts the layout out entirely so you can own the stacking in your own markup. The header area keeps a wrapper even then, one that draws no box (`display: contents`), so it can take no room on a page whose opening section lies under it without the header being rebuilt as the visitor moves between pages.
 
 **A sticky area is the one the framework does rank.** When a section in an area is `sticky` ([Component Metadata](../reference/component-metadata.md#sticky)), the area stays in view while the rest of the page scrolls under it, so it is stacked above every area that does not stick — otherwise a footer taller than the space below a stuck header would paint over the header at the bottom of the page. `layers` still ranks a sticky area you name.
 

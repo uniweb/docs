@@ -1660,7 +1660,7 @@ A link opens its page at the top, as a new step in the visitor's history, even t
 <Link to="/store" back>All solutions</Link>
 ```
 
-When the page before this one is that page, a plain click steps back to it, scrolled where the visitor left it. Steps within this page, such as a link to one of its sections, don't count, and an embedded frame that navigated doesn't get in the way. Otherwise, on a page opened directly or reached from elsewhere, or with a key held for a new tab, it is an ordinary link. It renders as any link does, so the prerendered page and a copied address are unaffected. Pages compare by path: the step back keeps its own query string and fragment. Browsers that can't tell what the step before was (anything older than Safari 26.2, Firefox 147 or Chrome 102) get the ordinary link.
+When the page before this one is that page, a plain click steps back to it, scrolled where the visitor left it. Steps within this page, such as a link to one of its sections, don't count, and an embedded frame that navigated doesn't get in the way. Otherwise, on a page opened directly or reached from elsewhere, or with a key held for a new tab, it is an ordinary link. It renders as any link does, so the prerendered page and a copied address are unaffected. Pages compare by path: the step back keeps its own query string and fragment. A link to a page that redirects — a folder with no content of its own, to its first page — is the page it leads to, where the visitor actually stood. Browsers that can't tell what the step before was (anything older than Safari 26.2, Firefox 147 or Chrome 102) get the ordinary link.
 
 For a button, such as a close ✕ on a detail view, `useGoBack` does the same:
 
