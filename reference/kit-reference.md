@@ -1160,6 +1160,8 @@ Handed `content.media`, it renders the first item — the first image, video or 
 
 A slot narrowed to one type (`media: { types: ['image'] }`, or `image:`) can render with `<Image>` directly. A slot that takes embedded components must render them — `<Visual>` does; kit's `<Media>` is a video player.
 
+`<Media>` plays a video file, or a YouTube or Vimeo address as an author pastes it, with or without `https://`. YouTube is embedded from its privacy-enhanced host, `www.youtube-nocookie.com`, which sets no cookie until the visitor plays, and Vimeo with `dnt=1`. A site with a Content-Security-Policy allows those hosts in `frame-src`.
+
 ### ChildGrid
 
 Lays a section's child sections out in the columns the section chose with its `grid` key — `3` (equal columns) or `'40/60'` (relative widths) — one of the layouts the component offers in `meta.js` `children.grid` ([Grid layouts](./component-metadata.md#grid-layouts)). From `@uniweb/kit`.
