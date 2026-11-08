@@ -105,6 +105,40 @@ export default function Features({ content, params }) {
 
 CCA doesn't constrain your import graph. Import from `components/`, from npm packages, from `hooks/`, from sibling files inside the section folder — whatever your rendering needs.
 
+### Sharing code between foundations
+
+When several foundations in one workspace need the same header, buttons or form controls, put them in a workspace package rather than copying them into each. Foundations import from it as from any package, and each foundation's build bundles what it uses.
+
+Give the package a stylesheet that tells Tailwind to read the package itself, relative to the stylesheet — the way `@uniweb/kit` does — and import it in each foundation's `styles.css`:
+
+```css
+/* packages/ui/styles.css */
+@source "./**/*.{js,jsx}";
+```
+
+```css
+/* foundation/styles.css */
+@import "tailwindcss" source("./");
+@import "@uniweb/kit/theme-tokens.css";
+@import "@acme/ui/styles.css";
+```
+
+The classes in the package's components then reach every foundation's CSS, wherever the package manager installed it.
+
+A section type can be shared the same way. It stays each foundation's to offer — authors choose from a foundation's own `sections/` — so the foundation keeps a folder for it that passes the package's component and its `meta.js` on:
+
+```js
+// foundation/sections/Banner/index.jsx
+export { default } from '@acme/ui/sections/Banner/index.jsx'
+```
+
+```js
+// foundation/sections/Banner/meta.js
+export { default } from '@acme/ui/sections/Banner/meta.js'
+```
+
+A fix in the package reaches each foundation at its next build.
+
 ### Section-level styles with `Component.className`
 
 The runtime wraps every component in a `<section>` element (with context classes for theming). Section-level styles — vertical padding, borders, background color — go on this wrapper via `Component.className`, not as an extra wrapping div inside your component:
