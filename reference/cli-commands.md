@@ -207,7 +207,7 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 
 | Option | Description |
 |--------|-------------|
-| `--project <name>` | The project's foundation, at `<name>/src/` (package `<name>-src`). Takes no name of its own |
+| `--project <name>` | The project's foundation, at `<name>/src/` (package `<name>-src`), named `<name>` in `main.js`. Takes no name of its own |
 
 ### Site Options
 
@@ -344,7 +344,7 @@ uniweb add site --project docs
 
 ### Workspace Config
 
-The `add` command lists the new package in `pnpm-workspace.yaml` and `package.json::workspaces` — only where no pattern there covers its folder already, so a workspace listing `*/sites/*` keeps its file unchanged when a site is added under it. It edits just the `packages:` list: comments and the file's other settings stay as they are. It also adds the root `package.json` scripts a new site needs: `dev` and `preview` for the workspace's first site, `dev:<site>` and `preview:<site>` for each one after it, and `build` when the workspace has none. It never changes a script that is already there, adds none under a name the workspace already uses or for a command it already runs, and says which scripts it added. `uniweb rename` updates the scripts of the site it renames.
+The `add` command lists the new package in `pnpm-workspace.yaml` and `package.json::workspaces` — only where no pattern there covers its folder already, so a workspace listing `*/sites/*` keeps its file unchanged when a site is added under it. It edits just the `packages:` list: comments and the file's other settings stay as they are. It also adds the root `package.json` scripts a new site needs: `dev` and `preview` for the workspace's first site, `dev:<site>` and `preview:<site>` for each one after it, and `build` when the workspace has none. A site that is a project's own — `<project>/site`, as `--project` and `add project` place it — goes by its project's name (`dev:shop`), any other by its package's. It never changes a script that is already there, adds none under a name the workspace already uses or for a command it already runs, and says which scripts it added. `uniweb rename` updates the scripts of the site it renames.
 
 ---
 
@@ -751,7 +751,7 @@ Diagnose project configuration issues.
 uniweb doctor
 ```
 
-The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). Run it from inside a site for that site's findings, or from the workspace root for every site's. Only an error makes it exit `1`; a recommendation is an improvement, never a failure. Run it from the workspace root or from any site/foundation directory, and `uniweb doctor --fix` repairs what it can.
+The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). What it checks is where you run it: inside a site, that site and what it is built from — its foundation and its extensions; inside a foundation no site stands beside, that foundation; at the workspace root, every site and foundation. Only an error makes it exit `1`; a recommendation is an improvement, never a failure. `uniweb doctor --fix` repairs what it can, in what it checked.
 
 ### What It Checks
 
