@@ -177,6 +177,28 @@ If they're separate clones, route a directory instead — each foundation's `sch
 
 Either way you fix `person` once and every project picks it up. Nothing here is registered yet, and nothing needs to be.
 
+### Several foundations under one scope
+
+A name in a scope is one type. Two foundations named `@acme/hub` and `@acme/press` that each keep a `schemas/member.yml` both define `@acme/member`, and registering either one sets what that type is for the other's sites too. Copies that agree today come apart the first time one of them is edited.
+
+So a type that more than one foundation of a scope uses is defined in one place — the scope's schemas package, or the one foundation that owns it — and named in full everywhere else:
+
+```js
+// press/schemas.config.js — member is hub's; press only names it
+export default {
+  '@acme/member': '../hub/schemas/member.yml',
+}
+```
+
+```js
+// press/sections/Authors/meta.js
+export default { data: { authors: '@acme/member' } }
+```
+
+A site on `press` keeps its member records in `records/acme/member/`, which is `@acme/member`; `records/member/` would be `press`'s own `@/member`, which it no longer defines. Registering `press` names `@acme/member` and sends no definition of it; registering `hub` sends the one definition.
+
+`uniweb register` stops when a foundation defines a type differently from another foundation of its scope in the same workspace, and `uniweb doctor` names every type defined twice, agreeing or not.
+
 ### Bringing app authors into an existing project
 
 Now the schemas need to exist as content types. Register the catalog under your org:
