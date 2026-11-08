@@ -361,7 +361,7 @@ description: API reference and guides
 pages: [getting-started, configuration, ...]
 label: Docs
 layout:
-  left: true
+  hide: [right]
 ```
 
 | Field | Type | Description |
@@ -372,7 +372,7 @@ layout:
 | `index` | string | In the pages directory's own `folder.yml` only: which top-level page is the homepage, unless `site.yml` names one. Deeper in the tree it has no effect — only the top level has a homepage |
 | `label` | string | Short navigation label |
 | `hidden` | boolean | Hide from navigation |
-| `layout` | object | Layout panel overrides |
+| `layout` | string or object | A layout name, or `{ name, hide, params }`, as in [page.yml](./page-configuration.md) — the pages below inherit it |
 | `seo` | object | SEO overrides |
 | `id` | string | Stable ID for `page:` links |
 
