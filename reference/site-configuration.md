@@ -336,7 +336,21 @@ pages/docs/
     └── themes.md            # → /docs/advanced/themes
 ```
 
-Page titles come from the H1 heading in each markdown file. Frontmatter remains section configuration (`type:`, `background:`, etc.).
+Each file is a page and its one section, so its frontmatter holds both: the section's configuration (`type:`, `background:`, its params) and the page's settings — the ones a `page.yml` gives a page:
+
+```markdown
+---
+type: Article
+description: Set up your academy before your first student signs up.
+label: Setup
+seo:
+  ogTitle: Setting up your academy
+---
+
+# Setting up
+```
+
+The page's keys are `title`, `description`, `label`, `keywords`, `slug`, `hideIn`, `layout`, `seo`, `knowledge` and `trackSections`, each as in [page.yml](./page-configuration.md). A page's title is its `title:`, else the file's H1 heading, else its file name. A section param named like one of the page's keys goes under `props:` (`props: { label: Step by step }`), and the build warns where the section type declares one. `id:` and `hidden:` mean what they mean in any section file: the section's id, and a draft — which here is the whole page.
 
 To activate folder mode for the entire site, place a `folder.yml` in the `pages/` directory itself. Its `pages:` and `index:` then order the top level and name the homepage — see [From the Pages Directory](#from-the-pages-directory).
 
@@ -368,6 +382,7 @@ layout:
 |-------|------|-------------|
 | `title` | string | Container title (for navigation, breadcrumbs) |
 | `description` | string | Meta description |
+| `keywords` | string[] | Meta keywords, over the site's |
 | `pages` | array | Child page ordering with `...` wildcard support |
 | `index` | string | In the pages directory's own `folder.yml` only: which top-level page is the homepage, unless `site.yml` names one. Deeper in the tree it has no effect — only the top level has a homepage |
 | `label` | string | Short navigation label |

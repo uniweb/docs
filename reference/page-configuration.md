@@ -18,6 +18,7 @@ That's all you need. The page renders all `.md` files in the folder as sections.
 # Identity
 title: About Us
 description: Learn about our company
+keywords: [company, team]       # Meta keywords (over the site's)
 label: About                    # Short nav label (defaults to title)
 id: about                       # Stable ID for page: links
 slug:                           # Localized URL segments (multilingual sites)

@@ -137,7 +137,17 @@ pages/docs/
 └── api-reference.md         → /docs/api-reference
 ```
 
-Each `.md` file becomes a separate page. The page title comes from the `# Heading` in the file. The `folder.yml` can set a title for the section and control ordering:
+Each `.md` file becomes a separate page. The page title comes from the `# Heading` in the file. Its frontmatter holds the page's settings too — a `title:` of its own, a `description:` for search results and link previews, a `label:` for menus, and the rest of what a `page.yml` gives a page:
+
+```markdown
+---
+description: Everything you can configure, and where.
+---
+
+# Configuration
+```
+
+The `folder.yml` can set a title for the section and control ordering:
 
 ```yaml
 # folder.yml
