@@ -195,7 +195,7 @@ export default {
 export default { data: { authors: '@acme/member' } }
 ```
 
-A site on `press` keeps its member records in `records/acme/member/`, which is `@acme/member`; `records/member/` would be `press`'s own `@/member`, which it doesn't define. Registering `press` names `@acme/member` and sends no definition of it; registering `hub` sends the one definition. `uniweb doctor` points out a type two of a workspace's foundations each keep a file for.
+A site on `press` keeps its member records in `records/acme/member/`, which is `@acme/member`; `records/member/` would be `press`'s own `@/member`, which it doesn't define. Registering `press` names `@acme/member` and sends no definition of it; registering `hub` sends the one definition. `uniweb doctor` points out a type that two foundations whose names give one scope each keep a file for.
 
 ### Bringing app authors into an existing project
 

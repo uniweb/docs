@@ -751,7 +751,7 @@ Diagnose project configuration issues.
 uniweb doctor
 ```
 
-The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). What it checks is where you run it: inside a site, that site and what it is built from — its foundation and its extensions; inside a foundation no site stands beside, that foundation; at the workspace root, every site and foundation. Only an error makes it exit `1`; a recommendation is an improvement, never a failure. `uniweb doctor --fix` repairs what it can, in what it checked.
+The doctor command checks your workspace and reports errors (✗), warnings (⚠) and recommendations (→). What it checks is where you run it: inside a site, that site and what it is built from — its foundation and its extensions; inside a foundation, the site beside it when that site is built from it, and otherwise that foundation; at the workspace root, every site and foundation. Only an error makes it exit `1`; a recommendation is an improvement, never a failure. `uniweb doctor --fix` repairs what it can, in what it checked.
 
 ### What It Checks
 
