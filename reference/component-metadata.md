@@ -587,19 +587,30 @@ data: {
 }
 ```
 
-When the keys are the author's rather than yours — a map of arbitrary names — declare `values` instead of `fields`. It is to an object what `items` is to an array:
+A record holds no open map. When you know the keys as you write the schema — a price for each of a product's tiers — they are the object's fields, so each value is checked, labeled and translated like any other field:
 
 ```javascript
-// A map keyed by whatever the author calls each entry; every value the same shape.
-rates: {
+price: {
   type: 'object',
-  values: { type: 'object', fields: { label: { type: 'string' }, amount: { type: 'number' } } },
+  fields: {
+    small:  { type: 'number', label: 'Small' },
+    medium: { type: 'number', label: 'Medium' },
+  },
 }
 ```
 
-Validation then checks every entry and names the offending key (`rates.overnight.amount`). Keys the value shape doesn't declare are left alone rather than rejected, so data can carry more than you described without failing a build. Declare `fields` or `values`, not both.
+When the keys are data — names nobody knows until an author writes them — make it a list whose records carry their own key. A list keeps its order, and each entry can hold more than one value:
 
-A value can be a plain one: `price: { type: 'object', values: { type: 'number' } }` holds a price per tier, `{ small: 59, medium: 99 }`. Write it that way rather than as records whose one field is `value`, which `uniweb push` and `uniweb register` refuse as the same map written long.
+```javascript
+// Each rate names itself, and an author adds as many as they need.
+rates: {
+  type: 'object',
+  many: true,
+  fields: { label: { type: 'string', required: true }, amount: { type: 'number' } },
+}
+```
+
+When the key names another record, the entry holds a reference to it: `tier: { ref: '@/tier' }`. Either form reaches your component in the same shape wherever the site is served. An open map (`values`) is refused, and the error names these two forms.
 
 **3. Inline rich-form** — an editor form, distinguished by a `fields` **array**. See [Structured Author Data](#structured-author-data) below for the full rich-form reference.
 
