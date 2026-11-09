@@ -1223,7 +1223,7 @@ active locale.
 
 #### Inline field-map field types (keyed-object form)
 
-An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name, except `default:`. A `default:` is what an editor's form starts the field with, so it belongs only inline; a named schema declares none (the build refuses one), and the runtime applies neither — a component receives the data as written. It must be a valid data schema — an `object` field declares `fields` or `values`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
+An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name, except `default:`. A `default:` is what an editor's form starts the field with, so it belongs only inline; a named schema declares none (the build refuses one), and the runtime applies neither — a component receives the data as written. It must be a valid data schema — an `object` field declares its `fields`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
 
 ```javascript
 // Full form
