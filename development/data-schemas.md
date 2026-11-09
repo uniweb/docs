@@ -91,11 +91,12 @@ read it, edit it or administer it. It is `true` unless you write `grantable: fal
 entry of the schema from being shared that way. A backend may refuse to turn it off while an entry of
 the schema is shared.
 
-**There is no key for who may create entries.** When a backend stores your content, anyone
-signed in may create entries of any schema. What protects content is the entry itself: who may
-see or edit an entry is decided by the entry — its owner, and what they share — never by who may
-create one. `creatable_by` is no longer accepted: a schema carrying it is refused, so a
-restriction you believe you declared is never silently absent.
+**There is no key for who may create entries: the site says it.** When a backend stores your
+content, every schema starts closed. The account that runs the site creates its entries, and
+anyone else only where the site's [`blueprint.yml`](../reference/blueprint.md) opens it. Who may
+see or edit an entry is decided by the entry, its owner and what they share, and by what the
+blueprint gives a team or every member. `creatable_by` is no longer accepted: a schema carrying it
+is refused, so a restriction you believe you declared is never silently absent.
 
 > An unrecognised key here is reported as a warning and not carried, so a typo like `lable`
 > tells you rather than leaving you with a key that does nothing.

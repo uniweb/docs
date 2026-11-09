@@ -104,7 +104,9 @@ running as a function. The mock above is the one that speaks this client's own d
 
 The mock applies what production applies — who may edit an entry, which sections your schemas
 declare insert-only, and that the account running the site reads everyone's entries but changes
-them only after confirming its password. A permission you are relying on fails **here**, at your
+them only after confirming its password. It also applies who may add entries of each type. Every
+type starts closed, as on your host, until the site's [`blueprint.yml`](../reference/blueprint.md)
+opens it. Hand the mock that file, or a member's first create is refused. A permission you are relying on fails **here**, at your
 desk, rather than in front of a user. That is the part a hand-rolled fixture object usually gets
 wrong: it shows a button working that production would refuse.
 

@@ -689,6 +689,10 @@ site without the service — so a foundation works unchanged on a site with it a
 without it. A backend you run yourself is an address — `backend: https://your-backend.example/_api`
 under `services:` — and asks your host to leave its own off.
 
+How a backend started for the site begins is [`blueprint.yml`](./blueprint.md), beside `site.yml`:
+who may create an account, its teams, who adds entries of each type, and what visitors may read.
+Without one, every type starts closed, and only the account that runs the site adds entries.
+
 > **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
 > what the site does without one, and where a demo fixture belongs — see
 > [Sites with Accounts](../development/sites-with-accounts.md).
@@ -724,6 +728,9 @@ service running as a function. If you are building against Uniweb's own `backend
 import { createMockBackend } from '@uniweb/api/mock'
 export default createMockBackend({ seed }).fetch
 ```
+
+It begins as a backend started for your site does, with every type closed. Hand it the site's
+`blueprint.yml` to open what your members create: see [Blueprint](./blueprint.md#in-uniweb-dev).
 
 > **`$devBackend` is never published.** Keys beginning with `$` are local to your working
 > copy and are stripped from the built site, so a visitor cannot reach your local
