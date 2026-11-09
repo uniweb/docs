@@ -599,6 +599,8 @@ rates: {
 
 Validation then checks every entry and names the offending key (`rates.overnight.amount`). Keys the value shape doesn't declare are left alone rather than rejected, so data can carry more than you described without failing a build. Declare `fields` or `values`, not both.
 
+A value can be a plain one: `price: { type: 'object', values: { type: 'number' } }` holds a price per tier, `{ small: 59, medium: 99 }`. Write it that way rather than as records whose one field is `value`, which `uniweb push` and `uniweb register` refuse as the same map written long.
+
 **3. Inline rich-form** — an editor form, distinguished by a `fields` **array**. See [Structured Author Data](#structured-author-data) below for the full rich-form reference.
 
 #### Standard schema refs
