@@ -181,18 +181,20 @@ Either way you fix `person` once and every project picks it up. Nothing here is 
 
 Any foundation can use a data schema another one defines, whatever its own scope: it names the type in full. A scope is a namespace that keeps two publishers' names from colliding, not a limit on who uses a type. So when `press` needs the `member` type that `hub` defines as its own `@/member`, and `hub` is `@acme/hub`, `press` names `@acme/member` and keeps no copy of its file. A copy would be a second definition of the same type, and the two would come apart the first time one was edited.
 
-For its local build, `press` routes that one type to `hub`'s file:
+In a workspace, `press` needs nothing else: its build reads `@acme/member` from `hub`, the package of the workspace whose name gives the `@acme` scope and whose own `schemas/` defines `member`.
 
 ```js
-// press/schemas.config.js — member is hub's; press only names it
-export default {
-  '@acme/member': '../hub/schemas/member.yml',
-}
+// press/sections/Authors/meta.js — member is hub's; press only names it
+export default { data: { authors: '@acme/member' } }
 ```
 
+Two packages of the workspace defining `member` stop the build, naming both: a type has one definition. When the defining files live outside the workspace, `schemas.config.js` routes the type, and wins over the workspace:
+
 ```js
-// press/sections/Authors/meta.js
-export default { data: { authors: '@acme/member' } }
+// press/schemas.config.js
+export default {
+  '@acme/member': '../../shared/member.yml',
+}
 ```
 
 A site on `press` keeps its member records in `records/acme/member/`, which is `@acme/member`; `records/member/` would be `press`'s own `@/member`, which it doesn't define. Registering `press` names `@acme/member` and sends no definition of it; registering `hub` sends the one definition. `uniweb doctor` points out a type that two foundations whose names give one scope each keep a file for.
