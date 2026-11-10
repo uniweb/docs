@@ -144,7 +144,9 @@ export default { data: { plans: '@acme/plan' } }
 sites/main/records/acme/plan/basic.yml
 ```
 
-Nothing else is configured: the build reads the type from the library the foundation depends on, wherever it is. A copy of the file in a foundation would be a second definition of one type, which stops the build when both are read and which `uniweb doctor` points out. Without `--scope`, the command takes the scope the wired foundations' names share. See [Data Schemas](./data-schemas.md#sharing-schemas-across-projects) and [Schemas in Practice](./schemas-in-practice.md).
+Nothing else is configured: the build reads the type from the library the foundation depends on, wherever it is.
+
+On a site synced with a Uniweb backend, the library's types are registered from the library: run `uniweb register` in its folder before the first push of a foundation that names them. A foundation is released only once the types it names are registered, and `uniweb push` and `uniweb publish` release the site's foundation, not its library. A push that finds a type missing says which library defines it and the command to run there. A copy of the file in a foundation would be a second definition of one type, which stops the build when both are read and which `uniweb doctor` points out. Without `--scope`, the command takes the scope the wired foundations' names share. See [Data Schemas](./data-schemas.md#sharing-schemas-across-projects) and [Schemas in Practice](./schemas-in-practice.md).
 
 ---
 
