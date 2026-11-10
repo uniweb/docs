@@ -383,7 +383,7 @@ packages:
 
 In a single layout it is `ui/` beside `src/` and `site/`; with co-located projects it is `libraries/ui/` at the workspace root, which each project's foundation depends on. `uniweb add library libraries/ui --foundation classic,modern` makes it and writes the wiring shown.
 
-**When to use it:** Two foundations need the same component, hook or data type. A library is how co-located projects share code while each keeps its own foundation.
+**When to use it:** Two foundations need the same component, hook or data type. A library is how co-located projects share code while each keeps its own foundation. When foundations share different parts with different partners, give each group its own library, since each foundation's CSS holds the classes of every library it imports ([Libraries § Splitting shared code by who uses it](./libraries.md#splitting-shared-code-by-who-uses-it)).
 
 **Trade-off:** Each foundation bundles the library, so a change in it reaches a site with that site's foundation: at its next build, and on a hosted site with the foundation's next release. A library in another repository can stay in its own folder beside the workspace (`uniweb add library ../acme-shared`), or be kept inside it as a git submodule or a clone: see [Libraries](./libraries.md#a-library-outside-the-workspace).
 

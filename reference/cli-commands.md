@@ -789,6 +789,7 @@ The doctor command checks your workspace and reports errors (✗), warnings (⚠
 
 **For each foundation:**
 - `styles.css` names what Tailwind has to read: it warns about a `@source` that finds nothing, and about a folder that writes classes no `@source` names, since a site build and `uniweb dev` would miss every class only that folder uses. `@import "tailwindcss" source("./")`, which new projects have, reads the whole foundation and leaves no folder to name
+- Each [library](../development/libraries.md) it bundles is read by its `styles.css` too: a library whose classes neither a `@source` nor an import of its stylesheet reads is a warning, with the line to add (`unread-library`)
 - Its default section type, the one that renders a section naming no `type:`. That's the `defaultSection` in `main.js`; without one, a section type named `Section` if the foundation has one; otherwise none, where each section names its own and one that doesn't shows "Component not found". Only a `defaultSection` naming no section type is a warning. Where one of the foundation's types stands out as a default, doctor suggests it
 
 **For each extension:**
@@ -799,6 +800,7 @@ The doctor command checks your workspace and reports errors (✗), warnings (⚠
 
 **Cross-references:**
 - Warns if a foundation with `extension: true` is wired as a primary foundation instead of listed under `extensions:` in `site.yml`
+- A data type defined in two packages of the workspace, a library and a copy in a foundation say, with the files: keep one definition, and name the type in full elsewhere (`type-defined-twice`, a recommendation)
 
 ### Examples
 

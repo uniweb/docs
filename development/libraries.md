@@ -1,8 +1,10 @@
 # Libraries: Code Several Foundations Share
 
-A section type is a front desk: it faces authors, reads their content and params, and hands ordinary props to the components that do the work. A **library** is the back office several foundations share: those components, the hooks and logic behind them, and the data types their records follow. It has no section type of its own. Each foundation keeps its own section types, layouts and look, and calls on the same library.
+When two foundations need the same pricing card, the same sign-up form or the same footer, a copy in each means every fix is made twice, and the copies drift apart the first time someone forgets. A **library** holds that code once. Each foundation imports it as from any package and keeps its own section types, layouts and look, and a fix in the library reaches every site that uses it at its next build.
 
-This page covers when a second foundation is worth it, how to make and wire a library, what goes in one, and how a change in it reaches a site.
+A section type is a front desk: it faces authors, reads their content and params, and hands ordinary props to the components that do the work. A library is the back office several foundations share: those components, the hooks and logic behind them, and the data types their records follow. It has no section type of its own to offer.
+
+This page covers when a second foundation is worth it, how to make a library, how to move copies you already have into one, how to split shared code between libraries, data types, how a change reaches a site, a library kept outside the workspace, and what the build says when something is off.
 
 ---
 
@@ -18,7 +20,7 @@ A foundation is the vocabulary a kind of site is made with. Two sites that diffe
 | The vocabulary itself: other section types, layouts, structure | a second foundation, sharing a library with the first | a package to keep |
 | Everything | two foundations that share nothing | the code written twice |
 
-The fourth row is the one to reach for before the fifth. A second foundation is for a different vocabulary; it is never a way to make a bundle smaller.
+The fourth row is the one to reach for before the fifth. A second foundation is for a different vocabulary; it is never a way to make a bundle smaller, since each foundation bundles only what it imports anyway.
 
 ---
 
@@ -86,6 +88,8 @@ export default function Pricing({ content }) {
 }
 ```
 
+A file can also be imported by its path in the library, which suits code moved from a foundation that imported it by path (below): `import Button from 'ui/components/Button.jsx'`, with `"./components/*": "./components/*"` in the library's `exports`, as `uniweb add library` writes it.
+
 A component in a library takes ordinary props and never fixes a design decision itself. It reads each one from a foundation var or a theme token:
 
 ```jsx
@@ -104,21 +108,98 @@ Each foundation declares the vars in its `main.js` (`classic` with a 2px radius 
 
 Import `@uniweb/core` by its bare name only, as kit does. A subpath import bundles a second copy of it into the foundation.
 
-### A section type both foundations offer
+### Section types
 
-A section type stays each foundation's to offer: authors choose from a foundation's own `sections/`. When two vocabularies offer the same type, with the same content and params, the library can hold it and each foundation passes it on:
+Authors choose a section type from a foundation's own `sections/`, so a type stays each foundation's to offer even when its code is the library's. Which of three cases a type is decides what the library holds:
 
-```js
-// foundations/classic/sections/Banner/index.jsx
-export { default } from 'ui/sections/Banner/index.jsx'
+- **The same type in each foundation**, the same component and the same `meta.js`: the library holds it whole, and each foundation keeps two lines that pass it on.
+
+  ```js
+  // foundations/classic/sections/Banner/index.jsx
+  export { default } from 'ui/sections/Banner/index.jsx'
+  ```
+
+  ```js
+  // foundations/classic/sections/Banner/meta.js
+  export { default } from 'ui/sections/Banner/meta.js'
+  ```
+
+  The foundation's editor schema carries the library's `meta.js`, so authors see the same title, params and presets in each.
+
+- **The same component, offered differently:** another title, other params or presets in each `meta.js`. The library holds the component (`index.jsx`, and the files it imports); each foundation keeps its own `meta.js` and passes on only `index.jsx`.
+
+- **Different components:** the type stays each foundation's, even when its `meta.js` is the same file. Sharing the `meta.js` alone would tie two editor interfaces to code that doesn't share them: a param one foundation's component adds would show in the other's editor, unread.
+
+---
+
+## Moving copies into a library
+
+Foundations often begin as copies of one another, and much of their code is still the same file in each. Moving it into a library is mechanical, and you can show it changed nothing.
+
+1. **Find what is still the same.** List the files identical in two foundations, path by path:
+
+   ```bash
+   cd foundations
+   for f in $(cd classic && find components sections layouts utils -type f ! -name '.*' 2>/dev/null); do
+     cmp -s "classic/$f" "modern/$f" && echo "$f"
+   done
+   ```
+
+   Look at the ones that differ too: a file whose only difference is a comment's example is the same code, and one copy with both examples serves both.
+
+2. **Move a file with what it imports.** A file can move only when every file it imports by path (`./`, `../`, or an alias such as `#components/`) moves too, and is the same in every foundation that holds it. We've found this is where most of the work is: a component that looks shared but imports its foundation's own `Button` renders that foundation's button, and stays until `Button` moves.
+
+3. **Point the foundations at it.** In the library the file keeps its path, and a foundation imports it by the library's name and that path: `#components/Button.jsx`, or `../../components/Button.jsx`, becomes `ui/components/Button.jsx`. When the moved files name each other through subpath aliases, give the library the same `imports` map the foundations have, so they still do:
+
+   ```json
+   {
+     "name": "ui",
+     "imports": { "#components/*": "./components/*", "#utils/*": "./utils/*" },
+     "exports": {
+       ".": "./index.js",
+       "./styles.css": "./styles.css",
+       "./components/*": "./components/*",
+       "./sections/*": "./sections/*",
+       "./utils/*": "./utils/*"
+     }
+   }
+   ```
+
+   A section type moves by the case it is ([above](#section-types)).
+
+4. **Check that it changed nothing.** Build the workspace before the move and after, and compare what came out:
+
+   ```bash
+   npx uniweb build
+   cp -R sites/main/dist /tmp/main-before && cp -R foundations/classic/dist /tmp/classic-before
+   # … the move, then: pnpm install
+   npx uniweb build
+   diff -r -x '*.map' /tmp/main-before sites/main/dist && diff -r -x '*.map' /tmp/classic-before foundations/classic/dist && echo "the same"
+   ```
+
+   The same files mean the move changed nothing a visitor sees, and nothing a publish sends: each foundation builds to the code it built to before, so the move alone gives a synced site nothing new to release. Sourcemaps are left out because they name each file's source path, which the move changes; no visitor loads one, and a publish doesn't send them.
+
+---
+
+## Splitting shared code by who uses it
+
+Each foundation bundles only the code it imports, but its `@import "ui/styles.css"` has Tailwind read every file of the library. A library that holds what several foundations share in different combinations therefore gives each foundation the classes of components it never draws. Measured on three foundations sharing 89 files: one library for all of them put 229 more selectors, 3 KB gzipped, into the CSS of a foundation that used none of the components behind them.
+
+So split shared files by the foundations that use them, a library per group:
+
+| Used by | Library |
+|---|---|
+| `store`, `blog` and `portal` | `libraries/ui`: buttons, form controls, the footer |
+| `store` and `portal` | `libraries/commerce`: the cart, the price table |
+| `blog` and `portal` | `libraries/articles`: the article card, the author page |
+
+```bash
+uniweb add library libraries/ui --foundation store,blog,portal
+uniweb add library libraries/commerce --foundation store,portal
+uniweb add library libraries/articles --foundation blog,portal
 ```
 
-```js
-// foundations/classic/sections/Banner/meta.js
-export { default } from 'ui/sections/Banner/meta.js'
-```
-
-The foundation's editor schema carries the library's `meta.js`. When the two vocabularies differ, each foundation writes its own section type over the same components instead.
+A library that uses another names it in its own dependencies, `"ui": "file:../ui"` in `libraries/commerce/package.json`, written by hand since `add library` wires foundations, and imports it by name. Each foundation imports the stylesheet of every library it uses, as `add library` wires it, so each foundation's CSS holds what it held when it had the copies.
 
 ---
 
@@ -145,11 +226,16 @@ export default { data: { plans: '@acme/plan' } }
 sites/main/records/acme/plan/basic.yml
 ```
 
-Nothing else is configured: the build reads the type from the library the foundation depends on, wherever it is.
+Nothing else is configured: the build reads the type from the library the foundation depends on, wherever it is. Without `--scope`, `add library --schemas` takes the scope the wired foundations' names share.
 
-On a site synced with a Uniweb backend, the library's types are registered with a foundation that names them: `uniweb register` in a foundation registers each type it names that a library defines, from the library, before the foundation itself, since a foundation is taken only once the types it names are registered. `uniweb push` and `uniweb publish` release a site's foundation through `register`, so they register them too. A change to one of those types changes each foundation that names it, so the next push or publish of one of their sites releases the foundation and registers the change. Every site that names a registered type reads it, and a backend that holds records of one refuses a change that would invalidate them ([Data Schemas](./data-schemas.md#a-schema-repo-on-its-own)). A library's types register under its scope, which takes a member of that scope; a library from an organization you aren't a member of is used as that organization registered it. `uniweb register` in the library registers its types alone.
+**On a site synced with a Uniweb backend:**
 
-A copy of the file in a foundation would be a second definition of one type, which stops the build when both are read and which `uniweb doctor` points out. Without `--scope`, `add library --schemas` takes the scope the wired foundations' names share. See [Data Schemas](./data-schemas.md#sharing-schemas-across-projects) and [Schemas in Practice](./schemas-in-practice.md).
+- `uniweb register` in a foundation registers each type it names that a library defines, from the library, before the foundation itself: a backend takes a foundation only once the types it names are registered. `uniweb push` and `uniweb publish` release a site's foundation through `register`, so they register the types too, with nothing to run first.
+- A change to one of those types changes every foundation that names it, so the next push or publish of any of their sites releases its foundation and registers the change. Every site that names the type then reads the new definition. A backend that holds records of a type refuses a change those records can't take, and says what it is ([Data Schemas](./data-schemas.md#a-schema-repo-on-its-own)).
+- A library's types register under its scope, which takes a member of that scope. A library from an organization you aren't a member of is used as that organization registered it.
+- `uniweb register` run in the library registers its types alone.
+
+A copy of a type's file in a foundation would be a second definition of one type, which stops the build when both are read, and which `uniweb doctor` points out. See [Data Schemas](./data-schemas.md#sharing-schemas-across-projects) and [Schemas in Practice](./schemas-in-practice.md).
 
 ---
 
@@ -184,11 +270,25 @@ A git submodule or a clone inside the workspace works too, as a package the work
 
 ---
 
+## When the build says something
+
+| What you see | What it means | What to do |
+|---|---|---|
+| `[uniweb] The foundation bundles ui, and its styles.css reads no classes from it, so any class only it writes is missing from …` | Tailwind never reads the library's files for this foundation, so classes only the library uses are in no CSS | add the line it names to the foundation's `styles.css`, `@import "ui/styles.css";` |
+| `ui, a library it bundles, changed — rebuilding classic` | a site build found a library file newer than the foundation's build | nothing: the rebuild is the fix |
+| `Data schema '@acme/plan' is defined by 2 packages this foundation reads: …` | a type's file is in two packages, a library and a copy in a foundation say | keep one file, and name the type in full elsewhere; `uniweb doctor` lists each such type |
+| `Data schema '@acme/plan' is defined nowhere this foundation can read: …` | no package the foundation reads defines that type under that scope | check the library's `uniweb.scope` and its `schemas/`, and that the foundation depends on it |
+| `@acme/member is defined in foundations/hub/, which has not registered it` | a push or publish names a type another *foundation* defines, and that foundation was never registered on this backend | register that foundation first, with the command the message prints |
+| `This uniweb (…) needs a newer @uniweb/build than the one installed …` | the project's framework packages are older than the CLI | `npx uniweb@latest update --yes` |
+| `Failed to resolve entry for package "classic"`, under pnpm | a library outside the workspace is linked with `link:` | depend on it with `file:` |
+
+---
+
 ## Wiring one by hand
 
 `uniweb add library` writes nothing a developer can't. For a package you make or keep yourself:
 
-1. List its folder in `pnpm-workspace.yaml` and in `package.json` `workspaces`.
+1. List its folder in `pnpm-workspace.yaml` and in `package.json` `workspaces`, unless it is outside the workspace.
 2. Give it a `styles.css` holding `@source "./**/*.{js,jsx}";`, and `"./styles.css"` in its `exports` if it has an `exports` map.
 3. In each foundation: `"<name>": "file:<path to it>"` in `dependencies`, and `@import "<name>/styles.css";` in `styles.css`.
 4. For data types: `"uniweb": { "scope": "@acme" }` in its `package.json`, and the types in its `schemas/`.
@@ -201,3 +301,4 @@ A git submodule or a clone inside the workspace works too, as a package the work
 - **[Project Structures](./project-structures.md)**: the layouts, and where a library goes in each
 - **[Data Schemas](./data-schemas.md)**: writing a type
 - **[Schemas in Practice](./schemas-in-practice.md)**: where the build finds a type, and when to register one
+- **[CLI Commands](../reference/cli-commands.md)**: `uniweb add library`, `uniweb status` and `uniweb register`

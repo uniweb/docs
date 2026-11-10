@@ -113,7 +113,7 @@ When several foundations need the same components, hooks or data types, put them
 uniweb add library libraries/ui --foundation classic,modern
 ```
 
-This makes the package and wires each foundation: the dependency, and `@import "ui/styles.css";` in its `styles.css`, so Tailwind reads the library's classes wherever it is installed. A component in a library takes ordinary props and reads its look from foundation vars and theme tokens, so it renders in each foundation's style. A section type both foundations offer can live there too, passed on by each foundation's `sections/`. See [Libraries](./libraries.md).
+This makes the package and wires each foundation: the dependency, and `@import "ui/styles.css";` in its `styles.css`, so Tailwind reads the library's classes wherever it is installed. A component in a library takes ordinary props and reads its look from foundation vars and theme tokens, so it renders in each foundation's style. A section type both foundations offer can live there too, passed on by each foundation's `sections/`. Code already copied into several foundations moves into one file by file, and building before and after shows it changed nothing ([Libraries § Moving copies into a library](./libraries.md#moving-copies-into-a-library)). See [Libraries](./libraries.md).
 
 ### Section-level styles with `Component.className`
 

@@ -43,6 +43,9 @@ Repeating content groups within a single markdown file, created by headings afte
 **Layout**
 A page-level structure component that arranges areas (header, footer, sidebar, body). Lives in `src/layouts/` in the foundation and `layout/` in the site. The configuration cascade determines which layout each page uses. See [Custom Layouts](../development/custom-layouts.md).
 
+**Library**
+A local package several foundations depend on, holding the components, hooks, logic and data types they share. It offers no section type of its own: each foundation keeps its own section types and look, and imports the library's code as from any package. In a folder of the workspace or beside it; `uniweb add library` makes and wires one. See [Libraries](../development/libraries.md).
+
 **Meta.js**
 A file that declares a section type's interface: content expectations, params (with types and defaults), presets, category, background behavior, and the `content.data` keys the section receives (`data:`). Optional — section types work without it, but a section receives only the `content.data` keys its component declares (plus any its foundation declares for every section). See [Component Metadata](./component-metadata.md).
 
