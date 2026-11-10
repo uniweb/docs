@@ -1554,7 +1554,7 @@ git config -f .gitmodules submodule.docs.branch stable   # follow stable instead
 
 A submodule takes the app's edits on a pull as a commit in the submodule, made with your own git identity and naming the files it changed. The pull merges that commit into the submodule's checkout and records it in your repository, and `uniweb refresh` takes the submodule's latest by merging, where its checkout holds commits of its own. Push the submodule before your repository — the pull says how — or a clone of the site cannot check out the commit it records. A clone beside the site, which your repository does not record, holds the app's edits instead.
 
-### Mounting another site's records
+### Mounting records from another site
 
 A site can hold another site's records of a type as its own: sites of one project that show the same products, the same team or the same prices. Mount the other site's folder for that type under `paths:`, at the path its records have:
 
@@ -1566,7 +1566,9 @@ paths:
 
 - `uniweb build`, `uniweb dev` and `uniweb validate` read the mounted records as this site's records of `@acme/member`, and `uniweb dev` rebuilds when one of their files changes.
 - The records stay the other site's, so they are edited there. The site's own `records/acme/member/` holds no files while it is mounted: any it holds are not read, and the build says so.
-- With a backend, `uniweb push` adds the other site's records to this site's by reference, not as copies, so both sites show the one record. Push the site that owns them first: a push stops on a mounted record its owner hasn't pushed. `uniweb pull` leaves the mounted files as they are.
+- With a backend, `uniweb push` adds the other site's records to this site's by reference, not as copies, so both sites show the one record. Push the site that owns them first: a push stops on a mounted record its owner hasn't pushed.
+- The push also needs this site's foundation to declare the type, as a section type's data key (`data: { team: '@acme/member' }`) or a schema of its own: the backend refuses a query over a type none of the site's foundations renders. A query in `queries.yml` alone is not enough.
+- An author's edit in the app is an edit to the one record, whichever site it was made through. `uniweb pull` leaves the mounted files as they are, and the owning site's pull writes the edit into them.
 - A key names one type: `records/<name>` for the foundation's own `@/<name>`, or `records/<org>/<name>`. Link and file records belong to a site's own folder and are not mounted.
 
 ### Use Cases

@@ -246,6 +246,10 @@ With `*/src` and `*/sites/*` listed, both commands create the folder and leave `
 
 Extensions nest the same way. A project's own go in `memberships/extensions/<name>/`, and one shared by every project goes in `extensions/<name>/` at the workspace root; each site loads the nearest one with the name it asks for.
 
+What the projects share has a place of its own, so no project copies another's files:
+- **Code and data types** several foundations use go in a [library](./libraries.md) at the workspace root, which each foundation depends on.
+- **Records** several sites show stay in the site that owns them. The other sites [mount that site's records of the type](../reference/site-configuration.md#mounting-records-from-another-site) in their `site.yml`.
+
 **When to use it:** Several products or solution types in one repository, each a foundation with several sites.
 
 **Trade-off:** One folder level more than co-located projects, so a site's `file:` path goes up two levels (`file:../../src`).

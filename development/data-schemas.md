@@ -548,7 +548,7 @@ A schema reference is a name in one of three namespaces. The prefix says where t
 |---|---|---|
 | `@/product` | **Your own** — a schema this foundation defines | `foundation/schemas/product.{yml,yaml,js,json}` |
 | `@std/person` | A **shared standard** — common types anyone can use | the `@uniweb/schemas` package |
-| `@acme/product` | **An org's** shared schema | that org's `@acme/schemas` package |
+| `@acme/product` | **An org's** shared schema | wherever it is defined: a foundation or a [library](./libraries.md) of your workspace, that org's installed `@acme/schemas` package, or a folder `schemas.config.js` routes ([below](#sharing-schemas-across-projects)) |
 
 `@/` is the *self* namespace — "this foundation's own." Because you never write your own org name in your source, `@/`-refs stay portable: the same foundation can be registered under any scope. The standards (`@std/person`, `@std/event`, `@std/article`, `@std/project`, …) cover the shapes most sites need — reach for one before inventing your own, the same way you'd pull a well-known type off the shelf rather than redefining it.
 
