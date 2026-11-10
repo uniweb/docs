@@ -1570,11 +1570,14 @@ paths:
 - The push also needs this site's foundation to declare the type, as a section type's data key (`data: { team: '@acme/member' }`) or a schema of its own: the backend refuses a query over a type none of the site's foundations renders. A query in `queries.yml` alone is not enough.
 - An author's edit in the app is an edit to the one record, whichever site it was made through. `uniweb pull` leaves the mounted files as they are, and the owning site's pull writes the edit into them.
 - A key names one type: `records/<name>` for the foundation's own `@/<name>`, or `records/<org>/<name>`. Link and file records belong to a site's own folder and are not mounted.
+- A record whose file the owning site deletes stays on this site until this site pushes again. The owning site's push keeps it while this site's folder places it, and a later push of the owning site deletes it.
+- `paths:` belongs to the project, so a copy made with `uniweb clone` has no mount: it holds the records as files of its own, the same records. To mount them again, delete those files and mount the owning site's directory at the folder they were in — for a type the clone's foundation names as its own, `records/<name>`.
+- Pointing two sites' `paths: { records: … }` at one folder is not the same thing: with a backend, each site's push sends that folder's records as its own, two of each.
 
 ### Use Cases
 
 - **Separate content repo** — Content in a git submodule, maintained by a different team
-- **Shared content** — Multiple sites reading from the same pages or records
+- **Shared content** — Multiple sites reading from the same pages, or [another site's records](#mounting-records-from-another-site)
 - **Existing docs** — Point `pages` at an existing folder of markdown files
 - **Mixed sources** — Some pages local, others from external repos via per-subfolder mounting
 

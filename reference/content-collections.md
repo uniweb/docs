@@ -95,7 +95,7 @@ Every file in a schema folder of `records/` is a record — putting it there is 
 
 A file whose name starts with `_` is not a record, and neither is anything in a folder whose name does — a place for work in progress. The one file at the top of `records/` is [`folder.yml`](#folders), its organization; any other file there names no schema and is reported. `site.yml` can move the folder, `folder.yml` included: `paths: { records: ../shared/records }`.
 
-Records of a type another site of the project owns — the same products, team or prices on several sites — stay in that site's folder. The other sites [mount that site's records of the type](./site-configuration.md#mounting-records-from-another-site) under `paths:`, and read them as their own. With a backend, each site then shows the one record: a push places it by reference, never as a copy.
+Records of a type another site of the project owns — the same products, team or prices on several sites — stay in that site's folder. The other sites [mount that site's records of the type](./site-configuration.md#mounting-records-from-another-site) under `paths:`, and read them as their own. With a backend, each site then shows the one record: a push places it by reference, never as a copy. Pointing two sites' `paths: { records: … }` at one folder shares the files, which is enough for a static build; with a backend, each site's push sends that folder's records as its own, so the backend holds two of each, and an edit in the app through one site never reaches the other.
 
 Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records/folder.yml` instead.
 
@@ -199,7 +199,7 @@ A path under a folder is relative to `records/`, naming one file or matching man
 
 `folder.yml` never lists records at the top level — every record in `records/` is one already — so a path there is reported as an error. The exception is an entry that gives a record `tags:` or a `label:`: `- path: news/welcome.md` with `tags: [pinned]` keeps the record at the top and says what the folder knows about it. A `folder.yml` the build cannot read as a list — invalid YAML, or a mapping — stops the build.
 
-It lives in the directory it organizes, the way a pages folder's `folder.yml` does: it moves with `paths.records`, and a records directory that several sites share brings its folders with it. A `records.yml` at the site root — where this file lived before — stops the build and names the move: `git mv records.yml records/folder.yml`.
+It lives in the directory it organizes, the way a pages folder's `folder.yml` does: it moves with `paths.records`, and a records directory several sites build from brings its folders with it. A `records.yml` at the site root — where this file lived before — stops the build and names the move: `git mv records.yml records/folder.yml`.
 
 ### With a backend
 
@@ -214,7 +214,7 @@ It lives in the directory it organizes, the way a pages folder's `folder.yml` do
 
 Records pushed to a backend are served once the site has been published. From then on, the live site reads its records from the site's folder as it stands, so a push adds, changes or removes them there with no republish. Pages, by contrast, change on the live site when you publish.
 
-A record that leaves the folder keeps living on the backend, where no site serves it, until it is deleted. It leaves because its file was deleted, it moved to another schema, or `records/` was emptied. The push that took it out offers to delete it, with a count. That push keeps any record another site's folder still places, and says so. With `--yes` it deletes them without asking. With no terminal and no `--yes`, it keeps them and says so.
+A record that leaves the folder keeps living on the backend until it is deleted. It leaves because its file was deleted, it moved to another schema, or `records/` was emptied. The push that took it out offers to delete it, with a count, and so does each later push until it is answered. With `--yes` it deletes them without asking. With no terminal and no `--yes`, it keeps them and says so. A record another site's folder still places — a site that mounts this site's records — is kept, and said so: that site still shows it until its next push, and a later push of this site deletes it once no folder places it.
 
 **Moving records to another schema.** Move the files into the new schema's folder, renamed or not, and push. A record keeps its type, so each moved record goes up as a new record of the new schema, in the place the old one had in the site's folder, and the push lists them. Leave each file's `$uuid` line as it is: that is how the push knows which record moved. The backend keeps the old records, where no site serves them, and the push offers to delete them. A field holding a secret stays with the old record, so the push names any such field, to be set again in the app. A page that routes records by `[uuid]` ([Dynamic Routes](./dynamic-routes.md)) gives a moved record a new address; one that routes them by `[slug]` keeps it.
 ---
