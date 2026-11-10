@@ -225,7 +225,7 @@ Run this from a workspace root (the folder `uniweb create` made), once its depen
 
 ### Library Options
 
-A library is a package several foundations depend on: the components, logic and data types they share. `add library` makes one, lists it in the workspace, and wires each foundation it names: a `file:` dependency, and an import of the library's stylesheet in the foundation's `styles.css`. Run on a folder that holds a package already, it wires that package without changing it. A folder outside the workspace (`../acme-shared`), another repository's say, is made or wired there and not listed in the workspace. See [Libraries](../development/libraries.md).
+A library is a package several foundations depend on: the components, logic and data types they share. `add library` makes one, lists it in the workspace, and wires each foundation it names: a `file:` dependency, and an import of the library's stylesheet in the foundation's `styles.css`. Run on a folder that holds a package already, it wires that package without changing it. A folder beside the workspace (`../acme-shared`), another repository's say, is made or wired there and listed in the workspace by that path, so the package manager links it. See [Libraries](../development/libraries.md).
 
 | Option | Description |
 |--------|-------------|

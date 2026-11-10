@@ -245,7 +245,7 @@ Each foundation's build bundles the library, so the library's code ships inside 
 
 - **Building.** A site build rebuilds its foundation when a file of a library it bundles changed, and says which library. So do `uniweb export` and `uniweb deploy --host`, and `uniweb register` before it uploads.
 - **Developing.** `uniweb dev` serves the library, and an edit to one of its components updates the open page, as an edit to the foundation's own code does.
-- **Seeing what it reaches.** `uniweb status`, run in the library, names the foundations that bundle it and the sites each one serves; a site's status names the libraries its foundation bundles.
+- **Seeing what it reaches.** `uniweb status`, run in a library inside the workspace's folder, names the foundations that bundle it and the sites each one serves; a site's status names the libraries its foundation bundles, one beside the workspace included.
 - **A registered foundation.** A registered foundation version keeps the library as it was when that version was built, the way it keeps kit. A fix in the library reaches a hosted site when the site's foundation releases a new version and the site moves to it, which `uniweb publish` from the site does: it rebuilds the foundation, and releases a new version when the build changed.
 
 ---
@@ -259,14 +259,21 @@ A library can also live in a folder beside the workspace, in a repository of its
 "dependencies": { "acme-shared": "file:../../../acme-shared" }
 ```
 
-It is no package of the workspace, so the workspace doesn't list it. Builds and `uniweb dev` read it from its folder, whatever the package manager installed: npm links the folder, and pnpm installs a copy, which the build doesn't read, so a new file or an edit reaches the next build and the open page without a reinstall. What the library's code imports resolves as the foundation's own would: its peer dependencies, such as React and `@uniweb/kit`, from the foundation, and its own dependencies from where the workspace's install put them. Its data types resolve from its `schemas/` too.
+The workspace lists it by that path, as it lists a library inside it:
 
-Two things differ from a library inside the workspace:
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - foundations/*
+  - sites/*
+  - '../acme-shared'
+```
 
-- **Depend on it with `file:`,** as `uniweb add library` writes it. Under pnpm, `link:` gives each site a copy of its foundation, which the site build cannot load.
-- **Its versions are its own to move.** `uniweb update` aligns the workspace's packages, so a library outside it keeps the `@uniweb/kit` range in its `package.json` until you change it, as the foundations' moves.
+So the package manager links its folder: a new file or an edit reaches the next build and the open page, as in a library inside the workspace, and `uniweb update` moves its ranges with the rest. pnpm installs the library's own dependencies in its folder. npm installs them at the workspace's root, where the library's own files can't reach them, so the build resolves what the library imports as the foundation's code would: its peer dependencies, such as React and `@uniweb/kit`, from the foundation, and the rest from the workspace's install. Its data types resolve from its `schemas/` too.
 
-A git submodule or a clone inside the workspace works too, as a package the workspace lists, and `uniweb update` then moves it with the rest.
+Depend on it with `file:`, as `uniweb add library` writes it. A library wired by hand and not listed in the workspace is one pnpm installs as a copy, which a change to its folder reaches only after the next install: the build says so, and names the line that lists it.
+
+A git submodule or a clone inside the workspace works the same way, as a package the workspace lists.
 
 ---
 
@@ -280,7 +287,8 @@ A git submodule or a clone inside the workspace works too, as a package the work
 | `Data schema '@acme/plan' is defined nowhere this foundation can read: …` | no package the foundation reads defines that type under that scope | check the library's `uniweb.scope` and its `schemas/`, and that the foundation depends on it |
 | `@acme/member is defined in foundations/hub/, which has not registered it` | a push or publish names a type another *foundation* defines, and that foundation was never registered on this backend | register that foundation first, with the command the message prints |
 | `This uniweb (…) needs a newer @uniweb/build than the one installed …` | the project's framework packages are older than the CLI | `npx uniweb@latest update --yes` |
-| `Failed to resolve entry for package "classic"`, under pnpm | a library outside the workspace is linked with `link:` | depend on it with `file:` |
+| `[uniweb] acme-shared is installed as a copy, so a change to its folder reaches a build only after the next install …` | pnpm copied a library the workspace doesn't list, so the build reads code you've already changed | list its folder in the workspace, the line it names: `uniweb add library <folder>` does |
+| `Failed to resolve entry for package "classic"`, under pnpm | a library outside the workspace, not listed in it, is linked with `link:`, which gives each site a copy of its foundation | list the library in the workspace and depend on it with `file:` |
 
 ---
 
