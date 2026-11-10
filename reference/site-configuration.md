@@ -627,6 +627,13 @@ and silently excludes nothing.
 `seo.noindex` pages, `hidden` pages, `_`-prefixed drafts, parametric page templates and
 [knowledge pages](./page-configuration.md#agent-content-knowledge) are excluded already.
 
+A page's markdown is what its author wrote. When the build prerenders it (`build.prerender: true`),
+the page's markdown also carries, after each section, the records that section shows, as JSON under
+the name they are fetched by (the query's, unless the fetch gives another with `as:`), so a price
+that a pricing card draws from records can be read there too. A data block the section's own markdown holds appears once, as written. Without prerendering,
+there is no render to read the records from, and the build says so where it reports the page
+markdown it wrote.
+
 On Uniweb hosting, a page's own address also answers with its markdown when a request asks for
 `text/markdown`. A static host serves the files alone.
 
