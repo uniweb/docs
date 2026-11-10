@@ -1141,7 +1141,9 @@ Register a foundation — together with the data schemas it renders — to the U
 uniweb register [options]
 ```
 
-Run from a foundation directory, a workspace root (you're prompted if there are several foundations), or a **schemas-only package** — a package that exports schemas, or a bare `schemas/*.yml` folder — which registers just the data schemas (no foundation).
+Run from a foundation directory, a workspace root (you're prompted if there are several foundations), or a **schemas-only package** — a package holding a `schemas/*.yml` folder, such as a [library](../development/libraries.md#data-types-in-a-library)'s, or one that exports schemas — which registers just the data schemas (no foundation).
+
+From a foundation, `register` first registers each data schema it names that a library defines, from the library, as `uniweb register` there would: the registry takes a foundation only once the types it names are registered. `uniweb push` and `uniweb publish` release a site's local foundation through `register`, so they do too. A library under a scope you aren't a member of isn't registered from here; when the registry holds its types, the foundation is released against them as registered.
 
 ### Options
 

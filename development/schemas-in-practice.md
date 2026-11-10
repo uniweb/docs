@@ -262,6 +262,8 @@ uniweb register --scope @acme
 
 Set `"uniweb": { "scope": "@acme" }` in `package.json` to drop the flag on later runs. A bare folder with no `package.json` can't record it, so pass `--scope` each time. Preview the exact submission without authenticating using `--dry-run`.
 
+A package holding both registers its `schemas/` folder: that is what a foundation's build reads from a package of its workspace or a library, and a library's entry exports its components.
+
 ---
 
 ## When it fails
