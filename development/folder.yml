@@ -9,6 +9,7 @@ pages:
   - working-with-data
   - data-schemas
   - schemas-in-practice
+  - libraries
   - data-sources
   - receiving-form-submissions
   - content-handlers

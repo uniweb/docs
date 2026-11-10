@@ -1,6 +1,6 @@
 # Project Structures
 
-A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uniweb.md) introduces the two-package setup — foundation and site, side by side. That's the starting point for most projects. But as a workspace grows — a second site sharing the same foundation, an extension adding specialized section types, multiple brands under one repo — the layout matters.
+A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uniweb.md) introduces the two-package setup — foundation and site, side by side. That's the starting point for most projects. But as a workspace grows — a second site sharing the same foundation, an extension adding specialized section types, multiple brands under one repo, a library several foundations share — the layout matters.
 
 This guide covers the workspace structures we've found work well, when to use each, and the concrete wiring that connects the pieces.
 
@@ -202,7 +202,7 @@ The `*/src` and `*/site` globs discover every project's packages automatically. 
 
 **Trade-off:** Foundation package names must be globally unique in the workspace — pnpm needs to distinguish them. If two projects both name their foundation `"src"`, pnpm can't link them correctly. Use project-scoped names (`"marketing-src"`, `"docs-src"`) or scoped packages (`"@acme/marketing"`).
 
-**One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/src` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit.
+**One foundation can't be shared** across projects in this layout without reaching across directory boundaries (a `file:../../other/src` path, which defeats the co-location purpose). If two projects need the same foundation, the segregated layout is a better fit. When they need the same components or data types, but each its own foundation, put those in a library at the workspace root, which every project's foundation depends on (see [Libraries](#libraries) below).
 
 ### Projects with several sites
 
@@ -351,6 +351,42 @@ The wiring is the same as the sibling extension recipe, organized for scale. Eac
 
 **Trade-off:** More folders for the same wiring. For a single extension used by one site, the sibling layout is less ceremony.
 
+### Libraries
+
+A library is a package several foundations depend on, holding the components, logic and data types they share, while each keeps its own section types and look ([Libraries](./libraries.md)). It goes beside the other kinds, at the workspace root in every layout:
+
+```
+my-workspace/
+├── libraries/
+│   └── ui/
+│       ├── package.json      ← name: "ui"
+│       └── styles.css        ← @source "./**/*.{js,jsx}";
+├── foundations/
+│   ├── classic/
+│   │   ├── package.json      ← "ui": "file:../../libraries/ui"
+│   │   └── styles.css        ← @import "ui/styles.css";
+│   └── modern/
+│       └── package.json      ← "ui": "file:../../libraries/ui"
+├── sites/
+│   └── …
+├── pnpm-workspace.yaml
+└── package.json
+```
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - libraries/*
+  - foundations/*
+  - sites/*
+```
+
+In a single layout it is `ui/` beside `src/` and `site/`; with co-located projects it is `libraries/ui/` at the workspace root, which each project's foundation depends on. `uniweb add library libraries/ui --foundation classic,modern` makes it and writes the wiring shown.
+
+**When to use it:** Two foundations need the same component, hook or data type. A library is how co-located projects share code while each keeps its own foundation.
+
+**Trade-off:** Each foundation bundles the library, so a change in it reaches a site with that site's foundation: at its next build, and on a hosted site with the foundation's next release. Keep the library inside the workspace: a git submodule or a clone in a folder the workspace lists works like any package there.
+
 ---
 
 ## Choosing a Layout
@@ -364,6 +400,7 @@ The wiring is the same as the sibling extension recipe, organized for scale. Eac
 | Several products, each a foundation with several sites | Projects with several sites |
 | Adding specialized section types | Extensions as siblings |
 | Extensions shared across sites | Extensions segregated |
+| Components or data types several foundations share | A library |
 
 These are starting points. The patterns compose — a co-located project can have a sibling extension, a segregated layout can mount external content with `paths:`. Start with the pattern that matches your primary need, and adjust as the project grows.
 
@@ -457,6 +494,15 @@ A move is a `git mv` plus every place that names the old folder: the site's `fil
 - **A foundation that loses a level.** Moving `foundations/docs/src/*` up to `docs/src/` also changes the paths in its `package.json` (`main`, `exports`, `imports`) and any `@source` in `styles.css` that reaches `node_modules`. A stale `@source` still builds, with a warning, and the CSS is missing every class it found there. A foundation that imports `@uniweb/kit/theme-tokens.css` needs no such line for kit: that stylesheet names kit's source wherever it is installed.
 - **A site synced with a backend.** A pull merges against the last commit it synced, and no commit from before the move holds the site where it is now. So settle the site before the move: commit, then push and pull until neither has anything to do. After the move, run `uniweb pull` once in the site's new folder. With nothing pending it changes no file and records where the site is. A file that does differ is a conflict for you to settle.
 
+### Adding a library
+
+```bash
+uniweb add library libraries/ui --foundation classic,modern
+pnpm install
+```
+
+This creates `libraries/ui/`, lists it in `pnpm-workspace.yaml`, and wires each foundation named: the `file:` dependency, and `@import "ui/styles.css";` in its `styles.css`. Run it again with `--foundation` to wire another. `--schemas --scope @acme` adds a `schemas/` folder for the data types the foundations share. Run on a folder that holds a package already, a git submodule say, it wires that package without changing it. See [Libraries](./libraries.md).
+
 ### Adding an extension
 
 ```bash
@@ -495,5 +541,6 @@ The path is relative to the site directory. `defineSiteConfig()` in the site's `
 - **[Building with Uniweb](./building-with-uniweb.md)** — The two-package model and how CCA works
 - **[Templates](../getting-started/templates.md)** — Built-in and official templates
 - **[Extending Your Site](./extending-your-site.md)** — Vite plugins, `head.html`, and the full extensibility model
+- **[Libraries](./libraries.md)** — Code and data types several foundations share
 - **[Foundation Categories](./foundation-categories.md)** — Bundled vs portable foundations and when portability matters
 - **[Site Configuration](../reference/site-configuration.md)** — Full `site.yml` reference including `paths:`, `extensions:`, and `foundation:`

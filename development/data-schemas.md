@@ -558,9 +558,11 @@ Add `@uniweb/schemas` as a dependency when you reference any `@std/<name>`. Full
 
 ## Sharing schemas across projects
 
-Build more than one foundation — a few brands, a client's product line — and they want the same shapes: a `person`, a `project`, a `product`. You don't copy the schema into each foundation. Define it once and reference it, two ways:
+Build more than one foundation — a few brands, a client's product line — and they want the same shapes: a `person`, a `project`, a `product`. You don't copy the schema into each foundation. Define it once and reference it by its full name, `@org/<name>`:
 
-- **A schema package** — put the schemas in an `@org/schemas` package (a workspace package, or one you register) and reference them as `@org/<name>`. Each foundation lists the package as a dependency.
+- **In a package of the workspace** — another foundation of the workspace whose name gives the `@org` scope and that keeps the type in its own `schemas/`, or a schemas package. The build finds it with nothing configured.
+- **In a library the foundations share** — a package they depend on, whose `package.json` gives its scope (`"uniweb": { "scope": "@org" }`), with the types in its `schemas/`. `uniweb add library libraries/data --schemas --scope @org` makes one. See [Libraries](./libraries.md#data-types-in-a-library).
+- **A schema package you install** — an `@org/schemas` package from npm or a private registry, listed as each foundation's dependency, so each can pin its own version.
 - **A routed directory** — keep the schemas in a plain folder anywhere on disk and point each foundation's `schemas.config.js` at it. No package, no install:
 
   ```js
@@ -570,7 +572,7 @@ Build more than one foundation — a few brands, a client's product line — and
 
   `@acme/person` then resolves to `../shared/acme-schemas/person.{js,yml}`. The config is plain JS, so the path can be relative, absolute, or read from an environment variable — useful when one schema repo is shared across many client workspaces on your machine. Reference: [Component Metadata → Routing a scope](../reference/component-metadata.md#routing-a-scope-with-schemasconfigjs).
 
-Either way the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. A schema ref's `@acme` names an organization in the Uniweb registry, not an npm scope — the two look alike and aren't connected. For which delivery to pick, how a git repo works as a source, and when registering is required, see [Schemas in Practice](./schemas-in-practice.md).
+Whichever you pick, the payoff is a single source of truth: fix `person` once and every foundation that references it picks up the change — and `uniweb validate` checks each foundation's data against the same definition. A schema ref's `@acme` names an organization in the Uniweb registry, not an npm scope — the two look alike and aren't connected. For which delivery to pick, how a git repo works as a source, and when registering is required, see [Schemas in Practice](./schemas-in-practice.md).
 
 The package form is worth a second look here, because it's also what you register (next section). An `@org/schemas` package is an ordinary workspace package whose job is to hold schemas:
 
@@ -582,7 +584,7 @@ acme-schemas/                 # the @acme/schemas package
     └── review.yml
 ```
 
-Any foundation that lists `@acme/schemas` as a dependency can bind `@acme/product`. One definition, every foundation in the org — and `uniweb validate` checks each foundation's data against the same source of truth. This is exactly how the standards work: `@std/*` is the centrally-maintained `@uniweb/schemas` package.
+Any foundation in the workspace, or with `@acme/schemas` among its dependencies, can bind `@acme/product`. One definition, every foundation in the org — and `uniweb validate` checks each foundation's data against the same source of truth. This is exactly how the standards work: `@std/*` is the centrally-maintained `@uniweb/schemas` package.
 
 ---
 

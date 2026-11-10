@@ -17,7 +17,7 @@ When you reference `@acme/person` from a section type's `meta.js`, two independe
 
 They don't substitute for each other. Registering a schema does **not** put it where the build can find it, and having it on disk does **not** register it.
 
-That first question has no network in it at all. Schema references resolve from local files — a folder in your foundation, a folder you point at, or an installed package. If you never touch the second question, you never need an account, and your site builds and deploys to any static host.
+That first question has no network in it at all. Schema references resolve from local files — a folder in your foundation, another package of your workspace or a library your foundations share, a folder you point at, or an installed package. If you never touch the second question, you never need an account, and your site builds and deploys to any static host.
 
 ---
 
@@ -57,7 +57,7 @@ Worth noticing: **your own org and a third party's org resolve identically.** Th
 
 ---
 
-## Three ways to put a schema where the build can find it
+## Where the build finds a schema
 
 ### 1. In the foundation itself — `@/`
 
@@ -73,7 +73,16 @@ foundation/
 
 No configuration. This is the right default for a schema that belongs to one foundation.
 
-### 2. A folder anywhere — routed with `schemas.config.js`
+### 2. Another package of the workspace, or a library — `@acme/product`
+
+A type another package defines, named in full. The build reads it with nothing configured from:
+
+- a package of the workspace that defines it: a foundation whose name gives the `@acme` scope, with the type in its own `schemas/`, or a schemas package;
+- a library the foundation depends on, wherever it is: a package whose `package.json` gives `"uniweb": { "scope": "@acme" }`, with the type in its `schemas/` ([Libraries](./libraries.md#data-types-in-a-library)).
+
+Two packages defining the same type stop the build, naming both: a type has one definition. This is the right default for types several foundations of one team share.
+
+### 3. A folder anywhere — routed with `schemas.config.js`
 
 Point a scope at a directory of schema files. No package, no install, no npm:
 
@@ -114,11 +123,11 @@ export default {
 }
 ```
 
-`@acme/person` resolves to the local file; `@acme/project`, `@acme/event`, and the rest still come from the shared folder. This is the clean alternative to the workarounds it replaces — symlinking a file into the shared folder, or forking the whole scope to change one schema. Precedence is most-specific-first: a per-schema file beats the scope directory, which beats the `@acme/schemas` package.
+`@acme/person` resolves to the local file; `@acme/project`, `@acme/event`, and the rest still come from the shared folder. This is the clean alternative to the workarounds it replaces — symlinking a file into the shared folder, or forking the whole scope to change one schema. Precedence is most-specific-first: a per-schema file beats the scope directory, which beats a package of the workspace or a library, which beats the `@acme/schemas` package.
 
 A per-schema value is a **file** (the extension is optional — `./schemas/acme-person` finds the `.yml`). `@/` and `@uniweb` are never routable — put your own schemas in the foundation's `schemas/`, and use `@std` for the standards.
 
-### 3. An installed package — `@acme/schemas`
+### 4. An installed package — `@acme/schemas`
 
 The convention lookup: `@acme/person` → the `@acme/schemas` package, resolved from the **foundation's** `node_modules`. A pnpm workspace package, a private npm package, and a public one all behave identically.
 
@@ -188,7 +197,7 @@ In a workspace, `press` needs nothing else: its build reads `@acme/member` from 
 export default { data: { authors: '@acme/member' } }
 ```
 
-Two packages of the workspace defining `member` stop the build, naming both: a type has one definition. When the defining files live outside the workspace, `schemas.config.js` routes the type, and wins over the workspace:
+Two packages of the workspace defining `member` stop the build, naming both: a type has one definition. When the types several foundations use belong to none of them, keep them in a [library](./libraries.md#data-types-in-a-library) the foundations depend on, and they resolve the same way. When the defining files live in no such package, `schemas.config.js` routes the type, and wins over the workspace:
 
 ```js
 // press/schemas.config.js

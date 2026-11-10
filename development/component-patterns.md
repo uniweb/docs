@@ -107,37 +107,13 @@ CCA doesn't constrain your import graph. Import from `components/`, from npm pac
 
 ### Sharing code between foundations
 
-When several foundations in one workspace need the same header, buttons or form controls, put them in a workspace package rather than copying them into each. Foundations import from it as from any package, and each foundation's build bundles what it uses.
+When several foundations need the same components, hooks or data types, put them in a **library**, a package they all depend on, rather than copying them into each. Each foundation keeps its own section types and look and imports the library's components as from any package; its build bundles what it uses.
 
-Give the package a stylesheet that tells Tailwind to read the package itself, relative to the stylesheet — the way `@uniweb/kit` does — and import it in each foundation's `styles.css`:
-
-```css
-/* packages/ui/styles.css */
-@source "./**/*.{js,jsx}";
+```bash
+uniweb add library libraries/ui --foundation classic,modern
 ```
 
-```css
-/* foundation/styles.css */
-@import "tailwindcss" source("./");
-@import "@uniweb/kit/theme-tokens.css";
-@import "@acme/ui/styles.css";
-```
-
-The classes in the package's components then reach every foundation's CSS, wherever the package manager installed it.
-
-A section type can be shared the same way. It stays each foundation's to offer — authors choose from a foundation's own `sections/` — so the foundation keeps a folder for it that passes the package's component and its `meta.js` on:
-
-```js
-// foundation/sections/Banner/index.jsx
-export { default } from '@acme/ui/sections/Banner/index.jsx'
-```
-
-```js
-// foundation/sections/Banner/meta.js
-export { default } from '@acme/ui/sections/Banner/meta.js'
-```
-
-A fix in the package reaches each foundation at its next build.
+This makes the package and wires each foundation: the dependency, and `@import "ui/styles.css";` in its `styles.css`, so Tailwind reads the library's classes wherever it is installed. A component in a library takes ordinary props and reads its look from foundation vars and theme tokens, so it renders in each foundation's style. A section type both foundations offer can live there too, passed on by each foundation's `sections/`. See [Libraries](./libraries.md).
 
 ### Section-level styles with `Component.className`
 

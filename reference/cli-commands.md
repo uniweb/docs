@@ -8,7 +8,7 @@ The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, gene
 uniweb start                   # A guide for an AI agent building a site for someone
 uniweb guide [name]            # Print a guide to building with Uniweb: content, foundation, theme, …
 uniweb create [name]           # Create a new project (default: starter)
-uniweb add <type> [name]       # Add a project, foundation, site, or extension
+uniweb add <type> [name]       # Add a project, foundation, site, extension or library
 uniweb dev                     # Start a dev server for a site
 uniweb build                   # Build the current project
 uniweb snapshot                # Compose a preview image of a site (its site.yml preview:)
@@ -182,13 +182,14 @@ Official templates are fetched from GitHub Releases. If download fails:
 
 ## uniweb add
 
-Add a project, foundation, site, or extension to an existing workspace.
+Add a project, foundation, site, extension or library to an existing workspace.
 
 ```bash
 uniweb add project [name] [options]
 uniweb add foundation [name] [options]
 uniweb add site [name] [options]
 uniweb add extension <name> [options]
+uniweb add library <name> [options]
 uniweb add section <Name> [options]
 uniweb add ci [options]
 uniweb add version <name> [options]
@@ -221,6 +222,22 @@ Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If ther
 | Option | Description |
 |--------|-------------|
 | `--site <name>` | Site to wire the extension URL into |
+
+### Library Options
+
+A library is a package several foundations depend on: the components, logic and data types they share. `add library` makes one, lists it in the workspace, and wires each foundation it names: a `file:` dependency, and an import of the library's stylesheet in the foundation's `styles.css`. Run on a folder that holds a package already, it wires that package without changing it. See [Libraries](../development/libraries.md).
+
+| Option | Description |
+|--------|-------------|
+| `--foundation <a,b>` | Foundations that use it (the workspace's foundation when there is only one). Run again with another to wire one more |
+| `--schemas` | Give it a `schemas/` folder for the data types its foundations share |
+| `--scope <@org>` | The scope those types are named under (`@org/<file name>`); by default, the one the wired foundations' names share |
+
+```bash
+uniweb add library libraries/ui --foundation classic,modern   # make it, and wire both
+uniweb add library libraries/ui --foundation docs             # wire one more
+uniweb add library libraries/data --schemas --scope @acme     # data types named @acme/<file>
+```
 
 ### Section Options
 
