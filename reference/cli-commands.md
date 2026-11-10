@@ -195,7 +195,7 @@ uniweb add ci [options]
 uniweb add version <name> [options]
 ```
 
-Run this from a workspace root (a directory with `pnpm-workspace.yaml`). If there's no workspace yet, create one with `uniweb create --blank`.
+Run this from a workspace root (the folder `uniweb create` made), once its dependencies are installed: `add` needs the workspace's `@uniweb/build`. If there's no workspace yet, create one with `uniweb create --blank`, then run `pnpm install` in it.
 
 ### Common Options
 

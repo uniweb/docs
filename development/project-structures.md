@@ -419,11 +419,12 @@ When you know you need a non-default layout — co-located projects, multiple fo
 ```bash
 pnpm create uniweb my-workspace --blank
 cd my-workspace
+pnpm install          # the CLI's build tools, which `uniweb add` needs
 
 # Add a co-located project
 uniweb add project main
 
-# Now install and run
+# Install again to link it, and run
 pnpm install
 pnpm dev
 ```
@@ -447,7 +448,7 @@ uniweb add site sites/main --foundation marketing
 uniweb add site sites/docs --foundation blog
 ```
 
-The CLI creates the directory, writes `package.json` and config files, lists the package in `pnpm-workspace.yaml` (unless a pattern there covers it already), wires the `file:` dependency from site to foundation, and updates root scripts — removing the ones it wrote for a site that no longer exists. Run `pnpm install` once after adding all packages. If a target folder or package name already exists, the command stops with a precise error.
+The CLI creates the directory, writes `package.json` and config files, lists the package in `pnpm-workspace.yaml` (unless a pattern there covers it already), wires the `file:` dependency from site to foundation, and updates root scripts — removing the ones it wrote for a site that no longer exists. Install once before the first `uniweb add`, which needs the build tools a workspace's install brings, and again after adding packages, to link them. If a target folder or package name already exists, the command stops with a precise error.
 
 ### Adding to an existing workspace
 

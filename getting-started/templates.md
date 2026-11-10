@@ -47,6 +47,10 @@ An empty workspace with no packages. Use `uniweb add` to grow it incrementally â
 
 ```bash
 pnpm create uniweb my-workspace --blank
+cd my-workspace
+pnpm install                 # the build tools `uniweb add` needs
+pnpm uniweb add project main
+pnpm install                 # links what you added
 ```
 
 This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures.md) for the layout recipes, and [CLI Commands](../reference/cli-commands.md) for the `add` command.
