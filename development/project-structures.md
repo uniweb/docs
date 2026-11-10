@@ -385,7 +385,7 @@ In a single layout it is `ui/` beside `src/` and `site/`; with co-located projec
 
 **When to use it:** Two foundations need the same component, hook or data type. A library is how co-located projects share code while each keeps its own foundation.
 
-**Trade-off:** Each foundation bundles the library, so a change in it reaches a site with that site's foundation: at its next build, and on a hosted site with the foundation's next release. Keep the library inside the workspace: a git submodule or a clone in a folder the workspace lists works like any package there.
+**Trade-off:** Each foundation bundles the library, so a change in it reaches a site with that site's foundation: at its next build, and on a hosted site with the foundation's next release. A library in another repository can stay in its own folder beside the workspace (`uniweb add library ../acme-shared`), or be kept inside it as a git submodule or a clone: see [Libraries](./libraries.md#a-library-outside-the-workspace).
 
 ---
 

@@ -62,8 +62,9 @@ Run the command again with another `--foundation` to wire one more; with no `--f
 | Single (`src/` and `site/`) | `uniweb add library ui` | a second foundation, or code another repository shares, is when one appears |
 | Segregated (`foundations/`, `sites/`) | `uniweb add library libraries/ui` | beside the other kinds; a `libraries/*` pattern covers every one |
 | Co-located projects | `uniweb add library libraries/ui`, at the workspace root | how projects share code while each keeps its own foundation |
+| Another repository | `uniweb add library ../acme-shared`, a folder beside the workspace | code several workspaces share ([below](#a-library-outside-the-workspace)) |
 
-**A library is any local package a foundation depends on.** Nothing else marks one, so a package made by hand, cloned or kept as a git submodule inside the workspace is a library as soon as a foundation depends on it: `uniweb add library <its folder> --foundation <name>` wires it without changing what is there. A library with no stylesheet of its own is wired with a `@source` line to its folder instead.
+**A library is any local package a foundation depends on.** Nothing else marks one, so a package made by hand, cloned, kept as a git submodule, or in a folder beside the workspace is a library as soon as a foundation depends on it: `uniweb add library <its folder> --foundation <name>` wires it without changing what is there. A library with no stylesheet of its own is wired with a `@source` line to its folder instead.
 
 ---
 
@@ -163,16 +164,23 @@ Each foundation's build bundles the library, so the library's code ships inside 
 
 ---
 
-## Keep it in the workspace
+## A library outside the workspace
 
-A library is a package of the workspace: inside it, as a folder the workspace lists. Code from another repository belongs there too, as a git submodule or a clone, and `uniweb add library <its folder>` lists and wires it.
+A library can also live in a folder beside the workspace, in a repository of its own say, which several workspaces share. `uniweb add library ../acme-shared --foundation classic` makes it there, or wires the package already there, and each foundation depends on it by its path:
 
-A library outside the workspace, linked by a path, does not work the same way, and is not a layout to use:
+```jsonc
+// foundations/classic/package.json
+"dependencies": { "acme-shared": "file:../../../acme-shared" }
+```
 
-- under npm, the build cannot resolve the packages the library's own code imports, such as `@uniweb/kit`, since none are installed beside it;
-- under pnpm, a `file:` library is copied into the store, so a new file in it reaches a build only after `pnpm install`, and with `link:` the site loads a copy of the foundation.
+It is no package of the workspace, so the workspace doesn't list it. Builds and `uniweb dev` read it from its folder, whatever the package manager installed: npm links the folder, and pnpm installs a copy, which the build doesn't read, so a new file or an edit reaches the next build and the open page without a reinstall. What the library's code imports resolves as the foundation's own would: its peer dependencies, such as React and `@uniweb/kit`, from the foundation, and its own dependencies from where the workspace's install put them. Its data types resolve from its `schemas/` too.
 
-Its data types do resolve from wherever it is, as long as the foundation depends on it.
+Two things differ from a library inside the workspace:
+
+- **Depend on it with `file:`,** as `uniweb add library` writes it. Under pnpm, `link:` gives each site a copy of its foundation, which the site build cannot load.
+- **Its versions are its own to move.** `uniweb update` aligns the workspace's packages, so a library outside it keeps the `@uniweb/kit` range in its `package.json` until you change it, as the foundations' moves.
+
+A git submodule or a clone inside the workspace works too, as a package the workspace lists, and `uniweb update` then moves it with the rest.
 
 ---
 
