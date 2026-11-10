@@ -154,6 +154,7 @@ Each foundation's build bundles the library, so the library's code ships inside 
 
 - **Building.** A site build rebuilds its foundation when a file of a library it bundles changed, and says which library. So do `uniweb export` and `uniweb deploy --host`, and `uniweb register` before it uploads.
 - **Developing.** `uniweb dev` serves the library, and an edit to one of its components updates the open page, as an edit to the foundation's own code does.
+- **Seeing what it reaches.** `uniweb status`, run in the library, names the foundations that bundle it and the sites each one serves; a site's status names the libraries its foundation bundles.
 - **A registered foundation.** A registered foundation version keeps the library as it was when that version was built, the way it keeps kit. A fix in the library reaches a hosted site when the site's foundation releases a new version and the site moves to it, which `uniweb publish` from the site does: it rebuilds the foundation, and releases a new version when the build changed.
 
 ---
