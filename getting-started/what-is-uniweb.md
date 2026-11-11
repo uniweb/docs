@@ -33,7 +33,7 @@ Your part is to say what you want, look at what you get, and do two things in yo
 
 **Hosting that covers what a site needs.** We recommend starting on Uniweb hosting, even with a few pages. That is when it costs the least, because each service, live records included, is priced on its own. The page a visitor arrives on is prerendered close to them, with its latest content, so it loads fast and search engines read it whole. Forms that collect submissions, visitor statistics without cookies, site search and pages that AI assistants can read are there when the site needs them, with no change to what was built. It is a paid service.
 
-**Nothing locks you in.** The framework is open source, and what your agent builds is yours: an ordinary project, in your own files, with its history in Git. Host it with us, or build it for any static host.
+**Nothing locks you in.** The framework is open source, under the Apache 2.0 license, and what your agent builds is yours: an ordinary project, in your own files, with its history in Git. Host it with us, or build it for any static host.
 
 ---
 

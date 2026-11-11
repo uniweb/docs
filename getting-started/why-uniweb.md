@@ -25,6 +25,7 @@ Your agent builds the site from what you tell it and publishes it on Uniweb host
 
 - **It costs the least now.** Each service, live records included, is priced on its own, so a site of static pages pays for no service it doesn't use.
 - **Its pages are fast.** The page a visitor arrives on is prerendered close to them, so it loads fast and search engines read it whole.
+- **AI assistants can read every page.** The site offers an index of its pages, `llms.txt`, and a Markdown copy of each one, automatically, with nothing to set up.
 - **It is already in the Uniweb app.** Every publish updates the site there too, whether or not anyone uses the app yet. You can preview and edit it at any time, so not every change has to wait for your agent.
 - **It is ready to grow.** Every step below happens on the same host, with no change to what is already there.
 
