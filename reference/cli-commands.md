@@ -884,7 +884,7 @@ uniweb validate --site blog
 
 Reconcile a workspace's state with the running CLI. Two convergence steps:
 
-1. **Align workspace deps** — edit every `package.json` so `@uniweb/*` and `uniweb` versions match the CLI's bundled matrix, then run the workspace's package manager (auto-detected from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm).
+1. **Align workspace deps** — edit every `package.json` so `@uniweb/*` and `uniweb` versions match the CLI's bundled matrix, then run the workspace's package manager (auto-detected from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm). Then move every `@uniweb/*` package the lockfile holds to the newest version its range allows, including the ones your project reaches only through another package, such as the content parser it gets through `@uniweb/core`. So an existing project ends with the versions a new one would get, and the run lists each package it moved. With yarn, it names the command to run instead.
 2. **Refresh `AGENTS.md`** from the CLI's bundled partial.
 
 ```bash
@@ -955,7 +955,7 @@ Workspace deps (declared):
    so these are releases you may need to act on: build and check before shipping.
 ```
 
-`update` writes tilde ranges (`~1.0.1`). A patch release — a fix or a feature — installs within one by itself; a new minor version is where Uniweb puts breaking changes, so it arrives only through `update`, which lists every package that crosses one.
+`update` writes tilde ranges (`~1.0.1`). A patch release — a fix or a feature — falls within one: a new project gets it at once, and an existing one at its next `update`, which moves each `@uniweb/*` package to the newest patch its range allows (a lockfile otherwise keeps the version it holds). A new minor version is where Uniweb puts breaking changes, so it arrives only through `update`, which lists every package that crosses one.
 
 Each row is one declared dep in one workspace `package.json` that needs attention: one the CLI ships a newer version of, labelled with how far it moves — `patch`, or `minor · BREAKING` and `major · BREAKING` for a version that may ask you to act — or one `ahead of CLI`, left untouched since `update` never downgrades. The packages that cross a breaking boundary are named again after the table, so the log of an `update --yes` still says what it crossed. Deps already aligned are collapsed to a count rather than listed, because on the command's most common outcome — a no-op — every row would otherwise read `~1.0.1 → ~1.0.1 aligned` and bury the lines that matter. `--verbose` lists them all. See [Framework Versions](./framework-versions.md) for what each part of a version means.
 
