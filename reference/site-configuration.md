@@ -1475,7 +1475,9 @@ export default {
 }
 ```
 
-`vars` supplies the data-driven variables — a CV's fields, say — and placeholders sit beneath them; see [Content Handlers](../development/content-handlers.md). Without a content handler, nothing resolves `{…}` and your pages render the literal text `{vendor.email}`. The build warns when a site declares `placeholders:` under a foundation that has no content handler, so you find out at build time rather than on the page.
+`vars` supplies the data-driven variables — a CV's fields, say — and placeholders sit beneath them; see [Content Handlers](../development/content-handlers.md). Without a content handler, nothing resolves `{…}` and your pages render the literal text `{vendor.email}`. The build warns when a page writes a placeholder under a foundation that has no content handler, so you find out at build time rather than on the page.
+
+A foundation's components can read a site's placeholders too, as values set once for the whole site: `block.website.config.placeholders` holds the block as written. A shop's foundation might format every price in `placeholders.currency`, so an author sets the currency once rather than on each section that shows a price. Reading them this way needs no content handler.
 
 Once a foundation is wired, placeholders are the simplest thing you can write — but the same expressions can filter, sort, count and format live data. See [`@uniweb/loom`](https://www.npmjs.com/package/@uniweb/loom) for the full language.
 
