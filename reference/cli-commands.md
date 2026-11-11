@@ -850,7 +850,7 @@ For each section with a file-based data input, it resolves the schema bound to t
 - Nested object and array fields, recursively
 - What a push cannot carry: a field the record's schema does not declare, at any depth, and a markdown body with no field in the schema to hold it. The next pull would write the file without it, so a push refuses the record. For a type your foundation defines, declare the field or remove it. A standard type (`@std/…`) can't be given a field, so the finding names the fields it has: use one of them, remove the field, or give the records a type of your own. `uniweb build` and `uniweb dev` note such a record too, and still deliver it as its file holds it.
 
-A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — its single sections' fields at the top of the file, the brief's first — or **written by section**, each section under its own key, a list section as a list of records and child sections included.
+A record of a `sections:` schema is checked as its file holds it, **written by section**: each section under its own key, a list section as a list of records, child sections included. Only a schema of one single section holds its fields at the top of the file. A field written at the top of any other, the retired flat form, is reported with the section it belongs under, and a build and a push stop on it.
 
 It does not flag an absent optional field.
 
