@@ -2,7 +2,7 @@
 
 Uniweb is an open-source framework for building websites with an AI agent. Your agent builds the site, Uniweb hosting runs it, and you and the people you work with can edit it in a visual app.
 
-**Agents build it. Uniweb runs it. Anyone can edit it.**
+**Agents build it. Uniweb runs it. You can edit it too.**
 
 You don't need to know HTML or use a terminal. You tell an AI agent such as Claude Code, Codex or Cursor what you want, and it does the technical work: it creates the project, writes the pages, runs the commands and checks its own work. Developers work the same way, with an agent, or write the code themselves. Either way, it is the same project.
 
@@ -15,7 +15,7 @@ You don't need to know HTML or use a terminal. You tell an AI agent such as Clau
 1. **You describe the site** to your agent, in your own words, and give it what you have: a logo, photos, the text of a site you already have.
 2. **Your agent builds a first version** and shows it to you in your browser. It runs on your computer, so nobody else sees it yet. You say what to change, and your agent changes it.
 3. **You and others can edit it too.** When you want, your agent signs you in to Uniweb and sends the site to the [Uniweb app](https://uniweb.app), a visual editor where you, or anyone you work with, can change the text, pictures and pages without code.
-4. **The site goes live when you say so.** Your agent publishes it on Uniweb hosting, and the first time, your browser opens to the page where you pay for it. From then on, every publish also updates the site in the Uniweb app, ready for anyone to preview and edit. Or your agent puts the site on a static host of your choice, such as GitHub Pages or Cloudflare Pages.
+4. **The site goes live when you say so.** Your agent publishes it on Uniweb hosting, and the first time, your browser opens to the page where you pay for it. From then on, every publish also updates the site in the Uniweb app, ready for you, and anyone you work with, to preview and edit. Or your agent puts the site on a static host of your choice, such as GitHub Pages or Cloudflare Pages.
 
 Your part is to say what you want, look at what you get, and do two things in your browser: sign in, and pay when the site goes live. The [Quickstart](quickstart.md) has the prompt to start with.
 
@@ -23,7 +23,7 @@ Your part is to say what you want, look at what you get, and do two things in yo
 
 ## What you get
 
-**A site that can grow.** Start with a few pages. When you need them, add more languages; content your team keeps up to date, such as news, people or products; forms and visitor statistics; a members' area; and payments, through your own Stripe account. It stays the same project the whole way, with no plugins to install and nothing to redo. [Why Uniweb](why-uniweb.md) follows a site through each step.
+**A site that can grow.** Start with a few pages. When you need them, add more languages; content that changes often, such as news, people or products; forms and visitor statistics; a members' area; and payments, through your own Stripe account. It stays the same project the whole way, with no plugins to install and nothing to redo. [Why Uniweb](why-uniweb.md) follows a site through each step.
 
 **An agent that gets it right.** Every Uniweb project comes with a manual written for agents, `AGENTS.md`, and with commands that show your agent what each file means and catch its mistakes before you see them. Your agent guesses less and gets more done.
 
