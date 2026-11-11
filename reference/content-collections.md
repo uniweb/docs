@@ -34,7 +34,9 @@ There are two ways to provide data to components:
 
 Every file in `records/` is a record. The folder names the data schema —
 `records/article/` is `@/article`, your foundation's own; `records/std/article/`
-is `@std/article`, a shared standard.
+is `@std/article`, a shared standard. Every record needs its schema: `@/article`
+is the foundation's `schemas/article.yml` ([Data Schemas](../development/data-schemas.md)),
+and a folder whose schema nothing defines stops the build, naming the file to write.
 
 ```
 site/
@@ -99,7 +101,7 @@ Records of a type another site of the project owns — the same products, team o
 
 Keep schema folders flat. A folder two levels deep names an organization's schema, so `records/article/2025/design-tips.md` is read as the `2025` schema of an `article` organization — outside every `@/article` query. Files three or more levels deep are skipped, with a warning. To group records, place them in [folders](#folders) in `records/folder.yml` instead.
 
-A data schema gives records a typed shape, used for validation and i18n extraction — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives each record as its **brief** — the brief's fields at the top — or, when it declares its key `whole: true`, **whole**, each section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)). A list carries briefs, so an article's body is never in its list.
+Every record has a data schema. It gives records a typed shape, used for validation, for translation and for the form the app edits a record with — and it decides how a record is written and what a component receives: a schema of one section is written flat, any other by section, and a component receives each record as its **brief** — the brief's fields at the top — or, when it declares its key `whole: true`, **whole**, each section under its own name ([Entity Content → What a component receives](./entity-content.md#what-a-component-receives)). A list carries briefs, so an article's body is never in its list.
 
 ### Link records
 
@@ -209,10 +211,10 @@ It lives in the directory it organizes, the way a pages folder's `folder.yml` do
 |---|---|---|
 | no `records/` folder | no records | the backend's records are left as they are |
 | a `records/` folder | every record in it | every record in it is sent |
-| a `records/` folder holding only files no data schema types — data with no `schema:` | those files, as static data | the backend's records are left as they are — the CLI says so |
+| a folder whose data schema nothing defines | the build stops, naming the folder | the push stops, naming the folder — nothing is sent |
 | an empty `records/` folder | no records | every record leaves the site's folder — the CLI asks first |
 
-Records pushed to a backend are served once the site has been published. From then on, the live site reads its records from the site's folder as it stands, so a push adds, changes or removes them there with no republish. Pages, by contrast, change on the live site when you publish.
+Records pushed to a backend are served once the site has been published with the `records` service on (`records: true` under `services:` — [Site Services](./site-services.md)). From then on, the live site reads its records from the site's folder as it stands, so a push adds, changes or removes them there with no republish. Pages, by contrast, change on the live site when you publish.
 
 A record that leaves the folder keeps living on the backend until it is deleted. It leaves because its file was deleted, it moved to another schema, or `records/` was emptied. The push that took it out offers to delete it, with a count, and so does each later push until it is answered. With `--yes` it deletes them without asking. With no terminal and no `--yes`, it keeps them and says so. A record another site's folder still places — a site that mounts this site's records — is kept, and said so: that site still shows it until its next push, and a later push of this site deletes it once no folder places it.
 
@@ -487,70 +489,28 @@ During a production build (`pnpm build`), each query compiles to `public/data/<q
 
 ## Translating Record Data
 
-Record text is extracted for translation alongside page content (see [Internationalization](../development/internationalization.md#records-i18n)), using one of two strategies to find translatable strings.
+Record text is extracted for translation alongside page content (see [Internationalization](../development/internationalization.md#records-i18n)). A record's data schema says which of its fields are translated: its text and rich-text fields are, and a field that is an enum, a URL or an email, a number, a date, a file, a reference, or marked `translatable: false` is not — the same fields a push to a backend carries in each language.
 
-### Schema-guided extraction
-
-Provide a companion schema file in `records/`, named for the query whose records it describes. It tells the extractor exactly which fields contain translatable text:
-
-```
-records/
-├── events/
-│   └── events.json
-└── events.schema.js    # for the `events` query
-```
-
-```js
-// events.schema.js
-export default {
-  name: 'event',
-  fields: {
-    title: { type: 'string' },                    // Extracted (string → translatable by default)
-    description: { type: 'markdown' },             // Extracted (markdown → always translatable)
-    slug: { type: 'string', translatable: false },  // Skipped (explicit opt-out)
-    type: { type: 'string', enum: ['workshop', 'talk'] },  // Skipped (enum → not translatable)
-    startDate: { type: 'datetime' },               // Skipped (datetime → never translatable)
-    location: {
-      type: 'object',
-      fields: {
-        name: { type: 'string' },                  // Extracted (nested string)
-        url: { type: 'url' },                      // Skipped (url → never translatable)
-      }
-    },
-    tags: {
-      type: 'array',
-      items: { type: 'string' }                    // Extracted (array of strings)
-    },
-  }
-}
+```yaml
+# foundation/schemas/event.yml
+name: event
+fields:
+  title: string                                  # translated
+  description: markdown                          # translated
+  code: { type: string, translatable: false }    # one value in every language
+  type: { type: string, enum: [workshop, talk] } # not translated
+  startDate: datetime                            # not translated
+  url: url                                       # not translated
 ```
 
-**Type-based defaults:**
+### When the build cannot read the schema
 
-| Type | Default | Override with |
-|------|---------|--------------|
-| `string` | translatable | `translatable: false` to skip |
-| `string` + `enum` | NOT translatable | `translatable: true` to include |
-| `markdown` | always translatable | — |
-| `number`, `boolean`, `date`, `datetime` | never | — |
-| `url`, `email`, `image` | never | — |
-| `object` | recurse into `fields` | — |
-| `array` | recurse into `items` | — |
-
-**Schema discovery order:**
-
-1. Companion file: `records/<query name>.schema.js`
-2. Standard schema: a matching name in `@uniweb/schemas` (with simple singularization — `events` matches the `event` schema)
-3. No schema found → heuristic fallback
-
-### Heuristic extraction (no schema)
-
-When no schema is found, the extractor walks the record data and extracts every string that looks like human-readable text. It skips:
+A site whose foundation is not in the project — a copy of a site made in the app, say — keeps its records' data schemas on the backend, not on disk. There the extractor walks each record and extracts every string that looks like human-readable text. It skips:
 
 - **Structural field names** — `slug`, `id`, `type`, `status`, `href`, `url`, `email`, `icon`, `target`, dates, etc.
 - **Structural string patterns** — URLs, email addresses, ISO dates, hex colors, file paths, currency codes, plain numbers
 
-This works well for most data but may occasionally include strings you don't want translated (or miss strings you do). For precise control, provide a companion schema.
+A `records/<query>.schema.js` file beside the records is no longer read: the build names it, and the record's data schema is where its fields are described.
 
 ### Record identification
 

@@ -131,9 +131,9 @@ with the new name.*
 
 **`records` is invisible to foundations, deliberately.** When a provider answers it, record
 queries are resolved live at the source; when it is absent, queries read the files the build
-compiled. On a static site that is every query. A host that delivers records live delivers those
-with a data schema only through `records`, so a site it publishes asks for it — `records: true`
-under `services:` — or its pages show none of them. Either way a component reads `content.data`
+compiled. On a static site that is every query. A host that delivers records live delivers them
+only through `records` — every record has a data schema — so a site it publishes with records asks
+for it, `records: true` under `services:`, or its pages show none of them. Either way a component reads `content.data`
 identically, which is the whole point — a foundation cannot tell, and never needs to. See
 [Data Sources](../development/data-sources.md).
 
