@@ -807,6 +807,8 @@ params: {
 
 The build warns on a param declared as any of them. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
 
+A param may take a content field's name — `items`, `title`, `links`. It reaches your component as `params.items`, and `content.items` stays what the section's body gives; the two are never mixed. So a `title:` in the frontmatter never titles the section: its title is the body's heading. The build and a push note a section that sets such a key when its type declares no param of that name.
+
 #### Param Types
 
 | Type | Editor UI | Value |
