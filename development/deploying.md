@@ -313,7 +313,7 @@ A few things worth knowing:
 - **Pinning is the URL itself.** Sites move forward by editing the URL in `site.yml`, not through a registry-driven propagation walk.
 - **Add a `.nojekyll` marker** to the gh-pages branch root. Without it, GitHub Pages's Jekyll processing silently 404s any file or directory starting with an underscore — including the foundation's generated entry chunks.
 
-The trade-off versus the Uniweb registry: no automatic propagation, no gated rollout, no per-site trust grants. You get permanent stable URLs and a free CDN; you give up coordinated rollouts and the visual editor / CMS for content authors (those require sites managed on the Uniweb platform).
+The trade-off versus the Uniweb registry: no per-site trust grants, and no part in [propagation](#foundation-propagation) once the registry has it. You get permanent stable URLs and a free CDN; you give up the visual editor / CMS for content authors (it requires sites managed on the Uniweb platform).
 
 ### How a foundation reaches the catalog
 
@@ -326,7 +326,7 @@ On Uniweb hosting a foundation always lives in the catalog as `@org/name@version
 | Best when | A foundation powers one site | The foundation is a product across multiple sites |
 | Catalog visibility | Released under your `@org`, not surfaced as a separate product | Yes — a listed, license-gated product |
 | Multi-site shareable | Promote it later with a deliberate `uniweb register` | Yes — across whichever sites the foundation owner grants access |
-| Propagation | Yes — across every site whose policy permits the version jump | Yes — same |
+| Propagation | Not yet — [every registration is silent today](#foundation-propagation) | Same |
 | Live example | [uniweb.io](https://uniweb.io/) | [proximify.com](https://www.proximify.com/) |
 
 **Brought along by `uniweb publish`** is the natural choice when a foundation only powers one site. No separate register step, no naming ceremony — `uniweb publish` from the site directory releases the foundation (when its code changed) and takes it live with the content. [uniweb.io](https://uniweb.io/) ships exactly this way: one repo, one command.
@@ -432,12 +432,12 @@ The two destinations (foundation + site) don't have to be the same provider:
 
 | Foundation | Site | Notes |
 |---|---|---|
-| Uniweb registry | Uniweb hosting | Easiest. Propagation, gated rollouts, edge SSR. |
+| Uniweb registry | Uniweb hosting | Easiest. Pages prerendered at the edge over live data; propagation once the registry has it. |
 | Uniweb registry | Vercel / Netlify / GH Pages | Linked mode against the registry URL; the site is a generic static deploy. No platform-driven propagation. |
 | GH Pages / S3 / etc. | Vercel / Netlify / GH Pages | Fully self-hosted. No platform dependencies. Move forward by editing the foundation URL in `site.yml` and redeploying. |
 | (none — bundled) | Anywhere static | Foundation source is bundled into the site's `dist/`. No separate foundation step. |
 
-Uniweb hosting is currently optimized for foundations served from the Uniweb registry — that's the path the propagation system and edge SSR are built around. Sites hosted on Uniweb but pointing at an external foundation URL fall outside the propagation system. Sites hosted elsewhere can point anywhere.
+Uniweb hosting is currently optimized for foundations served from the Uniweb registry — that's the path its edge prerendering is built around, and propagation will be. Sites hosted on Uniweb but pointing at an external foundation URL fall outside the propagation system. Sites hosted elsewhere can point anywhere.
 
 ---
 
@@ -515,7 +515,7 @@ A foundation is **registered**. A site is **deployed**. They answer different qu
 
 In standalone mode, the two collapse — the site bundle contains the foundation's code, so shipping the site is the only step. There is no separate "where does the foundation live?" because the answer is "inside the site." This is the third-party static-host path.
 
-In linked mode, the two are explicit. On Uniweb hosting, `uniweb publish` handles both for a single site — it brings the foundation along (releasing it to the catalog) and takes the site live in one flow. For a multi-site product they run separately: register the foundation, then publish each site that references it — on different schedules, in different repos, by different people. A foundation can serve sites on multiple hosts at once. A site can switch foundations without changing where it's hosted. A team can update the foundation without touching any site, and have the change reach existing sites through propagation (on Uniweb hosting) or through a one-line edit in `site.yml` (everywhere else).
+In linked mode, the two are explicit. On Uniweb hosting, `uniweb publish` handles both for a single site — it brings the foundation along (releasing it to the catalog) and takes the site live in one flow. For a multi-site product they run separately: register the foundation, then publish each site that references it — on different schedules, in different repos, by different people. A foundation can serve sites on multiple hosts at once. A site can switch foundations without changing where it's hosted. A team can update the foundation without touching any site, and have the change reach existing sites through a one-line edit in `site.yml` — and on Uniweb hosting, through [propagation](#foundation-propagation) once the registry has it.
 
 The framework knows both verbs, in both orders, against both kinds of destinations. That awareness is what lets you start with path 1 and grow into path 2 without restructuring the project.
 

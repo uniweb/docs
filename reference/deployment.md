@@ -65,7 +65,7 @@ Most sites should enable pre-rendering.
 
 | Command | What it does |
 |---|---|
-| `uniweb publish` | Publishes to Uniweb hosting — brings the foundation along, syncs content, goes live (edge SSR, locale-aware routing, foundation propagation). Requires `uniweb login`. See [Publishing to Uniweb hosting](#publishing-to-uniweb-hosting). |
+| `uniweb publish` | Publishes to Uniweb hosting — brings the foundation along, syncs content, goes live (pages prerendered at the edge over live data, locale-aware routing). Requires `uniweb login`. See [Publishing to Uniweb hosting](#publishing-to-uniweb-hosting). |
 | `uniweb deploy` | Ships a site to a host. With nothing configured it asks where, listing only destinations it can act on, and records the answer in `deploy.yml`. |
 | `uniweb deploy --host=<adapter>` | Builds and uploads to a third-party static host via a built-in adapter. Adapters: `github-pages`, `cloudflare-pages`, `netlify`, `vercel`, `s3-cloudfront`. Each drives that host's own CLI and handles its quirks (URI rewrites, redirect helpers, cache headers, invalidation). `generic-static` is an `export` artifact shape, not a deploy target. |
 | `uniweb add ci --host=<adapter>` | Commits a GitHub Actions workflow so every push deploys, plus a per-PR preview workflow where the host supports one. |
@@ -501,7 +501,7 @@ uniweb publish       # brings the foundation along, syncs content, goes live
 
 `uniweb publish` resolves which site, brings its foundation along (releasing the site's local foundation to the catalog under your `@org` when its code changed), syncs the content, and makes the site live. When going live needs payment (a first go-live, or a change that adds a paid feature), it opens a browser to settle it; an already-paid site just goes live.
 
-Uniweb hosting serves the foundation as a separate file the runtime loads at startup, with version propagation moving updates forward on already-published sites without republishing. Foundations on Uniweb hosting are always **cataloged** (`@org/name@version`) — served from the catalog's CDN, licensed to the sites that use them. Whether you let `uniweb publish` release the foundation for you (single-site) or registered it deliberately with `uniweb register` (a multi-site product), it gets the same edge serving: JIT prerender, locale routing, Tier 0–3 caching, version propagation.
+Uniweb hosting serves the foundation as a separate file the runtime loads at startup. Foundations on Uniweb hosting are always **cataloged** (`@org/name@version`) — served from the catalog's CDN, licensed to the sites that use them. Whether you let `uniweb publish` release the foundation for you (single-site) or registered it deliberately with `uniweb register` (a multi-site product), it gets the same edge serving: JIT prerender and locale routing. Today a site moves to a new foundation version when you publish it with that version; [propagation](./cli-commands.md#propagation-currently-silent), which would move published sites forward without republishing, is still being brought to `register`.
 
 See [Deploying → How a foundation reaches the catalog](../development/deploying.md#how-a-foundation-reaches-the-catalog) for the full picture.
 
@@ -517,7 +517,7 @@ Foundations are runtime federated modules — **not npm packages.** They're not 
 
 The Uniweb catalog is a private, access-segregated inventory of commercial foundation products. You see only the foundations you own or are a registered editor of; clients see only the foundations licensed to their sites. Foundations are typically built by developers and agencies for paying clients; clients receive a license to use the foundation on a specific site, and that license rides with site ownership when sites are transferred.
 
-To register a foundation as a catalog product (so it can be licensed across multiple sites, and propagation can move sites forward without redeploying):
+To register a foundation as a catalog product (so it can be licensed across multiple sites):
 
 ```bash
 cd foundation         # the foundation's directory
