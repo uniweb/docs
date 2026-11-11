@@ -15,7 +15,7 @@ You don't need to know HTML or use a terminal. You tell an AI agent such as Clau
 1. **You describe the site** to your agent, in your own words, and give it what you have: a logo, photos, the text of a site you already have.
 2. **Your agent builds a first version** and shows it to you in your browser. It runs on your computer, so nobody else sees it yet. You say what to change, and your agent changes it.
 3. **You and others can edit it too.** When you want, your agent signs you in to Uniweb and sends the site to the [Uniweb app](https://uniweb.app), a visual editor where you, or anyone you work with, can change the text, pictures and pages without code.
-4. **The site goes live when you say so.** Your agent publishes it on Uniweb hosting, and the first time, your browser opens to the page where you pay for it. Or your agent puts the site on a static host of your choice, such as GitHub Pages or Cloudflare Pages.
+4. **The site goes live when you say so.** Your agent publishes it on Uniweb hosting, and the first time, your browser opens to the page where you pay for it. From then on, every publish also updates the site in the Uniweb app, ready for anyone to preview and edit. Or your agent puts the site on a static host of your choice, such as GitHub Pages or Cloudflare Pages.
 
 Your part is to say what you want, look at what you get, and do two things in your browser: sign in, and pay when the site goes live. The [Quickstart](quickstart.md) has the prompt to start with.
 
@@ -23,15 +23,15 @@ Your part is to say what you want, look at what you get, and do two things in yo
 
 ## What you get
 
+**A site that can grow.** Start with a few pages. When you need them, add more languages; content your team keeps up to date, such as news, people or products; forms and visitor statistics; a members' area; and payments, through your own Stripe account. It stays the same project the whole way, with no plugins to install and nothing to redo. [Why Uniweb](why-uniweb.md) follows a site through each step.
+
 **An agent that gets it right.** Every Uniweb project comes with a manual written for agents, `AGENTS.md`, and with commands that show your agent what each file means and catch its mistakes before you see them. Your agent guesses less and gets more done.
 
 **Your words, apart from the code.** What your site says lives in plain text files, apart from the code that draws it. That is what lets someone change a headline in the visual editor without touching the design, lets your agent rework the design without losing a word, and lets you translate the site.
 
-**Three ways to change the same site.** Ask your agent. Open the visual editor. Or, if you're a developer, edit the files. All three change the same site: your agent brings the edits made in the app into the project before it works, and nobody's work is overwritten without asking.
+**Three ways to change the same site.** Ask your agent. Open the visual editor. Or, if you're a developer, edit the files. All three change the same site, so not every change has to go through your agent: every publish updates the site in the Uniweb app, ready for you or anyone you work with to preview and edit. Your agent brings the edits made in the app into the project before it works again, and nobody's work is overwritten without asking.
 
-**Hosting that covers what a site needs.** We recommend Uniweb hosting. It takes one command, and it includes what a site would otherwise need separate services for: forms that collect submissions, visitor statistics without cookies, site search, and pages that AI assistants can read. The page a visitor arrives on is prerendered close to them, with its latest content, so it loads fast and search engines read it whole. It is a paid service.
-
-**A site that can grow.** Start with a few pages. When you need them, add content your team keeps up to date, such as news, people or products; sign-in and a members' area; and more languages. It stays the same project the whole way, so you never start over.
+**Hosting that covers what a site needs.** We recommend starting on Uniweb hosting, even with a few pages. That is when it costs the least, because each service, live records included, is priced on its own. The page a visitor arrives on is prerendered close to them, with its latest content, so it loads fast and search engines read it whole. Forms that collect submissions, visitor statistics without cookies, site search and pages that AI assistants can read are there when the site needs them, with no change to what was built. It is a paid service.
 
 **Nothing locks you in.** The framework is open source, and what your agent builds is yours: an ordinary project, in your own files, with its history in Git. Host it with us, or build it for any static host.
 

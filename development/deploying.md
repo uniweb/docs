@@ -67,7 +67,8 @@ Not sure? `uniweb publish` is the one we recommend, and **`uniweb deploy`** with
 `uniweb publish` takes the site live on Uniweb hosting (**Uniweb Cloud**). We recommend it because it is the host with the full set of hosting features:
 
 - **Pages over live data.** Records with a data schema reach published pages live, and the host prerenders each page a visit starts on with its data, so search engines and link previews read the finished page.
-- **The Uniweb app.** Your authors can edit the same site visually, composing pages from your section types and managing records through your schemas, while you keep working in files — see [Synced](#synced--you-in-files-authors-in-the-app).
+- **The Uniweb app.** Your authors can edit the same site visually, composing pages from your section types and managing records through your schemas, while you keep working in files — see [Synced](#synced--you-in-files-authors-in-the-app). Every publish updates the site in the app, whether or not anyone uses it yet, so it is ready for previewing and editing at any time.
+- **Payments.** A site's own backend, the `backend` service, takes payments through the site owner's own Stripe account. [Sites with Accounts](./sites-with-accounts.md) covers the `backend` service.
 - **Services a site turns on as it grows.** Form submissions, analytics, a live database of records, accounts for members: each is an entry under `services:` in `site.yml` that asks the host for it — see [Site Services](../reference/site-services.md).
 - **No site build.** `publish` sends your content and brings the foundation along, and the host renders the site with the framework's runtime and your foundation.
 
@@ -80,9 +81,9 @@ So a site can start as a few static pages and grow into a complete platform — 
 | Authors in the Uniweb app | Edit the site and take it live from the app | Their edits reach the site through your project: a pull, then a build |
 | Forms, accounts, analytics | Services you ask the host for in `site.yml` | An address of your own, or a third-party service |
 | To ship a change | `uniweb publish`, with no site build | A build, in CI or on your machine |
-| Cost | Paid | Free tiers on GitHub Pages, Cloudflare Pages, Netlify and Vercel |
+| Cost | Paid. A site of static pages costs the least: each service, live records included, is priced on its own | Free tiers on GitHub Pages, Cloudflare Pages, Netlify and Vercel |
 
-A static host serves what a build makes, and the same project builds for one with `uniweb deploy` or `uniweb export`, as the rest of this path shows. For a site whose content lives in your repository and changes only through git, that works well, and the site can move to Uniweb hosting when it needs more.
+We recommend starting on Uniweb hosting even for a site of static pages whose content changes only through git: it costs the least then, its pages are prerendered at the edge, every publish keeps it ready for editing in the app, and it can grow on the same host with no changes. A static host serves what a build makes, and the same project builds for one with `uniweb deploy` or `uniweb export`, as the rest of this path shows; such a site can move to Uniweb hosting at any time with `uniweb publish`.
 
 **Publish command:**
 

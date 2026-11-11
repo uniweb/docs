@@ -33,11 +33,11 @@ Describe the site as you would to a person: who it is for, what it should say, w
 3. It shows you the site in your browser. The site runs on your computer, so nobody else can see it.
 4. You say what to change. Your agent asks only about what it can't decide, and saves each step that works (a Git commit), so either of you can go back to it.
 5. When you want to edit the site yourself or show it to someone, your agent signs you in to Uniweb: your browser opens, and you sign in, or sign up if you're new. Then it sends the site to the [Uniweb app](https://uniweb.app), where you can edit it visually. It isn't public yet.
-6. When you say so, your agent takes the site live on Uniweb hosting. The first time, your browser opens to the page where you pay for hosting, and your agent finishes once you have.
+6. When you say so, your agent takes the site live on Uniweb hosting. The first time, your browser opens to the page where you pay for hosting, and your agent finishes once you have. From then on, every publish also updates the site in the Uniweb app, so you can preview and edit it there at any time, without waiting for your agent.
 
 Your part: say what you want, look at what you get, and do two things in your browser: sign in, and pay when the site goes live.
 
-To host the site yourself instead, ask your agent to put it on a static host, such as GitHub Pages or Cloudflare Pages (see [Go live](#go-live)).
+We recommend Uniweb hosting even for a few pages: that is when it costs the least, and the site is ready to grow with no changes. To host it yourself instead, ask your agent to put it on a static host, such as GitHub Pages or Cloudflare Pages (see [Go live](#go-live)).
 
 ### Coming back later
 
@@ -164,7 +164,7 @@ This builds the foundation, then the site. The site lands in `site/dist/`: a sta
 
 ## Go live
 
-**On Uniweb hosting, which we recommend.** It is the host with the full set of hosting features: the Uniweb app, where you and others edit the site; pages prerendered with their live data; and forms, analytics and accounts when the site needs them. It is a paid service.
+**On Uniweb hosting, which we recommend.** It is the host with the full set of hosting features: the Uniweb app, where you and others edit the site; pages prerendered with their live data; and forms, analytics and accounts when the site needs them. It is a paid service. A site of static pages costs the least, because each service, live records included, is priced on its own, so we recommend it from the start: every publish also updates the site in the Uniweb app, ready for previewing and editing, and the site can grow with no changes.
 
 ```bash
 npx uniweb login      # once
