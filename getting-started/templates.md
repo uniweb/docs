@@ -1,139 +1,112 @@
 # Templates
 
-Uniweb projects are created from templates using `uniweb create`. Templates provide the initial project structure, components, and sample content.
+A template is a working site to start from: its pages, the section types that draw them, and sample content that your agent replaces with yours. Name one when you start, or begin with the default.
 
 ---
 
-## Built-in Templates
+## Starting from a template
 
-Built-in templates ship with the CLI and work offline.
+With your agent, name the template in the prompt's command:
 
-### Starter (Default)
+```text
+Build me a website with Uniweb.
+Start with `npx uniweb@latest start --template blog`
 
-A workspace with a foundation, site, and sample content. The recommended starting point — two commands to a dev server.
-
+The site is for: [describe your site]
 ```
-my-project/
-├── package.json              # Workspace root
-├── pnpm-workspace.yaml
-├── src/                      # The foundation package (name: "src")
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── main.js
-│   └── sections/
-└── site/
-    ├── package.json
-    ├── vite.config.js
-    ├── site.yml              # foundation: src
-    ├── entry.js
-    └── pages/
-```
+
+Your agent creates the project from the template, keeps what fits, replaces the sample content with yours and removes what you won't use. The code is yours too, so it can change anything the site needs.
+
+By hand:
 
 ```bash
-pnpm create uniweb my-site
+npx uniweb@latest create my-site --template blog
 ```
 
-### None
+Each official template has a live demo. `npx uniweb@latest template list` prints the ones your version of the CLI can create.
 
-A workspace with a foundation and site but no content. Use this when you're migrating an existing project or want to start from scratch without starter content.
+---
+
+## Sites
+
+| Template | For | |
+| --- | --- | --- |
+| `marketing` | A product or a business: landing pages, features, pricing | [Demo](https://uniweb.github.io/templates/marketing/) |
+| `services` | A local business, built around a form for quote requests | [Demo](https://uniweb.github.io/templates/services/) |
+| `store` | A shop: a product catalog with Shopify's Buy Button, and a journal | [Demo](https://uniweb.github.io/templates/store/) |
+| `blog` | Articles, shown as a grid of cards and as a page each | [Demo](https://uniweb.github.io/templates/blog/) |
+| `docs` | Documentation, with navigation on several levels | [Demo](https://uniweb.github.io/templates/docs/) |
+| `academic` | A researcher, a lab or a department | [Demo](https://uniweb.github.io/templates/academic/) |
+| `international` | A business in English, Spanish and French | [Demo](https://uniweb.github.io/templates/international/) |
+| `learning` | Courses, with quizzes and code challenges | [Demo](https://uniweb.github.io/templates/learning/) |
+| `conference` | An event site that is also an app: sign-in, an editable programme, and data for each signed-in visitor | [Demo](https://uniweb.github.io/templates/conference/) |
+
+**[All the demos](https://uniweb.github.io/templates/)**
+
+---
+
+## Your own design
+
+`paste` runs a React design you already have, such as one an AI tool generated: replace `src/sections/App.jsx` with it, and the site shows it. That is only the start, because the app can edit only what has left the code. Your agent then takes the design apart into section types, with its text in Markdown and its colors in `theme.yml`, as [Converting Existing Designs](../development/converting-existing.md) describes.
 
 ```bash
-pnpm create uniweb my-site --template none
+npx uniweb@latest create my-site --template paste
 ```
 
-### Blank Workspace
+---
 
-An empty workspace with no packages. Use `uniweb add` to grow it incrementally — add projects, foundations, sites, and extensions one at a time.
+## For developers: what the framework can do
+
+These templates each show a capability, with a working site around it.
+
+| Template | Shows | |
+| --- | --- | --- |
+| `dynamic` | Data from an API, with loading states and transforms | [Demo](https://uniweb.github.io/templates/dynamic/) |
+| `extensions` | A second foundation adding visual effects to a site | [Demo](https://uniweb.github.io/templates/extensions/) |
+| `cv-loom` | A CV filled in from one profile, and downloadable as a Word document | [Demo](https://uniweb.github.io/templates/cv-loom/) |
+| `monograph` | A long illustrated document, on the web and as a Word document | [Demo](https://uniweb.github.io/templates/monograph/) |
+| `academic-metrics` | A site whose content is also a downloadable Excel workbook | [Demo](https://uniweb.github.io/templates/academic-metrics/) |
+| `business-docs` | Invoices, statements of work and a report, each downloadable as Word, Excel or a print page | [Demo](https://uniweb.github.io/templates/business-docs/) |
+
+---
+
+## Built-in starting points
+
+These come with the CLI:
+
+- **`starter`**, the default: one generic section type and two short pages, a working example of each convention, to replace as you build.
+- **`none`**: the same project with no section types or pages, for building everything yourself.
+- **`--blank`**: a workspace with no packages, which you grow with `uniweb add`. It is the start for several sites or foundations in one workspace; see [Project Structures](../development/project-structures.md).
 
 ```bash
-pnpm create uniweb my-workspace --blank
+npx uniweb@latest create my-site                      # starter
+npx uniweb@latest create my-site --template none
+```
+
+A blank workspace needs its install before `uniweb add`:
+
+```bash
+npx uniweb@latest create my-workspace --blank
 cd my-workspace
 pnpm install                 # the build tools `uniweb add` needs
 pnpm uniweb add project main
 pnpm install                 # links what you added
 ```
 
-This is the starting point for multi-site workspaces, co-located projects, and any layout that doesn't fit the default single foundation + site structure. See [Project Structures](../development/project-structures.md) for the layout recipes, and [CLI Commands](../reference/cli-commands.md) for the `add` command.
-
-> **Backward compatibility:** `--template blank` still works as an alias for `--blank`.
-
 ---
 
-## Official Templates
-
-Feature-rich templates with real components and sample content. **[View all demos](https://uniweb.github.io/templates/)**
-
-### Marketing
-
-[**Live Demo**](https://uniweb.github.io/templates/marketing/) · `pnpm create uniweb my-site --template marketing`
-
-**Includes:** Hero, Features, Pricing, Testimonials, CTA, FAQ, Stats, LogoCloud, Video, Gallery, Team
-
-Perfect for product launches, SaaS websites, and business landing pages.
-
-**Tailwind v3 variant:** Use `--variant tailwind3` if your project requires Tailwind CSS v3 instead of v4:
+## Templates from npm or GitHub
 
 ```bash
-pnpm create uniweb my-site --template marketing --variant tailwind3
-```
-
-### Academic
-
-[**Live Demo**](https://uniweb.github.io/templates/academic/) · `pnpm create uniweb my-site --template academic`
-
-**Includes:** ProfileHero, PublicationList, ResearchAreas, TeamGrid, Timeline, ContactCard, Navbar, Footer
-
-Perfect for researcher portfolios, lab websites, and academic department sites.
-
-### Docs
-
-[**Live Demo**](https://uniweb.github.io/templates/docs/) · `pnpm create uniweb my-site --template docs`
-
-**Includes:** Header, LeftPanel, DocSection, CodeBlock, Footer
-
-Perfect for technical documentation, guides, and API references.
-
-### International
-
-[**Live Demo**](https://uniweb.github.io/templates/international/) · `pnpm create uniweb my-site --template international`
-
-**Includes:** Hero, Features, Team, CTA, Header (with language switcher), Footer (with language links)
-
-**Languages:** English (default), Spanish, French
-
-A multilingual business site demonstrating Uniweb's i18n capabilities. Includes pre-configured translation files and a complete localization workflow:
-
-```bash
-uniweb i18n extract   # Extract translatable strings
-uniweb i18n status    # Check translation coverage
-uniweb build          # Generates dist/es/, dist/fr/
-```
-
-Perfect for international businesses and learning the i18n workflow.
-
----
-
-## External Templates
-
-Use templates from npm or GitHub:
-
-```bash
-# npm package
-pnpm create uniweb my-site --template @myorg/template-name
-
-# GitHub repository
-pnpm create uniweb my-site --template github:user/repo
-
-# GitHub with specific branch/tag
-pnpm create uniweb my-site --template github:user/repo#v1.0.0
-
-# Full GitHub URL
-pnpm create uniweb my-site --template https://github.com/user/repo
+npx uniweb@latest create my-site --template @myorg/template-name      # an npm package
+npx uniweb@latest create my-site --template github:user/repo          # a GitHub repository
+npx uniweb@latest create my-site --template github:user/repo#v1.0.0   # at a branch or tag
+npx uniweb@latest create my-site --template https://github.com/user/repo
 ```
 
 ---
 
-## See Also
+## See also
 
-- [CLI Commands](../reference/cli-commands.md) — Full `create` command reference
-- [Quickstart](./quickstart.md) — Create your first site step by step
+- [Quickstart](./quickstart.md): start a site, with your agent or by hand
+- [CLI Commands](../reference/cli-commands.md): every option of `create` and `start`

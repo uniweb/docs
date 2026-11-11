@@ -28,7 +28,8 @@ https://raw.githubusercontent.com/uniweb/docs/main/{section}/{page}.md
 
 ## About Uniweb
 
-Uniweb is a component content architecture (CCA) for building websites where content and code are cleanly separated. Content authors write markdown. Developers build React components. Neither can break the other's work.
+Uniweb is an open-source framework for building websites with an AI agent. Your agent builds the site, Uniweb hosting runs it, and you and the people you work with can edit it in a visual app. What a site says lives in markdown, apart from the React components that draw it. Start with [What is Uniweb](getting-started/what-is-uniweb.md).
 
 - **Framework:** [github.com/uniweb/cli](https://github.com/uniweb/cli)
-- **Website:** [uniweb.app](https://uniweb.app)
+- **Website:** [uniweb.io](https://uniweb.io)
+- **The Uniweb app:** [uniweb.app](https://uniweb.app)

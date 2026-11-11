@@ -197,7 +197,7 @@ See [Converting Existing Designs](../development/converting-existing.md) for the
 
 This page describes the architecture. The rest of the documentation shows how to use it:
 
-- **[What is Uniweb](../getting-started/what-is-uniweb.md)** — The practical introduction: what a project looks like, what each audience does
+- **[What is Uniweb](../getting-started/what-is-uniweb.md)** — The introduction: what you and your agent do, what you get, and what a project holds
 - **[Building with Uniweb](../development/building-with-uniweb.md)** — The developer view: how foundations and sites connect
 - **[Thinking in Contexts](../development/thinking-in-contexts.md)** — Deep dive into semantic theming and why components don't make color decisions
 - **[Foundation Categories](../development/foundation-categories.md)** — The bundled-to-portable spectrum and when each approach makes sense

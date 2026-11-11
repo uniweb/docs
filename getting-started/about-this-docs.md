@@ -12,6 +12,7 @@ uniweb/docs/                  # Public repo — content only
 │   ├── folder.yml
 │   ├── what-is-uniweb.md
 │   ├── quickstart.md
+│   ├── templates.md
 │   └── about-this-docs.md   # ← This file
 ├── authoring/
 ├── development/

@@ -1,53 +1,82 @@
 # Quickstart
 
-Create your first Uniweb site in 5 minutes.
+Start a Uniweb site by giving your AI agent one prompt: it builds the site with you and takes it live when you're ready. Developers can also create the project themselves, in a few commands.
 
-## Prerequisites
+---
 
-- **Node.js 22.12** or later
-- **pnpm 9+** (recommended) or npm 10+
+## With your agent
 
-```bash
-# Install pnpm if you don't have it
-npm install -g pnpm
+### What you need
+
+- **An AI agent that can run commands on your computer,** such as Claude Code, Codex or Cursor. An assistant that can only chat can't build the project.
+- **A directory for the site,** a folder on your computer. It can be empty, or hold what you already have: your logo, photos, the text of your current site.
+
+Your agent checks for the rest and installs what's missing: Node.js 22.12 or later, and Git. On a Mac, a window may offer to install Apple's developer tools during that check: accept it.
+
+### Give it the prompt
+
+Open your agent in that directory and paste this, with your own description on the last line:
+
+```text
+Build me a website with Uniweb.
+Start with `npx uniweb@latest start`
+
+The site is for: [describe your site]
 ```
 
-> **Working with an AI agent?** Ask it to run `npx uniweb@latest start` first. It prints a guide written for the agent: creating the project, reading its `AGENTS.md`, running it, and bringing the site into the Uniweb app. See [`uniweb start`](../reference/cli-commands.md#uniweb-start).
+Describe the site as you would to a person: who it is for, what it should say, which pages you have in mind. To start from one of the [templates](templates.md), name it in the command: `npx uniweb@latest start --template blog`.
 
-## Create a Project
+### What happens next
+
+1. Your agent runs `uniweb start`, which prints Uniweb's guide for the job and changes nothing.
+2. It creates the project, reads the manual that comes with it (`AGENTS.md`), and builds a first version from your description and your files. It says which parts are placeholders rather than inventing facts about you.
+3. It shows you the site in your browser. The site runs on your computer, so nobody else can see it.
+4. You say what to change. Your agent asks only about what it can't decide, and saves each step that works (a Git commit), so either of you can go back to it.
+5. When you want to edit the site yourself or show it to someone, your agent signs you in to Uniweb: your browser opens, and you sign in, or sign up if you're new. Then it sends the site to the [Uniweb app](https://uniweb.app), where you can edit it visually. It isn't public yet.
+6. When you say so, your agent takes the site live on Uniweb hosting. The first time, your browser opens to the page where you pay for hosting, and your agent finishes once you have.
+
+Your part: say what you want, look at what you get, and do two things in your browser: sign in, and pay when the site goes live.
+
+To host the site yourself instead, ask your agent to put it on a static host, such as GitHub Pages or Cloudflare Pages (see [Go live](#go-live)).
+
+### Coming back later
+
+The project stays in its directory. To change the site later, open your agent there and ask, starting with `npx uniweb@latest start` again. In a project, the guide has your agent check first whether the site was changed in the Uniweb app (`uniweb status`), so edits made there are kept. You can also edit the site in the app at any time, and publish it from there.
+
+---
+
+## By hand
+
+The same steps, for developers who want to run them. Your agent runs these commands too.
+
+### Create a project
+
+You need Node.js 22.12 or later. The commands below use pnpm; with npm, run `npm install`, `npm run dev` and `npm run build` instead.
 
 ```bash
-pnpm create uniweb my-site --template marketing
+npx uniweb@latest create my-site --template marketing
 cd my-site
 pnpm install
-```
-
-This creates a workspace with:
-
-```
-my-site/
-├── src/                 # Your React components — the foundation
-│   ├── main.js          # Foundation declarations
-│   └── sections/
-├── site/                # Your content
-│   ├── pages/
-│   └── site.yml         # foundation: src
-└── pnpm-workspace.yaml
-```
-
-A site is pure content; a foundation is the site's source code — that's why it lives in `src/`. The foundation package's `name` is `src` (set in `src/package.json`).
-
-## Start Development
-
-```bash
 pnpm dev
 ```
 
-Open http://localhost:5173. You'll see a working marketing site with Hero, Features, Pricing, and more.
+`pnpm dev` starts a local server and prints the address to open. You'll see the Marketing template's site, with a home page, a features page and a pricing page.
 
-## How It Works
+```
+my-site/
+├── AGENTS.md         # the project's manual, for agents and for you
+├── site/             # what the site says
+│   ├── pages/        # each directory a page, each .md file a section
+│   ├── layout/       # the header and footer
+│   ├── site.yml      # the site's settings
+│   └── theme.yml     # colors and fonts
+└── src/              # the foundation: React components that draw the site
+    └── sections/     # one section type each
+```
 
-Open `site/pages/home/hero.md`:
+### How a page is made
+
+A section file names its section type and holds the section's content. Here is the Marketing template's `site/pages/home/hero.md`, shortened:
 
 ```markdown
 ---
@@ -55,187 +84,108 @@ type: Hero
 theme: dark
 ---
 
-# Build Something Great
+#> Introducing Acme
 
-Create stunning websites with components and markdown.
+# Build the future
 
-[Get Started](/docs)
-[Learn More](/about)
+The all-in-one platform that helps modern teams ship faster, collaborate better, and scale without limits.
+
+[Get Started](/pricing)
+[Learn More](/features)
 ```
 
-This content renders through the `Hero` component in `src/sections/Hero/`.
+- The frontmatter, between the `---` lines, names the section type, `Hero`, and sets how the section is placed: `theme: dark` gives it the site's dark colors.
+- The rest is content. Before any component sees it, it is parsed into fields: the `#>` line becomes `pretitle`, the heading `title`, the paragraph `paragraphs[0]`, and the links `links`.
 
-**The pattern:**
-- `type: Hero` — Which component renders this section
-- `theme: dark` — Configuration passed to the component
-- The markdown body — Content the component receives
-
-## Edit Content
-
-Change the headline in `hero.md`:
-
-```markdown
-# Your New Headline Here
-```
-
-Save. The page updates instantly.
-
-## Edit a Component
-
-Open `src/sections/Hero.jsx` (or `Hero/Hero.jsx` if the template uses a folder). The component receives:
+The `Hero` section type, in `src/sections/Hero/index.jsx`, receives those fields:
 
 ```jsx
-export default function Hero({ content, params }) {
-  // content.title = "Your New Headline Here"
-  // content.paragraphs = ["Create stunning websites..."]
-  // content.links = [{ href: "/docs", label: "Get Started" }, ...]
-  // params.theme = "dark"
+export default function Hero({ content, block }) {
+  const { title, pretitle, paragraphs, links, images } = content
+  // …
 }
 ```
 
-Make a change—add a class, tweak the layout. Save. It updates.
+To see what any section file parses to, run `npx uniweb inspect site/pages/home/hero.md`.
 
-## Add a Page
+### Change it
 
-Create a new page folder:
+Edit the heading in `hero.md` and save: the page in your browser updates. Change a class in the `Hero` component and save: the page updates again.
 
-```bash
-mkdir -p site/pages/contact
-```
+### Add a page
 
-Create `site/pages/contact/page.yml`:
+Each directory under `site/pages/` is a page: `site/pages/contact/` is the page at `/contact`. Create that directory, with a `page.yml` for its title:
 
 ```yaml
-title: Contact Us
-description: Get in touch
+title: Contact us
 ```
 
-Create `site/pages/contact/hero.md`:
+Then give the page two sections. `site/pages/contact/1-intro.md`:
 
 ```markdown
 ---
 type: Hero
-theme: light
 ---
 
-# Contact Us
+# Contact us
 
 We'd love to hear from you.
 
-[Email Us](mailto:hello@example.com)
+[Email us](mailto:hello@example.com)
 ```
 
-Visit http://localhost:5173/contact. Your new page is live.
-
-## Add a Section
-
-Add another section to the contact page. Create `site/pages/contact/2-info.md` (the numeric prefix controls ordering when a page has multiple sections):
+`site/pages/contact/2-details.md`:
 
 ```markdown
 ---
-type: Article
+type: Features
 ---
 
-## Our Office
+# How to reach us
 
-We're located in downtown San Francisco. Drop by Monday through Friday, 9am to 5pm.
+### Email
+hello@example.com
 
-[Get Directions](https://maps.google.com)
+### Office
+Monday to Friday, 9 to 5.
 ```
 
-When a page has multiple sections, they render in order by their numeric prefix (`1-`, `2-`, etc.). Single-section pages don't need a prefix — `hero.md` works fine on its own. You can rename the first section to `1-hero.md` later if you add more.
+Open `/contact` on the local server. The number at the start of a file's name orders the sections on a page: `1-` comes before `2-`, and a file without a number comes after the numbered ones. A page with one section needs no number.
 
-## Understand the Content Flow
-
-```
-Markdown (what you write)
-    │
-    ▼
-┌───────────────────────────┐
-│  ---                      │
-│  type: Hero               │  ← Which component
-│  theme: dark              │  ← Configuration (params)
-│  ---                      │
-│                           │
-│  # Headline               │  ← content.title
-│                           │
-│  Description paragraph.   │  ← content.paragraphs[0]
-│                           │
-│  [Button](/path)          │  ← content.links[0]
-└───────────────────────────┘
-    │
-    ▼
-Component receives { content, params }
-    │
-    ▼
-React renders the UI
-```
-
-Components don't fetch or parse. They receive structured data and render.
-
-## Build for Production
+### Build
 
 ```bash
 pnpm build
 ```
 
-This builds:
-1. The foundation → `src/dist/`
-2. The site → `site/dist/`
-
-With pre-rendering enabled (`build.prerender: true` in `site.yml`), you get static HTML:
-
-```
-site/dist/
-├── index.html
-├── about.html
-├── contact.html
-└── assets/
-```
-
-## Go Live
-
-We recommend Uniweb hosting. It is the host with the full set of hosting features: pages prerendered over live data, the Uniweb app where authors edit the site with you, and forms, analytics and accounts when your site needs them. It is a paid service.
-
-```bash
-pnpm uniweb login      # one-time
-pnpm uniweb publish    # brings the foundation along, pushes the content, goes live
-```
-
-The first time a site goes live, `publish` opens a browser for you to pay for its hosting. See [Deploying](../development/deploying.md#uniweb-hosting--recommended) for what it includes.
-
-**On a static host.** `site/dist/` is a static site. `pnpm uniweb deploy` ships it to GitHub Pages, Cloudflare Pages, Netlify, Vercel or S3 + CloudFront, asking where the first time, and `pnpm uniweb export` builds it for any other host, for you to upload.
+This builds the foundation, then the site. The site lands in `site/dist/`: a static site, with each page prerendered to HTML (`contact/index.html` for `/contact`).
 
 ---
 
-## Next Steps
+## Go live
 
-| Want to... | Read |
-|------------|------|
-| Understand content structure | [Content Structure](../reference/content-structure.md) |
-| Create custom components | [Component Metadata](../reference/component-metadata.md) |
-| Configure your site | [Site Configuration](../reference/site-configuration.md) |
-| Add multiple languages | [Internationalization](../development/internationalization.md) |
-| Load external data | [Data Fetching](../reference/data-fetching.md) |
-| Generate a page per record | [Parametric Pages](../reference/dynamic-routes.md) |
-
-## Common Templates
+**On Uniweb hosting, which we recommend.** It is the host with the full set of hosting features: the Uniweb app, where you and others edit the site; pages prerendered with their live data; and forms, analytics and accounts when the site needs them. It is a paid service.
 
 ```bash
-# Starter (default) — foundation + site + sample content
-pnpm create uniweb my-project
-
-# Documentation site
-pnpm create uniweb docs-site --template docs
-
-# Marketing site
-pnpm create uniweb landing --template marketing
-
-# Foundation + site with no content
-pnpm create uniweb my-project --template none
-
-# Blank workspace — grow with `uniweb add`
-pnpm create uniweb my-workspace --blank
+npx uniweb login      # once
+npx uniweb publish
 ```
 
-See [Templates](./templates.md) for all options.
+`publish` brings the foundation along, sends the content and takes the site live. The first time a site goes live, it opens your browser to pay for its hosting. See [Deploying](../development/deploying.md#uniweb-hosting--recommended) for what it includes.
+
+**On a static host.** `npx uniweb deploy` builds the site and uploads it to GitHub Pages, Cloudflare Pages, Netlify, Vercel or S3 + CloudFront, asking where the first time. `npx uniweb export` builds it for any other host, for you to upload. On a static host, edits made in the Uniweb app reach the site through your project: a pull, then a build.
+
+---
+
+## Next steps
+
+| You want to… | Read |
+| --- | --- |
+| Choose a template | [Templates](templates.md) |
+| Understand how Markdown becomes content | [Content Structure](../reference/content-structure.md) |
+| Build your own section types | [Building with Uniweb](../development/building-with-uniweb.md) |
+| Declare a section type's params and data | [Component Metadata](../reference/component-metadata.md) |
+| Configure the site | [Site Configuration](../reference/site-configuration.md) |
+| Add languages | [Internationalization](../development/internationalization.md) |
+| Load data | [Data Fetching](../reference/data-fetching.md) |
+| Make a page for each record | [Parametric Pages](../reference/dynamic-routes.md) |
