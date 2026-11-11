@@ -606,7 +606,10 @@ Resolution order, on every page load:
 
 ### Rendering a toggle
 
-The runtime resolves the scheme and writes `scheme-dark` / `scheme-light` onto `<html>` **before the page paints** — on prerendered pages via an inline script in `<head>`, and in the SPA before the first render. There is no flash of the wrong scheme, and no work for you to do.
+The runtime resolves the scheme and writes `scheme-dark` / `scheme-light` onto `<html>` **before the page paints**. There is no flash of the wrong scheme, and no work for you to do:
+
+- Where every first visit gets the same scheme (a `dark` default, or `respectSystemPreference: false`), the page's HTML already carries the class, so it's right even where no script runs.
+- Where the browser decides (a scheme the visitor chose with the toggle, or their OS preference), a small inline script in `<head>` applies it before the first paint. A site with a fixed scheme and no toggle carries no script.
 
 A component only renders the button:
 
