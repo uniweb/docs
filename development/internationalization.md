@@ -678,6 +678,8 @@ The `default` value is used everywhere except the specified overrides. Override 
 
 A page's own `title`, `label`, `description`, `keywords`, `seo.ogTitle` and `seo.ogDescription` use the section id `_meta` — `"/about:_meta"`. The site's own `seo.ogTitle` and `seo.ogDescription`, in `site.yml`, use `"/:_site"`. In `locales/records/`, an override names a record by the identity the records manifest lists in its `contexts` — `"std/article/habitat-protection"`.
 
+On a page in a branch the site leaves out of translation ([`i18n.exclude`](../reference/site-configuration.md#advanced-i18n-options)), an override naming its place is the only entry that applies: neither a plain entry nor a `default` reaches it. So a docs page shows `"Get started"` in English on the Spanish site even when the home page translates those words, and `"/docs/setup:intro"` translates that one section anyway. A pull writes what an author translated on such a page in the app the same way.
+
 ---
 
 ## SEO Considerations

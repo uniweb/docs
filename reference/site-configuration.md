@@ -505,8 +505,10 @@ i18n:
 `exclude` names branches the site leaves in their own language, such as a mounted repo's docs:
 `uniweb i18n extract` takes no strings from them, so `init` and `status` leave them alone. It takes
 routes as [`agents.exclude`](#agent-readable-artifacts) does, a whole branch per route. Their pages
-show the source in every language, except a string the site translates elsewhere, since a
-translation applies to its text wherever the text appears.
+show the source in every language, even where the site translates the same words on its own pages.
+Only a translation written for one place there applies: an
+[override](../development/internationalization.md#context-specific-overrides) naming it, or a
+free-form translation of its section.
 
 ---
 
