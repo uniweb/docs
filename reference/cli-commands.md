@@ -837,7 +837,7 @@ Check a project's file-based data against the data schemas your foundation decla
 uniweb validate [path]
 ```
 
-Where `doctor` checks your project against framework conventions, `validate` checks your *data* against the contracts you declared in `meta.js` (`data: { … }`) — "does my content match what I said it should be?" A violation fails it (exit `1`); `--lax` reports without failing. It never blocks a build: the live render path stays tolerant (applies field defaults, ignores the rest), so this is a pre-ship / CI gate you run on purpose — and the one `uniweb push` and `uniweb publish` run before they send anything.
+Where `doctor` checks your project against framework conventions, `validate` checks your *data* against the contracts you declared in `meta.js` (`data: { … }`) — "does my content match what I said it should be?" A violation fails it (exit `1`); `--lax` reports without failing. It never blocks a build: the live render path stays tolerant (a record reaches its component as stored, with no field filled in), so this is a pre-ship / CI gate you run on purpose — and the one `uniweb push` and `uniweb publish` run before they send anything.
 
 ### What It Checks
 
@@ -851,7 +851,7 @@ For each section with a file-based data input, it resolves the schema bound to t
 
 A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — its single sections' fields at the top of the file, the brief's first — or **written by section**, each section under its own key, a list section as a list of records and child sections included.
 
-It does not flag unknown or extra fields, and it does not flag an absent optional field that has a default — the runtime fills those.
+It does not flag unknown or extra fields, and it does not flag an absent optional field.
 
 ### Deferred
 

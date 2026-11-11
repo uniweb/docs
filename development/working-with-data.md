@@ -332,7 +332,7 @@ It reports the exact chain — route, section, data key, file, item, field — s
     • item "cinder" › status: 42 is not one of ["active", "archived"]
 ```
 
-It also reports a section whose page fetches data none of which fills the keys its component declares. This is deliberately a gate you run, not part of every build: the runtime stays tolerant — it applies defaults and ignores the rest — so a data mistake degrades gracefully in production instead of breaking the build. Full reference: [CLI Commands → uniweb validate](../reference/cli-commands.md#uniweb-validate).
+It also reports a section whose page fetches data none of which fills the keys its component declares. This is deliberately a gate you run, not part of every build: the runtime stays tolerant — a record reaches its component as stored, with no field filled in and nothing refused — so a data mistake degrades gracefully in production instead of breaking the build. Full reference: [CLI Commands → uniweb validate](../reference/cli-commands.md#uniweb-validate).
 
 ---
 
