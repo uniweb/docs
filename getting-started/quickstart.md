@@ -193,22 +193,18 @@ site/dist/
 └── assets/
 ```
 
-## Deploy
+## Go Live
 
-The `site/dist/` folder is a static site. Deploy anywhere:
+We recommend Uniweb hosting. It is the host with the full set of hosting features: pages prerendered over live data, the Uniweb app where authors edit the site with you, and forms, analytics and accounts when your site needs them. It is a paid service.
 
-**Vercel:**
 ```bash
-cd site && vercel
+pnpm uniweb login      # one-time
+pnpm uniweb publish    # brings the foundation along, pushes the content, goes live
 ```
 
-**Netlify:**
-```bash
-cd site && netlify deploy --prod --dir=dist
-```
+The first time a site goes live, `publish` opens a browser for you to pay for its hosting. See [Deploying](../development/deploying.md#uniweb-hosting--recommended) for what it includes.
 
-**Any static host:**
-Upload the contents of `site/dist/`.
+**On a static host.** `site/dist/` is a static site. `pnpm uniweb deploy` ships it to GitHub Pages, Cloudflare Pages, Netlify, Vercel or S3 + CloudFront, asking where the first time, and `pnpm uniweb export` builds it for any other host, for you to upload.
 
 ---
 

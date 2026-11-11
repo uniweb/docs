@@ -1,12 +1,16 @@
 # Deploying
 
-A Uniweb project's deployment shape depends on **who manages the content**. That single question decides where the site lives, what gets deployed, which commands you run, and how collaboration works.
+**We recommend Uniweb hosting**, with `uniweb publish`. It is the host with the full set of hosting features: pages prerendered over live data, the Uniweb app where your authors edit the same site, and services a site turns on as it grows — form submissions, analytics, a live database, accounts for members. A site can start as a few static pages and become a complete platform there, without moving. It is a paid service; see **[Uniweb hosting](#uniweb-hosting--recommended)**.
+
+To host a site somewhere else, `uniweb deploy` ships it to a standard host such as Cloudflare Pages, and `uniweb export` builds a folder for any other.
+
+How a project ships also depends on **who manages the content**. That question decides what gets deployed, which commands you run, and how collaboration works.
 
 - **You and your authors — a synced site.** You work in your project, in files and git; authors work in the Uniweb app, composing pages from your section types. The CLI keeps the two in sync, and `uniweb publish` takes the site live on Uniweb hosting. See **[Synced](#synced--you-in-files-authors-in-the-app)**.
-- **Path 1: You manage the content.** You (or your dev team) write the markdown. Ship to GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront — or to Uniweb's paid hosting (`uniweb publish`) if you need prerendered pages over live data or version propagation.
+- **Path 1: You manage the content.** You (or your dev team) write the markdown. Publish the site to Uniweb hosting, or deploy it to a static host: GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront.
 - **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb app. The repo's `site/` is a test harness, not a deploy target.
 
-> **In a hurry?** Three commands and your site is live on GitHub Pages with a custom domain — see **[Path 1](#path-1--you-manage-the-content)** below. If you're building a foundation for clients who manage their own content, jump to **[Path 2](#path-2--you-ship-a-foundation-as-a-product)**.
+> **In a hurry?** `uniweb publish` takes your site live on Uniweb hosting — see **[Uniweb hosting](#uniweb-hosting--recommended)**. On GitHub Pages it takes three commands — see **[The 3-line recipe](#the-3-line-recipe--github-pages)**. If you're building a foundation for clients who manage their own content, jump to **[Path 2](#path-2--you-ship-a-foundation-as-a-product)**.
 
 The same framework powers all three. The difference is the deployment artifact and who owns the content lifecycle.
 
@@ -32,7 +36,7 @@ From then on:
 - `uniweb push` — send your local edits back up (first push creates the site and mints its id). In a git repository it sends what you have committed; `--commit` commits the site's content first.
 - `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
 - `uniweb sync` — `refresh`, then `push`.
-- `uniweb publish` — `push`, then make the backend's current state **live** on Uniweb hosting (see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting)).
+- `uniweb publish` — `push`, then make the backend's current state **live** on Uniweb hosting (see [Uniweb hosting](#uniweb-hosting--recommended)).
 
 **Nobody's work is overwritten without asking.** A push that would overwrite changes made in the app since your last pull is refused before anything is written; merge them in with `uniweb pull` (or `uniweb refresh`) and push again. Edits to different sections never collide, and where the same text changed on both sides you resolve the conflict markers in git, like any merge, then `git commit`. `--force` is the deliberate overwrite in either direction: on `push` it replaces the backend's changes, on `pull` it discards your local ones.
 
@@ -44,19 +48,64 @@ From then on:
 
 ## Path 1 — You manage the content
 
-You write the markdown, configure the theme, and ship the result. Deploy site and foundation together. Many projects stay here forever.
+You write the markdown, configure the theme, and ship the result: the site and its foundation go together.
 
-Five sub-options under this path. They differ in *who builds*, *who uploads*, and *what extras you get*:
+Five ways to ship under this path. They differ in *who builds*, *who uploads*, and *what extras you get*:
 
 | | Builds | Uploads | When to use |
 |---|---|---|---|
-| **CI via `uniweb add ci --host=<adapter>`** | GitHub Actions | The host | Free, one-line scaffold. Set up once, every push deploys. Adds PR previews on CF Pages / Netlify / Vercel |
+| **Uniweb Cloud (`uniweb publish`)** — recommended | No site build: the host renders your content (your machine builds the foundation it releases) | Your machine | The full set of hosting features: pages over live data, the Uniweb app for authors, forms, analytics and accounts. Paid — see [Uniweb hosting](#uniweb-hosting--recommended) |
+| **CI via `uniweb add ci --host=<adapter>`** | GitHub Actions | The host | A free static host, from a one-line scaffold. Set up once, every push deploys. Adds PR previews on CF Pages / Netlify / Vercel |
 | **Dashboard connect (CF Pages, Netlify, Vercel)** | The host | The host | Same outcome, no workflow file and no secrets |
 | **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy from the CLI; the only path for S3 + CloudFront |
 | **Manual export (`uniweb export`)** | Your machine | You, by hand | Any host the framework doesn't have an adapter for |
-| **Uniweb Cloud (`uniweb publish`)** | The platform (your machine builds the foundation it releases) | Your machine | Prerender over live data, version propagation, edge SSR — paid; see [When to choose Uniweb hosting](#when-to-choose-uniweb-hosting) |
 
-Not sure? Run **`uniweb deploy`** with nothing configured and it walks you through the choice.
+Not sure? `uniweb publish` is the one we recommend, and **`uniweb deploy`** with nothing configured walks you through every choice.
+
+### Uniweb hosting — recommended
+
+`uniweb publish` takes the site live on Uniweb hosting (**Uniweb Cloud**). We recommend it because it is the host with the full set of hosting features:
+
+- **Pages over live data.** Records with a data schema reach published pages live, and the host prerenders each page a visit starts on with its data, so search engines and link previews read the finished page.
+- **The Uniweb app.** Your authors can edit the same site visually, composing pages from your section types and managing records through your schemas, while you keep working in files — see [Synced](#synced--you-in-files-authors-in-the-app).
+- **Services a site turns on as it grows.** Form submissions, analytics, a live database of records, accounts for members: each is an entry under `services:` in `site.yml` that asks the host for it — see [Site Services](../reference/site-services.md).
+- **No site build.** `publish` sends your content and brings the foundation along, and the host renders the site with the framework's runtime and your foundation.
+
+So a site can start as a few static pages and grow into a complete platform — records, forms, members — on the same host, without moving.
+
+| | Uniweb hosting | A static host |
+|---|---|---|
+| Pages | Prerendered by the host as a visit starts, with their live data | Prerendered at build time, with the data the build had |
+| Records | Delivered live to published pages (`records: true` under `services:`) | Compiled into the build; a change ships with the next build |
+| Authors in the Uniweb app | Edit the site and take it live from the app | Their edits reach the site through your project: a pull, then a build |
+| Forms, accounts, analytics | Services you ask the host for in `site.yml` | An address of your own, or a third-party service |
+| To ship a change | `uniweb publish`, with no site build | A build, in CI or on your machine |
+| Cost | Paid | Free tiers on GitHub Pages, Cloudflare Pages, Netlify and Vercel |
+
+A static host serves what a build makes, and the same project builds for one with `uniweb deploy` or `uniweb export`, as the rest of this path shows. For a site whose content lives in your repository and changes only through git, that works well, and the site can move to Uniweb hosting when it needs more.
+
+**Publish command:**
+
+```bash
+uniweb login              # one-time
+cd site
+uniweb publish            # go live on Uniweb hosting
+```
+
+When going live needs payment — the very first go-live of a new site, or a change that adds a paid feature such as a custom domain — `uniweb publish` opens a browser to settle it. An already-paid site just goes live.
+
+End-to-end first run from a fresh project:
+
+```bash
+uniweb create acme-com
+cd acme-com
+pnpm install              # one-time dependency install
+uniweb publish
+```
+
+`uniweb publish` handles login, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed — see [How a foundation reaches the catalog](#how-a-foundation-reaches-the-catalog)), pushes the content, and goes live — all in one flow. It doesn't take authors' edits first: when they changed what you're pushing, it stops before anything goes live. Merge their edits in with `uniweb pull` (or `uniweb sync`), then publish again.
+
+**Local media.** Images, video, and PDFs you reference by a site-root path (`/images/hero.jpg`, with the file under `public/`) are uploaded to the platform's CDN and rewritten to durable serve URLs automatically — no manual asset step. On the Uniweb-hosting path, reference local media by a site-root path rather than a path relative to the markdown file (`./hero.jpg`). Media already hosted elsewhere — a full `https://…` URL — is left untouched and loaded from its source.
 
 ### The 3-line recipe — GitHub Pages
 
@@ -114,16 +163,16 @@ Run `uniweb deploy` with no destination configured and it asks:
 
 ```
 ? Where should this site go?
-❯   GitHub Pages · free, CI on push
+❯   Uniweb Cloud · recommended · paid, live data + visual editing
+    GitHub Pages · free, CI on push
     Cloudflare Pages · free, CI on push
     Netlify · free, CI on push
     Vercel · free tier, CI on push
     S3 + CloudFront · your AWS account
-    Uniweb Cloud · paid, dynamic + visual editing
     Somewhere else · export a folder
 ```
 
-Pick a host and it asks *how* — set up a workflow so every push deploys (recommended for the free hosts), or upload from this machine now. Picking **Uniweb Cloud** runs `uniweb publish`; picking **Somewhere else** runs `uniweb export`.
+Picking **Uniweb Cloud** runs `uniweb publish`. Pick a static host and it asks *how* — set up a workflow so every push deploys (recommended for the free hosts), or upload from this machine now. Picking **Somewhere else** runs `uniweb export`.
 
 Your answer is recorded in `deploy.yml`, so later runs of `uniweb deploy` go straight there without asking again.
 
@@ -179,48 +228,6 @@ aws s3 sync dist/ s3://your-bucket --delete
 `uniweb export --host=<adapter>` emits host-specific helper files into `dist/` so the host serves the result correctly. Default when not specified: `cloudflare-pages`.
 
 The `dist/` artifact is self-contained. The host doesn't need to know anything about Uniweb.
-
-### When to choose Uniweb hosting
-
-Free static hosts cover the typical case — markdown in your repo, push to deploy, static HTML out the other side. **Uniweb hosting** (paid) is a different product. It exists for needs the static-host path can't meet:
-
-| | Free static host | Uniweb hosting |
-|---|---|---|
-| Static-page prerender | Yes (at build time) | Yes (at build time + JIT at edge) |
-| Prerender over live data (records fetched at runtime) | No — runtime fetches are client-side | Yes — JIT prerender at the edge |
-| Foundation/runtime updates without redeploying | No — rebuild on each foundation change | Yes — propagation gated by site policy |
-| Edge SSR for SEO on dynamic content | No | Yes |
-| Custom domain on free tier | Yes | n/a (always paid) |
-| Visual editor for content authors | No | Yes — a [synced site](#synced--you-in-files-authors-in-the-app), or [Path 2](#path-2--you-ship-a-foundation-as-a-product) |
-
-If your site's content lives in markdown and updates ship via git, free CI is the right call. Choose Uniweb hosting when:
-
-- Pages are dynamic — content from APIs, large sets of records updated independently of code, search results that need to be SEO-indexed.
-- You want to push foundation or runtime updates without rebuilding every site.
-- You need edge SSR for content that doesn't exist at build time.
-
-**Publish command:**
-
-```bash
-uniweb login              # one-time
-cd site
-uniweb publish            # go live on Uniweb hosting
-```
-
-When going live needs payment — the very first go-live of a new site, or a change that adds a paid feature such as a custom domain — `uniweb publish` opens a browser to settle it. An already-paid site just goes live.
-
-End-to-end first run from a fresh project:
-
-```bash
-uniweb create acme-com
-cd acme-com
-pnpm install              # one-time dependency install
-uniweb publish
-```
-
-`uniweb publish` handles login, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed — see [How a foundation reaches the catalog](#how-a-foundation-reaches-the-catalog)), pushes the content, and goes live — all in one flow. It doesn't take authors' edits first: when they changed what you're pushing, it stops before anything goes live. Merge their edits in with `uniweb pull` (or `uniweb sync`), then publish again.
-
-**Local media.** Images, video, and PDFs you reference by a site-root path (`/images/hero.jpg`, with the file under `public/`) are uploaded to the platform's CDN and rewritten to durable serve URLs automatically — no manual asset step. On the Uniweb-hosting path, reference local media by a site-root path rather than a path relative to the markdown file (`./hero.jpg`). Media already hosted elsewhere — a full `https://…` URL — is left untouched and loaded from its source.
 
 ---
 
@@ -359,10 +366,10 @@ This is one thing you give up when you don't deploy to the Uniweb platform: prop
 
 | Command | What it does |
 | --- | --- |
+| `uniweb publish` | Go live on Uniweb Cloud, the host we recommend — brings the foundation along, pushes the content, goes live. Paid. |
 | `uniweb deploy` | The wizard — asks where the site should go, then does it. Remembers your answer in `deploy.yml`. |
 | `uniweb add ci --host=<adapter>` | Scaffold a CI workflow (+ PR previews) in your repo. The host runs `uniweb build` on each push. |
 | `uniweb add ci --target foundation` | Scaffold the workflow that publishes foundations at permanent versioned GitHub Pages URLs. |
-| `uniweb publish` | Go live on Uniweb Cloud — brings the foundation along, pushes the content, goes live. The paid path. |
 | `uniweb deploy --host=<adapter>` | Push to a third-party static host — builds, uploads, invalidates in one step. |
 | `uniweb export` | Produce a self-contained `dist/` for any static host. You upload it yourself. `--host=<adapter>` adds host-specific helper files. |
 | `uniweb register --scope @org` | Register a foundation + its data schemas to the registry (path 2). |

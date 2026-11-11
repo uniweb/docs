@@ -1514,7 +1514,7 @@ Preview the clone with [`uniweb dev`](#uniweb-dev), which asks the backend where
 
 ## uniweb publish
 
-Publish a site to **Uniweb hosting** — the smart path for going live. Run it from a site directory and it resolves which site, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed), syncs the content, and makes the site live. This is the command to reach for when you mean *"make my site live."*
+Publish a site to **Uniweb hosting**, the host we recommend for its full set of hosting features ([why](../development/deploying.md#uniweb-hosting--recommended)) — the smart path for going live. Run it from a site directory and it resolves which site, **brings the foundation along** (releasing the site's local foundation to the catalog under your `@org` when its code changed), syncs the content, and makes the site live. This is the command to reach for when you mean *"make my site live."*
 
 ```bash
 uniweb login
@@ -1736,16 +1736,16 @@ Ship a site to a host. Run it with no destination configured and it asks:
 
 ```
 ? Where should this site go?
-❯   GitHub Pages · free, CI on push
+❯   Uniweb Cloud · recommended · paid, live data + visual editing
+    GitHub Pages · free, CI on push
     Cloudflare Pages · free, CI on push
     Netlify · free, CI on push
     Vercel · free tier, CI on push
     S3 + CloudFront · your AWS account
-    Uniweb Cloud · paid, dynamic + visual editing
     Somewhere else · export a folder
 ```
 
-Pick a host and it asks *how* — set up a workflow so every push deploys, or upload from this machine now. **Uniweb Cloud** runs [`uniweb publish`](#uniweb-publish); **Somewhere else** runs [`uniweb export`](./deployment.md). Your answer is recorded in `deploy.yml`, so later runs go straight there.
+**Uniweb Cloud**, the host we recommend, runs [`uniweb publish`](#uniweb-publish). Pick a static host and it asks *how* — set up a workflow so every push deploys, or upload from this machine now. **Somewhere else** runs [`uniweb export`](./deployment.md). Your answer is recorded in `deploy.yml`, so later runs go straight there.
 
 ```bash
 uniweb deploy [options]

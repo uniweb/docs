@@ -1,8 +1,8 @@
 # Deployment Reference
 
-Per-host recipes for deploying Uniweb sites — Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3 + CloudFront, and self-hosted servers.
+Per-host recipes for deploying Uniweb sites — Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3 + CloudFront, and self-hosted servers. We recommend Uniweb hosting, the host with the full set of hosting features: see [Publishing to Uniweb hosting](#publishing-to-uniweb-hosting).
 
-> **For the conceptual model** — path 1 (you manage the content) vs path 2 (foundation as a product), free CI vs Uniweb hosting, the two-artifact framing — see **[Deploying](../development/deploying.md)**. This page is the per-host deep-dive.
+> **For the conceptual model** — path 1 (you manage the content) vs path 2 (foundation as a product), Uniweb hosting vs a static host, the two-artifact framing — see **[Deploying](../development/deploying.md)**. This page is the per-host deep-dive.
 
 ## Build for Production
 
