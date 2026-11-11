@@ -61,7 +61,9 @@ Once, when a backend is started for the site. That can be the site's own backend
 site copied from it when it is a template, or a backend started again after the site's was
 destroyed. After that, the site's owner changes these settings in the backend's administration, and
 those changes are what the backend holds. An edited file is still checked and carried with each
-push and pull, but it reaches no backend that is already running.
+push and pull, but it reaches no backend that is already running. Once the site's backend has
+started, `uniweb push` and `uniweb publish` say so when they send a changed file, and
+`uniweb status` says it too.
 
 ## What is checked, and where
 
