@@ -429,7 +429,7 @@ Each entry is built the way a section is, less the grouping, so an entry's `cont
 
 #### What the build does with it
 
-The build checks the declaration and **lowers** it into one form in the foundation's schema — what a visual editor reads: every media spelling becomes `media` with its `types`, a count becomes a minimum and a maximum, and a label appears only where you wrote one. Anything it cannot read — an unknown name, a count on `sequence`, two declarations of one thing — is a build warning, and the rest is still used. `@uniweb/schemas/content`'s `describeContent` reads a `meta.js` the same way.
+The build checks the declaration and **lowers** it into one form in the foundation's schema — what a visual editor reads: every media spelling becomes `media` with its `types`, a count becomes a minimum and a maximum, and a label appears only where you wrote one. Anything it cannot read — an unknown name, a count on `sequence`, two declarations of one thing — stops the foundation build, which names every one at once. So does a `meta.js` that throws as it loads, named with its error. `@uniweb/schemas/content`'s `describeContent` reads a `meta.js` the same way.
 
 #### Background Media
 
@@ -805,7 +805,7 @@ params: {
 | `props` | params written as one map | `params` — its keys are merged in |
 | `data`, `preset`, `input` | nothing: `data:` is refused (it was `query:`'s old name); `preset:` and `input:` are ignored with a warning | — |
 
-The build warns on a param declared as any of them. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
+The foundation build stops on a param declared as any of them, naming it. A preset may still set `theme` or `background`: a preset's params become the section's frontmatter when an author starts a section from it.
 
 A param may take a content field's name — `items`, `title`, `links`. It reaches your component as `params.items`, and `content.items` stays what the section's body gives; the two are never mixed. So a `title:` in the frontmatter never titles the section: its title is the body's heading. The build and a push note a section that sets such a key when its type declares no param of that name.
 
@@ -1225,7 +1225,7 @@ active locale.
 
 #### Inline field-map field types (keyed-object form)
 
-An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name, except `default:`. A `default:` is what an editor's form starts the field with, so it belongs only inline; a named schema declares none (the build refuses one), and the runtime applies neither — a component receives the data as written. It must be a valid data schema — an `object` field declares its `fields`, and an opaque value is `json` (`richtext` for ProseMirror content) — or `uniweb register` refuses the foundation, naming the key; the build warns of it first.
+An inline field map uses the **same shape as a named data schema** (the `@/`-ref form): nested objects nest via `fields:`, lists via `items:`, and a closed value set is `enum:`. A one-off map and a shared `@/`-ref schema are interchangeable — anything you write inline you can move into a `foundation/schemas/*.yml` file and reference by name, except `default:`. A `default:` is what an editor's form starts the field with, so it belongs only inline; a named schema declares none (the build refuses one), and the runtime applies neither — a component receives the data as written. It must be a valid data schema — an `object` field declares its `fields`, and an opaque value is `json` (`richtext` for ProseMirror content) — or the foundation build stops, naming the key, as `uniweb register` would.
 
 ```javascript
 // Full form
