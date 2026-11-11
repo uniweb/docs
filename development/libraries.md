@@ -126,6 +126,8 @@ Authors choose a section type from a foundation's own `sections/`, so a type sta
 
   The foundation's editor schema carries the library's `meta.js`, so authors see the same title, params and presets in each.
 
+  `uniweb add section Banner --library ui` writes all of it: the type in `ui/sections/Banner/`, and the two lines in each foundation that depends on `ui`. With `--foundation classic,modern` it names the foundations instead, and wires any that doesn't depend on the library yet. Run it again with another foundation to offer the type there too.
+
 - **The same component, offered differently:** another title, other params or presets in each `meta.js`. The library holds the component (`index.jsx`, and the files it imports); each foundation keeps its own `meta.js` and passes on only `index.jsx`.
 
 - **Different components:** the type stays each foundation's, even when its `meta.js` is the same file. Sharing the `meta.js` alone would tie two editor interfaces to code that doesn't share them: a param one foundation's component adds would show in the other's editor, unread.

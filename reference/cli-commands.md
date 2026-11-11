@@ -242,11 +242,12 @@ uniweb add library ../acme-shared --foundation classic        # a library beside
 
 ### Section Options
 
-Adds a section type to a foundation — a component file and a `meta.js` beside it.
+Adds a section type to a foundation — a component file and a `meta.js` beside it — or, with `--library`, to a library that foundations offer it from.
 
 | Option | Description |
 |--------|-------------|
 | `--foundation <name>` | Foundation to add the section to (prompted if several exist) |
+| `--library <name>` | Put the section type in this library (its folder, or its package's name), and have each foundation offer it. With it, `--foundation <a,b>` names those foundations; by default, the ones that depend on the library |
 | `--starter` | Generate starter content for the section type from its `content:` declaration — what an author would begin editing |
 | `--preset <name>` | With `--starter`: use that preset's params as the frontmatter |
 | `--write <file>` | With `--starter`: write the markdown to a file instead of printing it |
@@ -265,6 +266,20 @@ uniweb add section Hero --starter --json   # the declaration and the content, pi
 
 The content is derived from what the component says it expects — there is no key to author
 it in. See [Component Metadata → Content](./component-metadata.md#content).
+
+With `--library`, the section type goes in the library, at `<library>/sections/<Name>/`, and each
+foundation offers it with two files in its own `sections/<Name>/` that pass on the library's
+`index.jsx` and `meta.js`. Authors pick a section type from a foundation, so this is how several
+foundations offer the same one: a change to the library's files reaches each of them at its next
+build. A foundation named that doesn't depend on the library yet is wired to it first, as
+`add library` would. Run it again with another `--foundation` to offer the type there too; nothing
+is written if a foundation has a section type of that name of its own. See
+[Libraries → Section types](../development/libraries.md#section-types).
+
+```bash
+uniweb add section Banner --library ui                    # in ui, offered by each foundation that uses it
+uniweb add section Banner --library ui --foundation docs  # offered by one more
+```
 
 ### Version Options
 
