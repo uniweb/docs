@@ -598,7 +598,7 @@ A site **has a dark scheme** whenever it offers a toggle, defaults to `dark` or 
 
 Resolution order, on every page load:
 
-1. A scheme the visitor chose previously (persisted in `localStorage`).
+1. A scheme the visitor chose previously with the site's toggle (persisted in `localStorage`). Only a site with `allowToggle: true` reads one: on a site without a toggle, a stored choice belongs to another site at the same address — the storage is per origin — so it is ignored.
 2. Their OS preference, unless `respectSystemPreference: false`.
 3. `default:`.
 

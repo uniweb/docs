@@ -499,7 +499,14 @@ Less common settings remain under the `i18n:` key:
 i18n:
   routeTranslations: ...
   localesDir: translations         # Default: locales
+  exclude: [/docs]                 # branches the site doesn't translate
 ```
+
+`exclude` names branches the site leaves in their own language, such as a mounted repo's docs:
+`uniweb i18n extract` takes no strings from them, so `init` and `status` leave them alone. It takes
+routes as [`agents.exclude`](#agent-readable-artifacts) does, a whole branch per route. Their pages
+show the source in every language, except a string the site translates elsewhere, since a
+translation applies to its text wherever the text appears.
 
 ---
 

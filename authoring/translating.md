@@ -224,7 +224,9 @@ This only adds missing strings — it never overwrites translations you've alrea
 uniweb i18n status
 ```
 
-Shows how complete each language is — for example, "Spanish: 92% (43/47 strings)". If you keep [free-form translations](#free-form-translations), it also names the ones whose original has changed since.
+Shows how complete each language is — for example, "Spanish: 92% (43/47 strings)". A string still holding your original text, as `init` writes it, is counted apart from the translated ones ("4 the same as the source"), and an empty one as missing. If you keep [free-form translations](#free-form-translations), it also names the ones whose original has changed since.
+
+If part of the site stays in its own language, such as documentation you bring in from another repository, leave it out of translation with `i18n: { exclude: [/docs] }` in `site.yml` (see [Site Configuration](../reference/site-configuration.md#advanced-i18n-options)). `extract` then takes no strings from it, and `status` doesn't count them.
 
 For more detail:
 
