@@ -49,7 +49,7 @@ The blueprint says who may *add* entries of a type, and who reads or edits *ever
 | `teams` | `<id>: { label }` | the teams the backend begins with, each one empty. The id is how `access` names the team: lowercase letters, digits and dashes, never `members`. `label` is the team's name, the id when absent, and no two teams share one |
 | `access` | `<type>: { add?, all? }` | `add`: `open` lets every signed-in account add entries of the type; a list of teams lets those teams add them; `[]` lets nobody but the account that runs the site. `all`: `<team or members>: read` or `edit`, over every entry of the type, not only one's own. A type not listed, or an `add` not given, stays closed |
 | `publicQueries` | `<type>: { whole, where?, sort?, limit? }` | visitors who aren't signed in may read the type's entries. `whole` is required: `true` for whole entries, `false` for their briefs. `where`, `sort` and `limit` narrow them, in the language of [queries](./queries.md) |
-| `integrations` | `<id>: { mapping, channel, trigger, label?, filter?, enabled? }` | what the backend starts connected to; see [Integrations](#integrations) |
+| `integrations` | `<id>: { mapping, channel, trigger, label?, filter?, enabled?, reply?, reply_about? }` | what the backend starts connected to; see [Integrations](#integrations) |
 
 A type is named as your foundation names it: `@/vehicle` for its own, and the full name for any
 other (`@std/person`). A push sends each one in full, in your foundation's scope. While your
@@ -82,9 +82,20 @@ fields:
   - { vin: listing.vin }
 ```
 
-`uniweb register` registers a foundation's mappings with it. A foundation build refuses a mapping
-that names no `model`, or names a type or a `keys_from` mapping of its own that it doesn't
-define. The backend judges the rest of the mapping when the foundation registers.
+A mapping can also read related entries through `follow`, a list of one-entry maps, each naming
+an alias. A line that names a `model` finds entries of that type, and its `model` is named as the
+mapping's own `model` is:
+
+```yaml
+follow:
+  - { quiz: { field: identity.quiz_ref } }
+  - { key:  { model: '@/quiz-key', field: identity.quiz, names: quiz } }
+```
+
+`uniweb register` registers a foundation's mappings with it, each type a mapping names written in
+full, in the foundation's scope. A foundation build refuses a mapping that names no `model`, or
+names a type (its `model`, or a `model` in `follow`) or a `keys_from` mapping of its own that it
+doesn't define. The backend judges the rest of the mapping when the foundation registers.
 
 Each integration line in `blueprint.yml` takes:
 
@@ -92,10 +103,12 @@ Each integration line in `blueprint.yml` takes:
 |---|---|
 | `mapping` | required: the mapping, as the foundation names it (`@/vehicle-to-meta`), sent in its scope |
 | `channel` | `file`, `feed`, `email` or `http` |
-| `trigger` | `file` runs `manual`; `feed` runs `on_fetch`; `email` and `http` run `on_create`, `on_match` or `manual` |
+| `trigger` | `file` runs `manual`; `feed` runs `on_fetch`; `email` and `http` run `on_create`, `on_match`, `on_change` (once for each change a person makes) or `manual` |
 | `label` | its name; the id when absent. The id is lowercase letters, digits and dashes |
 | `filter` | which entries it acts on, `{ where: … }` in the language of [queries](./queries.md) |
 | `enabled` | `true` starts a `file` or `feed` integration switched on. Leave it out for `email` and `http`: the site's owner gives their address in the backend's administration and switches them on there |
+| `reply` | `http` only: a mapping, named as `mapping` is, through which the endpoint's answer is written back |
+| `reply_about` | with a `reply` that writes a list of entries: the field of the reply's type (`section.field`, such as `identity.submission`) that the backend fills with the entry it sent. Nothing in it is a type, so it is sent as written |
 
 An address, a URL or a key is never the file's: any other key on a line is refused.
 
