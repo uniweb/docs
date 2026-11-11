@@ -4,6 +4,8 @@ A data schema is the shape of a content type — what fields a `person` has, wha
 
 A schema describes a record; it never changes one. A record reaches your component as it is — a field it lacks is absent — so a schema file declares no `default:` (the build refuses one). What an absent field renders as is your component's choice.
 
+**Before you write one, look for one that exists.** Fourteen standard schemas ship with the framework — `@std/article`, `@std/person`, `@std/event`, `@std/product`, `@std/testimonial` and more ([the list](../reference/component-metadata.md#standard-schema-refs)) — and the Uniweb app knows them: `@std/article` has an article editor there that an article type of your own does not get. A schema another foundation or organization registered is used the same way, by its full name. Write your own for a shape none of them has.
+
 This guide is about the schema *definition* — authoring one, sharing it across projects, and registering it as a reusable content type. For how data is fetched and delivered to components at runtime, see [Working with Data](./working-with-data.md).
 
 ---

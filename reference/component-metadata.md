@@ -616,7 +616,7 @@ When the key names another record, the entry holds a reference to it: `tier: { r
 
 #### Standard schema refs
 
-The shared `@uniweb/schemas` package provides a common vocabulary any foundation can reference:
+The shared `@uniweb/schemas` package provides a common vocabulary any foundation can reference. Use one of these before writing a schema of your own: the Uniweb app knows them, and `@std/article` has an article editor there that an article type of your own does not get. Their records sit in `records/std/<name>/`.
 
 | Ref | Description |
 |------|-------------|
@@ -631,8 +631,11 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 | `@std/testimonial` | What a customer, client or patient said |
 | `@std/position` | A role someone held: a job, an appointment or a volunteer post |
 | `@std/qualification` | A degree, diploma or certificate someone earned |
+| `@std/nav` | A navigation menu or link tree (a list) |
+| `@std/form` | A form an author designs: the controls a visitor fills in (a list) |
+| `@std/scene` | A Scene Composition Format document |
 
-Add `@uniweb/schemas` as a dependency when a `@std/<name>` ref is used. Foundations that only use `@/`-refs or inline schemas don't need it.
+Each one's fields are in [its file](https://github.com/uniweb/schemas/tree/main/src/standard). A foundation installs nothing to use them: the build carries its own copy of `@uniweb/schemas`. A type registered under another scope works the same way, by its full name (`@acme/member`).
 
 #### Routing a scope with `schemas.config.js`
 
