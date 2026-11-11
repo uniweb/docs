@@ -293,6 +293,37 @@ Each value is a schema ref, an inline field map, or `{}` for records with no sch
 
 ---
 
+## Placeholders a Foundation Reads
+
+A site sets values once in `site.yml` `placeholders:` (a shop's currency, a phone number), and a page holds them at `website.config.placeholders` ([Site Configuration → Placeholders](./site-configuration.md#placeholders)). A foundation whose components read some of them declares them in `main.js`, so an editor can show a site's placeholders as typed fields rather than bare names:
+
+```js
+// src/main.js
+export default {
+  placeholders: {
+    currency: {
+      type: 'string',
+      label: 'Currency',
+      enum: [{ value: 'USD', label: 'US dollar ($)' }, { value: 'GBP', label: 'Pound sterling (£)' }],
+      default: 'USD',
+    },
+  },
+}
+```
+
+`placeholders:` is one field map in the shape an inline `data:` map takes ([Data Schemas](../development/data-schemas.md)): `type`, `label`, `description`, `enum` (a value, or `{ value, label }`), `default`, and nested `object` fields. The build checks it as `uniweb register` reads it, and stops on one it cannot read.
+
+It stays editor-time. A page never holds the declaration, and nothing fills a `default` in: `default` is what an editor offers, so your component chooses its own fallback when a site sets no value:
+
+```jsx
+const { website } = useWebsite()
+const currency = website.config?.placeholders?.currency || 'USD'
+```
+
+A site may also hold placeholders its foundation doesn't declare, which its content uses as `{name}`; an editor shows those as plain values.
+
+---
+
 ## Custom Layout
 
 Foundations can provide custom Layout components that control page structure. Layouts live in `src/layouts/` and are auto-discovered.
