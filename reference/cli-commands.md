@@ -848,10 +848,11 @@ For each section with a file-based data input, it resolves the schema bound to t
 - Values outside an **enum**
 - **Format** violations (`url`, `email`, and a `date` that is not a real `YYYY-MM-DD` day or a `datetime` that is not a day and a time)
 - Nested object and array fields, recursively
+- What a push cannot carry: a field the record's schema does not declare, at any depth, and a markdown body with no field in the schema to hold it. The next pull would write the file without it, so a push refuses the record. For a type your foundation defines, declare the field or remove it. A standard type (`@std/…`) can't be given a field, so the finding names the fields it has: use one of them, remove the field, or give the records a type of your own. `uniweb build` and `uniweb dev` note such a record too, and still deliver it as its file holds it.
 
 A record of a `sections:` schema is checked in either shape a file can hold it: **flat** — its single sections' fields at the top of the file, the brief's first — or **written by section**, each section under its own key, a list section as a list of records and child sections included.
 
-It does not flag unknown or extra fields, and it does not flag an absent optional field.
+It does not flag an absent optional field.
 
 ### Deferred
 
@@ -871,7 +872,7 @@ Exit codes: `0` clean (or `--lax`), `1` violations, `2` setup error (e.g. not in
 
 ### It also runs when you ship
 
-`uniweb push` and `uniweb publish` run the same check first and **stop before sending anything** if a record doesn't conform. They register your foundation before sending content, so the backend checks the records against the very schemas checked here — a record that does not conform would be refused on arrival, or lose a value on the way. They also refuse what a push cannot carry: a field the record's schema does not declare, a markdown body with no field in the schema to hold it, and a record written by section.
+`uniweb push` and `uniweb publish` run the same check first and **stop before sending anything** if a record doesn't conform. They register your foundation before sending content, so the backend checks the records against the very schemas checked here — a record that does not conform would be refused on arrival, or lose a value on the way.
 
 `uniweb deploy` to a static host runs the check too, and **warns and carries on**. Nothing downstream enforces a schema there, and a schema can be newer than the content that was valid when it was authored — refusing to deploy over that would make your site hostage to a schema release.
 
