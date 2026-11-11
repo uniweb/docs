@@ -239,6 +239,41 @@ Nothing else is configured: the build reads the type from the library the founda
 
 A copy of a type's file in a foundation would be a second definition of one type, which stops the build when both are read, and which `uniweb doctor` points out. See [Data Schemas](./data-schemas.md#sharing-schemas-across-projects) and [Schemas in Practice](./schemas-in-practice.md).
 
+## Mappings in a library
+
+A mapping says how a vendor's file translates to and from one of your types, such as a catalog feed's CSV from a vehicle ([Blueprint → Integrations](../reference/blueprint.md#integrations)). One that several foundations use belongs beside its type, in the library's `mappings/`, one per file, named in full by the library's scope: `mappings/vehicle-to-meta.yml` is `@acme/vehicle-to-meta`. A library may hold mappings alone.
+
+```yaml
+# libraries/data/mappings/vehicle-to-meta.yml
+label: Meta catalog
+model: '@/vehicle'            # the library's own type, or any other named in full
+direction: out
+shape: list
+format: { type: csv }
+fields:
+  - { title: listing.title }
+```
+
+A mapping's `@/x` names are the library's, so `@/vehicle` here is `@acme/vehicle`, and a `keys_from` names another of the library's mappings.
+
+A foundation carries a library's mapping by naming it in its `main.js`:
+
+```js
+// foundations/classic/src/main.js
+export default {
+  name: '@shop/classic',
+  mappings: ['@acme/vehicle-to-meta'],
+}
+```
+
+The build reads each one from the library that defines it, and stops on one it can't carry: a name not in full, one in the foundation's own scope (its own mappings are files in its `src/mappings/`), one two packages define, or one that names a type or a mapping the library doesn't define. A name no package of the workspace defines only warns, because it may already be registered. A site's `blueprint.yml` then names it in full: `mapping: '@acme/vehicle-to-meta'`.
+
+**On a site synced with a Uniweb backend:**
+
+- `uniweb register` in a foundation registers each mapping it carries from a library, from the library, after the library's types and before the foundation. It also sends the mapping its `keys_from` names and the library types it names. So do `uniweb push` and `uniweb publish`.
+- A backend keeps, for each mapping a foundation names, the version it held when that foundation version registered, and a site's backend uses that version. A change to the library's mapping reaches a site when its foundation releases a new version and the site moves to it, as a change to the library's code does.
+- `uniweb register` run in the library registers its types and mappings.
+
 ---
 
 ## How a change reaches a site

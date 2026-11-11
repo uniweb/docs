@@ -293,6 +293,21 @@ Each value is a schema ref, an inline field map, or `{}` for records with no sch
 
 ---
 
+## Mappings from a Library
+
+A foundation's own mappings are files in its `src/mappings/` ([Blueprint → Integrations](./blueprint.md#integrations)). A mapping a library defines is carried by naming it in full in `main.js`:
+
+```js
+// src/main.js
+export default {
+  mappings: ['@acme/vehicle-to-meta'],
+}
+```
+
+The build reads each from the library and checks it; `uniweb register` registers it from the library first and names it in the foundation's registration. See [Libraries → Mappings in a library](../development/libraries.md#mappings-in-a-library).
+
+---
+
 ## Placeholders a Foundation Reads
 
 A site sets values once in `site.yml` `placeholders:` (a shop's currency, a phone number), and a page holds them at `website.config.placeholders` ([Site Configuration → Placeholders](./site-configuration.md#placeholders)). A foundation whose components read some of them declares them in `main.js`, so an editor can show a site's placeholders as typed fields rather than bare names:
