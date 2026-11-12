@@ -929,7 +929,7 @@ It runs nothing from a file the build would refuse, and it prints the build's wa
 
 | Option | Description |
 |--------|-------------|
-| `--input <file.json>` | The function's input. Without it, the input is read from stdin; `-` reads stdin too |
+| `--input <file.json>` | The function's input, required. `--input -` reads it from stdin |
 | `--json` | Print one object, `{ ok, answer \| failure, warnings, wallMs, cpuMs }`, on stdout |
 
 Exit codes: `0` with the answer on stdout, `1` with why it failed on stderr.
@@ -941,7 +941,7 @@ Exit codes: `0` with the answer on stdout, `1` with why it failed on stderr.
 uniweb vendor run courses#grade --input test/submission.json
 
 # The input from another command
-echo '{"key":[{"question":"q1","correct":"b"}],"answers":[{"question":"q1","chosen":"b"}]}' | uniweb vendor run courses#grade
+echo '{"key":[{"question":"q1","correct":"b"}],"answers":[{"question":"q1","chosen":"b"}]}' | uniweb vendor run courses#grade --input -
 
 # A library's file, for a script
 uniweb vendor run @acme/grading#score --input in.json --json
