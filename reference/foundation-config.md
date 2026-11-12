@@ -308,6 +308,21 @@ The build reads each from the library and checks it; `uniweb register` registers
 
 ---
 
+## Vendor Files from a Library
+
+A foundation's own vendor files are in its `src/vendors/` ([Vendor Functions](../development/vendor-functions.md)). One a library defines is carried by naming it in full in `main.js`:
+
+```js
+// src/main.js
+export default {
+  vendors: ['@acme/grading'],
+}
+```
+
+The build reads each from the library and checks it; `uniweb register` registers and uploads it from the library first and names it in the foundation's registration.
+
+---
+
 ## Placeholders a Foundation Reads
 
 A site sets values once in `site.yml` `placeholders:` (a shop's currency, a phone number), and a page holds them at `website.config.placeholders` ([Site Configuration → Placeholders](./site-configuration.md#placeholders)). A foundation whose components read some of them declares them in `main.js`, so an editor can show a site's placeholders as typed fields rather than bare names:

@@ -12,6 +12,7 @@ pages:
   - libraries
   - data-sources
   - receiving-form-submissions
+  - vendor-functions
   - content-handlers
   - data-driven-sections
   - custom-layouts
