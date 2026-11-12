@@ -217,6 +217,18 @@ A picture a page shows is made ready for the web before it is stored or shipped,
 <!-- Output: /assets/photo-a1b2c3d4.webp -->
 ```
 
+### Video
+
+`uniweb publish` and `uniweb push` make a video ready before they upload it, when this machine has ffmpeg with libx264 (on a Mac: `brew install ffmpeg`):
+
+- **H.264 and AAC in an MP4**, at most 1920 pixels on its long edge and about 5 Mbps at 1080p (less for a smaller frame), with its index first, so it starts playing before it has all downloaded
+- **A video already within that** is only repackaged, never encoded again
+- **An HDR video**, which a phone records by default, goes up as it is, with a note: export it as SDR for a smaller file most browsers play
+- **Every video loses its location and camera data**, with ffmpeg or without it
+- With no ffmpeg, a heavy video otherwise goes up as it is, with a note saying how to get it
+
+A static build copies a video as it is, its location included.
+
 ### Automatic Poster Generation
 
 In a static build, videos without an explicit `poster` attribute get an auto-generated poster image (requires ffmpeg on your system):
