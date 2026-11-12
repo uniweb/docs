@@ -196,9 +196,9 @@ External URLs are passed through unchanged:
 ![External](https://example.com/image.jpg)
 ```
 
-## Build Optimizations
+## What a static build does to media
 
-During build, local assets are automatically processed:
+A static build (`uniweb build`, `uniweb export`, `uniweb deploy --host`) processes the local media a page names, as below. `uniweb publish` doesn't: it uploads each file as it is. So for a site published with Uniweb, add an image at the size and format its page shows, and give a video its own `poster`.
 
 ### Image Optimization
 

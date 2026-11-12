@@ -110,9 +110,9 @@ Make an image link to somewhere:
 ![Product](./screenshot.jpg){href=/products/details}
 ```
 
-### Build optimizations
+### Image size
 
-During build, local images (PNG, JPG, GIF) are automatically converted to WebP for smaller files. SVG and WebP pass through unchanged.
+A static build (`uniweb build`, `uniweb export`) converts local PNG, JPG and GIF images to WebP, which makes them smaller. SVG and WebP pass through unchanged. `uniweb publish` uploads each image as it is, without that conversion, so add a photo at the width its page shows it, as a WebP or a compressed JPG.
 
 ---
 
