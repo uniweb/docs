@@ -1,11 +1,11 @@
-# Vendor Functions
+# Compute Functions
 
-A site's backend can send an entry to another system when something happens, and write that system's answer back: a quiz submission goes out to be graded, and the grade comes back onto the submission ([Blueprint → Integrations](../reference/blueprint.md#integrations)). Usually that other system is a service someone runs at an address. When the work is small, such as grading a quiz against its answer key, a foundation can ship the logic itself: one plain JavaScript file of functions, which the platform runs for you. An integration names a function where it would otherwise need an address.
+A site's backend can send an entry to another system when something happens, and write that system's answer back: a quiz submission goes out to be graded, and the grade comes back onto the submission ([Blueprint → Integrations](../reference/blueprint.md#integrations)). Usually that other system is a service someone runs at an address. When the work is small, such as grading a quiz against its answer key, a foundation can ship the logic itself: one plain JavaScript file of functions, which the platform runs for you. An integration names one of its functions with `vendor:`, where it would otherwise give an outside vendor's address.
 
-A vendor function runs outside the visitor's browser, so it can hold what a visitor must never see, like an answer key, and outside the site's backend, which stays the same for every site.
+A compute function runs outside the visitor's browser, so it can hold what a visitor must never see, like an answer key, and outside the site's backend, which stays the same for every site.
 
 ```js
-// src/vendors/courses.js
+// src/compute/courses.js
 export function grade(input) {
   const key = new Map(input.key.map((k) => [k.question, k.correct]))
   let points = 0
@@ -29,13 +29,13 @@ integrations:
     enabled: true
 ```
 
-A vendor function is a calculator: data in, an answer out. Anything that needs the network, a secret, storage, a package, or more than a moment of work is a real service, reached at its address.
+A compute function is a calculator: data in, an answer out. Anything that needs the network, a secret, storage, a package, or more than a moment of work is a real service, reached at its address.
 
 ---
 
 ## Writing one
 
-A foundation holds its vendor files in `src/vendors/`, and a library in its `vendors/`, one file per name: `src/vendors/courses.js` is the file `courses`. A file whose name starts with `_` is left out. Each file is a standard JavaScript module whose **named exports are its functions**, and an integration names one as `file#function`: `'@/courses#grade'`.
+A foundation holds its compute files in `src/compute/`, and a library in its `compute/`, one file per name: `src/compute/courses.js` is the file `courses`. A file whose name starts with `_` is left out. Each file is a standard JavaScript module whose **named exports are its functions**, and an integration names one as `file#function`: `'@/courses#grade'`.
 
 The file goes to the platform exactly as you wrote it. Nothing builds, bundles or minifies it, so it has to stand on its own:
 
@@ -79,38 +79,38 @@ These are enforced when it runs:
 - **No secrets or settings.** It receives nothing but `input`.
 - **Frozen built-ins.** `Object.prototype`, `Array.prototype` and the rest can't be changed, and a module runs in strict mode, so a write to one throws. This includes *assigning* a property that a built-in prototype already has: `error.name = 'GradingError'` or `obj.toString = …` throws *"Cannot assign to read only property"*. Define it instead, in an object literal, with `Object.defineProperty`, or as a class field (`class GradingError extends Error { name = 'GradingError' }`).
 - **A short time budget per call**, and limits on the size of its input and its answer.
-- **Its own `console` output is discarded**, since it could hold what a learner answered. Run it on your machine instead, with `uniweb vendor run`.
+- **Its own `console` output is discarded**, since it could hold what a learner answered. Run it on your machine instead, with `uniweb compute run`.
 
 ### Testing
 
 It's a plain module of pure functions, so import it in a test and call it:
 
 ```js
-import { grade } from '../src/vendors/courses.js'
+import { grade } from '../src/compute/courses.js'
 
 const answer = grade({ key: [{ question: 'q1', correct: 'b' }], answers: [{ question: 'q1', chosen: 'b' }] })
 // { points: 1, max: 1 }
 ```
 
-The test runs it in Node, which is more lenient than where it runs: built-ins aren't frozen there, and Node's globals and `fetch` work. To run it under the rules it runs by, use `uniweb vendor run`:
+The test runs it in Node, which is more lenient than where it runs: built-ins aren't frozen there, and Node's globals and `fetch` work. To run it under the rules it runs by, use `uniweb compute run`:
 
 ```bash
-uniweb vendor run courses#grade --input test/submission.json
+uniweb compute run courses#grade --input test/submission.json
 ```
 
-It prints the answer, or why the call failed, and the function's console output, which is discarded where it runs. A pass means the function keeps the rules above; it isn't the platform's runner, and the time it reports is your machine's. See [`uniweb vendor run`](../reference/cli-commands.md#uniweb-vendor-run).
+It prints the answer, or why the call failed, and the function's console output, which is discarded where it runs. A pass means the function keeps the rules above; it isn't the platform's runner, and the time it reports is your machine's. See [`uniweb compute run`](../reference/cli-commands.md#uniweb-compute-run).
 
 ---
 
 ## Sharing one through a library
 
-A function several foundations use can live in a library's `vendors/`, named in the library's scope: `vendors/grading.js` in a library of `@acme` is `@acme/grading`. A foundation carries it by naming it in its `main.js`, and a site's `blueprint.yml` then names it in full:
+A function several foundations use can live in a library's `compute/`, named in the library's scope: `compute/grading.js` in a library of `@acme` is `@acme/grading`. A foundation carries it by naming it in its `main.js`, and a site's `blueprint.yml` then names it in full:
 
 ```js
 // src/main.js
 export default {
   name: '@shop/classic',
-  vendors: ['@acme/grading'],
+  compute: ['@acme/grading'],
 }
 ```
 
@@ -118,13 +118,13 @@ export default {
 vendor: '@acme/grading#score'
 ```
 
-The build reads each one from the library that defines it, checks it as a foundation's own is checked, and stops on a name not in full, one in the foundation's own scope (its own files are in `src/vendors/`), or one two packages define. A name no package of the workspace defines only warns, because it may already be registered. A site runs only functions its own foundations carry. See [Libraries](./libraries.md).
+The build reads each one from the library that defines it, checks it as a foundation's own is checked, and stops on a name not in full, one in the foundation's own scope (its own files are in `src/compute/`), or one two packages define. A name no package of the workspace defines only warns, because it may already be registered. A site runs only functions its own foundations carry. See [Libraries](./libraries.md).
 
 ---
 
 ## On a site synced with a Uniweb backend
 
-- `uniweb register` in a foundation registers each vendor file with it, by its name, the functions it exports, and a fingerprint of its bytes, and then uploads the file. A library's files go first, from the library, before the foundation that names them. `uniweb push` and `uniweb publish` do the same, and `uniweb register` run in a library registers and uploads all of its files.
+- `uniweb register` in a foundation registers each compute file with it, by its name, the functions it exports, and a fingerprint of its bytes, and then uploads the file. A library's files go first, from the library, before the foundation that names them. `uniweb push` and `uniweb publish` do the same, and `uniweb register` run in a library registers and uploads all of its files.
 - A file's version never changes. Registering a changed file makes a new version, and a site keeps the version its foundation registered with until the site is next published on a newer version of that foundation.
 - If an upload is interrupted, run `uniweb register` again: the file is found by its fingerprint, and one already stored isn't sent again. Until its file is uploaded, an integration that names it is left out when the site's backend starts, and the publish says so.
 - `blueprint.yml`'s checks warn when a line names a file none of the site's foundations carries, or a function the file doesn't export.

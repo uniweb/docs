@@ -274,9 +274,9 @@ The build reads each one from the library that defines it, and stops on one it c
 - A backend keeps, for each mapping a foundation names, the version it held when that foundation version registered, and a site's backend uses that version. A change to the library's mapping reaches a site when its foundation releases a new version and the site moves to it, as a change to the library's code does.
 - `uniweb register` run in the library registers its types and mappings.
 
-## Vendor functions in a library
+## Compute functions in a library
 
-A library may hold `vendors/` too, one plain JavaScript file of functions per name, named in its scope: `vendors/grading.js` is `@acme/grading`. A library may hold vendor files alone. A foundation carries one with `vendors: ['@acme/grading']` in its `main.js`, as it carries a mapping, and `uniweb register` registers and uploads it from the library before the foundation. What a vendor file may hold, and how an integration names one of its functions, is in [Vendor Functions](./vendor-functions.md).
+A library may hold `compute/` too, one plain JavaScript file of functions per name, named in its scope: `compute/grading.js` is `@acme/grading`. A library may hold compute files alone. A foundation carries one with `compute: ['@acme/grading']` in its `main.js`, as it carries a mapping, and `uniweb register` registers and uploads it from the library before the foundation. What a compute file may hold, and how an integration names one of its functions, is in [Compute Functions](./compute-functions.md).
 
 ---
 

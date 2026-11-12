@@ -113,7 +113,7 @@ Each integration line in `blueprint.yml` takes:
 | `enabled` | `true` starts a `file` or `feed` integration switched on, or an `http` one that names a `vendor`. Leave it out for `email` and other `http` lines: the site's owner gives their address in the backend's administration and switches them on there |
 | `reply` | `http` only: a mapping, named as `mapping` is, through which the endpoint's answer is written back |
 | `reply_about` | with a `reply` that writes a list of entries: the field of the reply's type (`section.field`, such as `identity.submission`) that the backend fills with the entry it sent. Nothing in it is a type, so it is sent as written |
-| `vendor` | `http` only: a function the platform runs in place of an address, `'@/courses#grade'`: a vendor file the site's foundations carry, named as `mapping` is, then `#` and the function it exports. See [Vendor Functions](../development/vendor-functions.md) |
+| `vendor` | `http` only: a function the platform runs in place of an address, `'@/courses#grade'`: a compute file the site's foundations carry, named as `mapping` is, then `#` and the function it exports. See [Compute Functions](../development/compute-functions.md) |
 
 An address, a URL or a key is never the file's: any other key on a line is refused.
 

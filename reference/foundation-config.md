@@ -308,14 +308,14 @@ The build reads each from the library and checks it; `uniweb register` registers
 
 ---
 
-## Vendor Files from a Library
+## Compute Files from a Library
 
-A foundation's own vendor files are in its `src/vendors/` ([Vendor Functions](../development/vendor-functions.md)). One a library defines is carried by naming it in full in `main.js`:
+A foundation's own compute files are in its `src/compute/` ([Compute Functions](../development/compute-functions.md)). One a library defines is carried by naming it in full in `main.js`:
 
 ```js
 // src/main.js
 export default {
-  vendors: ['@acme/grading'],
+  compute: ['@acme/grading'],
 }
 ```
 
