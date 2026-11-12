@@ -1003,6 +1003,8 @@ function Hero({ content, params, block }) {
 | `hasBackground` | boolean | Engine renders a background behind this section |
 | `themeName` | string | Color context (`light`, `medium`, `dark`) |
 | `state` | any | Persistent component state |
+| `properties` | object | The section's params as its frontmatter writes them, without the section settings (`theme`, `background`, `vars`, `fetch`, `sticky`, …) and without the `meta.js` defaults. A component reads `params`, which has the defaults |
+| `rawContent` | object | The section's ProseMirror document before parsing, insets lifted out. For a [content handler](../development/content-handlers.md) that rewrites it: `block.rawContent?.doc ?? block.rawContent`. A component reads `content` |
 
 #### Methods
 
