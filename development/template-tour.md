@@ -57,7 +57,7 @@ An academic research portfolio with publication lists, team grids, timelines, an
 
 **Domain-specific variant params.** `ProfileHero/meta.js` declares a `variant` param with `researcher`, `lab`, and `department` options. Each variant adjusts the layout and fields displayed. The content author picks the profile type from a dropdown; the component renders accordingly.
 
-**Extensive param-driven customization.** `PublicationList/meta.js` has params for citation style (`detailed`, `apa`, `mla`, `chicago`, `ieee`), grouping (`none`, `year`), publication types, cite buttons, search visibility, and a display limit, and presets that combine them into named configurations (`full`, `recent`, `apa`, `mla`, `ieee`). The deepest example of how params and presets create a content-author interface for a complex component.
+**Extensive param-driven customization.** `PublicationList/meta.js` has params for citation style (`detailed`, `apa`, `mla`, `chicago`, `ieee`), grouping (`none`, `year`), publication types, cite buttons, search visibility, and a display limit, and presets that combine them into named configurations (`full`, `recent`, `apa`, `mla`, `ieee`). The deepest example of how params and presets create a content-author interface for a complex component. A citation style prints words of its own ("and", "vol.", "pp.", month names) in English; for another language the foundation passes a language pack, as `locale`, to `@uniweb/scholar`'s `formatReference` and `CiteButton`, whose README shows how to pick one by the page's language.
 
 ### What it keeps bundled
 
