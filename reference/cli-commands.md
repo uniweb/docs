@@ -19,6 +19,7 @@ uniweb rename <type> <old> <new>  # Rename a foundation, site, or extension work
 uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
 uniweb validate                # Check content against the data schemas your foundation declares
+uniweb vendor run <file>#<fn>  # Run a vendor function on this machine, under the rules it runs by
 uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb login                   # Authenticate with Uniweb platform
@@ -892,6 +893,58 @@ uniweb validate --json
 
 # One site in a multi-site workspace
 uniweb validate --site blog
+```
+
+---
+
+## uniweb vendor run
+
+Run one [vendor function](../development/vendor-functions.md) on your machine, under the rules it runs by on the platform.
+
+```bash
+uniweb vendor run <file>#<function> --input <file.json>
+```
+
+A test that imports a vendor file runs it in Node, which allows what the platform takes away: Node's globals work, `fetch` works, and the built-in prototypes can be changed. Where the function runs, its console output is discarded, so a function that passes its tests can fail there with little to go on. This command fails it here instead, and shows its console output.
+
+It enforces:
+
+- the standard web globals, and not Node's: `process`, `Buffer` and `require` aren't there;
+- no network: `fetch` throws;
+- frozen built-in prototypes, so assigning a property one of them has (`error.name = 'X'`) throws;
+- a JSON object as input, and a JSON object as the answer, each within its size;
+- a call still running after 5 seconds is stopped, and one that takes longer than a call may take where it runs is warned of.
+
+It runs nothing from a file the build would refuse, and it prints the build's warnings for the file. A pass means the function keeps the contract. It is not the platform's runner, and the time it reports is this machine's.
+
+`<file>` is named as an integration names it, or by its path:
+
+| You write | The file |
+|---|---|
+| `courses` or `@/courses` | `src/vendors/courses.js` in a foundation, `vendors/courses.js` in a library |
+| `@acme/grading` | a library's file, found in the workspace |
+| `src/vendors/courses.js` | that path |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--input <file.json>` | The function's input. Without it, the input is read from stdin; `-` reads stdin too |
+| `--json` | Print one object, `{ ok, answer \| failure, warnings, wallMs, cpuMs }`, on stdout |
+
+Exit codes: `0` with the answer on stdout, `1` with why it failed on stderr.
+
+### Examples
+
+```bash
+# A foundation's own file
+uniweb vendor run courses#grade --input test/submission.json
+
+# The input from another command
+echo '{"key":[{"question":"q1","correct":"b"}],"answers":[{"question":"q1","chosen":"b"}]}' | uniweb vendor run courses#grade
+
+# A library's file, for a script
+uniweb vendor run @acme/grading#score --input in.json --json
 ```
 
 ---

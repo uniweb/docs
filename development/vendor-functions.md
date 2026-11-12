@@ -79,7 +79,7 @@ These are enforced when it runs:
 - **No secrets or settings.** It receives nothing but `input`.
 - **Frozen built-ins.** `Object.prototype`, `Array.prototype` and the rest can't be changed, and a module runs in strict mode, so a write to one throws. This includes *assigning* a property that a built-in prototype already has: `error.name = 'GradingError'` or `obj.toString = …` throws *"Cannot assign to read only property"*. Define it instead, in an object literal, with `Object.defineProperty`, or as a class field (`class GradingError extends Error { name = 'GradingError' }`).
 - **A short time budget per call**, and limits on the size of its input and its answer.
-- **Its own `console` output is discarded**, since it could hold what a learner answered. Test it on your machine instead.
+- **Its own `console` output is discarded**, since it could hold what a learner answered. Run it on your machine instead, with `uniweb vendor run`.
 
 ### Testing
 
@@ -92,7 +92,13 @@ const answer = grade({ key: [{ question: 'q1', correct: 'b' }], answers: [{ ques
 // { points: 1, max: 1 }
 ```
 
-The test runs it in Node, which is more lenient than where it runs: built-ins aren't frozen there, and Node's globals and `fetch` work. So read the build's warnings as well.
+The test runs it in Node, which is more lenient than where it runs: built-ins aren't frozen there, and Node's globals and `fetch` work. To run it under the rules it runs by, use `uniweb vendor run`:
+
+```bash
+uniweb vendor run courses#grade --input test/submission.json
+```
+
+It prints the answer, or why the call failed, and the function's console output, which is discarded where it runs. A pass means the function keeps the rules above; it isn't the platform's runner, and the time it reports is your machine's. See [`uniweb vendor run`](../reference/cli-commands.md#uniweb-vendor-run).
 
 ---
 
