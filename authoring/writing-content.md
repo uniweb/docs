@@ -112,7 +112,7 @@ Make an image link to somewhere:
 
 ### Image size
 
-A static build (`uniweb build`, `uniweb export`) converts local PNG, JPG and GIF images to WebP, which makes them smaller. SVG and WebP pass through unchanged. `uniweb publish` uploads each image as it is, without that conversion, so add a photo at the width its page shows it, as a WebP or a compressed JPG.
+Before an image is stored or shipped, it's made ready for the web. `uniweb publish` and `uniweb push` do it when they upload it, and a static build (`uniweb build`, `uniweb export`) when it copies it: a PNG, JPEG or GIF becomes a WebP when that is at least 10% smaller, turned upright and without its location and camera data. SVG and WebP pass through unchanged, and so do the favicon and the social images other software reads. An image keeps its pixels, so add a photo no wider than its page shows it.
 
 ---
 

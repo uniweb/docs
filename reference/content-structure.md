@@ -196,15 +196,19 @@ External URLs are passed through unchanged:
 ![External](https://example.com/image.jpg)
 ```
 
-## What a static build does to media
+## What happens to media
 
-A static build (`uniweb build`, `uniweb export`, `uniweb deploy --host`) processes the local media a page names, as below. `uniweb publish` doesn't: it uploads each file as it is. So for a site published with Uniweb, add an image at the size and format its page shows, and give a video its own `poster`.
+A picture a page shows is made ready for the web before it is stored or shipped, under one rule: by `uniweb publish` and `uniweb push` when they upload it, and by a static build (`uniweb build`, `uniweb export`, `uniweb deploy --host`) when it copies it.
 
 ### Image Optimization
 
-- **PNG, JPG, JPEG, GIF** → Converted to WebP for smaller file sizes
+- **PNG, JPG, JPEG, GIF** → A WebP when that is at least 10% smaller, otherwise the file as it is
+- **TIFF, HEIC** → Always a WebP, since most browsers can't show them. A HEIC this machine can't decode is kept as it is, with a note: export it as JPEG
 - **SVG, WebP, AVIF** → Passed through unchanged
-- All images get content-hashed filenames for cache busting
+- Either way, a picture is turned upright as the photo's orientation says, keeps its transparency, animation and colour profile, and loses its location and camera data
+- The favicon, the touch icon, the site's card picture and its social images go up as they are, since the software that fetches them expects PNG or JPEG
+- A picture keeps its pixels, so add one no wider than its page shows it
+- In a static build, all images get content-hashed filenames for cache busting
 
 ```markdown
 ![Photo](./photo.jpg)
@@ -214,7 +218,7 @@ A static build (`uniweb build`, `uniweb export`, `uniweb deploy --host`) process
 
 ### Automatic Poster Generation
 
-Videos without an explicit `poster` attribute get an auto-generated poster image (requires ffmpeg on your system):
+In a static build, videos without an explicit `poster` attribute get an auto-generated poster image (requires ffmpeg on your system):
 
 ```markdown
 ![Demo](./demo.mp4){role=video}
