@@ -112,7 +112,7 @@ Make an image link to somewhere:
 
 ### Image size
 
-Before an image is stored or shipped, it's made ready for the web. `uniweb publish` and `uniweb push` do it when they upload it, and a static build (`uniweb build`, `uniweb export`) when it copies it: a PNG, JPEG or GIF becomes a WebP when that is at least 10% smaller, turned upright and without its location and camera data. SVG and WebP pass through unchanged, and so do the favicon and the social images other software reads. An image keeps its pixels, so add a photo no wider than its page shows it.
+Before an image is stored or shipped, it's made ready for the web. `uniweb publish` and `uniweb push` do it when they upload it, and a static build (`uniweb build`, `uniweb export`) when it copies it: a PNG, JPEG or GIF becomes a WebP when that is at least 10% smaller, turned upright and without its location and camera data. A WebP stays a WebP, without that data. The favicon and the social images other software reads keep their format: an upload drops only their location and camera data, and a static build serves them from `public/` as they are. SVG passes through unchanged. A static build copies `public/` as it is too, so keep a phone's photos beside their page. An image keeps its pixels, so add a photo no wider than its page shows it.
 
 ---
 

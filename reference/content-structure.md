@@ -180,7 +180,7 @@ Paths starting with `/` name a file in the site's `public/` folder, which is ser
 ![Logo](/brand/logo.svg) <!-- public/brand/logo.svg -->
 ```
 
-Keep a page's media beside the page, and in `public/` what belongs to the whole site: a favicon, a font. Both reach a site published with Uniweb (`uniweb publish`) and a static build (`uniweb build`, `uniweb export`). A static build copies `public/` as it is, and also makes its own copy of each file a page names there (WebP for a PNG or JPG, a hashed name otherwise). So a video only a page shows is in `dist/` twice when it sits in `public/`, and once beside the page.
+Keep a page's media beside the page, and in `public/` what belongs to the whole site: a favicon, a font. Both reach a site published with Uniweb (`uniweb publish`) and a static build (`uniweb build`, `uniweb export`). A static build copies `public/` as it is, and also makes its own copy of each file a page names there (WebP for a PNG or JPG, a hashed name otherwise). So a video only a page shows is in `dist/` twice when it sits in `public/`, and once beside the page. The copy of `public/` keeps whatever a camera wrote in a photo, where it was taken included, so keep a phone's photos beside their page.
 
 Only a static host gives a file a fixed address, at the site root. A site published with Uniweb serves a file that something names from an address the upload gives it, and nothing at `/logo.svg`. So for a file other sites or scripts fetch by URL, keep it somewhere with its own address and add a page whose `redirect:` goes there.
 
@@ -204,9 +204,10 @@ A picture a page shows is made ready for the web before it is stored or shipped,
 
 - **PNG, JPG, JPEG, GIF** → A WebP when that is at least 10% smaller, otherwise the file as it is
 - **TIFF, HEIC** → Always a WebP, since most browsers can't show them. A HEIC this machine can't decode is kept as it is, with a note: export it as JPEG
-- **SVG, WebP, AVIF** → Passed through unchanged
+- **WebP** → Kept as it is, without its location and camera data, unless its orientation says to turn it
+- **SVG, AVIF** → Passed through unchanged
 - Either way, a picture is turned upright as the photo's orientation says, keeps its transparency and animation, and loses its location and camera data. A WebP's colour is converted to sRGB; a kept file keeps its own colour profile
-- The favicon, the touch icon, the site's card picture and its social images go up as they are, since the software that fetches them expects PNG or JPEG
+- The favicon, the touch icon, the site's card picture and its social images go up in their own format, since the software that fetches them expects PNG or JPEG, and lose only their location and camera data. A static build serves them from `public/` as they are
 - A picture keeps its pixels, so add one no wider than its page shows it
 - In a static build, all images get content-hashed filenames for cache busting
 
