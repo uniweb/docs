@@ -599,10 +599,10 @@ A site **has a dark scheme** whenever it offers a toggle, defaults to `dark` or 
 Resolution order, on every page load:
 
 1. A scheme the visitor chose previously with the site's toggle (persisted in `localStorage`). Only a site with `allowToggle: true` reads one: on a site without a toggle, a stored choice belongs to another site at the same address — the storage is per origin — so it is ignored.
-2. Their OS preference, unless `respectSystemPreference: false`.
+2. A dark OS preference, unless `respectSystemPreference: false`. The OS can only choose dark: a light one leaves the default.
 3. `default:`.
 
-`respectSystemPreference` defaults to **true**. That makes `default:` a fallback rather than a guarantee — a dark-OS visitor gets dark on first visit even under `default: light`. Set `respectSystemPreference: false` to pin the default.
+`respectSystemPreference` defaults to **true**. That makes `default: light` a fallback rather than a guarantee: a dark-OS visitor gets dark on first visit. `default: dark` is dark on any OS. Set `respectSystemPreference: false` to pin a light default.
 
 ### Rendering a toggle
 
