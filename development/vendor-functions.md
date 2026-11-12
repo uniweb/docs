@@ -43,7 +43,7 @@ The file goes to the platform exactly as you wrote it. Nothing builds, bundles o
 - **Named function exports only.** No default export, and nothing exported that isn't a function. Keep a table or a constant unexported.
 - **Plain modern JavaScript.** It runs with the standard web globals (`JSON`, `Math`, `Intl`, `Date`, `crypto.subtle`), not in Node: `fs`, `process`, `Buffer` and `require` aren't there.
 
-The foundation build stops on a file that breaks one of these, and names it.
+The foundation build stops on a file that breaks one of these, and names it. It also warns when a file uses a name of Node's (`process`, `Buffer`, `require`) or the network's (`fetch`) that it doesn't declare itself, since a test in Node lets these pass.
 
 ### Input and answer
 
@@ -91,6 +91,8 @@ import { grade } from '../src/vendors/courses.js'
 const answer = grade({ key: [{ question: 'q1', correct: 'b' }], answers: [{ question: 'q1', chosen: 'b' }] })
 // { points: 1, max: 1 }
 ```
+
+The test runs it in Node, which is more lenient than where it runs: built-ins aren't frozen there, and Node's globals and `fetch` work. So read the build's warnings as well.
 
 ---
 
