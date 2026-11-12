@@ -1105,7 +1105,7 @@ uniweb login [options]
 
 `--server <url>` names it. Without the flag, `login` logs in to **https://uniweb.app** (or `UNIWEB_SERVER`, when set) — to work with any other backend, name it.
 
-⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing; add `--password`, `--browser`, `--token-paste` or `--token` to log in again. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_SERVER`, without touching the login.
+⭐ **The backend you are logged in to is where the backend commands go** — `push`, `pull`, [`publish`](#uniweb-publish), `status`, `register`, `clone` — so logging in is how you switch between backends. Logging in to the backend you are already on does nothing, unless it no longer accepts the session you have: then it signs you in again. Add `--password`, `--browser`, `--token-paste` or `--token` to log in again anyway. No command talks to a backend you are not logged in to. A script can aim a single run elsewhere with `UNIWEB_SERVER`, without touching the login.
 
 ### Which workspace
 
