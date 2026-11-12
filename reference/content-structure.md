@@ -205,7 +205,7 @@ A picture a page shows is made ready for the web before it is stored or shipped,
 - **PNG, JPG, JPEG, GIF** → A WebP when that is at least 10% smaller, otherwise the file as it is
 - **TIFF, HEIC** → Always a WebP, since most browsers can't show them. A HEIC this machine can't decode is kept as it is, with a note: export it as JPEG
 - **SVG, WebP, AVIF** → Passed through unchanged
-- Either way, a picture is turned upright as the photo's orientation says, keeps its transparency, animation and colour profile, and loses its location and camera data
+- Either way, a picture is turned upright as the photo's orientation says, keeps its transparency and animation, and loses its location and camera data. A WebP's colour is converted to sRGB; a kept file keeps its own colour profile
 - The favicon, the touch icon, the site's card picture and its social images go up as they are, since the software that fetches them expects PNG or JPEG
 - A picture keeps its pixels, so add one no wider than its page shows it
 - In a static build, all images get content-hashed filenames for cache busting
