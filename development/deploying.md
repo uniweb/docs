@@ -32,7 +32,7 @@ Or start from a site that already lives in the app: `uniweb site list` shows you
 From then on:
 
 - `uniweb clone <site-uuid>` — start a local file project, under git, from a site that already lives on the backend (often authored in the app).
-- `uniweb pull` — bring the backend's current content into your files. In a git repository it merges, like `git pull`: the backend's content is committed and merged into your branch, so your work — committed or not — is kept, and pages and sections removed on the backend are removed here too unless you changed them. Outside git it rewrites your files to match the backend (`--no-delete` keeps what the backend removed), asking first.
+- `uniweb pull` — bring the backend's current content into your files. In a git repository it merges, like `git pull`: the backend's content is committed and merged into your branch, so your work — committed or not — is kept, and pages, sections and records removed on the backend are removed here too unless you changed them. Outside git it rewrites your files to match the backend (`--no-delete` keeps what the backend removed), asking first.
 - `uniweb push` — send your local edits back up (first push creates the site and mints its id). In a git repository it sends what you have committed; `--commit` commits the site's content first.
 - `uniweb refresh` — catch up in one step: `git pull` for your teammates' commits, then `uniweb pull` for the authors' edits. Never pushes.
 - `uniweb sync` — `refresh`, then `push`.

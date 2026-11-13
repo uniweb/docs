@@ -1468,7 +1468,7 @@ uniweb pull
 
 - **Your work is kept**, committed or not: uncommitted changes are set aside for the merge and put back after it. Where they overlap what the merge brought, that is a conflict like any other: the markers are in your file, git keeps your changes in the stash as well, and pull exits non-zero — settle the markers and `git add` each file, then `git stash drop`. A push is refused while any file of the site is in conflict.
 - **A teammate's work arriving through git is kept like your own**, and a file the backend never had — a section nobody has pushed yet — is never deleted.
-- **What changed on the backend arrives**: edits, new pages and sections, renames, and pages and sections the backend removed — removed here too, unless you changed them, which is a conflict.
+- **What changed on the backend arrives**: edits, new pages and sections, renames, and pages, sections and records the backend removed — removed here too, unless you changed them, which is a conflict. The pull names each record it removes; to keep one, bring its file back from your history and push it, and it goes up as a new record.
 - **Edits to different parts of a file combine silently**; only a genuine overlap gets conflict markers. Pull then exits non-zero, so `uniweb pull && uniweb push` never pushes conflict markers. Settle the conflict as in any merge, then `git commit`.
 - **When the backend has nothing new, the pull says so** — and lists the files where yours hold changes it does not have yet, which `uniweb push` sends.
 
@@ -1480,7 +1480,7 @@ What your repository ignores travels in no commit, so no merge can bring it: med
 
 **A page whose files cannot say the author's change** is held too, wherever it is. Such a change is a second section on a page in a [folder of pages](site-configuration.md#content-mode), or a setting an `.md` page has no place for, such as a description. The pull names each such page and what its files cannot say, and writes nothing for it. The site keeps the author's version, and a push leaves the page out while its file still says what it said at the pull. That holds in any copy of the project, a fresh clone included, since its own first pull records it. A push stops if you changed the file since the pull. Undo the change in the app and pull, or undo yours; `uniweb push --force` sends your file's version over the author's.
 
-Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages and sections that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask. A site in a folder that the repository around it ignores — a scratch directory, say — is outside git too: that repository can never hold its history.
+Outside a git repository there is nothing to merge against: pull rewrites your files to match the backend, **deleting** pages, sections and records that no longer exist there (guarded so an empty payload never wipes the tree), and asks before it overwrites anything of yours — refusing when it cannot ask. A site in a folder that the repository around it ignores — a scratch directory, say — is outside git too: that repository can never hold its history.
 
 A project that was never pushed has no id to pull by — pull is a no-op with a clear message.
 
