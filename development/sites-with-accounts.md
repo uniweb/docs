@@ -9,7 +9,8 @@ This guide is about the second kind: what to declare, how to build it before any
 exists, and how the same site behaves without one.
 
 > **Audience:** foundation developers building components that need a signed-in visitor, and
-> site developers wiring one up.
+> site developers wiring one up. A whole solution — public pages, a members' area and your own
+> admin area — is put together in [Building a Solution](./building-a-solution.md).
 
 ---
 
@@ -187,6 +188,19 @@ root of the organization the site's backend is founded with, unless the create n
 its units — a department, a course. `useUnits()` lists the ones the viewer is placed in, and
 `createEntity({ …, unit })` lands an entry in one.
 
+**Sell what the site sells.** The owner sets the store's offerings in the backend's
+administration; `useStore()` reads them, with whether the viewer owns each, and its
+`checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
+buyer read what they bought. `useEntitlements()` lists what a member holds.
+
+**Tell a member what concerns them.** `useNotifications()` reads their inbox: the unread
+count for a badge, and the rows — an entry shared with them, an invitation — when they open it.
+
+**Build your own admin area; leave the rest to the admin app.** The people who run your
+solution work in an admin area you build, in its own words. The backend's administration —
+the admin app, the same for every site — keeps what every site has: the payment account, the
+teams and who is in them, roles. Its Admin link is `adminHref` from `useSession()`.
+
 ---
 
 ## A site without the service
@@ -221,6 +235,7 @@ Three reasons, and the first is the one that matters:
 
 ## See also
 
+- [Building a Solution](./building-a-solution.md) — the parts of a site that is also an app, step by step
 - **[`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api)** — the client, in full
 - [Data Sources](./data-sources.md) — content, which is a different problem
 - [Site Configuration](../reference/site-configuration.md#accounts) — `services.backend` and `$devBackend:`

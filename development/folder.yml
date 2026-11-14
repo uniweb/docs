@@ -12,6 +12,8 @@ pages:
   - libraries
   - data-sources
   - receiving-form-submissions
+  - sites-with-accounts
+  - building-a-solution
   - compute-functions
   - content-handlers
   - data-driven-sections

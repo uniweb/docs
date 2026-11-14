@@ -53,7 +53,7 @@ Each is a service the site asks Uniweb hosting for, with a line under `services:
 
 ### Members and payments
 
-For a members' area, the site turns on its own backend, the `backend` service: accounts, sign-in (with Google, for example), roles, and what each member creates. Section types reach it through [`@uniweb/api`](../development/sites-with-accounts.md), and the same foundation works on a site with the service and on one without it. The site's backend also takes payments, through your own Stripe account.
+For a members' area, the site turns on its own backend, the `backend` service: accounts, sign-in (with Google, for example), roles, and what each member creates. Section types reach it through [`@uniweb/api`](../development/sites-with-accounts.md), and the same foundation works on a site with the service and on one without it. The site's backend also takes payments, through your own Stripe account. Put together, that is a solution: a site that is also an app, with a members' area, an admin area of its own for the people who run it, and a store ([Building a Solution](../development/building-a-solution.md)).
 
 ### A full platform
 
@@ -98,3 +98,4 @@ See [Internationalization](../development/internationalization.md) for developer
 - [Quickstart](quickstart.md): the prompt to start with
 - [Deploying](../development/deploying.md#uniweb-hosting--recommended): Uniweb hosting and static hosts, side by side
 - [Sites with Accounts](../development/sites-with-accounts.md): the `backend` service, for developers
+- [Building a Solution](../development/building-a-solution.md): a site that is also an app — members, your own admin area, a store — step by step
