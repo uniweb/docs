@@ -171,6 +171,11 @@ then, for a while, they act through the role. `useElevation()` says whether to o
 does it, and says until when it lasts — draw the controls that remove or change other people's
 content from it, and ask each record what the viewer may do to it.
 
+**Offer each action only to who it will succeed for.** `useMayCreate({ schemas })` says
+whether the viewer may create an entry of each type, and `mayDo(entry, 'edit')` what they
+may do to one entry — now, once they confirm it is them, or not — so *New course* shows to
+the teachers and *Grade* to whoever may change a submission. Ask; never guess from roles.
+
 **Show the invitations waiting, wherever a member lands.** An invitation to join an
 organization waits for the member's answer, whether it was sent to their account or taken
 up from a mailed link. `useInvitations()` lists the ones waiting and answers them — draw it
