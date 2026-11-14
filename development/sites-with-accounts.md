@@ -114,7 +114,9 @@ wrong: it shows a button working that production would refuse.
 The mail the backend would send — a sign-up's confirmation, a password reset — is printed in
 the dev server's terminal, its link on your site, so following it tries your own page.
 
-State is in memory. Restart to reset.
+State is in memory. Restart to reset, or give a demo a "start over" that asks the mock
+itself: `getClient().request('POST', '/_mock/reset')` — a route of the mock's own, which no
+backend answers.
 
 ---
 
