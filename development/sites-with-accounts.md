@@ -176,6 +176,11 @@ whether the viewer may create an entry of each type, and `mayDo(entry, 'edit')` 
 may do to one entry — now, once they confirm it is them, or not — so *New course* shows to
 the teachers and *Grade* to whoever may change a submission. Ask; never guess from roles.
 
+**Let members write rich text with the editor that writes what is stored.**
+`@uniweb/api/rich-text` gives a TipTap editor whose document model is the framework's stored
+rich-text vocabulary, so nothing a member writes is lost on save, and a text written anywhere
+else loads whole. Your toolbar draws it, in your words.
+
 **Show the invitations waiting, wherever a member lands.** An invitation to join an
 organization waits for the member's answer, whether it was sent to their account or taken
 up from a mailed link. `useInvitations()` lists the ones waiting and answers them — draw it
