@@ -393,6 +393,7 @@ uniweb dev --site <name>    # same, explicit flag form
 uniweb dev --port <n>       # on that port, or not at all
 uniweb dev --status         # print the running dev server's address
 uniweb dev --stop           # stop the running dev server
+uniweb dev --published      # this copy, against the services of the site as published
 ```
 
 A thin wrapper around the package manager's workspace-filtered `dev` script
@@ -415,6 +416,15 @@ second `uniweb dev` points at it instead of starting another, and `uniweb dev --
 stops it. These know the server `uniweb dev` started, not one started with `vite` in
 the site's folder. `--port <n>` asks for that port and fails when it is taken, rather
 than moving to another.
+
+**Against the site as published.** `uniweb dev --published` serves your foundation and
+pages, with live reload, against the services of the site as you published it to the
+backend you are logged in to: its own backend, its records, its forms. The dev server
+reads their addresses from the published page and forwards each request, so members sign
+in to the site's real backend and pages show the records its visitors see. Without the
+flag, `$devBackend` and your record files answer, as always. Publish the site first
+(`uniweb publish`). What you do then reads and changes the published site's real data,
+and the output says so.
 
 **A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
 their builds. `uniweb dev` builds any that isn't built, or whose sources changed since

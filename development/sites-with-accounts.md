@@ -137,6 +137,37 @@ Development-only by construction: the whole mock module is.
 
 ---
 
+## Testing against the site as published
+
+The mock is for building with no backend at hand. Where it and your backend differ, your
+backend is right, and some of it the mock does not imitate at all. So once the site is
+published, test against it:
+
+```bash
+uniweb publish             # once: the site goes live, with its own backend
+uniweb dev --published     # your working copy, against the site as published
+```
+
+Your foundation and pages are the working copy's, with live reload. The site's services
+are the published site's: a member signs in to its real backend and may do what it allows,
+and a page shows the records its visitors see. The dev server reads the addresses from the
+published page and forwards each request, so the page talks to one origin and sign-in
+cookies behave as they do on the published site. `$devBackend` is not used.
+
+Under `--published` your foundation names its own types in full (`@acme/track`), as a
+build does, so the backend answers for the types it holds: a type you add reaches it when
+you publish again. Record files reach the page when you `uniweb push` them.
+
+**Public queries show here.** Entries a `blueprint.yml` opens to visitors who are not signed
+in (`publicQueries:`) reach a page through the site's records service, with `records: true`
+under `services:`. `uniweb dev` alone answers every query from your record files, so
+`--published` is where you see those entries before a visitor does.
+
+⚠️ **It is the published site's real data.** What you do in the working copy reads and
+changes its members' entries, and `uniweb dev --published` says so when it starts.
+
+---
+
 ## Writing the components
 
 The client's own README is the reference — sessions, `useRecords`, `useEntity`,
