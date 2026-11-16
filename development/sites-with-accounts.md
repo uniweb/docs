@@ -231,6 +231,11 @@ root of the organization the site's backend is founded with, unless the create n
 its units — a department, a course. `useUnits()` lists the ones the viewer is placed in, and
 `createEntity({ …, unit })` lands an entry in one.
 
+**Make each new entry once.** A second click on *Add*, or a retry after an answer that never
+came, makes a second entry, unless the create names the entry's own `uuid`. Make it with
+`uuidv7()` when the person starts adding the entry, and pass it to every create of it: a repeat
+then answers with the entry the first one made.
+
 **Sell what the site sells.** The owner sets the store's offerings in the backend's
 administration; `useStore()` reads them, with whether the viewer owns each, and its
 `checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
