@@ -1502,7 +1502,7 @@ A project that was never pushed has no id to pull by — pull is a no-op with a 
 | `--no-delete` | Keep local files that have no backend item |
 | `--no-records` | Pull pages only; skip the records lane |
 | `--no-assets` | Don't download media files the project doesn't have yet; the content keeps their URLs. `assets.download: false` in `site.yml` makes this the project's default |
-| `--dry-run` | Write nothing. In a git repository, name each file the pull would change, and in a YAML file such as `site.yml` the keys whose values it changes; outside one, say what it would fetch |
+| `--dry-run` | Write nothing. In a git repository, name each file the pull would change, and in a YAML file such as `site.yml` the keys whose values it changes. A file you also changed since your last pull is marked: the pull merges the two, and stops on any part changed both ways for you to settle. When it can't tell, it says why and exits 1. Outside a repository, say what it would fetch |
 | `--org @org` | Work in `@org` for this pull, instead of your login's workspace |
 
 ### Moving a project to another repository
