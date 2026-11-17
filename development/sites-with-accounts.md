@@ -246,6 +246,12 @@ administration; `useStore()` reads them, with whether the viewer owns each, and 
 `checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
 buyer read what they bought. `useEntitlements()` lists what a member holds.
 
+**Show the prices to everyone.** A visitor who isn't signed in sees the store's prices
+through a site query on the store's catalog, `@uniweb/catalog`, which the site's
+`blueprint.yml` opens to visitors (`publicQueries`). A section that declares it receives each
+catalog with its offerings and prices, and the first page a visit lands on already shows them.
+It needs the site's backend and its live records.
+
 **Tell a member what concerns them.** `useNotifications()` reads their inbox: the unread
 count for a badge, and the rows — an entry shared with them, an invitation — when they open it.
 
