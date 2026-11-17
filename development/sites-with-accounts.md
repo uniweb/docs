@@ -212,7 +212,9 @@ the teachers and *Grade* to whoever may change a submission. Ask; never guess fr
 **Let members write rich text with the editor that writes what is stored.**
 `@uniweb/api/rich-text` gives a TipTap editor whose document model is the framework's stored
 rich-text vocabulary, so nothing a member writes is lost on save, and a text written anywhere
-else loads whole. Your toolbar draws it, in your words.
+else loads whole. It underlines, raises and lowers text, for CO₂ and m², and `richTextLength(doc)`
+counts a text as a field's `max_length` does, for a counter that says what a save will. Your
+toolbar draws it, in your words.
 
 **Show the invitations waiting, wherever a member lands.** An invitation to join an
 organization waits for the member's answer, whether it was sent to their account or taken

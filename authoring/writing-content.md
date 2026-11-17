@@ -427,6 +427,17 @@ This word is [red]{color=red} and this has a [yellow background]{bg=#ffe0e0}.
 
 The `color` and `bg` attributes accept any CSS color value. Use the named styles when possible — they adapt to your site's theme automatically.
 
+### Underline, superscript and subscript
+
+The same brackets write three kinds of formatting that mean the same wherever the text is read, on the page and in a printed document:
+
+```markdown
+[Read the terms]{underline} before you start.
+Water is H[2]{sub}O, and the room is 20 m[2]{sup}.
+```
+
+They are not style names, so a theme doesn't change them, and they combine with one: `[note]{underline accent}`. The HTML tags `<u>`, `<sup>` and `<sub>` are text, like every tag (below).
+
 ### HTML tags are text
 
 Write content in markdown. An HTML tag you type — `<b>`, `<span>`, `<div>` — is not formatting: it appears on the page exactly as you typed it, and the build tells you which file. Use markdown's own forms instead (`**bold**`, `[text]{accent}`, a link).

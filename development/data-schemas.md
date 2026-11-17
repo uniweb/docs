@@ -408,6 +408,8 @@ fields:
 
 The friendly aliases set these for you — `type: markdown` is exactly `type: text, format: markdown`, and **`type: richtext`** is exactly `type: json, format: richtext`. **Use `richtext` for a rich body edited in the visual app** — the common case; it's the editor's native, lossless document. Use `markdown` for a **source body** authored as text (file-based projects, or content you want to keep readable as raw source). Don't reach for `markdown` just because it's the familiar word — if it'll be edited visually, you want `richtext`.
 
+**What a rich text holds.** Paragraphs, headings, lists, quotes, code, tables, pictures, formulas, insets and dividers; and, in its text, bold, italic, underline, strike-through, superscript, subscript, code, links, buttons and named styles (`[text]{accent}`, given a look by the theme). That is every rich-text field's vocabulary, a page's content included, and a backend stores nothing else: what an editor adds beyond it — a highlight colour, a paragraph's alignment, a font size — is left out when the text is saved, since how a text looks is the theme's and the component's. A highlight is a named style, `[text]{highlight}`.
+
 There is no `html` type or format. Content is never markup — a component decides how content renders — so a schema declaring one is refused, naming `richtext` and `markdown`. And `format: prosemirror`, the earlier name of `format: richtext`, is refused naming its successor.
 
 Other formats check a value rather than mark it — `email` and `url` on `string` and `text`, `currency` on `string` — and on a `date` the format is its precision ([A field's rules](#a-fields-rules)). A format the field's kind does not take is refused when the schema is built.
@@ -471,11 +473,12 @@ fields:
   started: { type: date, format: year-month }                       # holds '2024-05'
   year:    { type: date, format: year }                             # holds '2024'
   code:    { type: string, pattern: '[A-Z]{2}[0-9]{4}' }            # the whole value, like AB1234
+  summary: { type: richtext, max_length: 1000 }                     # characters a reader sees
 ```
 
 | Rule | On | Keeps the value to |
 |---|---|---|
-| `max_length` | `string`, `text` | that many characters — each language of a translatable value on its own |
+| `max_length` | `string`, `text`, `richtext` | that many characters — each language of a translatable value on its own. On a `richtext`, the characters a reader sees: a new line or paragraph counts one, and formatting, pictures and formulas count nothing |
 | `min`, `max` | `integer`, `number` | that range |
 | `mime_types`, `max_size` | `image`, `file` | those types (`image/*`, `application/pdf`) and that many bytes |
 | `format: year-month`, `format: year` | `date` | a month or a year instead of a day |

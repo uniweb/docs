@@ -599,6 +599,17 @@ paragraphs: [
 
 The CSS is generated from `theme.yml` using attribute selectors (`span[accent] { ... }`), so the boolean flag syntax maps directly to styling.
 
+### Underline, superscript and subscript
+
+Three bracket names are formatting rather than styles:
+
+```markdown
+[Read the terms]{underline}    <!-- <u>Read the terms</u> -->
+H[2]{sub}O and m[2]{sup}       <!-- H<sub>2</sub>O and m<sup>2</sup> -->
+```
+
+Your component receives them as `<u>`, `<sub>` and `<sup>` in paragraph text, which a browser draws and a printed document keeps, whatever the site's theme holds. They combine with a style name, `[note]{underline accent}`, so `underline`, `sup` and `sub` are never style names themselves.
+
 ### Inline Style Escape Hatches
 
 For one-off styling without defining a named style:

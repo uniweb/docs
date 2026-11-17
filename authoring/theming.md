@@ -379,6 +379,8 @@ Each name you define becomes available as an inline style. Because the values ca
 
 Three inline styles are provided by default: `accent` and `callout` (both accent-colored emphasis) and `muted` (de-emphasized text). You can add your own, or adjust a built-in one.
 
+A style can't take the name `underline`, `sup` or `sub`: `[x]{underline}`, `[2]{sup}` and `[2]{sub}` are formatting of their own, so a style by one of those names is left out, and the build says so.
+
 ### Adjusting a built-in style
 
 Overrides merge **property by property**, like everything else in `theme.yml`. Declare only what differs — the rest of the default stays:
