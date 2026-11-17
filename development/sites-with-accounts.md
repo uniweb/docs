@@ -236,6 +236,11 @@ came, makes a second entry, unless the create names the entry's own `uuid`. Make
 `uuidv7()` when the person starts adding the entry, and pass it to every create of it: a repeat
 then answers with the entry the first one made.
 
+**Let members upload their files.** `useUpload({ entity })` uploads what a member picked, for an
+entry they can edit, and answers the address to store in it. Each file is prepared in the browser
+first: a photo goes up as a smaller WebP, turned upright, and nothing goes up with the place it was
+taken or the camera that took it.
+
 **Sell what the site sells.** The owner sets the store's offerings in the backend's
 administration; `useStore()` reads them, with whether the viewer owns each, and its
 `checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
