@@ -236,6 +236,11 @@ came, makes a second entry, unless the create names the entry's own `uuid`. Make
 `uuidv7()` when the person starts adding the entry, and pass it to every create of it: a repeat
 then answers with the entry the first one made.
 
+**Give members a form for their entries.** `useEntityForm({ schema, uuid })` makes the form for adding
+or editing an entry from its type, as an `@std/form` definition, so your foundation draws it with the
+same component it draws every form with. Its `save` checks the type's rules, puts each problem by its
+field, and writes the entry.
+
 **Let members upload their files.** `useUpload({ entity })` uploads what a member picked, for an
 entry they can edit, and answers the address to store in it. Each file is prepared in the browser
 first: a photo goes up as a smaller WebP, turned upright, and nothing goes up with the place it was
