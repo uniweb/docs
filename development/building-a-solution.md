@@ -60,6 +60,7 @@ The owner sets what the site sells in the admin app, and connects their own Stri
 
 - `useStore` reads the store's offerings, and whether the viewer owns each. Its `checkout` sends the buyer to the payment page, or takes a free offering at once.
 - `offeringState` says what a Buy button draws from that one read.
+- `useCoupon` previews a code the buyer types, with what it takes off or why it can't apply, and `checkout` takes the code it accepted. The owner makes the codes in the admin app; the field and its words are your section type's.
 - `useEntitlements` lists what a member holds, for a "My courses" page, and `useHolders` lists who holds a record, for an instructor's roster.
 
 A purchase gives the buyer read access to what an offering sells, and, through it, to what its `sold_with` references point to. The [`@uniweb/api` README](https://www.npmjs.com/package/@uniweb/api) has the details, under *Selling*.
