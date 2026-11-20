@@ -34,7 +34,7 @@ uniweb sync                    # Catch up, then push (refresh + push)
 uniweb clone <site-uuid>       # Start a local project from a backend site
 uniweb status                  # What changed in the app, in git and in Uniweb — and what to run
 uniweb forget --server <url>  # Forget one backend (--all: make a copied project a new one)
-uniweb site <list|unpublish|delete>  # The sites in a workspace — list them, take one offline, delete one
+uniweb site <list|unpublish|delete|secret|admin|visit>  # The sites in a workspace — list, take offline, delete, set a secret, open as the owner
 ```
 
 ---
@@ -1777,9 +1777,11 @@ uniweb site unpublish [<site-uuid>]              # take a site offline — its c
 uniweb site delete [<site-uuid>]                 # delete a site — final
 uniweb site secret <service> <name> [<site-uuid>]          # set a secret; it asks for the value
 uniweb site secret <service> <name> --clear [<site-uuid>]  # clear it
+uniweb site admin [<site-uuid>]                  # open the administration of the site's backend, signed in as its owner
+uniweb site visit [<site-uuid>]                  # open the site, signed in as its owner
 ```
 
-The workspace is the one you chose at login, or `--org @handle` / `--personal` for this command. Without a uuid, `unpublish`, `delete` and `secret` act on the site this project is synced to on that backend. `uniweb site list` shows each site's uuid — the one [`uniweb clone`](#uniweb-clone) takes, too.
+The workspace is the one you chose at login, or `--org @handle` / `--personal` for this command. Without a uuid, every command but `list` acts on the site this project is synced to on that backend. `uniweb site list` shows each site's uuid — the one [`uniweb clone`](#uniweb-clone) takes, too.
 
 **`secret` sets a value a service of the site needs and no file may hold,** such as an ad platform's token (`uniweb site secret x token`, [Ad platforms](./site-configuration.md#ad-platforms-x-and-meta)).
 
@@ -1787,6 +1789,11 @@ The workspace is the one you chose at login, or `--org @handle` / `--personal` f
 - **No argument or file ever carries the value.** With no terminal to ask in, the command refuses. A value typed as an argument is refused without being shown, since it is already in your shell's history.
 - **Only an admin of the site can set one.**
 - **The live site has it from its next publish.** That goes for `--clear` too, which asks first and takes `--yes`.
+
+**`admin` and `visit` sign the site's owner in from the terminal,** without opening the app first. `admin` opens the administration of the site's backend: its payment account, teams, roles and an integration's keys. `visit` opens the site itself, signed in.
+
+- **Only the site's owner can use them,** and the site's backend must be running, so publish the site first.
+- **The address they open signs you in once, for a short time, so it is never printed.** Where no browser can open, the command says so and stops. Run it where one can.
 
 **`delete` is final**: there is no trash and no restore. Only the site's owner, or an admin of its workspace, can delete it.
 
