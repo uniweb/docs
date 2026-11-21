@@ -209,7 +209,7 @@ In Gallery's case, the content is the same for every variant — just images wit
 
 ### When the workers need different content
 
-Workers don't always share the same interface. A `Hero` might delegate to a `SliderHero` that renders an image carousel and a `ContactHero` that renders a quote request form — for a plumber's site, say, where some pages have a dramatic rotating hero and others have a "Get a Quote" form. They expect different content and different props.
+Workers don't always share the same interface. A `Hero` might delegate to a `SliderHero` that rotates through the section's images and a `VideoHero` that plays its video behind the text — for a resort's site, say, where some pages open on a carousel of rooms and others on a film of the beach. They expect different content and different props.
 
 The front desk declares the **union** of all content its workers might need. Some content won't be used for a given variant, and that's perfectly normal in CCA — params change behavior, and that includes not rendering some content:
 
@@ -217,7 +217,10 @@ The front desk declares the **union** of all content its workers might need. Som
 // Hero/meta.js — the union of all variants' needs
 export default {
   params: {
-    variant: { type: 'select', options: ['slider', 'contact'], default: 'slider' },
+    variant: { type: 'select', label: 'Background', default: 'slider', options: [
+      { value: 'slider', label: 'Images in turn' },
+      { value: 'video', label: 'Video behind the text' },
+    ] },
     slideInterval: { type: 'number', default: 5 },
     density: { type: 'select', options: ['default', 'compact'], default: 'default' },
     style: { type: 'select', options: ['default', 'dramatic'], default: 'default' },
@@ -228,9 +231,9 @@ export default {
 ```jsx
 // Hero/Hero.jsx — the front desk
 import { SliderHero } from '../../components/SliderHero'
-import { ContactHero } from '../../components/ContactHero'
+import { VideoHero } from '../../components/VideoHero'
 
-const variants = { slider: SliderHero, contact: ContactHero }
+const variants = { slider: SliderHero, video: VideoHero }
 
 export default function Hero({ content, block, params }) {
   const Variant = variants[params.variant] || SliderHero
@@ -244,7 +247,7 @@ export default function Hero({ content, block, params }) {
       block={block}
       // Content that only some variants use
       images={content.images}
-      formData={content.data?.quote}
+      video={content.videos[0]}
       // Translated params — author vocabulary → developer props
       interval={params.slideInterval}
       compact={params.density === 'compact'}
@@ -254,7 +257,9 @@ export default function Hero({ content, block, params }) {
 }
 ```
 
-`SliderHero` uses `images`, `interval`, and `transition`; it ignores `formData` and `compact`. `ContactHero` uses `formData` and `compact`; it ignores `images` and `interval`. Each worker takes what it needs. Some params only matter for certain variants (`slideInterval` for slider, `density` for contact). Some are high-level names that the front desk translates into developer-oriented values (`style: dramatic` → `transition="zoom"`). The content author writes `variant: contact` — they don't know or care about `ContactHero`.
+`SliderHero` uses `images`, `interval`, and `transition`; it ignores `video` and `compact`. `VideoHero` uses `video` and `compact`; it ignores `images` and `interval`. Each worker takes what it needs. Some params only matter for certain variants (`slideInterval` for slider, `density` for video). Some are high-level names that the front desk translates into developer-oriented values (`style: dramatic` → `transition="zoom"`). The content author writes `variant: video` — they don't know or care about `VideoHero`.
+
+A quote request form is not one of these variants. It is a different job, with fields of its own and a submission, so it is a section type of its own (`QuoteRequest`, in the `contact` family). The editor's section picker then offers it where an author looks for a form, and its worker can still reuse the hero's layout.
 
 ### When the variants are lighter
 
@@ -289,7 +294,7 @@ This is a lighter form of the same pattern — the entry file reads a param and 
 
 The instinct when consolidating similar components is to find clever, abstract names for each variant. "What *is* the homepage hero, really? A split-media? A content-with-aside?"
 
-Don't do that. The Front Desk pattern doesn't require elegant abstraction. It requires consolidation.
+While you're consolidating, don't. The Front Desk pattern doesn't require elegant abstraction. It requires consolidation.
 
 ```js
 // meta.js — and this is fine
@@ -305,9 +310,16 @@ export default {
 }
 ```
 
-Those names came from where the variants were found. That's fine — "I want the hero to look like the homepage" is a perfectly good selection criterion. You're not shipping an open-source component library where `homepage` would be meaningless. You're shipping a foundation for a site (or family of sites) where these names map to real, tested layouts.
+Those names came from where the variants were found. While the legacy components sit behind the front desk unchanged, that's fine — "I want the hero to look like the homepage" is a perfectly good selection criterion for someone who knows the site. You're not shipping an open-source component library where `homepage` would be meaningless. You're shipping a foundation for a site (or family of sites) where these names map to real, tested layouts.
 
 The win is consolidation: one component name, one meta.js, one place to add future variants. Not five components with five names in the content author's palette. The variant vocabulary can evolve later — start with names that are meaningful now.
+
+Two things decide when it evolves:
+
+- **Once the content moves out of the variants**, an author can give the section any subject, and meets the options on sections the original pages never had. Name each option for what it does to the section then: `split`, `media-right`, `stacked`, with labels such as **Media on the right**. Each content slot keeps one meaning under every option: the heading stays the heading, the media stays the media.
+- **A variant never carries a subject.** One whose worker holds its own words or draws its own diagram (`entity-model`, `pricing-overview`) isn't a layout. It's one section's markup that no author can use again. Its words belong in the section's content, its diagram in the section's media slot as an [inset](#inset-components), and the arrangement it shares with other variants becomes the option.
+
+To check a section type, give one of its sections an unrelated heading and picture, switch each option, and see that every field keeps its meaning. `uniweb docs` writes each type's controls into `COMPONENTS.md` with the labels an author reads in the editor, which makes a dropdown of subjects easy to spot.
 
 (If you're consolidating variants from an existing site or AI-generated pages, see [Converting Existing Designs](./converting-existing.md) for the staged migration approach — including how to keep legacy implementations untouched in `components/` while the section type delegates to them.)
 
@@ -675,7 +687,7 @@ Params describe purpose, not CSS. A `spacing: comfortable` param isn't a CSS sho
 
 The constraint is generative — like writing testable code. When you can't expose `className` or `style` directly, you're forced to ask: what are the *meaningful* variations of this component? The answers become the param options, and those options are all tested, all responsive, all compatible with the foundation's design system. You end up with a tighter interface than "pass whatever CSS you want" — fewer invalid states, less surface area to maintain.
 
-But — as discussed in the [Front Desk Pattern](#the-front-desk-pattern) section — "purpose-based" doesn't mean "abstractly named." A Gallery's `layout: masonry` is purpose-based: the author wants a masonry look. A Hero's `variant: homepage` is also purpose-based: the author wants the homepage look. Both are meaningful to the person choosing them. The line is between intent ("I want this layout") and implementation ("give me `grid-cols-3` and `py-8`"). Variant names that came from real pages in a real site are intent — the author recognizes them. CSS fragments are implementation — the author shouldn't see them.
+But — as discussed in the [Front Desk Pattern](#the-front-desk-pattern) section — "purpose-based" doesn't mean "abstractly named." A Gallery's `layout: masonry` is purpose-based: the author wants a masonry look. A Hero's `variant: homepage` can be too, for an author who knows that page: they want its look. Both are meaningful to the person choosing them. The line is between intent ("I want this layout") and implementation ("give me `grid-cols-3` and `py-8`"). A variant named for the page it came from is intent when it names a look the author would choose again. A name that holds a subject (`entity-model`) names neither a look nor an implementation, and means nothing on a section about something else ([Variant naming](#variant-naming)). CSS fragments are implementation — the author shouldn't see them.
 
 ---
 

@@ -202,7 +202,7 @@ The variant implementations in `components/` can stay exactly as they were — h
 
 This is a migration staging point. You've consolidated the content author's interface (one Hero, not three) without rewriting any rendering code. Later, when you move to Level 2, you can extract content from the variants one at a time. Or you can notice that two variants are similar enough to merge. Or you can leave them as-is — the front desk lets you evolve at whatever pace makes sense.
 
-The variant names don't need to be clever. `homepage` and `pricing` came from the pages these layouts were found on, and that's fine — a content author building this site knows what "the homepage hero" looks like. See [CCA Component Patterns](./component-patterns.md) for more on the Front Desk pattern and why variant naming doesn't need to be abstract.
+At this stage the variant names don't need to be clever. `homepage` and `pricing` came from the pages these layouts were found on, and while the legacy components sit behind the front desk unchanged, that's fine: whoever knows the site knows what "the homepage hero" looks like. Name them again at Level 2, once the content has moved out and an author can give the section any subject. Each option then says what it does to the section (**Media on the right**, **Stacked**), because that author chooses it for a section the original pages never had. See [CCA Component Patterns](./component-patterns.md#variant-naming) for more on the Front Desk pattern and on naming variants.
 
 ---
 
