@@ -616,7 +616,7 @@ When the key names another record, the entry holds a reference to it: `tier: { r
 
 #### Standard schema refs
 
-The shared `@uniweb/schemas` package provides a common vocabulary any foundation can reference. Use one of these before writing a schema of your own: the Uniweb app knows them, and `@std/article` has an article editor there that an article type of your own does not get. Their records sit in `records/std/<name>/`.
+The shared `@uniweb/schemas` package provides a common vocabulary any foundation can reference. Use one of these before writing a schema of your own: Uniweb App knows them, and `@std/article` has an article editor there that an article type of your own does not get. Their records sit in `records/std/<name>/`.
 
 | Ref | Description |
 |------|-------------|

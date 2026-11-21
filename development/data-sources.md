@@ -4,8 +4,8 @@ Most Uniweb sites start with records in `records/`, named by queries in `queries
 
 > ⛔ **Not what you want if you mean accounts.** This guide is about **content** — records the
 > same for every visitor. If you want members who sign in, per-visitor data, or content your
-> users create, that is a different mechanism with its own guide:
-> [Sites with Accounts](./sites-with-accounts.md).
+> users create, that is the site's Application Engine, with its own guide:
+> [The SDK](../web-apps/the-sdk.md).
 
 This guide says which of four shapes you are in, and what each one asks of you. It is about **author-driven fetching** — the content author names a query in `page.yml` and the runtime fetches for the component. A component with its own domain knowledge (a search box, a pagination widget) uses standard React `useEffect + fetch`; see [Component Data Patterns](./component-data-patterns.md).
 

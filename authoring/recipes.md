@@ -899,7 +899,7 @@ has to run from your foundation's code, which takes someone who can change the f
 Name the ID, and your host loads Google's tag from your next publish on, for free, with no code and no
 `head.html`.
 
-In the Uniweb app, add it on the *Google Analytics and Tag Manager* card, in your site's Settings under
+In Uniweb App, add it on the *Google Analytics and Tag Manager* card, in your site's Settings under
 Features. In your files, it is this entry:
 
 ```yaml

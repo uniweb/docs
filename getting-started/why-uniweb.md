@@ -1,6 +1,6 @@
 # Why Uniweb
 
-A Uniweb site can start as a few pages and grow into a full platform, with more languages, editors, live content, members and payments, without plugins and without redoing what was built.
+A Uniweb site can start as a few pages and grow into a web app, with more languages, editors, live content, members and payments, without plugins and without redoing what was built. It can also be a web app from its first day: the steps below are the same, taken in another order.
 
 Your AI agent can take each of those steps with you. This page follows one site through its life, then looks closer at two things most sites need sooner or later: more languages and more people.
 
@@ -11,7 +11,7 @@ Your AI agent can take each of those steps with you. This page follows one site 
 Two things are true of every Uniweb site from its first day, and they are why it can grow without being rebuilt:
 
 - **What the site says is kept apart from the code that draws it.** The words, pictures and records are content; the design is code. Adding a language, an editor or a live source of content changes the content, and the code that draws it stays as it was.
-- **What a site can grow into is already built.** Languages and search are part of the framework. Forms, visitor statistics, live records, accounts and payments are services of Uniweb hosting that a site turns on when it needs them. None of them is a plugin to find, install and keep up to date.
+- **What a site can grow into is already built.** Languages and search are part of the framework. Forms, visitor statistics and live records are services of Uniweb hosting, and accounts, members' data and payments come with the site's own Application Engine. A site turns each one on when it needs it, and none of them is a plugin to find, install and keep up to date.
 
 What grows is the site, by addition. A step may add a section type, such as one that draws a form, but nothing made before has to change.
 
@@ -26,7 +26,7 @@ Your agent builds the site from what you tell it and publishes it on Uniweb host
 - **It costs the least now.** Each service, live records included, is priced on its own, so a site of static pages pays for no service it doesn't use.
 - **Its pages are fast.** The page a visitor arrives on is prerendered close to them, so it loads fast and search engines read it whole.
 - **AI assistants can read every page.** The site offers an index of its pages, `llms.txt`, and a Markdown copy of each one, automatically, with nothing to set up.
-- **It is already in the Uniweb app.** Every publish updates the site there too, whether or not anyone uses the app yet. You can preview and edit it at any time, so not every change has to wait for your agent.
+- **It is already in Uniweb App.** Every publish updates the site there too, whether or not anyone uses the app yet. You can preview and edit it at any time, so not every change has to wait for your agent.
 - **It is ready to grow.** Every step below happens on the same host, with no change to what is already there.
 
 A site can also start on a static host such as GitHub Pages or Cloudflare Pages, and come to Uniweb hosting later with one command, `uniweb publish`. The steps below that use a service of the host start there.
@@ -37,11 +37,11 @@ Add the language to the site's settings. Your agent extracts the text to transla
 
 ### Content others keep up to date
 
-News, people, events, products: content that changes often becomes **records**, each one a short file of named fields, described by a data schema. A section type declares the records it shows and from then on draws them wherever they come from: the site's files, or live from Uniweb hosting. In the Uniweb app, records are edited as forms built from their schema, and a change shows on the live site at once.
+News, people, events, products: content that changes often becomes **records**, each one a short file of named fields, described by a data schema. A section type declares the records it shows and from then on draws them wherever they come from: the site's files, or live from Uniweb hosting. In Uniweb App, records are edited as forms built from their schema, and a change shows on the live site at once.
 
 ### More people
 
-Add people whenever the site needs them: in the Uniweb app, where they edit without code; through Git, where developers work in the files; or both. Edits made in the app come back to the project as a merge, and nobody's work is overwritten without asking. [People](#people) has the details.
+Add people whenever the site needs them: in Uniweb App, where they edit without code; through Git, where developers work in the files; or both. Edits made in the app come back to the project as a merge, and nobody's work is overwritten without asking. [People](#people) has the details.
 
 ### Forms, statistics and search
 
@@ -53,7 +53,7 @@ Each is a service the site asks Uniweb hosting for, with a line under `services:
 
 ### Members and payments
 
-For a members' area, the site turns on its own backend, the `backend` service: accounts, sign-in (with Google, for example), roles, and what each member creates. Section types reach it through [`@uniweb/api`](../development/sites-with-accounts.md), and the same foundation works on a site with the service and on one without it. The site's backend also takes payments, through your own Stripe account. Put together, that is a solution: a site that is also an app, with a members' area, an admin area of its own for the people who run it, and a store ([Building a Solution](../development/building-a-solution.md)).
+For a members' area, the site turns on its own [Application Engine](../web-apps/the-application-engine.md), the `backend` service: accounts, sign-in (with Google, for example), roles, and what each member creates, in a backend of the site's own with its own database. Section types reach it through the SDK, [`@uniweb/api`](../web-apps/the-sdk.md), and the same foundation works on a site with an engine and on one without it. The engine also takes payments, through your own Stripe account. Put together, that is a solution: a site that is also a web app, with a members' area, an admin area of its own for the people who run it, and a store ([Building a Solution](../web-apps/building-a-solution.md)).
 
 ### A full platform
 
@@ -71,7 +71,7 @@ Everything a site in several languages needs is built in.
 - Translations are kept by the text they translate, so they survive pages being moved and renamed. When the source text changes, its translation is marked outdated, not lost.
 - A page's address can be translated too, such as `/es/desarrolladores` for `/developers`.
 - A page that needs to say something different in another language can have a version of its own.
-- Records are translated like pages, and translations can be made in files or in the Uniweb app.
+- Records are translated like pages, and translations can be made in files or in Uniweb App.
 
 **For the code:** components receive their content already translated, with no translation function and no string keys. A component's own words, such as a button's label, can come from the content too, and are then translated with the page.
 
@@ -86,7 +86,7 @@ See [Internationalization](../development/internationalization.md) for developer
 ## People
 
 - **Developers** work in the files, with Git, and see each other's work as they would in any project.
-- **Everyone else** works in the Uniweb app, with a live preview of each page, and no code or files.
+- **Everyone else** works in Uniweb App, with a live preview of each page, and no code or files.
 - **Both at once:** `uniweb refresh` takes your teammates' commits and the edits made in the app into the project, and a push that would overwrite edits made in the app stops first.
 - **Your agent** is one more collaborator. In a project, it starts by checking what changed in the app (`uniweb status`) and brings those edits in before it works.
 
@@ -97,5 +97,5 @@ See [Internationalization](../development/internationalization.md) for developer
 - [What is Uniweb](what-is-uniweb.md): what you and your agent do, and what a project holds
 - [Quickstart](quickstart.md): the prompt to start with
 - [Deploying](../development/deploying.md#uniweb-hosting--recommended): Uniweb hosting and static hosts, side by side
-- [Sites with Accounts](../development/sites-with-accounts.md): the `backend` service, for developers
-- [Building a Solution](../development/building-a-solution.md): a site that is also an app — members, your own admin area, a store — step by step
+- [The Application Engine](../web-apps/the-application-engine.md): the backend a web app gets, for developers
+- [Building a Solution](../web-apps/building-a-solution.md): a site that is also a web app — members, your own admin area, a store — step by step

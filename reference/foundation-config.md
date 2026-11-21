@@ -310,7 +310,7 @@ The build reads each from the library and checks it; `uniweb register` registers
 
 ## Compute Files from a Library
 
-A foundation's own compute files are in its `src/compute/` ([Compute Functions](../development/compute-functions.md)). One a library defines is carried by naming it in full in `main.js`:
+A foundation's own compute files are in its `src/compute/` ([Compute Functions](../web-apps/compute-functions.md)). One a library defines is carried by naming it in full in `main.js`:
 
 ```js
 // src/main.js

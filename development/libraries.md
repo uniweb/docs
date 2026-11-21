@@ -276,7 +276,7 @@ The build reads each one from the library that defines it, and stops on one it c
 
 ## Compute functions in a library
 
-A library may hold `compute/` too, one plain JavaScript file of functions per name, named in its scope: `compute/grading.js` is `@acme/grading`. A library may hold compute files alone. A foundation carries one with `compute: ['@acme/grading']` in its `main.js`, as it carries a mapping, and `uniweb register` registers and uploads it from the library before the foundation. What a compute file may hold, and how an integration names one of its functions, is in [Compute Functions](./compute-functions.md).
+A library may hold `compute/` too, one plain JavaScript file of functions per name, named in its scope: `compute/grading.js` is `@acme/grading`. A library may hold compute files alone. A foundation carries one with `compute: ['@acme/grading']` in its `main.js`, as it carries a mapping, and `uniweb register` registers and uploads it from the library before the foundation. What a compute file may hold, and how an integration names one of its functions, is in [Compute Functions](../web-apps/compute-functions.md).
 
 ---
 

@@ -10,6 +10,7 @@ Pure markdown files organized by topic — no build configuration, no dependenci
 getting-started/    Introduction, quickstart, templates
 authoring/          Writing content, theming, records, translations
 development/        Building foundations, component patterns, data fetching
+web-apps/           The Application Engine, the entity model, members and the SDK
 marketing/          Measuring visits, conversions, advertising
 reference/          Configuration files, kit API, CLI commands
 architecture/       How content, components and data fit together
@@ -28,8 +29,8 @@ https://raw.githubusercontent.com/uniweb/docs/main/{section}/{page}.md
 
 ## About Uniweb
 
-Uniweb is an open-source framework for building websites with an AI agent. Your agent builds the site, Uniweb hosting runs it, and you and the people you work with can edit it in a visual app. What a site says lives in markdown, apart from the React components that draw it. Start with [What is Uniweb](getting-started/what-is-uniweb.md).
+Uniweb is a platform for building websites and web apps. You build with its open-source React framework, yourself or with an AI agent. The Application Engine gives your app accounts, data, permissions and payments, with no backend to write. Uniweb App lets the people you work with edit the site visually, and Uniweb hosting runs it all. What a site says lives in markdown, apart from the React components that draw it. Start with [What is Uniweb](getting-started/what-is-uniweb.md).
 
 - **Framework:** [github.com/uniweb/cli](https://github.com/uniweb/cli)
 - **Website:** [uniweb.io](https://uniweb.io)
-- **The Uniweb app:** [uniweb.app](https://uniweb.app)
+- **Uniweb App:** [uniweb.app](https://uniweb.app)

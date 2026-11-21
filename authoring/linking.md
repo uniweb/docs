@@ -74,7 +74,7 @@ title: Installation Guide
 
 Now `page:installation` resolves correctly even if you later move the page to `pages/setup/install/`.
 
-### Sites you also edit in the Uniweb app
+### Sites you also edit in Uniweb App
 
 The app links a page by an ID it creates, a code like `3f58142d`, which it keeps in the page's
 `page.yml`. `uniweb pull` writes the app's links as the page's path, `[AI](page:ai)`, and

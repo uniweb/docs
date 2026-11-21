@@ -14,6 +14,8 @@ Content authors write markdown. Developers build React components. The author na
 
 This separation isn't new — CMSs have done content/template separation for decades. What's different is that CCA makes the boundary a *design-time interface*, not a runtime afterthought. The boundary shapes how components are built, how content is structured, and how the framework itself evolves.
 
+A site can also be a web app, and the split holds there too. Authors compose its public pages from section types. Its members' pages are section types as well, which read and write what each member keeps through the site's [Application Engine](../web-apps/the-application-engine.md), and they can be entirely the developer's design, with no author composing them. Members' data is a third artifact, kept by the engine rather than written in either side's files.
+
 ---
 
 ## Principles

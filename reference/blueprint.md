@@ -1,7 +1,8 @@
 # Blueprint
 
-`blueprint.yml` sits beside `site.yml` in a site that has its own backend, the
-[`backend` service](./site-configuration.md#accounts). It says how a backend started for the site
+`blueprint.yml` sits beside `site.yml` in a site that has its own
+[Application Engine](../web-apps/the-application-engine.md), the
+[`backend` service](./site-configuration.md#accounts). It says how the engine started for the site
 begins: who may create an account, its teams, who adds entries of each type and who reads or edits
 all of them, what visitors may read, and the integrations it starts with.
 
@@ -110,19 +111,19 @@ Each integration line in `blueprint.yml` takes:
 | `trigger` | `file` runs `manual`; `feed` runs `on_fetch`; `email` and `http` run `on_create`, `on_match`, `on_change` (once for each change a person makes) or `manual` |
 | `label` | its name; the id when absent. The id is lowercase letters, digits and dashes |
 | `filter` | which entries it acts on, `{ where: … }` in the language of [queries](./queries.md) |
-| `enabled` | `true` starts a `file` or `feed` integration switched on, or an `http` one that names a `vendor`. Leave it out for `email` and other `http` lines: the site's owner gives their address in the backend's administration and switches them on there |
+| `enabled` | `true` starts a `file` or `feed` integration switched on, or an `http` one that names a `vendor`. Leave it out for `email` and other `http` lines: the site's owner gives their address in the Solution Owner Console and switches them on there |
 | `reply` | `http` only: a mapping, named as `mapping` is, through which the endpoint's answer is written back |
 | `reply_about` | with a `reply` that writes a list of entries: the field of the reply's type (`section.field`, such as `identity.submission`) that the backend fills with the entry it sent. Nothing in it is a type, so it is sent as written |
-| `vendor` | `http` only: a function the platform runs in place of an address, `'@/courses#grade'`: a compute file the site's foundations carry, named as `mapping` is, then `#` and the function it exports. See [Compute Functions](../development/compute-functions.md) |
+| `vendor` | `http` only: a function the platform runs in place of an address, `'@/courses#grade'`: a compute file the site's foundations carry, named as `mapping` is, then `#` and the function it exports. See [Compute Functions](../web-apps/compute-functions.md) |
 
 An address, a URL or a key is never the file's: any other key on a line is refused.
 
 ## When it applies
 
-Once, when a backend is started for the site. That can be the site's own backend, the backend of a
-site copied from it when it is a template, or a backend started again after the site's was
-destroyed. After that, the site's owner changes these settings in the backend's administration, and
-those changes are what the backend holds. An edited file is still checked and carried with each
+Once, when an engine is started for the site. That can be the site's own engine, the engine of a
+site copied from it when it is a template, or an engine started again after the site's was
+destroyed. After that, the site's owner changes these settings in the Solution Owner Console, and
+those changes are what the engine holds. An edited file is still checked and carried with each
 push and pull, but it reaches no backend that is already running. Once the site's backend has
 started, `uniweb push` and `uniweb publish` say so when they send a changed file, and
 `uniweb status` says it too.
@@ -144,7 +145,7 @@ back to `blueprint.yml`, never into `site.yml`, and a pull of what you pushed ch
 
 ## In `uniweb dev`
 
-The local backend `@uniweb/api` ships starts the same way: every type closed until the blueprint
+The mock `@uniweb/api` ships starts the same way: every type closed until the blueprint
 opens it, with its sign-up mode and its teams. Hand it the site's blueprint:
 
 ```js
@@ -159,7 +160,9 @@ export default createMockBackend({ seed, blueprint }).fetch
 ```
 
 A seeded account names the teams it is in, since the file never does:
-`{ username: 'sally', password: 'sally', teams: ['sales'] }`. Public queries are not modelled there.
+`{ username: 'sally', password: 'sally', teams: ['sales'] }`. Public queries are not modelled there: run the
+site on the Docker Developer Edition, or against the site as published, to see them
+([Testing a Web App Locally](../web-apps/testing-locally.md)).
 
 The `conference` template is a worked example. The organiser adds the programme's tracks, every
 member reads them, and each attendee keeps their own attendance:
@@ -171,5 +174,6 @@ uniweb create my-event --template conference
 ## See also
 
 - [Site Configuration](./site-configuration.md#accounts) — the `backend` service, and `$devBackend`
-- [Sites with Accounts](../development/sites-with-accounts.md) — building a site whose members sign in
+- [Building a Solution](../web-apps/building-a-solution.md) — a site whose members sign in, step by step
+- [Testing a Web App Locally](../web-apps/testing-locally.md) — the mock, the Docker Developer Edition, and the site as published
 - [Data Schemas](../development/data-schemas.md) — the types a blueprint and a mapping name

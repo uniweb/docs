@@ -371,7 +371,7 @@ The `contexts` array shows where the string appears, and `field` indicates the c
 
 ### Outdated Translations
 
-When a source sentence changes a little, its old translation stays until someone reviews it, because a slightly outdated sentence reads better than a sudden switch of language. An edit in the Uniweb app does this, and a pull records it. An edit in a file does it too, at `uniweb i18n sync` or at `uniweb push`. Either way the locale file then says:
+When a source sentence changes a little, its old translation stays until someone reviews it, because a slightly outdated sentence reads better than a sudden switch of language. An edit in Uniweb App does this, and a pull records it. An edit in a file does it too, at `uniweb i18n sync` or at `uniweb push`. Either way the locale file then says:
 
 ```json
 { "c0f1a2b3": { "default": "Acerca de PandaWatch", "outdated": { "/about:hero": "About PandaWatch" } } }

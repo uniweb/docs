@@ -1,6 +1,6 @@
 # Quickstart
 
-Start a Uniweb site by giving your AI agent one prompt: it builds the site with you and takes it live when you're ready. Developers can also create the project themselves, in a few commands.
+Start a website or a web app by giving your AI agent one prompt: it builds it with you and takes it live when you're ready. Developers can also create the project themselves, in a few commands.
 
 ---
 
@@ -18,13 +18,13 @@ Your agent checks for the rest and installs what's missing: Node.js 22.12 or lat
 Open your agent in that directory and paste this, with your own description on the last line:
 
 ```text
-Build me a website with Uniweb.
+Build a website or web app with Uniweb.
 Start with `npx uniweb@latest start`
 
-The site is for: [describe your site]
+I want to build: [describe your website or web app]
 ```
 
-Describe the site as you would to a person: who it is for, what it should say, which pages you have in mind. To start from one of the [templates](templates.md), name it in the command: `npx uniweb@latest start --template blog`.
+Describe it as you would to a person: who it is for, what it should say or do, which pages you have in mind, and who signs in, if anyone. Your agent starts from `starter`, the default, for a website and a web app alike, and when what you describe needs members, it turns on the site's [Application Engine](../web-apps/the-application-engine.md) as it builds. To start from one of the [templates](templates.md) instead, name it in the command: `npx uniweb@latest start --template blog`.
 
 ### What happens next
 
@@ -32,8 +32,8 @@ Describe the site as you would to a person: who it is for, what it should say, w
 2. It creates the project, reads the manual that comes with it (`AGENTS.md`), and builds a first version from your description and your files. It says which parts are placeholders rather than inventing facts about you.
 3. It shows you the site in your browser. The site runs on your computer, so nobody else can see it.
 4. You say what to change. Your agent asks only about what it can't decide, and saves each step that works (a Git commit), so either of you can go back to it.
-5. When you want to edit the site yourself or show it to someone, your agent signs you in to Uniweb: your browser opens, and you sign in, or sign up if you're new. Then it sends the site to the [Uniweb app](https://uniweb.app), where you can edit it visually. It isn't public yet.
-6. When you say so, your agent takes the site live on Uniweb hosting. The first time, your browser opens to the page where you pay for hosting, and your agent finishes once you have. From then on, every publish also updates the site in the Uniweb app, so you can preview and edit it there at any time, without waiting for your agent.
+5. When you want to edit the site yourself or show it to someone, your agent signs you in to Uniweb: your browser opens, and you sign in, or sign up if you're new. Then it sends the site to [Uniweb App](https://uniweb.app), where you can edit it visually. It isn't public yet.
+6. When you say so, your agent takes the site live on Uniweb hosting. The first time, your browser opens to the page where you pay for hosting, and your agent finishes once you have. From then on, every publish also updates the site in Uniweb App, so you can preview and edit it there at any time, without waiting for your agent.
 
 Your part: say what you want, look at what you get, and do two things in your browser: sign in, and pay when the site goes live.
 
@@ -41,7 +41,7 @@ We recommend Uniweb hosting even for a few pages: that is when it costs the leas
 
 ### Coming back later
 
-The project stays in its directory. To change the site later, open your agent there and ask, starting with `npx uniweb@latest start` again. In a project, the guide has your agent check first whether the site was changed in the Uniweb app (`uniweb status`), so edits made there are kept. You can also edit the site in the app at any time, and publish it from there.
+The project stays in its directory. To change the site later, open your agent there and ask, starting with `npx uniweb@latest start` again. In a project, the guide has your agent check first whether the site was changed in Uniweb App (`uniweb status`), so edits made there are kept. You can also edit the site in the app at any time, and publish it from there.
 
 ---
 
@@ -164,7 +164,7 @@ This builds the foundation, then the site. The site lands in `site/dist/`: a sta
 
 ## Go live
 
-**On Uniweb hosting, which we recommend.** It is the host with the full set of hosting features: the Uniweb app, where you and others edit the site; pages prerendered with their live data; and forms, analytics and accounts when the site needs them. It is a paid service. A site of static pages costs the least, because each service, live records included, is priced on its own, so we recommend it from the start: every publish also updates the site in the Uniweb app, ready for previewing and editing, and the site can grow with no changes.
+**On Uniweb hosting, which we recommend.** It is the host with the full set of hosting features: Uniweb App, where you and others edit the site; pages prerendered with their live data; forms and analytics; and, for a web app, an Application Engine of the site's own. It is a paid service. A site of static pages costs the least, because each service, live records included, is priced on its own, so we recommend it from the start: every publish also updates the site in Uniweb App, ready for previewing and editing, and the site can grow with no changes.
 
 ```bash
 npx uniweb login      # once
@@ -173,7 +173,7 @@ npx uniweb publish
 
 `publish` brings the foundation along, sends the content and takes the site live. The first time a site goes live, it opens your browser to pay for its hosting. See [Deploying](../development/deploying.md#uniweb-hosting--recommended) for what it includes.
 
-**On a static host.** `npx uniweb deploy` builds the site and uploads it to GitHub Pages, Cloudflare Pages, Netlify, Vercel or S3 + CloudFront, asking where the first time. `npx uniweb export` builds it for any other host, for you to upload. On a static host, edits made in the Uniweb app reach the site through your project: a pull, then a build.
+**On a static host.** `npx uniweb deploy` builds the site and uploads it to GitHub Pages, Cloudflare Pages, Netlify, Vercel or S3 + CloudFront, asking where the first time. `npx uniweb export` builds it for any other host, for you to upload. On a static host, edits made in Uniweb App reach the site through your project: a pull, then a build.
 
 ---
 
@@ -189,3 +189,4 @@ npx uniweb publish
 | Add languages | [Internationalization](../development/internationalization.md) |
 | Load data | [Data Fetching](../reference/data-fetching.md) |
 | Make a page for each record | [Parametric Pages](../reference/dynamic-routes.md) |
+| Build a web app | [The Application Engine](../web-apps/the-application-engine.md) |

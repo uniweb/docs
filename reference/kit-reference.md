@@ -745,7 +745,7 @@ if (!isSearchEnabled()) return null
 |---|---|
 | `isSearchEnabled()` | any provider answers search — a server, **or the prebuilt index** a static site ships |
 | `isSubmitEnabled()` | form submissions have somewhere to go |
-| `isBackendEnabled()` | the site has its own backend, the `backend` service — accounts, per-visitor data. Also exported by `@uniweb/api` |
+| `isBackendEnabled()` | the site has its own Application Engine, the `backend` service — accounts, per-visitor data. Also exported by `@uniweb/api` |
 | `isAssistantEnabled()` | an assistant surface answers |
 | `isTrackingEnabled()` | analytics events have somewhere to go |
 

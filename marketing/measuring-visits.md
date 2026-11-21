@@ -12,7 +12,7 @@ install, nothing is stored on a visitor's device, and it works the same on any f
 
 Reports need somewhere to go, so nothing is sent until the site names a destination.
 
-On Uniweb Cloud (`uniweb publish`, or publishing from the Uniweb app), ask your host to collect for
+On Uniweb Cloud (`uniweb publish`, or publishing from Uniweb App), ask your host to collect for
 you:
 
 ```yaml

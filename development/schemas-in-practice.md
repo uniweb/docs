@@ -13,7 +13,7 @@ When you reference `@acme/person` from a section type's `meta.js`, two independe
 | Question | Answer decides | When it matters |
 |---|---|---|
 | **Where does the build find the definition?** | whether `uniweb build` succeeds | every single build, always |
-| **Is the schema registered?** | whether authors can create records of this type in the Uniweb app | only when you work with app authors |
+| **Is the schema registered?** | whether authors can create records of this type in Uniweb App | only when you work with app authors |
 
 They don't substitute for each other. Registering a schema does **not** put it where the build can find it, and having it on disk does **not** register it.
 
@@ -153,7 +153,7 @@ Registering submits your schemas to the Uniweb registry so they become content t
 | Static site, content in markdown and YAML files, deployed to GitHub Pages or any static host | No |
 | Running `uniweb validate` against your file-based data | No |
 | Sharing schemas across your own foundations | No — put them on disk (above) |
-| Content authors creating and editing records in the Uniweb app | Yes |
+| Content authors creating and editing records in Uniweb App | Yes |
 | Syncing site content to Uniweb hosting | Yes |
 
 What registering does **not** do, and this is the part worth internalizing: it does not make a schema resolvable for someone else's build. If a teammate's foundation binds `@acme/person`, registration doesn't help them — they still need the file on disk, via a routed directory or a package. Registration and delivery are genuinely separate pipes.

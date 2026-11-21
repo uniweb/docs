@@ -9,10 +9,10 @@ A template is a working site to start from: its pages, the section types that dr
 With your agent, name the template in the prompt's command:
 
 ```text
-Build me a website with Uniweb.
+Build a website or web app with Uniweb.
 Start with `npx uniweb@latest start --template blog`
 
-The site is for: [describe your site]
+I want to build: [describe your website or web app]
 ```
 
 Your agent creates the project from the template, keeps what fits, replaces the sample content with yours and removes what you won't use. The code is yours too, so it can change anything the site needs.
@@ -74,7 +74,7 @@ These templates each show a capability, with a working site around it.
 
 These come with the CLI:
 
-- **`starter`**, the default: one generic section type and two short pages, a working example of each convention, to replace as you build.
+- **`starter`**, the default: one generic section type and two short pages, a working example of each convention, to replace as you build. It is the start for a website and for a web app alike: a web app adds its [Application Engine](../web-apps/the-application-engine.md) to it.
 - **`none`**: the same project with no section types or pages, for building everything yourself.
 - **`--blank`**: a workspace with no packages, which you grow with `uniweb add`. It is the start for several sites or foundations in one workspace; see [Project Structures](../development/project-structures.md).
 

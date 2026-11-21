@@ -108,7 +108,7 @@ The framework ships clients for these. The list grows; the registry does not gat
 | `submit` | where form submissions go | site or host |
 | `tracking` | where analytics events go | site or host |
 | `assistant` | where an assistant surface answers | site or host |
-| `backend` | the site's own backend — accounts, per-visitor data, member writes | host (see below) |
+| `backend` | the site's own Application Engine — accounts, per-visitor data, member writes | host (see below) |
 | `records` | where live record queries are answered | **host only** — asked for with `records: true` |
 | `google` | which Google Analytics and Tag Manager IDs your host loads Google's tag for | **host only** — asked for with `google: { id: … }` |
 
@@ -120,12 +120,12 @@ component asks about search is *"should I draw a search box"* rather than *"is t
 service"* — the two differ, and [`useSearch`](./kit-reference.md) answers the first. See
 [Search](../authoring/search.md).
 
-**`backend` is the one service a site does not normally address.** It is the site's own backend,
-and it has to be provisioned, so on a site you publish you ask for it — `backend: true` under
+**`backend` is the one service a site does not normally address.** It is the site's own
+[Application Engine](../web-apps/the-application-engine.md), and it has to be provisioned, so on a site you publish you ask for it — `backend: true` under
 `services:` — and its address arrives in the payload. Arriving with the site does not make your host
 its provider — what answers there has a provider of its own. An address of your own is how a static
 build reaches a backend you run; in `uniweb dev`, `$devBackend` answers it with a local mock at an
-address the dev server supplies. See [Sites with Accounts](../development/sites-with-accounts.md).
+address the dev server supplies. See [The SDK](../web-apps/the-sdk.md).
 *This service was called `api` before; written that way under `services:`, it now stops the build
 with the new name.*
 
@@ -220,7 +220,7 @@ search — `index` (a downloaded index, queried in the browser), `endpoint` (a s
 foundation-supplied search transport.
 
 ⚠️ **backend** names two different things, so say which. **The `backend` service** is the site's own
-backend — a provider, like any other. **The backend you are logged in to** is the server
+Application Engine — a provider, like any other. **The backend you are logged in to** is the server
 `uniweb login --server` selects, which holds and publishes your site — it is not a service of the
 site at all.
 
@@ -231,6 +231,6 @@ site at all.
 - [Site Configuration](./site-configuration.md) — every `site.yml` key, including each service
 - [Search](../authoring/search.md) — providers, and what a site declares
 - [Receiving Form Submissions](../development/receiving-form-submissions.md) — the `submit` service end to end
-- [Sites with Accounts](../development/sites-with-accounts.md) — the `backend` service
+- [The Application Engine](../web-apps/the-application-engine.md) — the `backend` service, the site's own engine
 - [Data Sources](../development/data-sources.md) — where a site's records come from
 - [Kit Reference](./kit-reference.md) — `resolveService`, `useSearch`, `useFormSubmit`

@@ -1,14 +1,14 @@
 # Deploying
 
-**We recommend Uniweb hosting**, with `uniweb publish`. It is the host with the full set of hosting features: pages prerendered over live data, the Uniweb app where your authors edit the same site, and services a site turns on as it grows — form submissions, analytics, a live database, accounts for members. A site can start as a few static pages and become a complete platform there, without moving. It is a paid service; see **[Uniweb hosting](#uniweb-hosting--recommended)**.
+**We recommend Uniweb hosting**, with `uniweb publish`. It is the host with the full set of hosting features: pages prerendered over live data, Uniweb App where your authors edit the same site, and services a site turns on as it grows — form submissions, analytics, a live database, accounts for members. A site can start as a few static pages and become a complete platform there, without moving. It is a paid service; see **[Uniweb hosting](#uniweb-hosting--recommended)**.
 
 To host a site somewhere else, `uniweb deploy` ships it to a standard host such as Cloudflare Pages, and `uniweb export` builds a folder for any other.
 
 How a project ships also depends on **who manages the content**. That question decides what gets deployed, which commands you run, and how collaboration works.
 
-- **You and your authors — a synced site.** You work in your project, in files and git; authors work in the Uniweb app, composing pages from your section types. The CLI keeps the two in sync, and `uniweb publish` takes the site live on Uniweb hosting. See **[Synced](#synced--you-in-files-authors-in-the-app)**.
+- **You and your authors — a synced site.** You work in your project, in files and git; authors work in Uniweb App, composing pages from your section types. The CLI keeps the two in sync, and `uniweb publish` takes the site live on Uniweb hosting. See **[Synced](#synced--you-in-files-authors-in-the-app)**.
 - **Path 1: You manage the content.** You (or your dev team) write the markdown. Publish the site to Uniweb hosting, or deploy it to a static host: GitHub Pages, Cloudflare Pages, Netlify, Vercel, S3 + CloudFront.
-- **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in the Uniweb app. The repo's `site/` is a test harness, not a deploy target.
+- **Path 2: Someone else manages the content.** You register a foundation; sites built on it are composed by content authors in Uniweb App. The repo's `site/` is a test harness, not a deploy target.
 
 > **In a hurry?** `uniweb publish` takes your site live on Uniweb hosting — see **[Uniweb hosting](#uniweb-hosting--recommended)**. On GitHub Pages it takes three commands — see **[The 3-line recipe](#the-3-line-recipe--github-pages)**. If you're building a foundation for clients who manage their own content, jump to **[Path 2](#path-2--you-ship-a-foundation-as-a-product)**.
 
@@ -18,7 +18,7 @@ The same framework powers all three. The difference is the deployment artifact a
 
 ## Synced — you in files, authors in the app
 
-A synced site has two interfaces. You keep working in your project, in files and git. Authors work in the Uniweb app, where they compose pages from your section types, set the options each one declares in its `meta.js`, and manage records through your schemas, with live previews. Both edit the same site: its content lives on the Uniweb backend as well as in your files, and the CLI keeps the two in step with **git-style sync verbs**.
+A synced site has two interfaces. You keep working in your project, in files and git. Authors work in Uniweb App, where they compose pages from your section types, set the options each one declares in its `meta.js`, and manage records through your schemas, with live previews. Both edit the same site: its content lives on the Uniweb backend as well as in your files, and the CLI keeps the two in step with **git-style sync verbs**.
 
 Start from a normal project:
 
@@ -54,7 +54,7 @@ Five ways to ship under this path. They differ in *who builds*, *who uploads*, a
 
 | | Builds | Uploads | When to use |
 |---|---|---|---|
-| **Uniweb Cloud (`uniweb publish`)** — recommended | No site build: the host renders your content (your machine builds the foundation it releases) | Your machine | The full set of hosting features: pages over live data, the Uniweb app for authors, forms, analytics and accounts. Paid — see [Uniweb hosting](#uniweb-hosting--recommended) |
+| **Uniweb Cloud (`uniweb publish`)** — recommended | No site build: the host renders your content (your machine builds the foundation it releases) | Your machine | The full set of hosting features: pages over live data, Uniweb App for authors, forms, analytics and accounts. Paid — see [Uniweb hosting](#uniweb-hosting--recommended) |
 | **CI via `uniweb add ci --host=<adapter>`** | GitHub Actions | The host | A free static host, from a one-line scaffold. Set up once, every push deploys. Adds PR previews on CF Pages / Netlify / Vercel |
 | **Dashboard connect (CF Pages, Netlify, Vercel)** | The host | The host | Same outcome, no workflow file and no secrets |
 | **CLI-push (`uniweb deploy --host=<adapter>`)** | Your machine | Your machine | One-shot deploy from the CLI; the only path for S3 + CloudFront |
@@ -67,8 +67,8 @@ Not sure? `uniweb publish` is the one we recommend, and **`uniweb deploy`** with
 `uniweb publish` takes the site live on Uniweb hosting (**Uniweb Cloud**). We recommend it because it is the host with the full set of hosting features:
 
 - **Pages over live data.** Records with a data schema reach published pages live, and the host prerenders each page a visit starts on with its data, so search engines and link previews read the finished page.
-- **The Uniweb app.** Your authors can edit the same site visually, composing pages from your section types and managing records through your schemas, while you keep working in files — see [Synced](#synced--you-in-files-authors-in-the-app). Every publish updates the site in the app, whether or not anyone uses it yet, so it is ready for previewing and editing at any time.
-- **Payments.** A site's own backend, the `backend` service, takes payments through the site owner's own Stripe account. [Sites with Accounts](./sites-with-accounts.md) covers the `backend` service.
+- **Uniweb App.** Your authors can edit the same site visually, composing pages from your section types and managing records through your schemas, while you keep working in files — see [Synced](#synced--you-in-files-authors-in-the-app). Every publish updates the site in the app, whether or not anyone uses it yet, so it is ready for previewing and editing at any time.
+- **A backend for your web app.** A site that asks for the `backend` service gets an Application Engine of its own at its first publish, with its own PostgreSQL database: accounts, members' data, permissions, and payments through the site owner's own Stripe account. [The Application Engine](../web-apps/the-application-engine.md) covers it.
 - **Services a site turns on as it grows.** Form submissions, analytics, a live database of records, accounts for members: each is an entry under `services:` in `site.yml` that asks the host for it — see [Site Services](../reference/site-services.md).
 - **No site build.** `publish` sends your content and brings the foundation along, and the host renders the site with the framework's runtime and your foundation.
 
@@ -78,7 +78,7 @@ So a site can start as a few static pages and grow into a complete platform — 
 |---|---|---|
 | Pages | Prerendered by the host as a visit starts, with their live data | Prerendered at build time, with the data the build had |
 | Records | Delivered live to published pages (`records: true` under `services:`) | Compiled into the build; a change ships with the next build |
-| Authors in the Uniweb app | Edit the site and take it live from the app | Their edits reach the site through your project: a pull, then a build |
+| Authors in Uniweb App | Edit the site and take it live from the app | Their edits reach the site through your project: a pull, then a build |
 | Forms, accounts, analytics | Services you ask the host for in `site.yml` | An address of your own, or a third-party service |
 | To ship a change | `uniweb publish`, with no site build | A build, in CI or on your machine |
 | Cost | Paid. A site of static pages costs the least: each service, live records included, is priced on its own | Free tiers on GitHub Pages, Cloudflare Pages, Netlify and Vercel |
@@ -236,7 +236,7 @@ The `dist/` artifact is self-contained. The host doesn't need to know anything a
 
 You're building a foundation for clients, content authors, or any team that won't write markdown. The foundation is your product; the repo's `site/` is a test harness for the code (run `pnpm dev` to preview your components against sample content). You don't deploy a site — you register a foundation.
 
-The sites that use your foundation are managed in the **Uniweb app** — a visual editor designed for non-technical authors. They never see git, markdown, yaml, or React. They see *your* components, with live previews and visual controls for the params you defined. The foundation becomes the editor's native vocabulary for that site: you keep creative control of the design system, they get an editor that feels custom-built for them.
+The sites that use your foundation are managed in **Uniweb App** — a visual editor designed for non-technical authors. They never see git, markdown, yaml, or React. They see *your* components, with live previews and visual controls for the params you defined. The foundation becomes the editor's native vocabulary for that site: you keep creative control of the design system, they get an editor that feels custom-built for them.
 
 This is a paid path (catalog + hosting + the app). The right shape when:
 

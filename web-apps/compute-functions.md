@@ -1,8 +1,8 @@
 # Compute Functions
 
-A site's backend can send an entry to another system when something happens, and write that system's answer back: a quiz submission goes out to be graded, and the grade comes back onto the submission ([Blueprint → Integrations](../reference/blueprint.md#integrations)). Usually that other system is a service someone runs at an address. When the work is small, such as grading a quiz against its answer key, a foundation can ship the logic itself: one plain JavaScript file of functions, which the platform runs for you. An integration names one of its functions with `vendor:`, where it would otherwise give an outside vendor's address.
+A site's Application Engine can send an entry to another system when something happens, and write that system's answer back: a quiz submission goes out to be graded, and the grade comes back onto the submission ([Blueprint → Integrations](../reference/blueprint.md#integrations)). Usually that other system is a service someone runs at an address. When the work is small, such as grading a quiz against its answer key, a foundation can ship the logic itself: one plain JavaScript file of functions, which the platform runs for you. An integration names one of its functions with `vendor:`, where it would otherwise give an outside vendor's address.
 
-A compute function runs outside the visitor's browser, so it can hold what a visitor must never see, like an answer key, and outside the site's backend, which stays the same for every site.
+A compute function runs outside the visitor's browser, so it can hold what a visitor must never see, like an answer key, and outside the site's engine, which stays the same for every site.
 
 ```js
 // src/compute/courses.js
@@ -118,7 +118,7 @@ export default {
 vendor: '@acme/grading#score'
 ```
 
-The build reads each one from the library that defines it, checks it as a foundation's own is checked, and stops on a name not in full, one in the foundation's own scope (its own files are in `src/compute/`), or one two packages define. A name no package of the workspace defines only warns, because it may already be registered. A site runs only functions its own foundations carry. See [Libraries](./libraries.md).
+The build reads each one from the library that defines it, checks it as a foundation's own is checked, and stops on a name not in full, one in the foundation's own scope (its own files are in `src/compute/`), or one two packages define. A name no package of the workspace defines only warns, because it may already be registered. A site runs only functions its own foundations carry. See [Libraries](../development/libraries.md).
 
 ---
 
@@ -126,5 +126,5 @@ The build reads each one from the library that defines it, checks it as a founda
 
 - `uniweb register` in a foundation registers each compute file with it, by its name, the functions it exports, and a fingerprint of its bytes, and then uploads the file. A library's files go first, from the library, before the foundation that names them. `uniweb push` and `uniweb publish` do the same, and `uniweb register` run in a library registers and uploads all of its files.
 - A file's version never changes. Registering a changed file makes a new version, and a site keeps the version its foundation registered with until the site is next published on a newer version of that foundation.
-- If an upload is interrupted, run `uniweb register` again: the file is found by its fingerprint, and one already stored isn't sent again. Until its file is uploaded, an integration that names it is left out when the site's backend starts, and the publish says so.
+- If an upload is interrupted, run `uniweb register` again: the file is found by its fingerprint, and one already stored isn't sent again. Until its file is uploaded, an integration that names it is left out when the site's engine starts, and the publish says so.
 - `blueprint.yml`'s checks warn when a line names a file none of the site's foundations carries, or a function the file doesn't export.

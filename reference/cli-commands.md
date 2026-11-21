@@ -48,7 +48,7 @@ npx uniweb@latest start
 npx uniweb@latest start --template docs
 ```
 
-The guide, in Markdown, takes the agent through the whole path: create a project from `starter`, or from the template `--template` names, read its `AGENTS.md`, install and run it, sign the person in through their browser (`uniweb login --browser`), and bring the site into the Uniweb app (`push`) or take it live (`publish`). It assumes the person doesn't use a terminal: the agent runs every command, and the person only signs in, and pays when the site goes live, in their browser.
+The guide, in Markdown, takes the agent through the whole path: create a project from `starter`, or from the template `--template` names, read its `AGENTS.md`, install and run it, sign the person in through their browser (`uniweb login --browser`), and bring the site into Uniweb App (`push`) or take it live (`publish`). It assumes the person doesn't use a terminal: the agent runs every command, and the person only signs in, and pays when the site goes live, in their browser.
 
 Inside a Uniweb project, the guide starts from that project instead of creating one, and names the project's own package manager. Inside a workspace of another kind, it says to create the project somewhere else, since `create` does not make one inside another workspace. In a folder holding a Uniweb project one level down, it names that project, so a later session goes there instead of creating another.
 
@@ -419,9 +419,9 @@ than moving to another.
 
 **Against the site as published.** `uniweb dev --published` serves your foundation and
 pages, with live reload, against the services of the site as you published it to the
-backend you are logged in to: its own backend, its records, its forms. The dev server
+backend you are logged in to: its own Application Engine, its records, its forms. The dev server
 reads their addresses from the published page and forwards each request, so members sign
-in to the site's real backend and pages show the records its visitors see. Without the
+in to the site's real engine and pages show the records its visitors see. Without the
 flag, `$devBackend` and your record files answer, as always. Publish the site first
 (`uniweb publish`). What you do then reads and changes the published site's real data,
 and the output says so.
@@ -909,7 +909,7 @@ uniweb validate --site blog
 
 ## uniweb compute run
 
-Run one [compute function](../development/compute-functions.md) on your machine, under the rules it runs by on the platform.
+Run one [compute function](../web-apps/compute-functions.md) on your machine, under the rules it runs by on the platform.
 
 ```bash
 uniweb compute run <file>#<function> --input <file.json>
@@ -1391,7 +1391,7 @@ uniweb push
 
 Run from a site, or a workspace with one site. The **first push creates the site** (the backend mints its id and `uniweb push` records it in [`sync.json`](#which-site-this-is--syncjson)); later pushes update it.
 
-**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in the Uniweb app — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
+**A push never overwrites someone else's work blind.** If the site changed on the backend since your last pull — typically an author editing in Uniweb App — the push is refused before anything is written, and it reports which files changed. Edits to different sections do not collide. Merge the changes in with `uniweb pull` (or `uniweb refresh`), then push again; `--force` overwrites the backend's changes deliberately. A push is also refused when the copy has not taken the site from the backend — a fresh clone that has not pulled yet, or a branch that no longer holds what the last pull merged (after `git merge --abort`, say) — because it could not tell what it would be changing.
 
 **In a git repository, a push sends what you have committed.** If the site's content has changes you have not committed, the push is refused before anything is sent, and it lists the files: commit them and push again, or run `uniweb push --commit -m "…"` to commit them first — the site's content only, so anything else you have staged stays staged. The commit a push is made from is where the next pull merges from, yours and a teammate's, which is how that pull tells your changes from the backend's. What the push then writes into your files — the ids the backend assigned, in `sync.json` and in new record files — it commits itself, as `uniweb`. Outside a repository, the files are sent as they are.
 
@@ -1401,7 +1401,7 @@ Run from a site, or a workspace with one site. The **first push creates the site
 
 **The services you ask for** — [`services:` in `site.yml`](site-configuration.md#site-services) — go up with the content, and only what you changed since your last sync. If the site's services changed in the meantime, the push shows the difference and offers to update `site.yml` rather than send your older choice; if you both changed the same service, it asks which to keep.
 
-When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because the Uniweb app can only open a site against a released foundation. `--no-release` sends the content against the version already released.
+When the site uses a local foundation whose code changed since its last release, push brings it along the way `publish` does — it releases the code before the content goes up, because Uniweb App can only open a site against a released foundation. `--no-release` sends the content against the version already released.
 
 A registered version never changes, so changed code is released under a new one: when the foundation's `package.json` still names the registered version, push releases the change as the next version (`1.4.2` → `1.4.3`) and writes that version into `package.json`. In a git repository the push commits it, unless the file holds edits of yours; otherwise commit it yourself. Unchanged code is not released again. The version picked is always the next patch (a pre-release gets its next pre-release); for a change that is not backwards compatible, set a higher minor or major version in `package.json` yourself before you push.
 
@@ -1521,7 +1521,7 @@ When the old copy could not sync first, `uniweb status` says the copy shares no 
 
 ## uniweb refresh
 
-Catch up with everything outside your working copy: your teammates' commits on the git remote, content authors' edits on the backend, and the latest of any repository the site mounts a page folder from. Running only `git pull` misses every edit made in the Uniweb app; running only `uniweb pull` misses your teammates.
+Catch up with everything outside your working copy: your teammates' commits on the git remote, content authors' edits on the backend, and the latest of any repository the site mounts a page folder from. Running only `git pull` misses every edit made in Uniweb App; running only `uniweb pull` misses your teammates.
 
 ```bash
 uniweb refresh
@@ -1567,7 +1567,7 @@ It does **not** publish: your changes reach the backend's draft, and going live 
 
 ## uniweb clone
 
-Materialize a backend site as a **brand-new local file project** — the "git clone" of the site-content model. Use it to bootstrap a project from a site that already lives on the backend (typically authored in the Uniweb app).
+Materialize a backend site as a **brand-new local file project** — the "git clone" of the site-content model. Use it to bootstrap a project from a site that already lives on the backend (typically authored in Uniweb App).
 
 ```bash
 uniweb login
@@ -1600,7 +1600,7 @@ uniweb login
 uniweb publish
 ```
 
-`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull; in a git repository, if its content is not committed (`--commit` commits it first); or if a page folder mounted from another repository is not current (`--mounts-as-is` publishes it as it is) — and then makes the backend's current version live, including edits made in the Uniweb app. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the app.
+`publish` pushes your local content first — the same push as `uniweb push`, refused the same ways: if the site changed on the backend since your last pull; in a git repository, if its content is not committed (`--commit` commits it first); or if a page folder mounted from another repository is not current (`--mounts-as-is` publishes it as it is) — and then makes the backend's current version live, including edits made in Uniweb App. What goes live is always the backend's copy of the site, whether the publish comes from the CLI or from the app.
 
 The **first** publish of a site also creates it on the backend, in the workspace you work in — see [the workspace you work in](#the-workspace-you-work-in--and-who-owns-a-new-site) under `uniweb push`.
 
@@ -1644,7 +1644,7 @@ The publish is recorded in `deploy.yml` under the target for that backend. If no
 
 ## uniweb status
 
-What to know before working on a site, and what to run about it. It opens with what the site is — **synced** with a backend, so it can be edited in the Uniweb app; **published** on Uniweb Cloud; **deployed** to another host — then says what changed in the app since your copy last synced, what git holds, where the site is live and with which services, whether a newer Uniweb is out, what `uniweb doctor` finds, and whether the dev server is running. It changes nothing, and ends with the commands to run, in the order to run them.
+What to know before working on a site, and what to run about it. It opens with what the site is — **synced** with a backend, so it can be edited in Uniweb App; **published** on Uniweb Cloud; **deployed** to another host — then says what changed in the app since your copy last synced, what git holds, where the site is live and with which services, whether a newer Uniweb is out, what `uniweb doctor` finds, and whether the dev server is running. It changes nothing, and ends with the commands to run, in the order to run them.
 
 ```bash
 uniweb status             # every check

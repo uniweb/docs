@@ -18,7 +18,7 @@ That's all you need to get started. Everything else has sensible defaults.
 # Identity
 name: My Site
 description: A brief description for SEO
-preview: /images/card.png            # The site's card image in the Uniweb app (optional)
+preview: /images/card.png            # The site's card image in Uniweb App (optional)
 favicon: /favicon.svg                # The tab icon, a file in public/ (optional)
 touchIcon: /touch-icon.png           # The home-screen icon, a 180×180 PNG in public/ (optional)
 keywords: [components, react, cms]   # Default meta keywords (pages can override)
@@ -51,7 +51,7 @@ services:
   search:                            # on, with options
     exclude: { routes: [/legal] }
   submit: https://forms.example.com/f/abc   # a provider you bring
-  backend: true                      # ask your host for the site's own backend
+  backend: true                      # ask your host for the site's own Application Engine
 $devBackend: ./mock/api.js           # what answers `backend` in `uniweb dev` (never published)
 
 # Build Options
@@ -95,10 +95,10 @@ touchIcon: /touch-icon.png
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Site name (used in `<title>`, metadata), and the title on the site's card in the Uniweb app |
+| `name` | string | Site name (used in `<title>`, metadata), and the title on the site's card in Uniweb App |
 | `description` | string | Default meta description, and the line under the title on the site's card |
 | `tags` | list | What the site is for, as standard ids — [the site tags](https://github.com/uniweb/schemas#site-tags). Apps use them to filter and label sites, such as in a template picker. An id that is not on the list is kept, and simply has no label. |
-| `preview` | string | The image on the site's card in the Uniweb app — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
+| `preview` | string | The image on the site's card in Uniweb App — useful for a template site that wants a picture of its own. A URL, or a site-root path to an image in your project, which `uniweb push` uploads like any other image. Leave it unset and the app generates one, or compose one from your site with [`uniweb snapshot`](cli-commands.md#uniweb-snapshot). |
 | `favicon` | string | The tab icon every page links: a site-root path to a file in `public/` (`/favicon.svg`, `/favicon.ico`), or a URL. `uniweb push` uploads a file of the site's own. Left unset, a static build links `public/favicon.svg`, `.ico` or `.png` when there is one, but a site published with `uniweb publish` links only the one named here — so name it. |
 | `touchIcon` | string | The icon iOS puts on a home screen and Safari shows on its start page: a site-root path to a PNG in `public/` (`/touch-icon.png`), or a URL. Neither uses an SVG favicon. Make it 180×180 with no transparency — iOS draws a transparent pixel black. `uniweb push` uploads a file of the site's own. Left unset, iOS asks a static host for `/apple-touch-icon.png`, but a site published with `uniweb publish` has only the one named here. Name one when `favicon:` is an SVG: Google Search does not list SVG among the favicon formats it supports, and it reads this link too. |
 
@@ -523,7 +523,7 @@ services:
     exclude: { routes: [/legal] }
   submit: https://forms.example.com/f/abc   # a provider you bring
   tracking: { consent: required }
-  backend: true                             # ask your host for the site's own backend
+  backend: true                             # ask your host for the site's own Application Engine
   records: true                             # ask your host to deliver your records live
   google: { id: G-XXXXXXXXXX }              # ask your host to load Google's tag
 ```
@@ -555,7 +555,7 @@ as text, and text is an address. Write `true` or `false`.
 **On a site you push or publish, `services` is also what you ask your host for.** `uniweb push`
 and `uniweb publish` send each service `site.yml` lists, as it says it, and switch off one you have
 removed from the file. A service your site has that this copy has never seen — one turned on in the
-Uniweb app since your last pull, say — is left as it is. If a service you changed was also changed
+Uniweb App since your last pull, say — is left as it is. If a service you changed was also changed
 on your site since your last pull, the push stops and names it: run `uniweb pull`, then push
 again. `uniweb publish` also says when your pages show records and `services` does not ask for
 `records`. `uniweb pull` writes the services your site has into `services` — one that is off, with
@@ -691,8 +691,9 @@ on, so a typo is silent. `uniweb doctor` flags them.
 
 ## Accounts
 
-A site can have its own backend — the `backend` service: accounts, per-visitor data, content its
-members create. On a site you publish, ask your host for one:
+A site can have its own [Application Engine](../web-apps/the-application-engine.md) — the `backend`
+service: accounts, per-visitor data, content its members create. On a site you publish, ask your
+host for one:
 
 ```yaml
 services:
@@ -702,7 +703,7 @@ services:
 Its address comes from your host. Components never see it: they ask
 [`@uniweb/api`](https://www.npmjs.com/package/@uniweb/api) — `isBackendEnabled()` is `false` on a
 site without the service — so a foundation works unchanged on a site with it and on a site
-without it. A backend you run yourself is an address — `backend: https://your-backend.example/_api`
+without it. An engine you run yourself is an address — `backend: https://your-backend.example/_api`
 under `services:` — and asks your host to leave its own off.
 
 How a backend started for the site begins is [`blueprint.yml`](./blueprint.md), beside `site.yml`:
@@ -710,8 +711,8 @@ who may create an account, its teams, who adds entries of each type, and what vi
 Without one, every type starts closed, and only the account that runs the site adds entries.
 
 > **This is the reference for the key.** For how to *build* one — sessions, per-visitor data,
-> what the site does without one, and where a demo fixture belongs — see
-> [Sites with Accounts](../development/sites-with-accounts.md).
+> what the site does without one, and how to test it on your machine — see
+> [The SDK](../web-apps/the-sdk.md) and [Testing a Web App Locally](../web-apps/testing-locally.md).
 
 ### Developing against it: `$devBackend`
 
@@ -1219,7 +1220,7 @@ for an attribute on the tag. Get it from your vendor's own install instructions.
 
 Neither can load from a `scripts` entry, so what you do depends on who builds your pages.
 
-**On Uniweb Cloud** (`uniweb publish`, or publishing from the Uniweb app), name the ID and your host
+**On Uniweb Cloud** (`uniweb publish`, or publishing from Uniweb App), name the ID and your host
 loads Google's tag. In the app, add it on the *Google Analytics and Tag Manager* card, in your site's
 Settings under Features. In your files, it is this entry in `site.yml`:
 
@@ -1541,7 +1542,7 @@ If the mounted directory is empty — an unfetched git submodule, most often —
 
 #### Edits made in the app
 
-When an author changes a mounted page in the Uniweb app, `uniweb pull` writes the change into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
+When an author changes a mounted page in Uniweb App, `uniweb pull` writes the change into the mounted folder's own files, the way it writes the site's own pages: a changed paragraph in the page's file, a new page in its folder, the branch's order in the mounted folder's `folder.yml`. A setting of the mounted route itself goes to the file that states it — your local `folder.yml` where both do, since it wins — and a new one by what it is: what the content is, such as its title, description or order, in the mounted folder; how this site presents it, such as its layout or SEO, in your local one.
 
 A pull writes into a mounted folder wherever it can merge the change with your work there: a folder your site's own repository holds, beside the site's folder or inside it; a folder in a git submodule of that repository, below; or, for a site in no repository, a folder inside the site's. Anywhere else — a clone beside the site that your repository does not record, a folder in no repository — the change is **held**: the app keeps the author's version, your files keep theirs, and a push leaves that page alone while its file is unchanged, and stops if you changed the file too. That takes a copy that pulled before the author's edit. A fresh clone cannot tell that edit from a change in the folder, so its push sends the folder's version. The pull and [`uniweb status`](cli-commands.md#uniweb-status) name each held page. To have a pull write such edits, make the folder a submodule of your site's repository; to put the folder's version back over the author's, `uniweb push --force`.
 
