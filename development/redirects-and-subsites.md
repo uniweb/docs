@@ -17,7 +17,7 @@ A page with no sections of its own — a `/solutions` folder that only organizes
 ### When to use redirects
 
 - **A parent page that should go somewhere other than its first child.** The automatic redirect picks the first child with content; `redirect:` names another.
-- **Moved pages.** A page that used to live at `/features` now lives at `/product/features`. The old URL should redirect to the new one.
+- **Moved pages.** A page that used to live at `/features` now lives at `/product/features`. The old URL should redirect to the new one: leave a directory at the old address holding only its config, with `redirect:` and `hideIn: ['*']` to keep it out of menus.
 - **Vanity URLs.** A short URL like `/start` that redirects to `/docs/getting-started`.
 
 ### How to declare a redirect
@@ -38,6 +38,16 @@ The redirect target can be:
 | Relative path | `redirect: academic` | `/solutions/academic` |
 | Absolute path | `redirect: /product/features` | `/product/features` |
 | External URL | `redirect: https://docs.example.com` | External navigation |
+
+In a directory of pages, under a `folder.yml`, where each page is one `.md` file of one section, a page that redirects is a subdirectory holding only its own `folder.yml`:
+
+```yaml
+# pages/docs/old-guide/folder.yml — the guide moved to /docs/guides/start
+redirect: ../guides/start
+hideIn: ['*']
+```
+
+A relative target starts from the page itself, as from a folder: `academic` on `/solutions` is `/solutions/academic`, and `../guides/start` on `/docs/old-guide` is `/docs/guides/start`.
 
 No `.md` files are needed in the page directory — the redirect replaces content entirely. The page still appears in navigation (controlled by `pages:` and `hideIn:`) but clicking it navigates to the target.
 
