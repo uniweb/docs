@@ -632,6 +632,7 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 | `@std/opportunity` | Jobs, grants, calls |
 | `@std/service` | Services a business offers |
 | `@std/location` | A place a business is found at, such as a shop or an office, or an area it serves |
+| `@std/session` | Something held every week at a set time: a class, a lesson, a service or office hours |
 | `@std/product` | Things a business sells |
 | `@std/testimonial` | What a customer, client or patient said |
 | `@std/position` | A role someone held: a job, an appointment or a volunteer post |
