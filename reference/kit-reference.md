@@ -1409,7 +1409,7 @@ A foundation that doesn't import it carries nothing of it. One that does adds ab
 
 ### LabeledImage
 
-A picture with its words drawn over it as text, so it reads in the page's language. A diagram, a screenshot or a map often holds words, and a version of it for each language is a lot to keep. Drawn over it instead, the words are content: a section gives them in a block of the standard type `@std/overlay`, and `uniweb i18n` translates each label's words with the rest of the page.
+A picture with its words drawn over it as text, so it reads in the page's language. A diagram, a screenshot or a map often holds words, and a version of it for each language is a lot to keep. Drawn over it instead, the words are content: a section gives them in a block of the standard type `@std/overlay`, and `uniweb i18n` translates each label's words with the rest of the page. [A Picture in Every Language](../development/words-over-a-picture.md) works through a real case.
 
 ````markdown
 ![The stack](/stack.png)
@@ -1452,6 +1452,17 @@ What a label is comes from a short list, and each one is laid out its way:
 
 `baked` lists the languages whose picture shows its words itself: its own language, and any a translation gives a picture of its own. A page in one of them shows the picture as drawn, with no labels. A page in any other language covers the picture's words, each label on a ground. A picture made without words has no `baked`, and shows its labels in every language with no ground.
 
+A picture made elsewhere has colors of its own, which no foundation knows, so the overlay can give them, as hex values: `color` for the words and `ground` for what covers the picture's own, for every label, and on a label where it differs. `dark` gives the same for the picture's dark version:
+
+```yaml
+color: "#0b1325"
+dark: { color: "#fbfdff", ground: "#0a1123" }
+labels:
+  - { text: "YOU", x: 20.9, y: 14.65, w: 8.8, h: 7.3, role: title, ground: "#fcfdff" }
+```
+
+The dark values apply where the page is dark by the theme's own rule: the site's dark scheme, or a visitor's dark system when the site follows it, unless a section pins its own theme. They do from the first paint, through rules in `theme-tokens.css`, the stylesheet every foundation imports. A value the overlay doesn't give for the dark version is its light one. With no color at all, the foundation's style colors the labels.
+
 `uniweb label` places the labels in a browser: draw a box loosely around a picture's words and it fits itself to them.
 
 #### Props
@@ -1467,7 +1478,7 @@ What a label is comes from a short list, and each one is laid out its way:
 
 #### Styling
 
-It brings no looks and no words. A label carries `labeled-image__label` and `labeled-image__label--<role>`, so a foundation gives each role its font and weight, and its size when the overlay gives none. Two custom properties color it: `--label-ink` for its words and `--label-ground` for the ground it covers the picture's words with, a color or a gradient laid at the picture's size, of which each label shows the part under it. The box covering words carries `labeled-image--covers`. The labels are hidden from assistive technology, since the picture's alt text says what it shows, in the page's language.
+It brings no looks and no words. A label carries `labeled-image__label` and `labeled-image__label--<role>`, so a foundation gives each role its font and weight, and its size when the overlay gives none. Where the overlay gives no colors, two custom properties color a label: `--label-ink` for its words and `--label-ground` for the ground it covers the picture's words with, a color or a gradient laid at the picture's size, of which each label shows the part under it. That suits a picture made for the site, in its theme's colors. The overlay's colors win over both. The box covering words carries `labeled-image--covers`. The labels are hidden from assistive technology, since the picture's alt text says what it shows, in the page's language.
 
 ---
 
