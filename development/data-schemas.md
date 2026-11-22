@@ -53,6 +53,7 @@ description: A conference talk.
 source_locale: en             # the language the inline text is written in
 linkable: true                # may other schemas reference this one? (default: yes)
 grantable: true               # may an entry be shared, one at a time? (default: yes)
+open_to_members: true         # in an organization, does every member reach its entries? (default: yes)
 ```
 
 `label`, `plural` and `description` are plain strings in the source language, so
@@ -92,6 +93,13 @@ schema without one has no card to show.
 read it, edit it or administer it. It is `true` unless you write `grantable: false`, which keeps every
 entry of the schema from being shared that way. A backend may refuse to turn it off while an entry of
 the schema is shared.
+
+**`open_to_members`** controls whether, on a backend, every member of an organization reaches this
+schema's entries just by belonging to it. It is `true` unless you write `open_to_members: false`.
+Then each entry is its owner's, and other people reach it when it is shared with them (see
+`grantable`), not because they are members. Use it for what a person keeps to themselves in a shared
+workspace, such as their conversations with an AI agent. A backend refuses to turn it back to `true`
+while the schema has entries, since that would open every one of them to the members.
 
 **There is no key for who may create entries: the site says it.** When a backend stores your
 content, every schema starts closed. The account that runs the site creates its entries, and
