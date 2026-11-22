@@ -1,3 +1,7 @@
+---
+description: "Reference for queries.yml: everything a query can say, from its set, schema and scope to where, sort, limit, excerpts and queryable fields."
+---
+
 # Queries
 
 A **query** is a named question over the site's records — or over a public JSON endpoint. Pages

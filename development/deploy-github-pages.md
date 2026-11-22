@@ -1,3 +1,7 @@
+---
+description: "Put a Uniweb site on GitHub Pages for free: create the project, scaffold its workflow with one command, and add a custom domain."
+---
+
 # Deploying to GitHub Pages
 
 GitHub Pages is the lowest-friction way to put a Uniweb site on the public web for free. You already have a GitHub account; the framework ships an adapter that knows GH Pages's quirks; one command scaffolds a workflow that builds and publishes on every push to your default branch. No accounts to create, no DNS to wire up (unless you want a custom domain).

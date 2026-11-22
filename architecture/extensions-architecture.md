@@ -1,3 +1,7 @@
+---
+description: "How extensions add specialized section types to a site without costing its foundation the portability that makes it valuable."
+---
+
 # Extensions and the Portability Paradox
 
 ## The tension

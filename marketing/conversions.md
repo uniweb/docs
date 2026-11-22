@@ -1,3 +1,7 @@
+---
+description: "Count what a site is there for, such as a sign-up or a copied install command, as a conversion, and other notable acts as engagements."
+---
+
 # Conversions and Engagements
 
 Page views say what visitors read. A **conversion** says one of them did what the site is there

@@ -1,3 +1,7 @@
+---
+description: "How a Uniweb site grows from a few pages into a web app, with languages, editors, live content, members and payments, without redoing it."
+---
+
 # Why Uniweb
 
 A Uniweb site can start as a few pages and grow into a web app, with more languages, editors, live content, members and payments, without plugins and without redoing what was built. It can also be a web app from its first day: the steps below are the same, taken in another order.

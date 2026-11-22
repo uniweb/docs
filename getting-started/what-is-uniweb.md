@@ -1,3 +1,7 @@
+---
+description: "Uniweb is a platform for websites and web apps: an open-source React framework, the Application Engine, Uniweb App and Uniweb hosting."
+---
+
 # What is Uniweb
 
 Uniweb is a platform for building websites and web apps. You build with its open-source React framework, yourself or with an AI agent. The Application Engine gives your app accounts, data, permissions and payments, with no backend to write. Uniweb App lets you, and the people you work with, edit the site visually. And Uniweb hosting runs it all.

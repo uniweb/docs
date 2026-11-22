@@ -1,3 +1,7 @@
+---
+description: "Reference for theme.yml: color palettes, section contexts, typography, light and dark appearance, foundation variables and Tailwind."
+---
+
 # Site Theming
 
 Customize your site's colors, typography, and appearance through a `theme.yml` file. The theming system generates CSS custom properties at build time, enabling consistent branding across all components.

@@ -1,3 +1,7 @@
+---
+description: "Foundations range from bundled with one site to portable across many: what changes along that scale, and when each end makes sense."
+---
+
 # Foundation Categories
 
 Every Uniweb foundation is a Vite library project that builds to `entry.js`. But foundations vary in how much they know about the site they serve. A foundation that hardcodes an API endpoint and a color palette works fine — for one site. A foundation that delegates those decisions to the site works everywhere.

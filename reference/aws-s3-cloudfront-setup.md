@@ -1,3 +1,7 @@
+---
+description: "One-time setup of the AWS S3 bucket and CloudFront distribution that uniweb deploy --host=s3-cloudfront expects."
+---
+
 # AWS S3 + CloudFront — one-time setup
 
 This page walks through provisioning the AWS resources that `uniweb deploy --host=s3-cloudfront` expects. You only do this once per site. After it's done, every deploy is `uniweb deploy` and that's it.

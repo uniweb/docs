@@ -1,3 +1,7 @@
+---
+description: "How Uniweb's own packages are numbered, what counts as a breaking change, and how to move a project to a new version."
+---
+
 # Framework Versions
 
 How Uniweb's own packages are numbered — the `uniweb` CLI and the `@uniweb/*` packages your project depends on — and how your project moves from one version to the next. (Versioning the content of a documentation site is a different subject: see [Documentation Versioning](./versioning.md).)

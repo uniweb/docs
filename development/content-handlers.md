@@ -1,3 +1,7 @@
+---
+description: "Content handlers reshape a section's content before its component sees it, such as resolving {placeholder} expressions against live data."
+---
+
 # Content Handlers
 
 Content handlers are a transform layer between data assembly and your component. They run per section, declared once in `main.js`, and let you reshape content before the component sees it. The most common use is Loom instantiation — resolving `{placeholder}` expressions in markdown against live data.

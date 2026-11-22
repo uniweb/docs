@@ -1,3 +1,7 @@
+---
+description: "Keep the docs for an older release beside the current ones: version folders, freezing a release, and building a version switcher."
+---
+
 # Documentation Versioning
 
 Keep the docs for an older release available beside the current ones.

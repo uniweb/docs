@@ -1,3 +1,7 @@
+---
+description: "The structure every content record follows: how one is written in YAML, JSON, Markdown or BibTeX, and the shape a component receives it in."
+---
+
 # Entity Content Structure
 
 The structure every content record — a blog post, a document, any

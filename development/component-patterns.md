@@ -1,3 +1,7 @@
+---
+description: "Patterns for writing components: organizing a foundation, the front desk pattern, building blocks, loading states, params and insets."
+---
+
 # CCA Component Patterns
 
 CCA components tend to be shorter, more reusable, and more composable than their traditional React equivalents. That's not because of extra abstraction — it's because CCA's separation of content, theming, and code removes entire categories of work from the component. No theme maps. No null checks. No hardcoded strings. What's left is the actual rendering logic.

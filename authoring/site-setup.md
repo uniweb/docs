@@ -1,3 +1,7 @@
+---
+description: "Configure a site in site.yml: its name, page order, languages, search, records and queries, serving from a subdirectory, and build options."
+---
+
 # Setting Up Your Site
 
 This guide walks you through configuring your Uniweb site — naming it, organizing pages, adding languages, enabling search, and deploying to different environments. Everything happens in one file: `site.yml`.

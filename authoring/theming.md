@@ -1,3 +1,7 @@
+---
+description: "Customize a site's colors, fonts, dark mode and section themes in theme.yml, with no code."
+---
+
 # Theming Your Uniweb Site
 
 This guide shows you how to customize your site's visual identity — colors, fonts, dark mode, and more. Everything happens in one file: `theme.yml`.

@@ -1,4 +1,5 @@
 title: Authoring
+description: "Writing a Uniweb site's content: pages and sections in Markdown, records, links, theming, search and translations, with no code."
 pages:
   - site-setup
   - writing-content

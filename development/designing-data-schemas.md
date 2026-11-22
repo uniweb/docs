@@ -1,3 +1,7 @@
+---
+description: "Decisions in modeling related content types: grouping fields into sections, nesting, embedding or referencing, and who can see what."
+---
+
 # Designing Data Schemas
 
 A **data schema** defines a *content type* — the shape of a thing your project is about. A course. A lesson. An instructor. You write the schema once, and it drives validation, the editor's forms, and how records reach your components.

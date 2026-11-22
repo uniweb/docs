@@ -1,4 +1,5 @@
 title: Architecture
+description: "The ideas behind Uniweb's design: the Component Content Architecture, data schemas as contracts, data fetching and extensions."
 pages:
   - component-content-architecture
   - data-schemas-as-contracts

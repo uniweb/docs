@@ -1,3 +1,7 @@
+---
+description: "How a page names its data and a component renders it, following one site from a query to a list, a page per record and a public API."
+---
+
 # Working with Data
 
 Your components need data — articles, team members, products. In a typical React app you'd write a `useEffect`, manage loading state, handle errors and work out caching yourself. In Uniweb the content says which data a page uses, the component says which data it renders, and the runtime does the fetching, caching and delivery in between. Your component reads `content.data`.

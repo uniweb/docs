@@ -1,3 +1,7 @@
+---
+description: "What a Uniweb site reports about its visits, with no tag to install and nothing stored on a visitor's device: pages, sources and time on page."
+---
+
 # Measuring Visits
 
 You want to know which pages help, where visitors come from, and whether the ones a campaign brings

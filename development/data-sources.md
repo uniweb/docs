@@ -1,3 +1,7 @@
+---
+description: "Read data beyond a site's own records: a public JSON endpoint as an external query, an API through a transport, and secrets kept out of pages."
+---
+
 # Data Sources
 
 Most Uniweb sites start with records in `records/`, named by queries in `queries.yml`. That is enough for blogs, docs and marketing sites: a static build turns each query into a file the site reads, and a site published to a host that serves records live reads the same queries from there, without any configuration. Sometimes the data lives elsewhere: a JSON API the site should read, an API with its own query language, a service that needs a key.

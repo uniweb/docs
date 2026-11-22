@@ -1,3 +1,7 @@
+---
+description: "Draw a picture's words over it as text, translated with the page, so one picture serves every language: the section, its labels and their colors."
+---
+
 # A Picture in Every Language
 
 A diagram, a screenshot or a map often has words in it, and those words are in one language. On a site in five languages that means five versions of the picture, redrawn each time the picture changes. Or the picture stays in English on every page.

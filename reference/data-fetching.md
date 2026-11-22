@@ -1,3 +1,7 @@
+---
+description: "How pages and sections get data by naming a query: where a fetch reaches, narrowing it, what a section receives, and loading and errors."
+---
+
 # Data Fetching
 
 Pages and sections get their data by naming a **query**. A query — declared once, in `queries.yml` — selects a set of records; a **fetch** names it on a section, a page or the site, and may narrow it; a section receives the data keys its component declares. The framework decides where the records come from: the file a static build generates from the query, a host's live records once the site is published, or a public API.

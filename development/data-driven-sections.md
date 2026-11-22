@@ -1,3 +1,7 @@
+---
+description: "Sections whose content is a template filled from data: Loom placeholders for substitution, aggregation, repetition and filtering."
+---
+
 # Data-Driven Sections
 
 A data-driven section is a section whose content comes from data — records in YAML or JSON, an API's response — and is instantiated via Loom expressions. Instead of writing static text, the content author writes a template with `{placeholders}` that resolve against live data at runtime.

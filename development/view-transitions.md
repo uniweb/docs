@@ -1,3 +1,7 @@
+---
+description: "Uniweb crossfades navigation between pages with the browser's View Transitions API: name an area to animate it, turn transitions off, or style them."
+---
+
 # View Transitions
 
 Uniweb animates page navigation with smooth crossfades using the browser's native View Transitions API. Every SPA navigation is wrapped in `document.startViewTransition()`, which captures a screenshot of the current page, updates the DOM, and crossfades from old to new. No dependencies, no animation libraries — the browser handles it.

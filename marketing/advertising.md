@@ -1,3 +1,7 @@
+---
+description: "Tell an ad platform what your visitors do: tag the ad's link, connect X or Meta on Uniweb Cloud, and judge a campaign by its visitors' acts."
+---
+
 # Advertising
 
 An ad platform decides who sees your ad, and it learns from what you tell it. This guide sets up

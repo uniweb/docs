@@ -1,3 +1,7 @@
+---
+description: "Why the Component Content Architecture is a translation between two ways of reasoning, one for content authors and one for developers."
+---
+
 # CCA as a Translation Architecture
 
 ## More than separating content from code

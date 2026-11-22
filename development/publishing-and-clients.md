@@ -1,3 +1,7 @@
+---
+description: "Register a foundation in the catalog so other developers' sites can use it, and how that differs from publishing the site it powers."
+---
+
 # Registering a Foundation
 
 This page covers **catalog registration** — making a foundation available as a product that other developers can use across their sites. If your foundation only powers one specific site, you don't need to register it as a deliberate, separate step: just run `uniweb publish` from the site directory and the CLI brings the foundation along — releasing it to the catalog under its scope automatically when its code changed. See [Deploying](./deploying.md) for the publish flow.

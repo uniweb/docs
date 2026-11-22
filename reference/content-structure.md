@@ -1,3 +1,7 @@
+---
+description: "How Markdown is parsed into the content a section type receives: its fields, attributes, media, insets, inline styles, math and tables."
+---
+
 # Content Structure
 
 This guide explains how markdown content is parsed and delivered to your components.

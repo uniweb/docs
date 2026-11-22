@@ -1,3 +1,7 @@
+---
+description: "How Uniweb theming works: the two axes of section context and site scheme, the Auto context, a section's own theme, and the tokens."
+---
+
 # Theming Architecture
 
 Internal reference for the Uniweb theming system. Covers the two-axis model (context × scheme), the Auto context, a section's own theme, and how it reaches the page.

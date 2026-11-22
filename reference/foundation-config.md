@@ -1,3 +1,7 @@
+---
+description: "Configure a foundation in main.js: its name, CSS variables, default section type, data every section receives, layouts and data transports."
+---
+
 # Foundation Configuration
 
 The `main.js` file at the foundation package's source root defines customizable CSS variables and configuration for your foundation. Layout components live in `src/layouts/` and are auto-discovered.

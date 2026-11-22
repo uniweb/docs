@@ -1,3 +1,7 @@
+---
+description: "How these docs are built with Uniweb: Markdown in a repository of its own, with no code, drawn by a foundation, as a pattern for your own projects."
+---
+
 # About This Documentation
 
 This documentation site is built with Uniweb. That might sound obvious, but the way it's built demonstrates several patterns worth understanding — patterns you can apply to your own projects.

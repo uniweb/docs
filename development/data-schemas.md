@@ -1,3 +1,7 @@
+---
+description: "A data schema is a content type's shape. Written once, it checks your data, brings it to the components that declare it, and gives authors a form."
+---
+
 # Data Schemas
 
 A data schema is the shape of a content type — what fields a `person` has, what a `product` looks like. You write it once, and it does three jobs at the same time: `uniweb validate` **checks** your data before it ships, a fetch of the type **reaches** the components that declare it, and the editor renders a **form** authors fill in. Define the shape once instead of re-describing it in a validator, a fetch handler, and a form.

@@ -1,3 +1,7 @@
+---
+description: "Workspace layouts for a Uniweb project as it grows: more sites, extensions, brands and libraries, and working with external content."
+---
+
 # Project Structures
 
 A Uniweb project is a pnpm workspace. [Building with Uniweb](./building-with-uniweb.md) introduces the two-package setup — foundation and site, side by side. That's the starting point for most projects. But as a workspace grows — a second site sharing the same foundation, an extension adding specialized section types, multiple brands under one repo, a library several foundations share — the layout matters.

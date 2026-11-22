@@ -1,3 +1,7 @@
+---
+description: "Ship small logic in a foundation, such as grading a quiz, for the Application Engine to run when something happens, and share it in a library."
+---
+
 # Compute Functions
 
 A site's Application Engine can send an entry to another system when something happens, and write that system's answer back: a quiz submission goes out to be graded, and the grade comes back onto the submission ([Blueprint → Integrations](../reference/blueprint.md#integrations)). Usually that other system is a service someone runs at an address. When the work is small, such as grading a quiz against its answer key, a foundation can ship the logic itself: one plain JavaScript file of functions, which the platform runs for you. An integration names one of its functions with `vendor:`, where it would otherwise give an outside vendor's address.

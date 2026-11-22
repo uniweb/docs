@@ -1,3 +1,7 @@
+---
+description: "The idea Uniweb is built on: content and components kept apart, in separate files and hands, and how its principles show across the framework."
+---
+
 # Component Content Architecture
 
 Uniweb is built on a pattern called the **Component Content Architecture** (CCA). This page explains the idea — what it is, why it works, and how its principles show up across the framework.

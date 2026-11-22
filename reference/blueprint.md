@@ -1,3 +1,7 @@
+---
+description: "blueprint.yml says how a site's Application Engine starts: who may sign up, its teams, who reads and writes each type, and its integrations."
+---
+
 # Blueprint
 
 `blueprint.yml` sits beside `site.yml` in a site that has its own

@@ -1,3 +1,7 @@
+---
+description: "Build sites in several languages: each language a complete build, with its own routes and localized URLs, a language switcher and translations."
+---
+
 # Internationalization (i18n)
 
 Build multi-language sites with language-aware routing and localized content.

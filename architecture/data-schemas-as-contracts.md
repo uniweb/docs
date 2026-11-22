@@ -1,3 +1,7 @@
+---
+description: "Why a data schema is the contract for structured content between content and components, and why a schema's name is its identity."
+---
+
 # Data Schemas as Contracts
 
 Component Content Architecture separates content from components (see [Component Content Architecture](./component-content-architecture.md)). For *structured* content — a roster of people, a catalog of products, a list of events — a **data schema** is the contract across that boundary. It says what a `person` is, independently of any component that renders one or any file that stores one.

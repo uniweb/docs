@@ -1,3 +1,7 @@
+---
+description: "Why Uniweb themes each section by what is behind it as well as by the site's scheme, so one page can mix light, tinted and dark sections."
+---
+
 # Thinking in Contexts
 
 Most frameworks give you a dark mode toggle. Flip it, and the entire page switches between light and dark. It works — until your page has more than one visual mood.

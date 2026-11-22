@@ -1,3 +1,7 @@
+---
+description: "A solution is a site that is also a web app: public pages, members' own pages and an admin area, in one foundation on the Application Engine."
+---
+
 # Building a Solution
 
 A **solution** is a site that is also a web app. Visitors read its public pages. Its members sign in to pages of their own — a learner's courses, a client's orders — and the people who run it work in an admin area made for what it does. All of it is built in one foundation, on the site's own [Application Engine](./the-application-engine.md): the `backend` service under `services:`.

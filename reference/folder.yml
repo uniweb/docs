@@ -1,4 +1,5 @@
 title: Reference
+description: "Reference for a Uniweb project: its configuration files, content structure, queries, components, kit and CLI commands."
 pages:
   - site-configuration
   - page-configuration

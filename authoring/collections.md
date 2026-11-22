@@ -1,3 +1,7 @@
+---
+description: "Manage repeating content, such as posts, team members and products, as records: one file each in records/, selected by queries and shown on pages."
+---
+
 # Working with Records
 
 Records let you manage repeating content — blog posts, team members, products, case studies, bibliographic references — as a set of files (markdown, YAML, JSON, or BibTeX). You write each one in its own file (or, for BibTeX, drop in the file your reference manager already exports) in your site's `records/` folder, and the framework delivers them to your components as structured data.

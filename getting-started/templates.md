@@ -1,3 +1,7 @@
+---
+description: "A template is a working site to start from: its pages, section types and sample content. How to start from one, and the templates on offer."
+---
+
 # Templates
 
 A template is a working site to start from: its pages, the section types that draw them, and sample content that your agent replaces with yours. Name one when you start, or begin with the default.

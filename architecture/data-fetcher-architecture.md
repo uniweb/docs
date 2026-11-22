@@ -1,3 +1,7 @@
+---
+description: "How Uniweb's data fetching works end to end: the dispatcher, the default fetcher, cache keys, placeholders and the paths data takes to a section."
+---
+
 # Data Fetcher Architecture
 
 How Uniweb's data-fetching layer works end to end — dispatcher, default fetcher, cache keys, placeholder substitution, delivery paths, gotchas. For the "how to use it" view, see [Data Sources](../development/data-sources.md).

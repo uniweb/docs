@@ -1,3 +1,7 @@
+---
+description: "Start a website or web app by giving your AI agent one prompt, or create the project yourself in a few commands, and take it live when ready."
+---
+
 # Quickstart
 
 Start a website or a web app by giving your AI agent one prompt: it builds it with you and takes it live when you're ready. Developers can also create the project themselves, in a few commands.

@@ -1,3 +1,7 @@
+---
+description: "Write a site's content in Markdown: how headings, images, links, icons, items and data blocks become the structure section types draw."
+---
+
 # Writing Content for Your Uniweb Site
 
 This guide walks you through writing content for a Uniweb site. No coding experience required — if you can write a text file, you can author content.

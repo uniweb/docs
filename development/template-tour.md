@@ -1,3 +1,7 @@
+---
+description: "The official templates as worked examples: where each one's content and data come from, and what to study in it."
+---
+
 # Template Tour
 
 The official templates aren't just starter projects — they're worked examples of CCA conventions, each adopting a different mix. This guide maps what's where so you can find the pattern you need.

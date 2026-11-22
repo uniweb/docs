@@ -1,3 +1,7 @@
+---
+description: "Where a data schema's file lives, how another project uses it, and when registering it with the registry is needed and when it isn't."
+---
+
 # Schemas in Practice
 
 [Data Schemas](./data-schemas.md) covers how to write a schema — fields, types, sections. This guide covers everything after that: where the schema file lives, how a second project uses it, and whether any of it requires an account.

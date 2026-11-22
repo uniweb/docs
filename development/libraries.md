@@ -1,3 +1,7 @@
+---
+description: "Share code between foundations in a library: one copy of shared parts, data types, mappings or compute functions, and how a fix reaches each site."
+---
+
 # Libraries: Code Several Foundations Share
 
 When two foundations need the same pricing card, the same sign-up form or the same footer, a copy in each means every fix is made twice, and the copies drift apart the first time someone forgets. A **library** holds that code once. Each foundation imports it as from any package and keeps its own section types, layouts and look, and a fix in the library reaches every site that uses it at its next build.

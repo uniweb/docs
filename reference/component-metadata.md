@@ -1,3 +1,7 @@
+---
+description: "Write a section type's meta.js: what it does, the content it expects, the params and presets authors choose from, and the data it receives."
+---
+
 # Component Metadata Guide
 
 This guide explains how to write `meta.js` files for Uniweb components.

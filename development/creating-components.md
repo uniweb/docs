@@ -1,3 +1,7 @@
+---
+description: "Build a foundation's section types: the component and its meta.js, props, items, tagged blocks, building the foundation and generating its docs."
+---
+
 # Creating Components
 
 Build custom components for your foundation.

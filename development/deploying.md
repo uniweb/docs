@@ -1,3 +1,7 @@
+---
+description: "How a project ships depends on who manages its content: synced with Uniweb App, managed by you in files, or a foundation offered as a product."
+---
+
 # Deploying
 
 **We recommend Uniweb hosting**, with `uniweb publish`. It is the host with the full set of hosting features: pages prerendered over live data, Uniweb App where your authors edit the same site, and services a site turns on as it grows — form submissions, analytics, a live database, accounts for members. A site can start as a few static pages and become a complete platform there, without moving. It is a paid service; see **[Uniweb hosting](#uniweb-hosting--recommended)**.

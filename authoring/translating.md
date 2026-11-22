@@ -1,3 +1,7 @@
+---
+description: "Make a site available in several languages: set them up, extract its strings, translate them in JSON files, and keep the translations current."
+---
+
 # Translating Your Site
 
 This guide walks you through making your Uniweb site available in multiple languages. You write content once in your main language, then provide translations — the site handles everything else, from URL routing to search indexes.

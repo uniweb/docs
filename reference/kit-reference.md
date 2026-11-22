@@ -1,3 +1,7 @@
+---
+description: "Reference for @uniweb/kit, the API foundations build with: hooks, components such as Link, Image and Icon, utilities, and core's data classes."
+---
+
 # Kit & Core Reference
 
 `@uniweb/kit` is the developer-facing API for Uniweb foundations. It provides React hooks for accessing site context, primitive components (Link, Image, Icon), and utility functions. When you need something from the framework, you import it from kit.

@@ -1,3 +1,7 @@
+---
+description: "Every project's AGENTS.md, the manual for developers and AI agents, and the guides the CLI prints, one subject at a time."
+---
+
 # AGENTS.md and the Guides
 
 Every Uniweb project has an `AGENTS.md` at its root: the manual for that project and its version of Uniweb, for developers and for AI agents. It holds what someone arriving from React, Next or Astro would otherwise get wrong, and a numbered procedure for any task. The rest is in guides, one subject at a time, one command away.

@@ -1,3 +1,7 @@
+---
+description: "Links that survive reorganizing a site: stable references to pages and sections, the link syntax, and scrolling to a section on another page."
+---
+
 # Linking
 
 A robust linking system that survives content reorganization and works seamlessly in single-page applications.

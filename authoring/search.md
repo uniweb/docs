@@ -1,3 +1,7 @@
+---
+description: "Uniweb sites have built-in full-text search, run in the browser from an index built with the site. How to turn it on, and what it indexes."
+---
+
 # Site Search
 
 Uniweb sites have built-in full-text search. By default it runs entirely in the browser against an index generated at build time — no server, no service, no crawler.

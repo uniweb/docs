@@ -1,3 +1,7 @@
+---
+description: "Copy-paste Markdown for common content patterns: sections, navigation, pages and routes, and analytics, with notes on what matters in each."
+---
+
 # Content Recipes
 
 Copy-paste solutions for common content patterns. Each recipe shows the markdown you write and notes on key points.

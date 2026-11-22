@@ -1,3 +1,7 @@
+---
+description: "Send a route to another page, or serve it from a separate site under the same domain, with declarations in the page's config."
+---
+
 # Redirects and Subsites
 
 Not every route in a site serves content. Some routes redirect to another page — a parent category that sends you to its first child, or a legacy URL that points to a new location. Other routes are served by entirely separate sites — a docs portal with its own foundation, deployed independently but appearing as part of the main domain.

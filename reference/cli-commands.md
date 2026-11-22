@@ -1,3 +1,7 @@
+---
+description: "Reference for the uniweb CLI: each command to start, develop, build, check, translate, deploy and publish a project, with its options."
+---
+
 # CLI Commands Reference
 
 The Uniweb CLI (`uniweb`) scaffolds projects, builds foundations and sites, generates documentation, diagnoses issues, and manages translations.

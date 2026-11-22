@@ -1,3 +1,7 @@
+---
+description: "What a Uniweb project looks like to a React developer: a foundation of section types and a site of Markdown, which the build connects."
+---
+
 # Building with Uniweb
 
 You know how to build a React app. You pick a bundler (Vite), write components, set up routes, and wire everything together. A typical single-page application (SPA) needs a router config, lazy imports, maybe a layout system. In Uniweb, the wiring is the file structure itself — markdown files name the components they want, folders define routes, and the build connects them.

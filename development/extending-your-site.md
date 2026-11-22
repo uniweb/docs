@@ -1,3 +1,7 @@
+---
+description: "A site is a Vite app: add Vite plugins, with PWA support as a worked example, and choose the right layer for each kind of extension."
+---
+
 # Extending Your Site
 
 Your site is a Vite app. That means the entire Vite plugin ecosystem is available to you — PWA support, sitemaps, image optimization, bundle analysis, and anything else the community has built. You don't need Uniweb to support these features specifically. You install a plugin, register it in your `vite.config.js`, and it works.

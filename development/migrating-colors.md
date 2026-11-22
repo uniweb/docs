@@ -1,3 +1,7 @@
+---
+description: "The complete reference for theming a foundation with semantic tokens, and for moving an existing React project's colors onto them."
+---
+
 # Theming and Color Migration
 
 This is the complete reference for Uniweb's theming system and for translating color systems from existing React projects. It's written so that a developer or AI agent reading only this document can correctly theme a foundation and migrate any codebase without creating parallel color systems.

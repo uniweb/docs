@@ -1,3 +1,7 @@
+---
+description: "Bring an existing React page into Uniweb in stages: route it, split it into sections named by purpose, separate content from code, then theme it."
+---
+
 # Converting Existing Designs
 
 You have a React file — maybe AI-generated, maybe hand-built, maybe inherited from a project. It renders a full page: nav, hero, features, testimonials, footer. Everything's in one file or scattered across a few. It works, it looks good, and now you want to bring it into a Uniweb project.

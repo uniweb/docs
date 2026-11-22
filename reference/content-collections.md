@@ -1,3 +1,7 @@
+---
+description: "Records are repeating structured content, one file each in records/: where they live, their folders and file formats, and what a record holds."
+---
+
 # Records
 
 Blog posts, team members, schedules, references — any repeating structured content — are **records**: one file each in `records/`, reached by a query. `.md` holds rich content with body text, `.yml`/`.yaml` pure structured data, `.json` data exported from another tool, and `.bib` bibliographic references.

@@ -1,3 +1,7 @@
+---
+description: "Select only some records with a where: predicate on a query or a fetch: operators, AND, OR and NOT, dotted field names, and saved views."
+---
+
 # Predicates and Saved Views
 
 When you want only *some* records — only featured articles, only members from one department, only events after a date — you write a **predicate** in a `where:` field: on a query in `queries.yml`, to decide which records the query selects, or on a fetch, to narrow a query for one page or section. Predicates are structured YAML objects: no special grammar to learn beyond the field-name → value pattern you already use in frontmatter.

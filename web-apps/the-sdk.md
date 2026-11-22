@@ -1,3 +1,7 @@
+---
+description: "@uniweb/api is the SDK for a site's Application Engine: React hooks to sign members in, read and write their entries, share them and take payments."
+---
+
 # The SDK: `@uniweb/api`
 
 `@uniweb/api` is the SDK for a site's [Application Engine](./the-application-engine.md). Your

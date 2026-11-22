@@ -1,3 +1,7 @@
+---
+description: "How the Application Engine stores a web app's data as Models and entities, and how to model a domain with them instead of designing tables."
+---
+
 # The Entity Model
 
 The [Application Engine](./the-application-engine.md) keeps a web app's data in its **entity

@@ -1,3 +1,7 @@
+---
+description: "Design a foundation as a vocabulary new sites are made from, by authors in Uniweb App and their AI agents, who can't change its code."
+---
+
 # Designing a Vocabulary
 
 A foundation you write for one site grows with it: when the site needs something new, you add it. A foundation that people start new sites from doesn't get that chance. Whoever picks it in Uniweb App, and the AI agent that composes pages for them, have what it offers and nothing else, since neither can change its code. What you design then is a vocabulary: the parts a site can be made of, and how far each can vary.

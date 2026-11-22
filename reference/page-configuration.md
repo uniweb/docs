@@ -1,3 +1,7 @@
+---
+description: "Reference for page.yml: a page's identity, order, visibility, localized URLs, layout, sections, data, SEO and parametric pages."
+---
+
 # Page Configuration
 
 The `page.yml` file in each page folder defines metadata, layout options, SEO settings, and data sources for that page.

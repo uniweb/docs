@@ -1,3 +1,7 @@
+---
+description: "Layout areas, such as the header, footer and sidebars, render on every page from layout/: their content, per-page control and navigation."
+---
+
 # Layout Areas
 
 Layout areas render on every page. They provide site-wide navigation, branding, and persistent UI elements like sidebars.

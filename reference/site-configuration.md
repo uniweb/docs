@@ -1,3 +1,7 @@
+---
+description: "Reference for site.yml: identity, foundation and extensions, SEO, page order, languages, services, search, tracking and build options."
+---
+
 # Site Configuration
 
 The `site.yml` file in your site root defines global settings, page ordering, language support, and feature toggles.

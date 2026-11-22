@@ -1,4 +1,5 @@
 title: Web Apps
+description: "Web apps on Uniweb: the Application Engine, its entity model, the @uniweb/api SDK, and building and testing a solution."
 pages:
   - the-application-engine
   - the-entity-model

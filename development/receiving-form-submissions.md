@@ -1,3 +1,7 @@
+---
+description: "Get what a visitor types into a form to a server: where the destination comes from, the component side, uploads and protected addresses."
+---
+
 # Receiving Form Submissions
 
 A content author can describe a form in markdown — a `yaml:form` data block, or

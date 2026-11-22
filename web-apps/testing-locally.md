@@ -1,3 +1,7 @@
+---
+description: "Build and test a web app on your machine against the SDK's mock, the Docker Developer Edition or the published site, with no change to your code."
+---
+
 # Testing a Web App Locally
 
 You can build and test a web app entirely on your machine. Three things can answer for its Application Engine, from the quickest to set up to the site as it runs in production:

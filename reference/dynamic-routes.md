@@ -1,3 +1,7 @@
+---
+description: "Parametric pages give each record its own URL from one page, such as a blog's posts: route queries, links, loading states and static generation."
+---
+
 # Parametric Pages
 
 One page, many URLs — one per record. Blogs, product catalogs, team directories,

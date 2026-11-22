@@ -1,3 +1,7 @@
+---
+description: "How a section type receives its content already parsed into named parts, and the habits that keep a component working for any document."
+---
+
 # Receiving Content
 
 When you write a section type, the `content` prop arrives already parsed: the author's

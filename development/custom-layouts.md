@@ -1,3 +1,7 @@
+---
+description: "Write a custom Layout for a foundation: where the header, sidebars and footer go, how layout areas hold sections, and named layouts."
+---
+
 # Custom Layouts
 
 The Layout component is the frame around your content. It controls where the header sits, whether there's a sidebar, how the footer is placed, and how all of that adapts on mobile. Every page on every site renders through a Layout — the only question is whether you use the runtime's default or provide your own.

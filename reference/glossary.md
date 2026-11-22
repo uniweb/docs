@@ -1,3 +1,7 @@
+---
+description: "Uniweb's terms, each with a short definition and a link to the page that explains it."
+---
+
 # Glossary
 
 Quick reference for Uniweb terminology. Each entry links to the page where the concept is explained in detail.

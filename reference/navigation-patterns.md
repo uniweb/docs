@@ -1,3 +1,7 @@
+---
+description: "Build navbars, sidebars and menus from the site's page tree, or from links in content, and mark the page a visitor is on."
+---
+
 # Navigation Patterns
 
 This guide covers patterns for building navigation components—navbars, sidebars, menus, and other hierarchical link structures.

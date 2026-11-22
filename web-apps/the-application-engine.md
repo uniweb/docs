@@ -1,3 +1,7 @@
+---
+description: "The Application Engine is Uniweb's backend for web apps: members, data, permissions and payments for a site, with no backend code to write."
+---
+
 # The Application Engine
 
 A Uniweb site can be a web app as well as a website. Visitors read its public pages, and its members sign in to pages of their own: their courses, their orders, their bookings. You build both in one project, and you don't write the backend behind them. That is the job of the **Application Engine**, Uniweb's backend for web apps.

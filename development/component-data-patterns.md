@@ -1,3 +1,7 @@
+---
+description: "The two ways a component gets data: the author names a query and the component renders what arrives, or the component fetches its own."
+---
+
 # Component Data Patterns
 
 Uniweb supports two different ways a component ends up with data. They look similar from a distance but answer different questions about *who knows what*:

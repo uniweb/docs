@@ -1,3 +1,7 @@
+---
+description: "Site services are named slots, such as search, form submissions and accounts, that whoever runs the site answers with an address."
+---
+
 # Site Services
 
 A **service** is a named slot for an address your site does not hardcode. Search, form
