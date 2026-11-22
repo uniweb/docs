@@ -108,28 +108,11 @@ To read another branch, declare another query. On a parametric page, `scope: :di
 branch the URL names (see
 [Parametric Pages](../reference/dynamic-routes.md#multi-segment-routes--path)).
 
-Plain equality on `path` still selects a single level:
+Since a record doesn't carry its placement, no `where:` can name a branch: a predicate on
+`path`, or on any field you mean as the folder, matches no record, on a static site and a host
+alike. An earlier spelling, `where: { path: { under: '2024' } }`, is retired: the build refuses
+it and names `scope:` in its message.
 
-```yaml
-where: { path: '2024' }            # only records directly at 2024
-where: { path: '' }                # only records at the top level
-```
-
-An earlier spelling, `where: { path: { under: '2024' } }`, is retired: the build refuses it
-and names `scope:` in its message.
-
-#### Why not `starts_with` on `path`?
-
-`starts_with` compares text, not folders. Against records at `''`, `2024`, `2024/spring`,
-`2024/spring/may`, `2024b` and `2023`:
-
-| condition | what it actually selects |
-| --- | --- |
-| `{ path: { starts_with: '2024/' } }` | `2024/spring`, `2024/spring/may` — misses `2024` itself |
-| `{ path: { starts_with: '2024' } }` | those two, `2024` — **and `2024b`**, a different branch |
-| `scope: '2024'` | `2024`, `2024/spring`, `2024/spring/may` |
-
-`scope:` stops at segment boundaries, so a neighbour like `2024b` never sneaks in.
 **Use the text operators for text — names, titles, codes. Use `scope:` for a branch of the folder.**
 
 Strings use single or double quotes; numbers and booleans are bare. `null` matches missing or null fields.

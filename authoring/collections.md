@@ -157,13 +157,7 @@ queries:
     scope: '2024'                      # 2024 and everything inside it
 ```
 
-```yaml
-fetch:
-  query: news
-  where: { path: '2024' }              # only records directly in 2024
-```
-
-See [Predicates](./predicates.md) for `scope:` and the rest of the query language.
+A record doesn't carry where it sits, so no `where:` can name a branch: `scope:` is the only way to read one. See [Predicates](./predicates.md) for `scope:` and the rest of the query language.
 
 **Three things to know.**
 
