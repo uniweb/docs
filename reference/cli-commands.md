@@ -22,6 +22,7 @@ uniweb validate                # Check content against the data schemas your fou
 uniweb compute run <file>#<fn>  # Run a compute function on this machine, under the rules it runs by
 uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
+uniweb label [file]            # Place a picture's words over it, in a browser on this machine
 uniweb login                   # Authenticate with Uniweb platform
 uniweb register                # Register a foundation + its data schemas
 uniweb publish                 # Publish a site to Uniweb hosting (brings the foundation along)
@@ -1091,6 +1092,7 @@ uniweb i18n <command> [options]
 | `move <old-path> <new-path>` | Move free-form translations when pages move |
 | `rename <path> <old-id> <new-id>` | Rename a free-form translation when its section is renamed |
 | `prune --freeform` | Remove orphaned free-form translations |
+| `words` | Sections that leave out their type's own words, which then show in the source language on every page (`--write` writes them in) |
 
 ### Options
 
@@ -1101,6 +1103,8 @@ uniweb i18n <command> [options]
 | `--dry-run` | Show changes without writing (extract, prune) |
 | `--json` | Machine-readable output (status) |
 | `--missing` | List every untranslated string (status) |
+| `--write` | Write a type's words into each section that holds none of them (words) |
+| `--all` | Also list a section whose block leaves some of its type's words out (words) |
 
 ### Workflow
 
@@ -1152,7 +1156,36 @@ uniweb i18n sync --dry-run
 
 # Sync and update manifest
 uniweb i18n sync
+
+# Sections whose type's own words would stay in the source language
+uniweb i18n words
+uniweb i18n words --write
 ```
+
+**A section type's own words.** The words a section draws itself, such as a search box's placeholder or "No results", are a block its type declares, with the foundation's words as defaults. Only what a section holds is translated, so on a site in several languages a section that leaves the block out shows the defaults on every language's page, and the build says nothing. `uniweb i18n words` names those sections, and `extract` and `status` say how many there are. `--write` writes the type's words into each one as its block, where the section reads it as its own, so they are translated with the page. A section whose block leaves some words out chose them, so it is listed with `--all` and never edited.
+
+---
+
+## uniweb label
+
+Place a picture's words over it, in a browser on this machine.
+
+```bash
+uniweb label                         # The sections with a picture's words to place
+uniweb label pages/backend/1-hero.md # Open one
+```
+
+A picture's words drawn over it as text are translated with the page (kit's [`LabeledImage`](./kit-reference.md#labeledimage), from a block of the standard type `@std/overlay`). This opens the section's picture with each label as a box. Draw a box loosely around the words a label stands for and it fits itself to them; move it, size it, give it its words, its role, the side it keeps and its size. A button for each language shows the labels' words in it, from the site's translations, and *Covers* shows the boxes as a page in another language draws them. Save writes the block back into the section's file, and nothing else in the file changes; a file changed on disk while it is open is not overwritten without asking. With `uniweb dev` running, it links to the section on its page, in each language, where the foundation's fonts show how the words fit.
+
+It finds the sections by their type: those whose type declares a key as `@std/overlay`.
+
+| Option | Description |
+|--------|-------------|
+| `--key <name>` | The data key, when a section type declares more than one `@std/overlay` |
+| `--port <n>` | Where to serve it on this machine (default: 4780, or any free port) |
+| `--no-open` | Print the address without opening a browser |
+
+It serves on this machine only, and stops with Ctrl-C.
 
 ---
 

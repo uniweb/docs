@@ -634,6 +634,7 @@ The shared `@uniweb/schemas` package provides a common vocabulary any foundation
 | `@std/nav` | A navigation menu or link tree (a list) |
 | `@std/form` | A form an author designs: the controls a visitor fills in (a list) |
 | `@std/scene` | A Scene Composition Format document |
+| `@std/overlay` | The words drawn over a picture, in the page's language (one record: `single: true`; kit's [`LabeledImage`](./kit-reference.md#labeledimage) draws them) |
 
 Each one's fields are in [its file](https://github.com/uniweb/schemas/tree/main/src/standard). A foundation installs nothing to use them: the build carries its own copy of `@uniweb/schemas`. A type registered under another scope works the same way, by its full name (`@acme/member`).
 

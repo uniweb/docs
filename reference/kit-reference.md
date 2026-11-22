@@ -1389,6 +1389,7 @@ It takes the same place in `Render`, `Article` and `Section`, beside whatever el
 | `children` | `node` | The picture: anything that draws one `<img>` |
 | `minScale` | `number` | The smallest it opens at, against its own size, for a picture with words in it. Past that the reader scrolls. `Mermaid` passes `0.75`. Without it, a picture fits the window |
 | `disabled` | `boolean` | Draw the picture and offer nothing |
+| `whole` | `boolean` | Open what the box draws, drawn again at the open width, rather than its `<img>` alone: the words a [`LabeledImage`](#labeledimage) lays over a picture come along. The open view takes the section's color context, so it shows the version of the picture the page showed |
 
 #### What a reader meets
 
@@ -1405,6 +1406,68 @@ It says nothing of its own, so it works in any language. A screen reader hears t
 #### What it costs
 
 A foundation that doesn't import it carries nothing of it. One that does adds about 2 KB, gzipped, and every foundation that imports `Mermaid` has it.
+
+### LabeledImage
+
+A picture with its words drawn over it as text, so it reads in the page's language. A diagram, a screenshot or a map often holds words, and a version of it for each language is a lot to keep. Drawn over it instead, the words are content: a section gives them in a block of the standard type `@std/overlay`, and `uniweb i18n` translates each label's words with the rest of the page.
+
+````markdown
+![The stack](/stack.png)
+
+```yaml:overlay
+baked: [en]
+sizes: { title: 4.3, label: 1 }
+labels:
+  - { text: "YOU", x: 20.9, y: 14.65, w: 8.8, h: 7.3, role: title }
+  - { text: "NAT Gateway", x: 87.5, y: 24.5, w: 8.6, h: 5 }
+```
+````
+
+```js
+// meta.js: a block holds one overlay
+data: { overlay: { schema: '@std/overlay', single: true } }
+```
+
+```jsx
+import { LabeledImage, Image } from '@uniweb/kit'
+
+const image = content.images[0]
+<LabeledImage overlay={content.data.overlay} width={image.width} height={image.height}>
+  <Image value={image} />
+</LabeledImage>
+```
+
+Only a label's `text` is words. `x` and `y` are the center of its box, and `w` and `h` its size, in percent of the picture's width and height, so it keeps its place at any width. The picture is a size container, and a size is a percent of its width, so the words keep their proportion to it too. All of it is in the prerendered page, with no script.
+
+What a label is comes from a short list, and each one is laid out its way:
+
+| `role` | For | Laid out |
+|---|---|---|
+| `title` | a heading in the picture, of the picture or of a region | one line; a longer translation grows the box |
+| `label` | the name of a thing: a node, a part, a place. The default | one line, grows |
+| `text` | words in a frame: a card's description, a callout | wraps within `w`, centered in its frame; a longer translation grows it downward |
+| `note` | small print: a word on an arrow, a unit | one line, grows |
+
+`align` (`left`, `center` or `right`) names the side of its box a label keeps as it grows, and its lines align to it. It is `center`, or `left` for `text`, unless given, and it is a side of the picture, which doesn't mirror in a language written right to left. `sizes` gives each role's size and a label's own `size` overrides it, in percent of the picture's width, since how large a picture's words are belongs to the picture.
+
+`baked` lists the languages whose picture shows its words itself: its own language, and any a translation gives a picture of its own. A page in one of them shows the picture as drawn, with no labels. A page in any other language covers the picture's words, each label on a ground. A picture made without words has no `baked`, and shows its labels in every language with no ground.
+
+`uniweb label` places the labels in a browser: draw a box loosely around a picture's words and it fits itself to them.
+
+#### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `overlay` | `object` | The section's `@std/overlay` block: `labels`, `sizes`, `baked` |
+| `width`, `height` | `number` | The picture's own size, for its proportions. Without them, the proportions of the version shown once it loads |
+| `enlarge` | `boolean` | Offer to open it larger, with its words ([`Enlargeable`](#enlargeable)'s `whole`). On by default |
+| `minScale` | `number` | The smallest it opens at, against its own size; past that the reader scrolls |
+| `className` | `string` | Classes for the picture's box |
+| `children` | `node` | The picture, or its versions for each color scheme |
+
+#### Styling
+
+It brings no looks and no words. A label carries `labeled-image__label` and `labeled-image__label--<role>`, so a foundation gives each role its font and weight, and its size when the overlay gives none. Two custom properties color it: `--label-ink` for its words and `--label-ground` for the ground it covers the picture's words with, a color or a gradient laid at the picture's size, of which each label shows the part under it. The box covering words carries `labeled-image--covers`. The labels are hidden from assistive technology, since the picture's alt text says what it shows, in the page's language.
 
 ---
 
