@@ -1162,7 +1162,7 @@ uniweb i18n words
 uniweb i18n words --write
 ```
 
-**A section type's own words.** The words a section draws itself, such as a search box's placeholder or "No results", are a block its type declares, with the foundation's words as defaults. Only what a section holds is translated, so on a site in several languages a section that leaves the block out shows the defaults on every language's page, and the build says nothing. `uniweb i18n words` names those sections, and `extract` and `status` say how many there are. `--write` writes the type's words into each one as its block, where the section reads it as its own, so they are translated with the page. A section whose block leaves some words out chose them, so it is listed with `--all` and never edited.
+**A section type's own words.** The words a section draws itself, such as a search box's placeholder or "No results", are a block its type declares, with the foundation's words as defaults. Only what a section holds is translated, so on a site in several languages a section that leaves the block out shows the defaults of the words it draws on every language's page, and the build says nothing. `uniweb i18n words` names those sections, and `extract` and `status` say how many there are. A type declares its words once for all its layouts, so a section whose layout draws none of them is named too, and needs no block. `--write` writes the type's words into each one as its block, where the section reads it as its own, so they are translated with the page. A section whose block leaves some words out chose them, so it is listed with `--all` and never edited.
 
 ---
 
