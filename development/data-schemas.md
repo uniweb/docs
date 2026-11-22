@@ -98,8 +98,9 @@ the schema is shared.
 schema's entries just by belonging to it. It is `true` unless you write `open_to_members: false`.
 Then each entry is its owner's, and other people reach it when it is shared with them (see
 `grantable`), not because they are members. Use it for what a person keeps to themselves in a shared
-workspace, such as their conversations with an AI agent. A backend refuses to turn it back to `true`
-while the schema has entries, since that would open every one of them to the members.
+workspace, such as their conversations with an AI agent. A backend refuses a new version that turns
+it back to `true`, or leaves it out, while the schema has entries, since that would open every one
+of them to the members.
 
 **There is no key for who may create entries: the site says it.** When a backend stores your
 content, every schema starts closed. The account that runs the site creates its entries, and
