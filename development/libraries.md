@@ -20,7 +20,7 @@ A foundation is the vocabulary a kind of site is made with. Two sites that diffe
 | The vocabulary itself: other section types, layouts, structure | a second foundation, sharing a library with the first | a package to keep |
 | Everything | two foundations that share nothing | the code written twice |
 
-The fourth row is the one to reach for before the fifth. A second foundation is for a different vocabulary; it is never a way to make a bundle smaller, since each foundation bundles only what it imports anyway.
+The fourth row is the one to reach for before the fifth. A second foundation is for a different vocabulary; it is never a way to make a bundle smaller, since each foundation bundles only what it imports anyway. How wide one vocabulary should be, and when a capability needs a foundation of its own, is in [Designing a Vocabulary](./designing-a-vocabulary.md).
 
 ---
 
