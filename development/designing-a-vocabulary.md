@@ -77,6 +77,8 @@ export default {
 
 Let the content choose where it can: a hero given no picture can be text alone without a setting. And use the same param names and values across your section types, so an author or an agent who learned one section knows the next.
 
+One section type with many arrangements is the [Front Desk pattern](./component-patterns.md#the-front-desk-pattern). When an option stops being another arrangement of the same content, such as a hero that takes a form, it is a section type of its own in the same family ([When it's better as several section types](./component-patterns.md#when-its-better-as-several-section-types)).
+
 These multiply. A dozen section types with three arrangements each, under a theme that moves colors, fonts, corners and spacing, make sites that don't look related.
 
 ---

@@ -261,6 +261,19 @@ export default function Hero({ content, block, params }) {
 
 A quote request form is not one of these variants. It is a different job, with fields of its own and a submission, so it is a section type of its own (`QuoteRequest`, in the `contact` family). The editor's section picker then offers it where an author looks for a form, and its worker can still reuse the hero's layout.
 
+### When it's better as several section types
+
+A front desk pays while its options are ways of showing the same thing. Past that point it hides what a section can do, and the author pays for it: the controls stop matching what they see, and what they wrote vanishes when they switch an option. Several section types in one family cost an author little, since the editor's picker shows them side by side under the family, and an AI agent reads each one with its own description. What we've found tells the two cases apart:
+
+- **Switching an option should be safe.** An author who changes `layout` should keep everything they wrote, except a part the new option clearly has no room for, such as a second picture in a one-picture arrangement. When an option needs content the others never use, and that content is most of what an author writes for it, the option is a section type of its own. A hero with a form needs its fields, a place to send what visitors submit and a thank-you message, and none of these mean anything to a hero with a picture.
+- **One job per type.** Describe the section type in one sentence. If the sentence needs an "or" between two jobs, such as opening the page or taking a booking, the jobs are two types. The job is what the section does for a visitor, and its family is where an author looks for it.
+- **A setting that applies to one option is fine; a type made mostly of them isn't.** A `condition` hides a param where it doesn't apply ([Conditional Properties](#conditional-properties)), so a slider's timing that shows only for the slider is no reason to split. When most of a type's params each apply to one option, the author is choosing between several section types through one dropdown.
+- **Put it where an author will look.** An author who wants a form looks for a form. If the only way to get one is an option inside another section type, give it a section type of its own, in the family where an author would look for it. That is why the quote request form above has its own type in `contact`.
+
+So a foundation can rightly offer two section types in the hero family: one that opens a page with a picture or a video, and one that opens it with a short form. Each keeps a front desk inside it for its own arrangements.
+
+To check a type, write one of its sections fully under one option, then switch to each of the others and look at the page. What disappeared should be only what that option has no room for, and nothing an author would miss.
+
 ### When the variants are lighter
 
 Not every front desk needs separate files. When variants differ in styling but share the same DOM structure, a class map inside the entry file is enough:
