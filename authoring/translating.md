@@ -164,9 +164,12 @@ same way:
 `![Visite guidée](/videos/tour-fr.mp4 "Légende"){poster=/videos/tour-fr.jpg}`. What the
 translation leaves out stays as the original has it.
 
-An image with no alt text has nothing to translate. Two images with the same alt text share one
-translation, so give one of them its own with an override (see
+An image with no alt text has nothing to translate, and shows its file in every language. Two images
+with the same alt text share one translation. When they are in different sections, an override gives
+one of them its own (see
 [When the Same String Needs Different Translations](#when-the-same-string-needs-different-translations)).
+An override names a page and a section, so two images in one section, such as a picture's light and
+dark versions, each need alt text of their own to show a file of their own.
 
 ### 5. Build with translations
 
