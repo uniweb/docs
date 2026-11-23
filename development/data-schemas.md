@@ -77,9 +77,11 @@ i18n:
 ```
 
 A path is `model.label`, `model.plural` or `model.description`; `section.<path>.label` or
-`.description`; or `section.<path>.field.<key>.label` or `.description`. A section is named by
+`.description`; or `section.<path>.field.<key>.label` or `.description`; or a choice's label,
+`section.<path>.field.<key>.option.<value>.label`, for a value of the field's `enum` (a number or a
+boolean written as itself, `1`, `true`) in a set whose choices carry labels. A section is named by
 its full path from the top, `contributions/publications` for a nested one, and the one section of
-a `fields:` schema is `brief`. A path that names no section or field of the schema stops the build,
+a `fields:` schema is `brief`. A path that names no section, field or choice of the schema stops the build,
 and so does the schema's own `source_locale`. Every register sends the whole set, so a language you
 take out is removed.
 
@@ -460,7 +462,9 @@ fields:
 
 - **`enum:`** — an **inline** list of allowed values. Best for a short, fixed set. An entry can also
   be `{ value, label }` — `{ value: published, label: Live }` — to give an editor a label to show;
-  a record stores the `value`.
+  a record stores the `value`. The label is a plain string in the source language, like every label,
+  and its other languages go in `i18n` (above). An entry holds nothing else, and in a set with labels
+  a value comes once; either stops the build.
 - **`options:`** — the **section of a lists schema** that holds the choices: the schema's ref, then
   the section's name — a nested section by its path. Best when the choices are a managed list,
   reused across fields or foundations, that people curate as content. A field stores the chosen
