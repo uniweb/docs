@@ -50,7 +50,7 @@ The tools for building, editing, hosting and promoting a site are one platform, 
 
 ## When Uniweb fits
 
-Uniweb fits a site that will keep changing: a business's website, a store, a school, a community, an online course. It can be built by one person with an AI agent, or by a team of developers and editors, and it can start as a few pages or as a web app. Whatever its size, it stays one project, on one platform.
+Uniweb fits a site that will keep changing: a business's website, a store, a school, a community, an online course. It can be built by one person with an AI agent, or by a team of developers and editors, and it can start as a few pages or as a web app. Whatever its size, it stays one project, on one platform. [How Uniweb Compares](how-uniweb-compares.md) sets it beside the other ways to build a site, with what each one gives up.
 
 ---
 

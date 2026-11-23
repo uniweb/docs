@@ -105,6 +105,7 @@ Live content, forms, visitor statistics and Promote are services of Uniweb hosti
 | --- | --- |
 | Know why a site can grow on Uniweb | [Why Uniweb](why-uniweb.md) |
 | Follow a site from first page to web app | [How a Site Grows](how-a-site-grows.md) |
+| Compare it with other ways to build | [How Uniweb Compares](how-uniweb-compares.md) |
 | Start a site with your agent | [Quickstart](quickstart.md) |
 | Choose a starting point | [Templates](templates.md) |
 | Edit a site's files yourself | [Writing Content](../authoring/writing-content.md) |
