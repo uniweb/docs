@@ -60,7 +60,7 @@ Ask whether the site has an engine before drawing any of it: `isBackendEnabled()
 
 ### 5. If it sells
 
-The owner sets what the site sells in the Solution Owner Console, and connects their own Stripe account there. Your section types draw the store and its checkout:
+What a site sells is an entry of its engine, such as a course or a membership, which your admin area creates through the SDK or the owner adds. A file in `records/` can't be sold: it's the site's content, kept with its pages, and the engine never holds it. The owner sets what the site sells in the Solution Owner Console, and connects their own Stripe account there. Your section types draw the store and its checkout:
 
 - `useStore` reads the store's offerings, and whether the viewer owns each. Its `checkout` sends the buyer to the payment page, or takes a free offering at once.
 - `offeringState` says what a Buy button draws from that one read.

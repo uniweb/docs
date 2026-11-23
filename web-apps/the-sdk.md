@@ -145,8 +145,9 @@ entry they can edit, and answers the address to store in it. Each file is prepar
 first: a photo goes up as a smaller WebP, turned upright, and nothing goes up with the place it was
 taken or the camera that took it.
 
-**Sell what the site sells.** The owner sets the store's offerings in the Solution Owner
-Console; `useStore()` reads them, with whether the viewer owns each, and its
+**Sell what the site sells.** What it sells is an entry of the engine, one your code
+creates through the SDK or the owner adds, never a file in `records/`, which the engine never
+holds. The owner sets the store's offerings in the Solution Owner Console; `useStore()` reads them, with whether the viewer owns each, and its
 `checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
 buyer read what they bought. `useEntitlements()` lists what a member holds.
 
