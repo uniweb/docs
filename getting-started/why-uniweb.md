@@ -1,105 +1,62 @@
 ---
-description: "How a Uniweb site grows from a few pages into a web app, with languages, editors, live content, members and payments, without redoing it."
+description: "Why a Uniweb site can keep changing and growing with its business, from a few pages to a web app, without being rebuilt or pieced together from separate tools."
 ---
 
 # Why Uniweb
 
-A Uniweb site can start as a few pages and grow into a web app, with more languages, editors, live content, members and payments, without plugins and without redoing what was built. It can also be a web app from its first day: the steps below are the same, taken in another order.
+A website's launch is the start of its life, not the end of the work. Its content changes. The business adds a language, a product line, a person who edits pages. Then it needs a form, a place where customers sign in, a way to take payments. And all along, someone has to bring visitors to it.
 
-Your AI agent can take each of those steps with you. This page follows one site through its life, then looks closer at two things most sites need sooner or later: more languages and more people.
+Each of those changes usually brings another tool: a CMS so others can edit, a plugin for each language, a form service, an analytics script, a separate app with its own backend for the members' area, an ad manager. Each one has to be chosen, connected and kept up to date, and some changes mean rebuilding what was there.
 
----
-
-## Why a site can grow here
-
-Two things are true of every Uniweb site from its first day, and they are why it can grow without being rebuilt:
-
-- **What the site says is kept apart from the code that draws it.** The words, pictures and records are content; the design is code. Adding a language, an editor or a live source of content changes the content, and the code that draws it stays as it was.
-- **What a site can grow into is already built.** Languages and search are part of the framework. Forms, visitor statistics and live records are services of Uniweb hosting, and accounts, members' data and payments come with the site's own Application Engine. A site turns each one on when it needs it, and none of them is a plugin to find, install and keep up to date.
-
-What grows is the site, by addition. A step may add a section type, such as one that draws a form, but nothing made before has to change.
+Uniweb is made for the whole of a site's life, and four things make that work.
 
 ---
 
-## One site, from first page to platform
+## What a site says is kept apart from the code that draws it
 
-### Day one: a few pages
+What a site says is content: its words and records, in plain text files, and its pictures. How it looks is code, in React components. Each section of a page names its kind, its **section type**, such as a hero or a price table, and holds its content, and the component for that type decides how it looks.
 
-Your agent builds the site from what you tell it and publishes it on Uniweb hosting. We recommend starting there, even for a few pages that rarely change:
+So the changes a site goes through don't get in each other's way:
 
-- **It costs the least now.** Each service, live records included, is priced on its own, so a site of static pages pays for no service it doesn't use.
-- **Its pages are fast.** The page a visitor arrives on is prerendered close to them, so it loads fast and search engines read it whole.
-- **AI assistants can read every page.** The site offers an index of its pages, `llms.txt`, and a Markdown copy of each one, automatically, with nothing to set up.
-- **It is already in Uniweb App.** Every publish updates the site there too, whether or not anyone uses the app yet. You can preview and edit it at any time, so not every change has to wait for your agent.
-- **It is ready to grow.** Every step below happens on the same host, with no change to what is already there.
+- someone edits a headline in Uniweb App, and the design stays as it was;
+- your agent reworks the design, and no word is lost;
+- a language is added, and no component changes, because components receive their content already translated.
 
-A site can also start on a static host such as GitHub Pages or Cloudflare Pages, and come to Uniweb hosting later with one command, `uniweb publish`. The steps below that use a service of the host start there.
+It also makes the site a set of building blocks. In Uniweb App, the people who edit compose pages from the site's section types, each with the options its developer gave it, so they can change the pages without breaking the design. [Component Content Architecture](../architecture/component-content-architecture.md) explains the idea for developers.
 
-### A second language
+## What a site can grow into is already built
 
-Add the language to the site's settings. Your agent extracts the text to translate and writes the translation, and each page gets its own address in the new language. Search, the links between languages and the pages AI assistants read follow on their own. No component changes: components receive their content already translated. [Languages](#languages) has the details.
+Languages, site search and pages that AI assistants can read are part of the framework. Forms, visitor statistics and content that updates live are services of Uniweb hosting. Accounts, members' data, permissions and payments come with the site's own Application Engine, so a web app's developer builds only what is particular to it: its screens and the kinds of thing it holds. Promote is in Uniweb App.
 
-### Content others keep up to date
+A site turns each one on when it needs it, often with a single entry in its settings. None of them is a plugin to find, install and keep up to date. What grows is the site, by addition: a step may add a section type, such as one that draws a form, but nothing made before has to change.
 
-News, people, events, products: content that changes often becomes **records**, each one a short file of named fields, described by a data schema. A section type declares the records it shows and from then on draws them wherever they come from: the site's files, or live from Uniweb hosting. In Uniweb App, records are edited as forms built from their schema, and a change shows on the live site at once.
+## A website and a web app are one site
 
-### More people
+When a site needs members, it doesn't become a second project. The same site, on the same domain, serves its public pages to everyone, and their own pages to members who sign in: their orders, their courses, their bookings. The same code draws both, and the Application Engine behind it keeps accounts, data and permissions, so nobody writes a backend.
 
-Add people whenever the site needs them: in Uniweb App, where they edit without code; through Git, where developers work in the files; or both. Edits made in the app come back to the project as a merge, and nobody's work is overwritten without asking. [People](#people) has the details.
+The two sides are made differently. The public pages, with their static and dynamic content, are composed from the site's section types by whoever edits the site. The members' pages are designed and built by the developer, like the screens of any React app, and nobody composes them; the SDK does the work every web app repeats, from sign-in to reading and writing each member's data. Even so, the words on those screens, such as a heading, can stay content, edited and translated like the rest.
 
-### Forms, statistics and search
+## One platform, so its parts work together
 
-Each is a service the site asks Uniweb hosting for, with a line under `services:` in `site.yml`:
+The tools for building, editing, hosting and promoting a site are one platform, so they work together without being connected by hand:
 
-- **Visitor statistics** need nothing else. Every page reports the same events, and nothing is stored on the visitor's device: no cookie.
-- **Search** covers the site's pages, in each of its languages.
-- **A form** needs a section type that draws it, which your agent adds. Uniweb hosting receives the submissions.
-
-### Members and payments
-
-For a members' area, the site turns on its own [Application Engine](../web-apps/the-application-engine.md), the `backend` service: accounts, sign-in (with Google, for example), roles, and what each member creates, in a backend of the site's own with its own database. Section types reach it through the SDK, [`@uniweb/api`](../web-apps/the-sdk.md), and the same foundation works on a site with an engine and on one without it. The engine also takes payments, through your own Stripe account. Put together, that is a solution: a site that is also a web app, with a members' area, an admin area of its own for the people who run it, and a store ([Building a Solution](../web-apps/building-a-solution.md)).
-
-### A full platform
-
-By now the site has content in several languages kept up to date by its team, members, payments, forms and statistics. It is still the project it was on day one: its first pages and section types are still there, unchanged, with its whole history in Git, and your agent has worked on it all along.
+- Every publish updates the site in Uniweb App, so it is ready to preview and edit at any time, whether or not anyone uses the app yet.
+- Edits made in Uniweb App come back to the project as a Git merge, and your agent checks for them before it works.
+- Visitor statistics need no tag to install, and Promote counts what each post and campaign brought with those same statistics.
+- Uniweb hosting can tell X and Meta which of their ad clicks led to a sign-up, from its servers, with nothing added to your pages.
+- Your agent works on all of it with one command-line tool: the site, its publishing and its promotion.
 
 ---
 
-## Languages
+## When Uniweb fits
 
-Everything a site in several languages needs is built in.
-
-**For the content:**
-
-- Add a language at any time, and keep it as a draft until its translation is ready (`publishLanguages`).
-- Translations are kept by the text they translate, so they survive pages being moved and renamed. When the source text changes, its translation is marked outdated, not lost.
-- A page's address can be translated too, such as `/es/desarrolladores` for `/developers`.
-- A page that needs to say something different in another language can have a version of its own.
-- Records are translated like pages, and translations can be made in files or in Uniweb App.
-
-**For the code:** components receive their content already translated, with no translation function and no string keys. A component's own words, such as a button's label, can come from the content too, and are then translated with the page.
-
-**For visitors and search engines:** each language has its own addresses, `hreflang` links, search index, `llms.txt` and Markdown copy of each page.
-
-**For your agent:** `uniweb i18n status --missing --by-page` lists what is left to translate, page by page, so translating a site is a job your agent can finish.
-
-See [Internationalization](../development/internationalization.md) for developers and [Translating](../authoring/translating.md) for translators.
-
----
-
-## People
-
-- **Developers** work in the files, with Git, and see each other's work as they would in any project.
-- **Everyone else** works in Uniweb App, with a live preview of each page, and no code or files.
-- **Both at once:** `uniweb refresh` takes your teammates' commits and the edits made in the app into the project, and a push that would overwrite edits made in the app stops first.
-- **Your agent** is one more collaborator. In a project, it starts by checking what changed in the app (`uniweb status`) and brings those edits in before it works.
+Uniweb fits a site that will keep changing: a business's website, a store, a school, a community, an online course. It can be built by one person with an AI agent, or by a team of developers and editors, and it can start as a few pages or as a web app. Whatever its size, it stays one project, on one platform.
 
 ---
 
 ## See also
 
-- [What is Uniweb](what-is-uniweb.md): what you and your agent do, and what a project holds
+- [What is Uniweb](what-is-uniweb.md): the parts of Uniweb, and what a project holds
+- [How a Site Grows](how-a-site-grows.md): one site, from first page to web app
 - [Quickstart](quickstart.md): the prompt to start with
-- [Deploying](../development/deploying.md#uniweb-hosting--recommended): Uniweb hosting and static hosts, side by side
-- [The Application Engine](../web-apps/the-application-engine.md): the backend a web app gets, for developers
-- [Building a Solution](../web-apps/building-a-solution.md): a site that is also a web app — members, your own admin area, a store — step by step
+- [The Application Engine](../web-apps/the-application-engine.md): the backend a web app gets

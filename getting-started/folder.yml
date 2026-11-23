@@ -1,8 +1,9 @@
 title: Getting Started
-description: "What Uniweb is, why a site can grow on it, and how to start a website or web app, with your AI agent or by hand."
+description: "What Uniweb is, why and how a site grows on it from a few pages to a web app, and how to start one, with your AI agent or by hand."
 pages:
   - what-is-uniweb
   - why-uniweb
+  - how-a-site-grows
   - quickstart
   - templates
   - about-this-docs
