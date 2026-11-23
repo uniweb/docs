@@ -67,6 +67,7 @@ What a site sells is an entry of its engine, such as a course or a membership, w
 - `useCoupon` previews a code the buyer types, with what it takes off or why it can't apply, and `checkout` takes the code it accepted. The owner makes the codes in the Solution Owner Console; the field and its words are your section type's.
 - `checkout(offering, { inPage: true })` keeps the buyer on your page: the payment form opens in a modal you draw (kit's `Overlay`), and you're told when it's paid.
 - `useEntitlements` lists what a member holds, for a "My courses" page, and `useHolders` lists who holds a record, for an instructor's roster.
+- A member cancels a subscription on the site, or takes the cancel back, through `useEntitlements`; `ends_at` says when their access ends.
 
 A purchase gives the buyer read access to what an offering sells, and, through it, to what its `sold_with` references point to. The [`@uniweb/api` README](https://www.npmjs.com/package/@uniweb/api) has the details, under *Selling*.
 

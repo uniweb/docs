@@ -149,7 +149,9 @@ taken or the camera that took it.
 creates through the SDK or the owner adds, never a file in `records/`, which the engine never
 holds. The owner sets the store's offerings in the Solution Owner Console; `useStore()` reads them, with whether the viewer owns each, and its
 `checkout` sends the buyer to pay — or takes a free offering at once. A purchase lets the
-buyer read what they bought. `useEntitlements()` lists what a member holds.
+buyer read what they bought. `useEntitlements()` lists what a member holds, and lets a
+member cancel a subscription, or take the cancel back, on the site; `ends_at` says when access
+ends.
 
 **Show the prices to everyone.** A visitor who isn't signed in sees the store's prices
 through a site query on the store's catalog, `@uniweb/catalog`, which the site's
