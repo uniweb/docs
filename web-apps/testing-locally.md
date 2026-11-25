@@ -130,6 +130,10 @@ Write the whole address the engine's instructions give for its API. The page sti
 
 If nothing answers at the address, the dev server says so with a `502` that names it.
 
+**Compute functions.** When an integration calls one of your [compute functions](./compute-functions.md), the engine asks a runner for it. With `$devBackend` set to an address, `uniweb dev` is that runner, at `/_compute` on its own address. Give the engine that address as its functions address, as its instructions show. If the engine runs in Docker, that's `http://host.docker.internal:<port>/_compute`. Start `uniweb dev --port <port>` so the port stays the same.
+
+Each call runs the function from your working copy, so an edit answers the next call with nothing registered again. It runs under the same rules as `uniweb compute run`. A call that takes more CPU than the platform allows is refused, as the platform refuses it. To have the runner check that each call is signed by your engine, set `UNIWEB_FUNCTIONS_KEY` to the engine's functions key before `uniweb dev`.
+
 ---
 
 ## The site as published
