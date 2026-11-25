@@ -24,6 +24,7 @@ uniweb docs                    # Generate component documentation
 uniweb doctor                  # Diagnose project configuration
 uniweb validate                # Check content against the data schemas your foundation declares
 uniweb compute run <file>#<fn>  # Run a compute function on this machine, under the rules it runs by
+uniweb engine setup           # A solution's own engine on this machine (start, stop, status, reset)
 uniweb update                  # Reconcile workspace state with the running CLI
 uniweb i18n <command>          # Manage translations
 uniweb label [file]            # Place a picture's words over it, in a browser on this machine
@@ -99,6 +100,14 @@ uniweb create .                  # Scaffold into the current directory
 | `--blank` | Create an empty workspace (grow with `uniweb add`) |
 | `--name <name>` | Project name (overrides slugified basename when used with `.`) |
 | `--no-git` | Skip git repository initialization |
+| `--no-engine` | A solution template: keep its mock backend, with no engine |
+| `--engine <dir>` | A solution template: take the engine's files from `<dir>` (a `compose.yaml`) instead of downloading them |
+
+**A solution template gets its own engine.** When the template's site asks for a `backend`
+service and has a `blueprint.yml`, `create` runs [`uniweb engine setup`](#uniweb-engine) as
+its last step. The engine runs on your machine in Docker, the CLI signs in to it, and the
+site's `$devBackend` names it. If a step can't finish (no Docker, no sign-in), the project
+keeps its mock backend and the output says how to finish: `uniweb engine setup`.
 
 ### In-place mode (`uniweb create .`)
 
@@ -430,6 +439,16 @@ in to the site's real engine and pages show the records its visitors see. Withou
 flag, `$devBackend` and your record files answer, as always. Publish the site first
 (`uniweb publish`). What you do then reads and changes the published site's real data,
 and the output says so.
+
+**A project with its own engine** (`$devBackend` naming the engine `uniweb engine setup`
+started): `uniweb dev` starts the engine if it is stopped, and serves the site on the port the
+engine calls its compute functions on. It registers the project's types on the engine when they
+changed since the last time, and again whenever `src/schemas` changes while it runs. After the
+first registration it sends the site's `blueprint.yml`, which the engine takes once: change a
+setting afterwards in the engine's Admin App, or start over. It does all this only while the CLI is
+signed in to that engine, so a half-edited type never reaches Uniweb. The
+engine keeps each registered version as it was, so a type changed under a version it already holds
+is refused, and `uniweb dev` says to start the engine over: `uniweb engine reset --yes`.
 
 **A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
 their builds. `uniweb dev` builds any that isn't built, or whose sources changed since
@@ -961,6 +980,39 @@ echo '{"key":[{"question":"q1","correct":"b"}],"answers":[{"question":"q1","chos
 # A library's file, for a script
 uniweb compute run @acme/grading#score --input in.json --json
 ```
+
+---
+
+## uniweb engine
+
+The engine on your machine: a solution's Application Engine, run in Docker, one per project.
+Its files live in `~/.uniweb/engines/<name>/`, outside the project, since they include its
+keys. A project finds its engine by the address its `site.yml::$devBackend` names.
+
+```bash
+uniweb engine setup             # give this project its engine, and point the project at it
+uniweb engine status            # whether it runs, its addresses, and whether the CLI works with it
+uniweb engine start | stop      # start it and wait until it answers; stop it, keeping its data
+uniweb engine reset --yes       # wipe it and start over: the next `uniweb dev` registers and sends the blueprint again
+```
+
+`setup` checks that Docker runs, then takes your handle from the backend you are signed in to
+(Uniweb, by default). It gets the engine's files from that backend, where you accept the engine's
+licence in your browser, and starts the engine. The engine's organization takes your handle, so
+your foundation's types register as `@<your handle>/…` on the engine and on Uniweb alike. The CLI
+then signs in to the engine, which replaces your session with Uniweb, and `site.yml` names the
+engine's addresses. `uniweb create` runs it for a solution template. To go live afterwards, sign
+in to Uniweb again (`uniweb login`), then `uniweb publish`.
+
+| Option | Description |
+|--------|-------------|
+| `--engine <dir>` | `setup`: take the engine's files from `<dir>` instead of downloading them |
+| `--yes` | `reset`: go ahead and wipe it |
+| `<name>` | `status`, `start`, `stop`, `reset`: an engine by its name, instead of this project's |
+
+**Reset before going live.** Your site goes live with a new engine that starts from
+`blueprint.yml` and your types, not from your local engine's test data or settings. Starting
+the local engine over and checking the site still works is how you know those files are right.
 
 ---
 

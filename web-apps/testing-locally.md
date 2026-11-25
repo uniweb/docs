@@ -104,17 +104,26 @@ The mock is for working with no engine at hand. Where it and the engine differ, 
 
 ## The Docker Developer Edition
 
-The Docker Developer Edition is the full Application Engine and its PostgreSQL database, packaged to run with Docker on your machine. It is free for development and doesn't expire. You publish to it as you would to Uniweb, and your site runs on your machine with an engine of its own, so what you test is what production does: sign-up and its mail, permissions, public queries, compute functions, and payments in Stripe's test mode.
+The Docker Developer Edition is the full Application Engine and its PostgreSQL database, run with Docker on your machine. It is free for development and doesn't expire. Each project gets an engine of its own, so what you test is what production does: sign-up and its mail, permissions, public queries, compute functions, and payments in Stripe's test mode.
 
-It comes with its own instructions for starting it. Once it runs, the CLI works with it the way it works with Uniweb: sign in to it with `uniweb login --server` and the address it runs at, as its instructions show, then publish.
+There are two steps, and the CLI runs them both:
 
 ```bash
-uniweb login --server http://localhost:8080   # the Developer Edition, with the details its instructions give
-uniweb publish                                # your site, published to it
-uniweb dev --published                        # your working copy, against it
+uniweb create my-app --template <a solution template>   # the project, and its engine, started
+cd my-app && npm install
+uniweb dev                                              # registers your types, and runs the site against the engine
 ```
 
-Every command then talks to the Developer Edition, until you sign in somewhere else: a plain `uniweb login` signs you in to Uniweb again. Publishing to the Developer Edition costs nothing.
+`create` sees that the template's site asks for a `backend` service and has a `blueprint.yml`, and gives the project its engine:
+1. It checks that Docker runs, and signs you in to Uniweb in your browser if you aren't. The engine is made under your handle, and you accept its licence there.
+2. It starts the engine and signs the CLI in to it.
+3. It names the engine in your site's `$devBackend` (see below).
+
+The engine prints where its Admin App is and how to sign in as its owner. To add the engine to a project you already have, run `uniweb engine setup` in it.
+
+`uniweb dev` then starts the engine if it is stopped. It registers your types with the engine when they change, sends your `blueprint.yml` the first time, and serves your site against it. The engine takes the blueprint once, as a live engine does. After that, change a setting in the engine's Admin App, or start the engine over. `uniweb engine status`, `start`, `stop` and `reset` manage it ([CLI reference](../reference/cli-commands.md#uniweb-engine)).
+
+The CLI works with one backend at a time, and after `create` that is your engine. To go live, sign in to Uniweb again with `uniweb login`, then `uniweb publish`. Before you do, run `uniweb engine reset --yes` and check that the site still works. Your live site starts from `blueprint.yml` and your types, not from your local engine's test data.
 
 ### `uniweb dev` against an engine on your machine
 
