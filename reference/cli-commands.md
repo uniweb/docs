@@ -441,8 +441,8 @@ flag, `$devBackend` and your record files answer, as always. Publish the site fi
 and the output says so.
 
 **A project with its own engine** (`$devBackend` naming the engine `uniweb engine setup`
-started): `uniweb dev` starts the engine if it is stopped, and serves the site on the port the
-engine calls its compute functions on. It registers the project's types on the engine when they
+started): `uniweb dev` starts the engine if it is stopped, and answers the engine's calls to your
+compute functions on the port the engine was given for them. It registers the project's types on the engine when they
 changed since the last time, and again whenever `src/schemas` changes while it runs. After the
 first registration it sends the site's `blueprint.yml`, which the engine takes once: change a
 setting afterwards in the engine's Admin App, or start over. It does all this only while the CLI is
