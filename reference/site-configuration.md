@@ -56,7 +56,7 @@ services:
     exclude: { routes: [/legal] }
   submit: https://forms.example.com/f/abc   # a provider you bring
   backend: true                      # ask your host for the site's own Application Engine
-$devBackend: ./mock/api.js           # what answers `backend` in `uniweb dev` (never published)
+$devBackend: ./mock/api.js           # what answers `backend` in `uniweb dev`: a module or an engine's address (never published)
 
 # Build Options
 build:
@@ -752,6 +752,17 @@ export default createMockBackend({ seed }).fetch
 
 It begins as a backend started for your site does, with every type closed. Hand it the site's
 `blueprint.yml` to open what your members create: see [Blueprint](./blueprint.md#in-uniweb-dev).
+
+`$devBackend` may instead be an engine's whole address, `http:` or `https:`:
+
+```yaml
+$devBackend: http://localhost:8080/api   # forward the `backend` service to this engine
+```
+
+The dev server forwards each request it gets for the service to that address and keeps the
+engine's sign-in cookie on its own origin, so the page stays same-origin with what answers it. Your
+foundation then names its own types in full, as a build does. See
+[Testing a Web App Locally](../web-apps/testing-locally.md#uniweb-dev-against-an-engine-on-your-machine).
 
 > **`$devBackend` is never published.** Keys beginning with `$` are local to your working
 > copy and are stripped from the built site, so a visitor cannot reach your local

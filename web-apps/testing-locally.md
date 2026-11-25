@@ -116,6 +116,20 @@ uniweb dev --published                        # your working copy, against it
 
 Every command then talks to the Developer Edition, until you sign in somewhere else: a plain `uniweb login` signs you in to Uniweb again. Publishing to the Developer Edition costs nothing.
 
+### `uniweb dev` against an engine on your machine
+
+`$devBackend` also takes an engine's address in place of a module. `uniweb dev` then forwards every request for your site's `backend` service to that engine:
+
+```yaml
+services:
+  backend: true                          # in production, your host's
+$devBackend: http://localhost:8080/api   # in `uniweb dev`, the engine at this address answers it
+```
+
+Write the whole address the engine's instructions give for its API. The page still asks its own dev server, which forwards each request, so the page talks to one origin and sign-in cookies behave as they do in production. Your foundation names its own types in full (`@acme/track`), as a build does, because the engine holds them under those names. Register them with it first (`uniweb register`, signed in to it). Records still come from your record files, as they do with the mock.
+
+If nothing answers at the address, the dev server says so with a `502` that names it.
+
 ---
 
 ## The site as published
