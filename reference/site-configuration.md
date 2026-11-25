@@ -761,7 +761,18 @@ $devBackend: http://localhost:8080/api   # forward the `backend` service to this
 
 The dev server forwards each request it gets for the service to that address and keeps the
 engine's sign-in cookie on its own origin, so the page stays same-origin with what answers it. Your
-foundation then names its own types in full, as a build does. See
+foundation then names its own types in full, as a build does.
+
+To show the engine's public records too, name both services in a map, each address whole:
+
+```yaml
+$devBackend:
+  backend: http://localhost:8080/api
+  records: http://localhost:8080/<the engine's records path>/{locale}
+```
+
+The dev server then answers your site's queries from your record files and the engine's public
+entries together. See
 [Testing a Web App Locally](../web-apps/testing-locally.md#uniweb-dev-against-an-engine-on-your-machine).
 
 > **`$devBackend` is never published.** Keys beginning with `$` are local to your working

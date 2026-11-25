@@ -126,9 +126,19 @@ services:
 $devBackend: http://localhost:8080/api   # in `uniweb dev`, the engine at this address answers it
 ```
 
-Write the whole address the engine's instructions give for its API. The page still asks its own dev server, which forwards each request, so the page talks to one origin and sign-in cookies behave as they do in production. Your foundation names its own types in full (`@acme/track`), as a build does, because the engine holds them under those names. Register them with it first (`uniweb register`, signed in to it). Records still come from your record files, as they do with the mock.
+Write the whole address the engine's instructions give for its API. The page still asks its own dev server, which forwards each request, so the page talks to one origin and sign-in cookies behave as they do in production. Your foundation names its own types in full (`@acme/track`), as a build does, because the engine holds them under those names. Register them with it first (`uniweb register`, signed in to it). Records come from your record files, as they do with the mock, until you name the engine's records too (below).
 
 If nothing answers at the address, the dev server says so with a `502` that names it.
+
+**Public records.** An engine also serves the entries your `blueprint.yml` opens to visitors (`publicQueries:`). Name its records address beside its API, each address whole as the engine's instructions give it:
+
+```yaml
+$devBackend:
+  backend: http://localhost:8080/api
+  records: http://localhost:8080/<the engine's records path>/{locale}
+```
+
+With `records`, `uniweb dev` acts as your site's host. Every query a page asks is answered from your record files and the engine's public entries together, merged the way a published site's records service merges them. Entries members created then show on a page next to the records in your files. If the engine doesn't answer, a page still gets your files' records. Your site's search keeps working from its local index.
 
 **Compute functions.** When an integration calls one of your [compute functions](./compute-functions.md), the engine asks a runner for it. With `$devBackend` set to an address, `uniweb dev` is that runner, at `/_compute` on its own address. Give the engine that address as its functions address, as its instructions show. If the engine runs in Docker, that's `http://host.docker.internal:<port>/_compute`. Start `uniweb dev --port <port>` so the port stays the same.
 
