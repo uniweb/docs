@@ -101,6 +101,8 @@ A mapping several foundations use can live in a library they share instead, and 
 that carries it names it in its `main.js` ([Libraries → Mappings in a library](../development/libraries.md#mappings-in-a-library));
 a line then names it in full, `mapping: '@acme/vehicle-to-meta'`.
 
+Everything a mapping may say, and what `register` refuses, is in [Mappings](./mappings.md).
+
 `uniweb register` registers a foundation's mappings with it, each type a mapping names written in
 full, in the foundation's scope. A foundation build refuses a mapping that names no `model`, or
 names a type (its `model`, or a `model` in `follow`) or a `keys_from` mapping of its own that it
