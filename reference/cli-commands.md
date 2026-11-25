@@ -446,9 +446,9 @@ engine calls its compute functions on. It registers the project's types on the e
 changed since the last time, and again whenever `src/schemas` changes while it runs. After the
 first registration it sends the site's `blueprint.yml`, which the engine takes once: change a
 setting afterwards in the engine's Admin App, or start over. It does all this only while the CLI is
-signed in to that engine, so a half-edited type never reaches Uniweb. The
-engine keeps each registered version as it was, so a type changed under a version it already holds
-is refused, and `uniweb dev` says to start the engine over: `uniweb engine reset --yes`.
+signed in to that engine, so a half-edited type never reaches Uniweb. The engine upgrades a
+changed type in place, keeping its entries. A change those entries can't take is refused, and
+`uniweb dev` says to start the engine over: `uniweb engine reset --yes`.
 
 **A site's workspace extensions** (`extensions: [/effects/entry.js]`) are served from
 their builds. `uniweb dev` builds any that isn't built, or whose sources changed since
