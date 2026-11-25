@@ -994,11 +994,12 @@ uniweb engine setup             # give this project its engine, and point the pr
 uniweb engine status            # whether it runs, its addresses, and whether the CLI works with it
 uniweb engine start | stop      # start it and wait until it answers; stop it, keeping its data
 uniweb engine reset --yes       # wipe it and start over: the next `uniweb dev` registers and sends the blueprint again
+uniweb engine guide             # print the engine's own guide, for you or your AI agent
 ```
 
 `setup` checks that Docker runs, then takes your handle from the backend you are signed in to
 (Uniweb, by default). It gets the engine's files from that backend, where you accept the engine's
-licence in your browser, and starts the engine. The engine's organization takes your handle, so
+licence in your browser, loads the engine's images into Docker, and starts the engine. The engine's organization takes your handle, so
 your foundation's types register as `@<your handle>/…` on the engine and on Uniweb alike. The CLI
 then signs in to the engine, which replaces your session with Uniweb, and `site.yml` names the
 engine's addresses. `uniweb create` runs it for a solution template. To go live afterwards, sign
