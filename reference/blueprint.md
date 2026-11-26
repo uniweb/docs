@@ -118,7 +118,7 @@ Each integration line in `blueprint.yml` takes:
 | `label` | its name; the id when absent. The id is lowercase letters, digits and dashes |
 | `filter` | which entries it acts on, `{ where: … }` in the language of [queries](./queries.md) |
 | `enabled` | `true` starts a `file` or `feed` integration switched on, or an `http` one that names a `vendor`. Leave it out for `email` and other `http` lines: the site's owner gives their address in the Solution Owner Console and switches them on there |
-| `reply` | `http` only: a mapping, named as `mapping` is, through which the endpoint's answer is written back |
+| `reply` | `http` only: a mapping, named as `mapping` is, through which the endpoint's answer is written back ([Mappings § An `http` reply](./mappings.md#an-http-reply): a `list` reply takes no `path`) |
 | `reply_about` | with a `reply` that writes a list of entries: the field of the reply's type (`section.field`, such as `identity.submission`) that the backend fills with the entry it sent. Nothing in it is a type, so it is sent as written |
 | `vendor` | `http` only: a function the platform runs in place of an address, `'@/courses#grade'`: a compute file the site's foundations carry, named as `mapping` is, then `#` and the function it exports. See [Compute Functions](../web-apps/compute-functions.md) |
 

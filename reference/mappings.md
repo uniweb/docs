@@ -200,6 +200,7 @@ with `names`. An alias is a lowercase name other than `self`. Rules read a follo
   - `path` is where they are. Leave it out for CSV. For outbound XML, name the root element and the
     entry element (`feed/vehicle`).
   - Inbound, `key` is required.
+  - As an `http` integration's [reply](#an-http-reply), a `list` mapping takes no `path`.
   - Outbound, `key` is where an entry's key is written back, with `keys_from` naming the inbound
     mapping that recorded it.
 - **`set`**: inbound, from JSON or XML, one file into several linked types. The mapping holds only
@@ -209,9 +210,24 @@ with `names`. An alias is a lowercase name other than `self`. Rules read a follo
   `{ ref: <part>, at: <path> }` for a reference, or `{ uuid: <part>, at: <path> }` for an id as
   text. The parts may not link in a circle.
 
+## An `http` reply
+
+An `http` integration may read the other system's answer back through an **inbound** mapping:
+
+- a **`document`** mapping writes the answer onto the entry the integration sent, only the fields
+  it names, so its `model` is the type the integration sends;
+- a **`list`** mapping writes one new entry about the one sent. The answer is JSON, and its
+  entry is the answer's **root**: the mapping takes **no `path`**, and its `key` is one top-level
+  name. The integration names, with `reply_about`, the `section.field` of the new entry that holds
+  the one sent (a reference pinned to that type), and the engine fills it, so the mapping doesn't
+  write it.
+
+A `set` can't read a reply. A reply mapping that breaks these isn't caught by `register`: the
+integration lists the problem and stays switched off until it's fixed.
+
 ## What `register` checks, and what it doesn't
 
-`register` checks everything above against your types, and its refusal lists the problems,
+`register` checks everything above but a reply's rules against your types, and its refusal lists the problems,
 `where: what`, one per line. Your engine checks it again when it starts and when a mapping is used.
 
 Two kinds of problems surface only later:
@@ -219,8 +235,8 @@ Two kinds of problems surface only later:
 - **Per entry, when a run reads the data:** a value missing from a `lookup`, a date that doesn't
   match its pattern, several values where one is held. That entry fails, and the run says why.
 - **The integration's rules:** whether a mapping fits its channel (a `feed` needs an outbound
-  `list`, an `email` or `http` message an outbound `document`), and how an `http` integration's
-  `reply` is read. These belong to the [integration](./blueprint.md#integrations), which lists its
+  `list`, an `email` or `http` message an outbound `document`), and whether a reply mapping fits
+  [its reply](#an-http-reply). These belong to the [integration](./blueprint.md#integrations), which lists its
   problems and can't be switched on until they're fixed.
 
 ## Two complete mappings
