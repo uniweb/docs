@@ -17,6 +17,9 @@ signup: invite_only
 teams:
   sales: { label: Sales }
   service: { label: Service }
+  paid-members:                  # whoever holds a membership, bought or subscribed
+    label: Paid members
+    joins: { holds: ['@/membership'] }
 
 access:
   '@/vehicle':
@@ -51,7 +54,7 @@ The blueprint says who may *add* entries of a type, and who reads or edits *ever
 | key | holds | means |
 |---|---|---|
 | `signup` | `open` · `invite_only` | who may create an account: anyone, or only someone invited. Absent: `open` |
-| `teams` | `<id>: { label }` | the teams the backend begins with, each one empty. The id is how `access` names the team: lowercase letters, digits and dashes, never `members`. `label` is the team's name, the id when absent, and no two teams share one |
+| `teams` | `<id>: { label, joins? }` | the teams the backend begins with, each one empty. The id is how `access` names the team: lowercase letters, digits and dashes, never `members`. `label` is the team's name, the id when absent, and no two teams share one. `joins` is who the engine keeps in the team ([below](#a-team-the-engine-keeps-by-condition)) |
 | `access` | `<type>: { add?, all? }` | `add`: `open` lets every signed-in account add entries of the type; a list of teams lets those teams add them; `[]` lets nobody but the account that runs the site. `all`: `<team or members>: read` or `edit`, over every entry of the type, not only one's own. A type not listed, or an `add` not given, stays closed |
 | `publicQueries` | `<type>: { whole, where?, sort?, limit? }` | visitors who aren't signed in may read the type's entries. `whole` is required: `true` for whole entries, `false` for their briefs. `where`, `sort` and `limit` narrow them, in the language of [queries](./queries.md) |
 | `integrations` | `<id>: { mapping, channel, trigger, label?, filter?, enabled?, reply?, reply_about?, vendor? }` | what the backend starts connected to; see [Integrations](#integrations) |
@@ -63,8 +66,39 @@ foundation has no scope yet, a push sends `@/vehicle` as written, and says so.
 A team's `edit` reaches every entry once its member confirms it is them: until then, a session
 holds what a team gives it as a reader. `members: edit`, and a team's `add`, need no confirming.
 
-Who is in a team is never the file's, and neither are roles. They belong to people, and when a
+Who is put in a team is never the file's, and neither are roles. They belong to people, and when a
 backend starts, no one is there but the site's owner.
+
+## A team the engine keeps by condition
+
+`members` in `access` is everyone with an account. A group that has paid, such as a club's members
+or a newsletter's subscribers, is a team the engine keeps by **condition**:
+
+```yaml
+teams:
+  paid-members:
+    label: Paid members
+    joins: { holds: ['@/membership'] }
+access:
+  '@/photo': { add: [paid-members] }    # paid members post photos
+```
+
+- **`holds`** lists types. Whoever holds a record of one of them, bought or by a live
+  subscription, is in the team, and leaves it when the subscription lapses or the purchase is
+  refunded. A list means *any of*: `['@/membership', '@/pass']`. A record given as a gift doesn't
+  count.
+- **The owner can still put someone in by hand**, an honorary member, and either reason keeps
+  them in.
+- **The file names types only**, since no record exists when a backend starts. A condition on
+  one record ("holds the Annual membership"), and which teams may buy an offering, are set in
+  the Admin App.
+- **A site never learns which teams the viewer is in.** It asks what they may do, and a team's
+  members get different answers: whether they may add a type (`useMayCreate`), what each
+  entry allows (`mayDo`), and whether they may buy an offering (`offeringState` reads
+  `'not-eligible'` when the owner sells it only to teams they aren't in, and `who_may_buy` holds
+  the owner's own words, such as "Members only").
+
+`joins` takes `holds` alone for now. A uuid in it, or any other key, is refused.
 
 ## Integrations
 
@@ -166,7 +200,9 @@ export default createMockBackend({ seed, blueprint }).fetch
 ```
 
 A seeded account names the teams it is in, since the file never does:
-`{ username: 'sally', password: 'sally', teams: ['sales'] }`. Public queries are not modelled there: run the
+`{ username: 'sally', password: 'sally', teams: ['sales'] }`. A team with `joins` also holds
+every seeded account holding a record of its types (`entitlements: [{ username, entity }]`), and
+a seeded offering may take `buyable_by: ['paid-members']` and `who_may_buy`. Public queries are not modelled there: run the
 site on the Docker Developer Edition, or against the site as published, to see them
 ([Testing a Web App Locally](../web-apps/testing-locally.md)).
 
