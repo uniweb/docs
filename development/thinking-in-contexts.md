@@ -22,7 +22,7 @@ type: Features
 theme: dark
 background:
   image: /images/night-skyline.jpg
-  overlay: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6))
+  overlay: 0.6                 # a dark layer at 60% over the picture
 ---
 ```
 
@@ -78,7 +78,7 @@ type: Hero
 theme: dark
 background:
   image: /images/city-at-night.jpg
-  overlay: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6))
+  overlay: 0.6                 # a dark layer at 60% over the picture
 ---
 ```
 
